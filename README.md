@@ -2,7 +2,7 @@
 
 ## Overview
 
-The iSensor FX3 firmware provides you with a means of acquiring sensor data over a high-speed USB connection in any application that supports .NET libraries. This firmware was designed for the FX3 SuperSpeed Explorer Kit and relied on the open source libraries provided by Cypress to operate. The firmware was written using the freely-available Cypress EZ USB Suite, allowing anyone to modify the base firmware to fit their needs. 
+The iSensor FX3 firmware provides you with a means of acquiring sensor data over a high-speed USB connection in any application that supports .NET libraries. This firmware was designed for the FX3 SuperSpeed Explorer Kit and relies on the open source libraries provided by Cypress to operate. The firmware was written using the freely-available Cypress EZ USB Suite, allowing anyone to modify the base firmware to fit their needs. 
 
 The FX3 firmware is entirely event-driven and communicates with the PC using a vendor command structure. This event structure calls subroutines within the FX3 firmware to measure signals, configure SPI communication, acquire data, etc. This firmware also relies on the FX3Interface library to establish communication with the FX3 firmware. 
 
@@ -13,6 +13,10 @@ Using both the FX3 firmware and the FX3Interface libraries enables you to acquir
 The firmware is designed to be built and run on a Cypress SuperSpeed Explorer Kit (CYUSB3KIT-003). A breakout board designed to convert the Explorer Kit's pins to a standard, 16-pin, 2mm connector used on most iSensor evaluation should be available soon. A schematic showing how to connect iSensor products to the Explorer Kit can be found in the Documentation folder of this repository [here](https://github.com/juchong/iSensor-FX3-Firmware/tree/master/Documentation). 
 
 ![FX3 Board and ADcmXL3021](Documentation/pictures/img5.jpg)
+
+The Explorer Kit requires two jumpers to be installed before the interface library will communicate. The image below shows where the jumpers must be installed.
+
+ ![FX3 Jumper Locations](Documentation/pictures/JumperLocations.jpg)
 
 ## Getting Started
 
