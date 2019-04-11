@@ -12,7 +12,7 @@ Using both the FX3 firmware and the FX3Interface libraries enables you to acquir
 
 The firmware is designed to be built and run on a Cypress SuperSpeed Explorer Kit (CYUSB3KIT-003). A breakout board designed to convert the Explorer Kit's pins to a standard, 16-pin, 2mm connector used on most iSensor evaluation should be available soon. A schematic showing how to connect iSensor products to the Explorer Kit can be found in the Documentation folder of this repository [here](https://github.com/juchong/iSensor-FX3-Firmware/tree/master/Documentation). 
 
-![FX3 Board and ADcmXL3021](https://raw.githubusercontent.com/juchong/iSensor-FX3-Firmware/master/Documentation/pictures/img5.jpg)
+![FX3 Board and ADcmXL3021](Documentation/pictures/img5.jpg)
 
 ## Getting Started
 
