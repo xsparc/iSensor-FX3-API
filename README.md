@@ -1,4 +1,4 @@
-# iSensor FX3 Interface - .NET Interfacing Library for the iSensor FX3 Firmware
+# iSensor FX3 Interface - A .NET Interface Library for the iSensor FX3 Firmware
 
 ## Overview
 
