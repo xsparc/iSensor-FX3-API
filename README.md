@@ -14,7 +14,7 @@ The firmware is designed to be built and run on a Cypress SuperSpeed Explorer Ki
 
 The Explorer Kit requires two jumpers to be installed before the interface library will communicate. The image below shows where the jumpers must be installed.
 
- ![FX3 Jumper Locations](https://github.com/juchong/iSensor-FX3-Firmware/tree/master/Documentation/pictures/JumperLocations.jpg)
+ ![FX3 Jumper Locations](https://raw.githubusercontent.com/juchong/iSensor-FX3-Firmware/master/Documentation/pictures/JumperLocations.jpg)
 
 ## Getting Started
 
