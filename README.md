@@ -24,13 +24,17 @@ To modify the firmware, the Cypress EZ USB Suite must first be installed on the 
 
 If you would like to use the firmware (and interface library) as-is in a .NET-compatible application, the firmware image, and .dll files should be included in your project instead. An example application can be found [here](https://github.com/juchong/FX3Gui). 
 
+## Drivers
+
+USB drivers for the FX3 Explorer Kit should be installed automatically if the EZ USB Suite is installed. If you would like to communicate with the FX3 without installing the entire suite, the drivers are available on the ADI Wiki site [here](https://wiki.analog.com/_media/resources/eval/user-guides/inertial-mems/fx3driver.zip).
+
 ## Additional Repositories
 
 Two additional repositories complement this firmware, the FX3Interface library containing the .NET interface software and .dlls requires to communicate with the FX3 and the example project where these libraries are implemented. Links to both of these libraries are shown below.
 
 1. [FX3 Interface Library (FX3Interface)](https://github.com/juchong/iSensor-FX3-Interface)
 
-2. [FX3 Gui Example (FX3Gui)](https://github.com/juchong/FX3Gui)
+2. [FX3 ADcmXL GUI Example (FX3Gui)](https://github.com/juchong/iSensor-ADcmXL-FX3Gui)
 
 ## Debugging
 
