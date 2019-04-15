@@ -1639,7 +1639,7 @@ CyU3PReturnStatus_t AdiGenericDataStreamFinished()
     CyU3PVicEnableInt(CY_U3P_VIC_I2S_CORE_VECTOR);                 /**< 16: I2S block interrupt. */
     //CyU3PVicEnableInt(CY_U3P_VIC_SPI_CORE_VECTOR);                 /**< 17: SPI block interrupt. */
     CyU3PVicEnableInt(CY_U3P_VIC_UART_CORE_VECTOR);                /**< 18: UART block interrupt. */
-    //CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);                /**< 19: GPIO block interrupt. */
+    CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);                /**< 19: GPIO block interrupt. */
     //CyU3PVicEnableInt(CY_U3P_VIC_LPP_DMA_VECTOR);                  /**< 20: Serial peripheral (I2C, I2S, SPI and UART) DMA interrupt. */
     CyU3PVicEnableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);                 /**< 21: VBus detect interrupt. */
 
@@ -1699,11 +1699,11 @@ CyU3PReturnStatus_t AdiGenericDataStreamStart()
 	gpioConfig.driveHighEn = CyFalse;
 	if (DrPolarity)
 	{
-		gpioConfig.intrMode = CY_U3P_GPIO_INTR_NEG_EDGE;
+		gpioConfig.intrMode = CY_U3P_GPIO_INTR_POS_EDGE;
 	}
 	else
 	{
-		gpioConfig.intrMode = CY_U3P_GPIO_INTR_POS_EDGE;
+		gpioConfig.intrMode = CY_U3P_GPIO_INTR_NEG_EDGE;
 	}
 
 	CyU3PGpioSetSimpleConfig(dataReadyPin, &gpioConfig);
@@ -1758,7 +1758,7 @@ CyU3PReturnStatus_t AdiGenericDataStreamStart()
 	CyU3PVicDisableInt(CY_U3P_VIC_I2S_CORE_VECTOR);                 /**< 16: I2S block interrupt. */
 	//CyU3PVicDisableInt(CY_U3P_VIC_SPI_CORE_VECTOR);                 /**< 17: SPI block interrupt. */
 	CyU3PVicDisableInt(CY_U3P_VIC_UART_CORE_VECTOR);                /**< 18: UART block interrupt. */
-	//CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);                /**< 19: GPIO block interrupt. */
+	CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);                /**< 19: GPIO block interrupt. */
 	//CyU3PVicDisableInt(CY_U3P_VIC_LPP_DMA_VECTOR);                  /**< 20: Serial peripheral (I2C, I2S, SPI and UART) DMA interrupt. */
 	CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);                 /**< 21: VBus detect interrupt. */
     //CyU3PVicDisableInt(CY_U3P_VIC_NUM_VECTORS);                     /**< Number of valid FX3 interrupt vectors. */
@@ -3039,13 +3039,13 @@ void AdiDataStream_Entry(uint32_t input)
 					//Wait for DR if enabled
 					if (DrActive)
 					{
-						//Enable GPIO interrupts
-						CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
-						/* Wait for GPIO interrupt flag (Note: We're reacting to an interrupt on any ADI configured pin, but
-						   we're only attaching an interrupt to one pin. */
-						CyU3PEventGet(&gpioHandler, 0x7F, CYU3P_EVENT_OR_CLEAR, &gpioEventFlag, CYU3P_WAIT_FOREVER);
-						//Disable GPIO interrupts until we need them again
-						CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
+						interruptTriggered = CyFalse;
+						while(!interruptTriggered)
+						{
+							interruptTriggered = ((CyBool_t)(GPIO->lpp_gpio_intr0 & (1 << dataReadyPin)));
+						}
+						//Clear GPIO interrupts
+						GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
 					}
 
 					//Transmit first word without reading back
