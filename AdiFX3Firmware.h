@@ -96,6 +96,11 @@ CyU3PReturnStatus_t AdiGenericDataStreamStart();
 CyU3PReturnStatus_t AdiGenericDataStreamFinished();
 void AdiGenericDataStreamStop();
 
+//Burst stream functions.
+CyU3PReturnStatus_t AdiBurstStreamStart();
+CyU3PReturnStatus_t AdiBurstStreamFinished();
+void AdiBurstStreamStop();
+
 //Enum for part type (used in streaming modes)
 typedef enum PartTye
 {
@@ -122,15 +127,6 @@ struct BoardConfig
 /*
  * Vendor Command Request Code Definitions
  */
-//Read a word at a specified address and return the data over the control endpoint
-#define ADI_READ_BYTES							(0xF0)
-
-//Write one byte of data to a user-specified address
-#define ADI_WRITE_BYTE							(0xF1)
-
-//Return data over a bulk endpoint before a bulk read/write operation
-#define ADI_BULK_REGISTER_TRANSFER				(0xF2)
-
 //Return FX3 firmware ID (defined below)
 #define ADI_FIRMWARE_ID_CHECK					(0xB0)
 
@@ -146,14 +142,14 @@ struct BoardConfig
 //Return the current status of the FX3 firmware
 #define ADI_GET_STATUS							(0xB4)
 
+//Start/stop a generic data stream
+#define ADI_STREAM_GENERIC_DATA					(0xC0)
+
+//Start/stop a burst data stream
+#define ADI_STREAM_BURST_DATA					(0xC1)
+
 //Read the value of a user-specified GPIO
 #define ADI_READ_PIN							(0xC3)
-
-//Start/stop a real-time stream
-#define ADI_STREAM_REALTIME						(0xD0)
-
-//Do nothing (default case)
-#define ADI_NULL_COMMAND						(0xD1)
 
 //Read the current FX3 timer register value
 #define ADI_READ_TIMER_VALUE					(0xC4)
@@ -170,8 +166,20 @@ struct BoardConfig
 //Return the pulse frequency (data ready) on a user-specified pin
 #define ADI_MEASURE_DR	 						(0xC8)
 
-//Start/stop a generic data stream
-#define ADI_STREAM_GENERIC_DATA					(0xC0)
+//Start/stop a real-time stream
+#define ADI_STREAM_REALTIME						(0xD0)
+
+//Do nothing (default case)
+#define ADI_NULL_COMMAND						(0xD1)
+
+//Read a word at a specified address and return the data over the control endpoint
+#define ADI_READ_BYTES							(0xF0)
+
+//Write one byte of data to a user-specified address
+#define ADI_WRITE_BYTE							(0xF1)
+
+//Return data over a bulk endpoint before a bulk read/write operation
+#define ADI_BULK_REGISTER_TRANSFER				(0xF2)
 
 
 /*
@@ -293,6 +301,10 @@ struct BoardConfig
 #define ADI_GENERIC_STREAM_ENABLE				(1 << 6)
 #define ADI_REAL_TIME_STREAM_ENABLE				(1 << 7)
 #define ADI_KILL_THREAD_EARLY					(1 << 8)	//Currently unused.
+#define ADI_BURST_STREAMING_START				(1 << 9)
+#define ADI_BURST_STREAMING_STOP				(1 << 10)
+#define ADI_BURST_STREAMING_DONE				(1 << 11)
+#define ADI_BURST_STREAM_ENABLE					(1 << 12)
 
 
 /*
