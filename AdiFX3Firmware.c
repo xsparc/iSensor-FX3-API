@@ -50,6 +50,9 @@ CyU3PDmaChannel ChannelFromPC;
 //DMA channel for BULK-IN endpoint 0x82 (FX3 to PC)
 CyU3PDmaChannel ChannelToPC;
 
+//DMA channel for reading a memory location into a DMA consumer
+CyU3PDmaChannel MemoryToSPI;
+
 
 /*
  * Buffer Definitions
@@ -69,6 +72,9 @@ CyU3PSpiConfig_t spiConfig;
 
 //DMA buffer structure for output buffer
 CyU3PDmaBuffer_t ManualDMABuffer;
+
+//DMA buffer structure for SPI transmit
+CyU3PDmaBuffer_t SpiDmaBuffer;
 
 //Global to track the part type
 PartType DUTType;
@@ -1424,7 +1430,9 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint16_t bytesRead;
-	uint16_t burstLength;
+
+	//Disable VBUS ISR
+	CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
 
 	//Disable GPIO interrupt before attaching interrupt to pin
 	CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
@@ -1444,7 +1452,11 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 		gpioConfig.intrMode = CY_U3P_GPIO_INTR_POS_EDGE;
 	}
 
-	CyU3PGpioSetSimpleConfig(dataReadyPin, &gpioConfig);
+	status = CyU3PGpioSetSimpleConfig(dataReadyPin, &gpioConfig);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Setting burst stream pin interrupt failed!, error code = %d\r\n", status);
+	}
 
 	//Get number of frames to capture from control endpoint
 	CyU3PUsbGetEP0Data(8, USBBuffer, &bytesRead);
@@ -1453,23 +1465,44 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	numBuffers += (USBBuffer[2] << 16);
 	numBuffers += (USBBuffer[3] << 24);
 
+	CyU3PDebugPrint (4, "numBuffers:  %d\r\n", numBuffers);
+
 	//Get number of words per burst transfer (minus the trigger word)
-	burstLength = USBBuffer[6];
-	burstLength += (USBBuffer[7] << 8);
+	transferLength = USBBuffer[6];
+	transferLength += (USBBuffer[7] << 8);
+
+	CyU3PDebugPrint (4, "burstLength:  %d\r\n", transferLength);
 
 	//Set regList memory to correct length minus trigger word. We're going to overwrite the first
 	//two bytes with the trigger word, so make the burst length 2 bytes wider.
-	regList = CyU3PMemAlloc(sizeof(uint8_t) * (burstLength + 2));
+	regList = CyU3PMemAlloc(sizeof(uint8_t) * ((transferLength * 2) + 2));
 
 	//Clear (zero) contents of regList memory. Burst transfers are DNC, so we're sending zeros.
-	CyU3PMemSet(regList, 0, sizeof(uint8_t) * (burstLength + 2));
+	CyU3PMemSet(regList, 0, sizeof(uint8_t) * ((transferLength * 2) + 2));
 
 	//Append burst trigger word to the first two bytes of regList
 	regList[0] = USBBuffer[5];
 	regList[1] = USBBuffer[4];
 
+	CyU3PDebugPrint (4, "burstTriggerUpper:  %d\r\n", regList[0]);
+	CyU3PDebugPrint (4, "burstTriggerLower:  %d\r\n", regList[1]);
+
+	//Configure MemoryToSPI DMA
+	SpiDmaBuffer.buffer = regList;
+	SpiDmaBuffer.count = ((transferLength * 2) + 2);
+	SpiDmaBuffer.size = 1024; //Fixed number, but should be enough for most sensors.
+	SpiDmaBuffer.status = 0;
+
+	//Set up DMA to read registers from memory
+	status = CyU3PDmaChannelSetupSendBuffer(&MemoryToSPI, &SpiDmaBuffer);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Setting up the MemoryToSpi buffer channel failed!, error code = %d\r\n", status);
+	}
+
 	//Clear the DMA buffers
 	CyU3PDmaChannelReset(&StreamingChannel);
+	CyU3PDmaChannelReset(&MemoryToSPI);
 
 	//Flush streaming end point
 	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
@@ -1479,8 +1512,9 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	spiConfig.wordLen = 8;
 	CyU3PSpiSetConfig(&spiConfig, NULL);
 
-	//Set infinite DMA transfer on streaming channel
+	//Set infinite DMA transfer on streaming channels
 	CyU3PDmaChannelSetXfer(&StreamingChannel, 0);
+	CyU3PDmaChannelSetXfer(&MemoryToSPI, 0);
 
 	//Set the burst stream flag to notify the streaming thread
 	CyU3PEventSet (&eventHandler, ADI_BURST_STREAM_ENABLE, CYU3P_EVENT_OR);
@@ -1535,6 +1569,10 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 
 	//Flush streaming end point
 	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
+
+	//Re-enable relevant ISRs
+	CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
+	CyU3PVicEnableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
 
 	//Clear all interrupt flags
 	CyU3PVicClearInt();
@@ -2457,6 +2495,28 @@ CyU3PReturnStatus_t AdiConfigureEndpoints()
 		return status;
 	}
 
+	//Configure SPI TX DMA
+    dmaConfig.size = 1024;
+    dmaConfig.count = 64;
+    dmaConfig.prodSckId = CY_U3P_CPU_SOCKET_PROD;
+    dmaConfig.consSckId = CY_U3P_LPP_SOCKET_SPI_CONS;
+    dmaConfig.dmaMode = CY_U3P_DMA_MODE_BYTE;
+
+    //Disable DMA callbacks
+    dmaConfig.prodHeader     = 0;
+    dmaConfig.prodFooter     = 0;
+    dmaConfig.consHeader     = 0;
+    dmaConfig.notification   = 0;
+    dmaConfig.cb             = NULL;
+    dmaConfig.prodAvailCount = 0;
+
+    status = CyU3PDmaChannelCreate(&MemoryToSPI, CY_U3P_DMA_TYPE_MANUAL_OUT, &dmaConfig);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Configuring the SPI TX DMA failed, Error Code = %d\n", status);
+		return status;
+	}
+
     //Configure DMA for ChannelFromPC
     dmaConfig.count = 0;
     dmaConfig.prodSckId = CY_U3P_UIB_SOCKET_PROD_1;
@@ -2782,7 +2842,7 @@ CyU3PReturnStatus_t AdiDeviceInit()
     status = CyU3PUsbStart();
     if (status != CY_U3P_SUCCESS)
     {
-    	CyU3PDebugPrint (4, "CyU3PUsbStart failed to Start, Error code = %d\n", status);
+    	CyU3PDebugPrint (4, "CyU3PUsbStart failed to Start, Error code = %d\r\n", status);
         return status;
     }
     else
@@ -2811,7 +2871,7 @@ CyU3PReturnStatus_t AdiDeviceInit()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_DEVICE_DESCR, 0, (uint8_t *)CyFxUSB30DeviceDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set device descriptor failed, Error code = %d\n", status);
+        CyU3PDebugPrint (4, "USB set device descriptor failed, Error code = %d\r\n", status);
         return status;
     }
 
@@ -2819,7 +2879,7 @@ CyU3PReturnStatus_t AdiDeviceInit()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_HS_DEVICE_DESCR, 0, (uint8_t *)CyFxUSB20DeviceDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set device descriptor failed, Error code = %d\n", status);
+        CyU3PDebugPrint (4, "USB set device descriptor failed, Error code = %d\r\n", status);
         return status;
     }
 
@@ -2827,7 +2887,7 @@ CyU3PReturnStatus_t AdiDeviceInit()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_BOS_DESCR, 0, (uint8_t *)CyFxUSBBOSDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set configuration descriptor failed, Error code = %d\n", status);
+        CyU3PDebugPrint (4, "USB set configuration descriptor failed, Error code = %d\r\n", status);
         return status;
     }
 
@@ -2835,7 +2895,7 @@ CyU3PReturnStatus_t AdiDeviceInit()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_DEVQUAL_DESCR, 0, (uint8_t *)CyFxUSBDeviceQualDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set device qualifier descriptor failed, Error code = %d\n", status);
+        CyU3PDebugPrint (4, "USB set device qualifier descriptor failed, Error code = %d\r\n", status);
         return status;
     }
 
@@ -2843,7 +2903,7 @@ CyU3PReturnStatus_t AdiDeviceInit()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBSSConfigDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set configuration descriptor failed, Error code = %d\n", status);
+        CyU3PDebugPrint (4, "USB set configuration descriptor failed, Error code = %d\r\n", status);
         return status;
     }
 
@@ -2851,7 +2911,7 @@ CyU3PReturnStatus_t AdiDeviceInit()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_HS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBHSConfigDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB Set Other Speed Descriptor failed, Error Code = %d\n", status);
+        CyU3PDebugPrint (4, "USB Set Other Speed Descriptor failed, Error Code = %d\r\n", status);
         return status;
     }
 
@@ -2859,7 +2919,7 @@ CyU3PReturnStatus_t AdiDeviceInit()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_FS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBFSConfigDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB Set Configuration Descriptor failed, Error Code = %d\n", status);
+        CyU3PDebugPrint (4, "USB Set Configuration Descriptor failed, Error Code = %d\r\n", status);
         return status;
     }
 
@@ -2867,7 +2927,7 @@ CyU3PReturnStatus_t AdiDeviceInit()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 0, (uint8_t *)CyFxUSBStringLangIDDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = %d\n", status);
+        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = %d\r\n", status);
         return status;
     }
 
@@ -2875,7 +2935,7 @@ CyU3PReturnStatus_t AdiDeviceInit()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 1, (uint8_t *)CyFxUSBManufactureDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = %d\n", status);
+        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = %d\r\n", status);
         return status;
     }
 
@@ -2883,7 +2943,7 @@ CyU3PReturnStatus_t AdiDeviceInit()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 2, (uint8_t *)CyFxUSBProductDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = %d\n", status);
+        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = %d\r\n", status);
         return status;
     }
 
@@ -2891,7 +2951,7 @@ CyU3PReturnStatus_t AdiDeviceInit()
     status = CyU3PConnectState (CyTrue, CyTrue);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB Connect failed, Error code = %d\n", status);
+        CyU3PDebugPrint (4, "USB Connect failed, Error code = %d\r\n", status);
         return status;
     }
 
@@ -2899,7 +2959,7 @@ CyU3PReturnStatus_t AdiDeviceInit()
     status = AdiConfigureEndpoints();
     if (status != CY_U3P_SUCCESS)
     {
-    	CyU3PDebugPrint (4, "Configuring endpoints failed, Error code = %d\n", status);
+    	CyU3PDebugPrint (4, "Configuring endpoints failed, Error code = %d\r\n", status);
         return status;
     }
 
@@ -2908,7 +2968,7 @@ CyU3PReturnStatus_t AdiDeviceInit()
     status = AdiSpiInit();
     if (status != CY_U3P_SUCCESS)
     {
-    	CyU3PDebugPrint (4, "SPI initialization failed, Error code = %d\n", status);
+    	CyU3PDebugPrint (4, "SPI initialization failed, Error code = %d\r\n", status);
         return status;
     }
     else
@@ -2923,7 +2983,7 @@ CyU3PReturnStatus_t AdiDeviceInit()
     status = AdiCreateEventFlagGroup();
     if (status != CY_U3P_SUCCESS)
     {
-    	CyU3PDebugPrint (4, "Setting up global event flags failed, Error code = %d\n", status);
+    	CyU3PDebugPrint (4, "Setting up global event flags failed, Error code = %d\r\n", status);
         return status;
     }
 
@@ -3153,80 +3213,23 @@ void AdiDataStream_Entry(uint32_t input)
 				//Disable GPIO interrupts until we need them again
 				CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
 
-				//Clear the SPI Rx FIFO
-				SPI->lpp_spi_config |= CY_U3P_LPP_SPI_RX_CLEAR;
-				while((SPI->lpp_spi_status & CY_U3P_LPP_SPI_RX_DATA) != 0);
-				SPI->lpp_spi_config &= ~CY_U3P_LPP_SPI_RX_CLEAR;
-
-				//Set the config for DMA mode with TX and RX enabled
-				SPI->lpp_spi_config |= (CY_U3P_LPP_SPI_DMA_MODE|CY_U3P_LPP_SPI_RX_ENABLE|CY_U3P_LPP_SPI_TX_ENABLE);
-
-				//Set the Tx/Rx count and Tx data
-				SPI->lpp_spi_tx_byte_count = sizeof(regList);
-				SPI->lpp_spi_rx_byte_count = numCaptures;
-				SPI->lpp_spi_egress_data = *regList;
-
-				//Enable the SPI block
-				SPI->lpp_spi_config |= CY_U3P_LPP_SPI_ENABLE;
-
-				//Wait for transfer to finish
-				status = CyU3PSpiWaitForBlockXfer(CyTrue);
-
-				if(status == CY_U3P_SUCCESS)
-				{
-					//Disable SPI DMA transfer
-					status = CyU3PSpiDisableBlockXfer(CyTrue, CyTrue);
-
-					//Clear GPIO interrupts
-					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
-				}
-				//Error handling
+				status = CyU3PSpiSetBlockXfer((transferLength + 1), (transferLength + 1));
 				if(status != CY_U3P_SUCCESS)
 				{
-					//Have an error that needs to be handled
-					errorHandled = CyFalse;
-
-					//Clear GPIO interrupts
-					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
-
-					//Get the initial pin config
-					initialRegValue = (GPIO->lpp_gpio_pin[pinIndex].status & ~CY_U3P_LPP_GPIO_INTR);
-					//Set the pin config for sample now mode
-					GPIO->lpp_gpio_pin[pinIndex].status = (initialRegValue | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
-					//wait for sample to finish
-					while (GPIO->lpp_gpio_pin[pinIndex].status & CY_U3P_LPP_GPIO_MODE_MASK);
-					//read error start time
-					errorStartTime = GPIO->lpp_gpio_pin[pinIndex].threshold;
-
-					//Reset the DMA controller
-					CyU3PDmaChannelReset(&StreamingChannel);
-
-					while(!errorHandled)
-					{
-						//Set the pin config for sample now mode
-						GPIO->lpp_gpio_pin[pinIndex].status = (initialRegValue | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
-						//wait for sample to finish
-						while (GPIO->lpp_gpio_pin[pinIndex].status & CY_U3P_LPP_GPIO_MODE_MASK);
-						//Read the current time
-						currentTime = GPIO->lpp_gpio_pin[pinIndex].threshold;
-
-						//Wait for another busy edge
-						if((GPIO->lpp_gpio_intr0 & (1 << dataReadyPin)))
-						{
-							errorHandled = CyTrue;
-						}
-
-						//If the wait time is more than 10 milliseconds cancel streaming
-						if((currentTime - errorStartTime) > (MS_TO_TICKS_MULT*10) && !errorHandled)
-						{
-							errorHandled = CyTrue;
-							//Reset frame counter
-							numBuffersRead = 0;
-							//Set ADI event flags
-							CyU3PEventSet(&eventHandler, ADI_BURST_STREAMING_DONE, CYU3P_EVENT_OR);
-						}
-					}
+					CyU3PDebugPrint (4, "Setting block xfer failed, Error code = %d\r\n", status);
 				}
+				//status = CyU3PSpiWaitForBlockXfer(CyFalse);
+	            //if(status != CY_U3P_SUCCESS)
+	            //{
+	            //	CyU3PDebugPrint (4, "Waiting for block xfer failed!, error code = %d\r\n", status);
+	            //}
+				//Disable SPI DMA transfer
+				status = CyU3PSpiDisableBlockXfer(CyTrue, CyTrue);
+				if(status != CY_U3P_SUCCESS)
+				{
+					CyU3PDebugPrint (4, "Disabling block xfer failed, Error code = %d\r\n", status);
+				}
+
 				//Check that we haven't captured the desired number of frames or were asked to kill the thread early
 				if((numBuffersRead >= (numBuffers - 1)) || killEarly)
 				{
@@ -3245,7 +3248,6 @@ void AdiDataStream_Entry(uint32_t input)
 					CyU3PEventSet (&eventHandler, ADI_BURST_STREAM_ENABLE, CYU3P_EVENT_OR);
 				}
 			}
-
 		}
         /* Allow other ready threads to run. */
         CyU3PThreadRelinquish ();
