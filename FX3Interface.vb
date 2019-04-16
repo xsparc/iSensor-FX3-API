@@ -604,34 +604,15 @@ Public Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' The number of SPI clock stall cycles between words
-    ''' </summary>
-    ''' <returns>The current stall cycles</returns>
-    Public Property StallCycles As UInt16
-        'Reqcode:   B2
-        'Value:     Stall time (as int16)
-        'Index:     9    
-        'Length:    4
-        'Data:      None
-        Get
-            Return m_FX3_SpiConfig.StallCycles
-        End Get
-        Set(value As UInt16)
-            m_FX3_SpiConfig.StallCycles = value
-            If m_FX3Connected Then
-                FX3Board.ControlEndPt.Index = 9
-                'Send the stall time in ticks to FX3
-                FX3Board.ControlEndPt.Value = m_FX3_SpiConfig.StallCycles
-                ConfigureSPI()
-            End If
-        End Set
-    End Property
-
-    ''' <summary>
     ''' Property to get/set the number of microseconds between words
     ''' </summary>
     ''' <returns>The current stall time, in microseconds</returns>
     Public Property StallTime As UInt16
+        'Reqcode:   B2
+        'Value:     Stall time in microseconds (as int16)
+        'Index:     9    
+        'Length:    4
+        'Data:      None
         Get
             Return m_FX3_SpiConfig.StallTime
         End Get
@@ -1894,10 +1875,6 @@ Public Class FX3Connection
 
         If Not boardConfig.StallTime = m_FX3_SpiConfig.StallTime Then
             StallTime = m_FX3_SpiConfig.StallTime
-        End If
-
-        If Not boardConfig.StallCycles = m_FX3_SpiConfig.StallCycles Then
-            StallCycles = m_FX3_SpiConfig.StallCycles
         End If
 
         If Not boardConfig.ChipSelectLagTime = m_FX3_SpiConfig.ChipSelectLagTime Then

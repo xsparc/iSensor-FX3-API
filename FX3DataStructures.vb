@@ -128,7 +128,8 @@ Public Class SPIConfig
             ChipSelectControl = SpiChipselectControl.SPI_SSN_CTRL_HW_END_OF_XFER
             ChipSelectLagTime = SpiLagLeadTime.SPI_SSN_LAG_LEAD_ONE_CLK
             ChipSelectLeadTime = SpiLagLeadTime.SPI_SSN_LAG_LEAD_ONE_CLK
-            StallTime = 100
+            StallTime = 25
+            StallCycles = 350
             DUTType = DUTType.ADcmXL3021
             IsLSBFirst = False
             DrActive = False
@@ -145,6 +146,7 @@ Public Class SPIConfig
             ChipSelectLagTime = SpiLagLeadTime.SPI_SSN_LAG_LEAD_ONE_CLK
             ChipSelectLeadTime = SpiLagLeadTime.SPI_SSN_LAG_LEAD_ONE_CLK
             StallTime = 25
+            StallCycles = 50
             DUTType = DUTType.IMU
             IsLSBFirst = False
             DrActive = True
