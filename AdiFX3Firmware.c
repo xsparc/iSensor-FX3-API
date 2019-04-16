@@ -78,7 +78,7 @@ PartType DUTType;
  * Application constants
  */
 //Constant firmware ID string. Manually updated when building new firmware.
-const uint8_t FirmwareID[32] __attribute__ ((aligned (32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '1', '.', '9','\0' };
+const uint8_t FirmwareID[32] __attribute__ ((aligned (32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '1', '.', '0', '.', '1', '-','P','U','B',' ', '\0' };
 
 //Constant error string used to write "ERROR" to output buffer
 const uint8_t ErrorString[16] __attribute__ ((aligned (16))) = { 'E', 'R', 'R', 'O', 'R', '\0'};
@@ -175,6 +175,8 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
     if (bType == CY_U3P_USB_VENDOR_RQT)
     {
         isHandled = CyTrue;
+
+        CyU3PDebugPrint (4, "Vendor request = %d\r\n", bRequest);
 
         switch (bRequest)
         {
@@ -628,6 +630,7 @@ CyU3PReturnStatus_t AdiBulkByteTransfer(uint16_t numBytes, uint16_t bytesPerCapt
 			CyU3PSpiTransmitWords(TxBuffer, 2);
 		}
 		loopCounter+=2;
+
 		AdiWaitForTimerTicks(stallTime);
 
 		//Loop through rest of the reads
@@ -901,6 +904,11 @@ void AdiWaitForTimerTicks(uint32_t numTicks)
 	CyBool_t timerRollover = CyFalse;
 	uint8_t pinIndex;
 
+	//Return if the stall offset is below the measurable threshold
+	if(numTicks < ADI_STALL_OFFSET)
+	{
+		return;
+	}
 	//Get the pin index
 	pinIndex = ADI_TIMER_PIN % 8;
 	//Get the initial pin config
@@ -920,7 +928,7 @@ void AdiWaitForTimerTicks(uint32_t numTicks)
 	//Calculate the end time
 	if(timerRollover)
 	{
-		endTime = numTicks - (0xFFFFFFFF - startTime);
+		endTime = numTicks - (0xFFFFFFFF - startTime) - ADI_STALL_OFFSET;
 		while(currentTime <= endTime || currentTime >= startTime)
 		{
 			//Get the initial pin config
@@ -935,7 +943,7 @@ void AdiWaitForTimerTicks(uint32_t numTicks)
 	}
 	else
 	{
-		endTime = startTime + numTicks;
+		endTime = startTime + numTicks - ADI_STALL_OFFSET;
 		while(CyTrue)
 		{
 			//Get the initial pin config
@@ -1950,8 +1958,8 @@ CyU3PReturnStatus_t AdiGetSpiSettings()
 	USBBuffer[12] = stallTime & 0xFF;
 	USBBuffer[13] = (stallTime & 0xFF00) >> 8;
 	USBBuffer[14] = DUTType;
-	USBBuffer[15] = DrActive;
-	USBBuffer[16] = DrPolarity;
+	USBBuffer[15] = (CyBool_t)DrActive;
+	USBBuffer[16] = (CyBool_t)DrPolarity;
 	USBBuffer[17] = dataReadyPin & 0xFF;
 	USBBuffer[18] = (dataReadyPin & 0xFF00) >> 8;
 	USBBuffer[19] = MS_TO_TICKS_MULT & 0xFF;
