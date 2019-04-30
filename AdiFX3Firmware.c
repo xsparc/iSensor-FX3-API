@@ -129,8 +129,14 @@ CyBool_t pinStartEnableDisable = CyFalse;
 //Signal RT thread to kill data capture early (True = kill thread signaled, False = allow execution)
 CyBool_t killEarly = CyFalse;
 
-//Track the total size of generic stream transfer
-uint16_t transferLength = 0;
+//Track the total size of generic stream transfer in 16-bit words
+uint16_t transferWordLength = 0;
+
+//Track the total size of generic and burst stream transfers in 8-bit bytes
+uint32_t transferByteLength = 0;
+
+//Track the total size of a generic or burst stream rounded to a multiple of 16
+uint16_t roundedByteTransferLength = 0;
 
 //Track the number of captures requested for the generic data stream
 uint32_t numCaptures = 0;
@@ -143,6 +149,9 @@ uint16_t bytesPerBuffer = 0;
 
 //Pointer to byte array of registers needing to be read by the generic data stream
 uint8_t *regList;
+
+//Pointer to byte buffer used for burst transfers
+uint8_t *regBuffer;
 
 
 /*
@@ -331,7 +340,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	if (wIndex)
             	{
             		status = CyU3PEventSet(&eventHandler, ADI_DATA_STREAMING_START, CYU3P_EVENT_OR);
-            		transferLength = wLength;
+            		transferWordLength = wLength;
             	}
             	else
             	{
@@ -1459,7 +1468,6 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	{
 		gpioConfig.intrMode = CY_U3P_GPIO_INTR_POS_EDGE;
 	}
-
 	status = CyU3PGpioSetSimpleConfig(dataReadyPin, &gpioConfig);
 	if(status != CY_U3P_SUCCESS)
 	{
@@ -1476,41 +1484,66 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	CyU3PDebugPrint (4, "numBuffers:  %d\r\n", numBuffers);
 
 	//Get number of words per burst transfer (minus the trigger word)
-	transferLength = USBBuffer[6];
-	transferLength += (USBBuffer[7] << 8);
+	transferWordLength = USBBuffer[6];
+	transferWordLength += (USBBuffer[7] << 8);
 
-	CyU3PDebugPrint (4, "burstLength:  %d\r\n", transferLength);
+	CyU3PDebugPrint (4, "transferWordLength:  %d\r\n", transferWordLength);
+
+	//Calculate number of bytes to transfer from words to transfer
+	transferByteLength = (transferWordLength * 2) + 2;
 
 	//Set regList memory to correct length minus trigger word. We're going to overwrite the first
 	//two bytes with the trigger word, so make the burst length 2 bytes wider.
-	regList = CyU3PMemAlloc(sizeof(uint8_t) * ((transferLength * 2) + 2));
+	regBuffer = CyU3PDmaBufferAlloc(sizeof(uint8_t) * transferByteLength);
 
 	//Clear (zero) contents of regList memory. Burst transfers are DNC, so we're sending zeros.
-	CyU3PMemSet(regList, 0, sizeof(uint8_t) * ((transferLength * 2) + 2));
+	CyU3PMemSet(regBuffer, 0, sizeof(uint8_t) * transferByteLength);
 
 	//Append burst trigger word to the first two bytes of regList
-	regList[0] = USBBuffer[5];
-	regList[1] = USBBuffer[4];
+	regBuffer[0] = USBBuffer[4];
+	regBuffer[1] = USBBuffer[5];
 
-	CyU3PDebugPrint (4, "burstTriggerUpper:  %d\r\n", regList[0]);
-	CyU3PDebugPrint (4, "burstTriggerLower:  %d\r\n", regList[1]);
+	CyU3PDebugPrint (4, "burstTriggerUpper:  %d\r\n", regBuffer[0]);
+	CyU3PDebugPrint (4, "burstTriggerLower:  %d\r\n", regBuffer[1]);
 
-	//Configure MemoryToSPI DMA
-	SpiDmaBuffer.buffer = regList;
-	SpiDmaBuffer.count = ((transferLength * 2) + 2);
-	SpiDmaBuffer.size = 1024; //Fixed number, but should be enough for most sensors.
-	SpiDmaBuffer.status = 0;
+	uint16_t remainder = transferByteLength % 16;
+	if (remainder == 0)
+	{
+		roundedByteTransferLength = transferWordLength;
+	}
+	else
+	{
+		roundedByteTransferLength = transferByteLength + 16 - remainder;
+	}
 
-	//Set up DMA to read registers from memory
-	status = CyU3PDmaChannelSetupSendBuffer(&MemoryToSPI, &SpiDmaBuffer);
+	CyU3PDebugPrint (4, "roundedTransferLength:  %d\r\n", roundedByteTransferLength);
+	CyU3PDebugPrint (4, "transferByteLength:  %d\r\n", transferByteLength);
+
+	//Configure SPI TX DMA (CPU memory to SPI for burst mode)
+	//Transfer length must equal length of message to be sent
+	//Count not required since the DMA will be run in override mode
+	CyU3PDmaChannelConfig_t dmaConfig;
+    dmaConfig.size = roundedByteTransferLength;
+    dmaConfig.count = 0;
+    dmaConfig.prodAvailCount = 0;
+    dmaConfig.dmaMode = CY_U3P_DMA_MODE_BYTE;
+    dmaConfig.prodHeader     = 0;
+    dmaConfig.prodFooter     = 0;
+    dmaConfig.consHeader     = 0;
+    dmaConfig.notification   = 0;
+    dmaConfig.cb             = NULL;
+    dmaConfig.prodSckId = CY_U3P_CPU_SOCKET_PROD;
+    dmaConfig.consSckId = CY_U3P_LPP_SOCKET_SPI_CONS;
+
+    status = CyU3PDmaChannelCreate(&MemoryToSPI, CY_U3P_DMA_TYPE_MANUAL_OUT, &dmaConfig);
 	if(status != CY_U3P_SUCCESS)
 	{
-		CyU3PDebugPrint (4, "Setting up the MemoryToSpi buffer channel failed!, error code = %d\r\n", status);
+		CyU3PDebugPrint (4, "Configuring the SPI TX DMA failed, Error Code = %d\r\n", status);
+		return status;
 	}
 
 	//Clear the DMA buffers
 	CyU3PDmaChannelReset(&StreamingChannel);
-	CyU3PDmaChannelReset(&MemoryToSPI);
 
 	//Flush streaming end point
 	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
@@ -1520,9 +1553,12 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	spiConfig.wordLen = 8;
 	CyU3PSpiSetConfig(&spiConfig, NULL);
 
-	//Set infinite DMA transfer on streaming channels
+	//Set infinite DMA transfer on streaming channel
 	CyU3PDmaChannelSetXfer(&StreamingChannel, 0);
-	CyU3PDmaChannelSetXfer(&MemoryToSPI, 0);
+
+	//Configure SpiDmaBuffer
+	SpiDmaBuffer.buffer = regBuffer;
+	SpiDmaBuffer.status = 0;
 
 	//Set the burst stream flag to notify the streaming thread
 	CyU3PEventSet (&eventHandler, ADI_BURST_STREAM_ENABLE, CYU3P_EVENT_OR);
@@ -1558,9 +1594,6 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
-	//Disable SPI DMA mode
-	CyU3PSpiDisableBlockXfer(CyTrue, CyTrue);
-
 	//Reset the SPI controller
 	SPI->lpp_spi_config &= ~(CY_U3P_LPP_SPI_RX_ENABLE | CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_DMA_MODE | CY_U3P_LPP_SPI_ENABLE);
 	while ((SPI->lpp_spi_config & CY_U3P_LPP_SPI_ENABLE) != 0);
@@ -1577,6 +1610,14 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 
 	//Flush streaming end point
 	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
+
+	//Destroy MemoryToSpi DMA channel
+    status = CyU3PDmaChannelDestroy(&MemoryToSPI);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Destroying the SPI TX DMA failed, Error Code = %d\r\n", status);
+		return status;
+	}
 
 	//Re-enable relevant ISRs
 	CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
@@ -1717,7 +1758,7 @@ CyU3PReturnStatus_t AdiGenericDataStreamStart()
 	CyU3PGpioSetSimpleConfig(dataReadyPin, &gpioConfig);
 
 	//Get the data from the control endpoint transaction
-	CyU3PUsbGetEP0Data(transferLength, USBBuffer, &bytesRead);
+	CyU3PUsbGetEP0Data(transferWordLength, USBBuffer, &bytesRead);
 
 	//Get the number of buffers (number of times to read each set of registers)
 	numBuffers = USBBuffer[0];
@@ -1732,20 +1773,20 @@ CyU3PReturnStatus_t AdiGenericDataStreamStart()
 	numCaptures += (USBBuffer[7] << 24);
 
 	//Set regList memory to correct length (extra location is used to sanitize final SPI transaction)
-	regList = CyU3PMemAlloc(sizeof(uint8_t) * (transferLength - 7));
+	regList = CyU3PMemAlloc(sizeof(uint8_t) * (transferWordLength - 7));
 
 	//Clear contents of regList memory
-	CyU3PMemSet(regList, 0, sizeof(uint8_t) * (transferLength - 7));
+	CyU3PMemSet(regList, 0, sizeof(uint8_t) * (transferWordLength - 7));
 
 	//Write values to regList
-	for(uint16_t i = 8; i < transferLength; i++)
+	for(uint16_t i = 8; i < transferWordLength; i++)
 	{
 		regList[i - 8] = USBBuffer[i];
 	}
 
 	//Calculate the number of bytes per buffer
 	// (2 bytes per word [register] * number of times to read each set of registers * number of registers)
-	bytesPerBuffer = 2 * numCaptures * (transferLength - 8);
+	bytesPerBuffer = 2 * numCaptures * (transferWordLength - 8);
 
 	//Disable interrupts before activating the streaming thread. Commented interrupts are *not* disabled.
 	CyU3PVicDisableInt(CY_U3P_VIC_SWI_VECTOR);                      /**< 1: Software interrupt. */
@@ -2503,28 +2544,6 @@ CyU3PReturnStatus_t AdiConfigureEndpoints()
 		return status;
 	}
 
-	//Configure SPI TX DMA
-    dmaConfig.size = 1024;
-    dmaConfig.count = 64;
-    dmaConfig.prodSckId = CY_U3P_CPU_SOCKET_PROD;
-    dmaConfig.consSckId = CY_U3P_LPP_SOCKET_SPI_CONS;
-    dmaConfig.dmaMode = CY_U3P_DMA_MODE_BYTE;
-
-    //Disable DMA callbacks
-    dmaConfig.prodHeader     = 0;
-    dmaConfig.prodFooter     = 0;
-    dmaConfig.consHeader     = 0;
-    dmaConfig.notification   = 0;
-    dmaConfig.cb             = NULL;
-    dmaConfig.prodAvailCount = 0;
-
-    status = CyU3PDmaChannelCreate(&MemoryToSPI, CY_U3P_DMA_TYPE_MANUAL_OUT, &dmaConfig);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Configuring the SPI TX DMA failed, Error Code = %d\n", status);
-		return status;
-	}
-
     //Configure DMA for ChannelFromPC
     dmaConfig.count = 0;
     dmaConfig.prodSckId = CY_U3P_UIB_SOCKET_PROD_1;
@@ -3018,7 +3037,7 @@ void AdiDataStream_Entry(uint32_t input)
 	uint8_t tempData[2];
 	uint8_t *bufPntr;
 	uint32_t numBuffersRead = 0;
-	uint32_t gpioEventFlag, eventFlag;
+	uint32_t eventFlag;
 
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint8_t pinIndex;
@@ -3062,7 +3081,7 @@ void AdiDataStream_Entry(uint32_t input)
 					CyU3PSpiTransmitWords(tempData, 2);
 
 					//Read the registers in the register list into BulkBuffer
-					for(uint16_t regIndex = 0; regIndex < (transferLength - 8); regIndex++)
+					for(uint16_t regIndex = 0; regIndex < (transferWordLength - 8); regIndex++)
 					{
 						/* Ugly delay counter based on the core system clock.
 						 * This was the most efficient way to add a quick delay between words.
@@ -3213,36 +3232,65 @@ void AdiDataStream_Entry(uint32_t input)
 			}
 			if (eventFlag & ADI_BURST_STREAM_ENABLE)
 			{
-				//Enable GPIO interrupts
-				CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
-				/* Wait for GPIO interrupt flag (Note: We're reacting to an interrupt on any ADI configured pin, but
-				   we're only attaching an interrupt to one pin. */
-				CyU3PEventGet(&gpioHandler, 0x7F, CYU3P_EVENT_OR_CLEAR, &gpioEventFlag, CYU3P_WAIT_FOREVER);
-				//Disable GPIO interrupts until we need them again
-				CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
+				//Wait for DR if enabled
+				if (DrActive)
+				{
+					//Clear GPIO interrupts
+					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
+					//Loop until interrupt is triggered
+					interruptTriggered = CyFalse;
+					while(!interruptTriggered)
+					{
+						interruptTriggered = ((CyBool_t)(GPIO->lpp_gpio_intr0 & (1 << dataReadyPin)));
+					}
+				}
 
-				status = CyU3PSpiSetBlockXfer((transferLength + 1), (transferLength + 1));
+				//Clear the SPI RX and TX FIFO
+				SPI->lpp_spi_config |= (CY_U3P_LPP_SPI_RX_CLEAR | CY_U3P_LPP_SPI_TX_CLEAR);
+				while((SPI->lpp_spi_status & CY_U3P_LPP_SPI_RX_DATA) != 0);
+				SPI->lpp_spi_config &= ~(CY_U3P_LPP_SPI_RX_CLEAR | CY_U3P_LPP_SPI_TX_CLEAR);
+
+				status = CyU3PSpiSetBlockXfer(transferByteLength, transferByteLength);
 				if(status != CY_U3P_SUCCESS)
 				{
 					CyU3PDebugPrint (4, "Setting block xfer failed, Error code = %d\r\n", status);
 				}
-				//status = CyU3PSpiWaitForBlockXfer(CyFalse);
-	            //if(status != CY_U3P_SUCCESS)
-	            //{
-	            //	CyU3PDebugPrint (4, "Waiting for block xfer failed!, error code = %d\r\n", status);
-	            //}
-				//Disable SPI DMA transfer
-				status = CyU3PSpiDisableBlockXfer(CyTrue, CyTrue);
+
+				//Configure MemoryToSPI DMA
+				SpiDmaBuffer.count = transferByteLength;
+				SpiDmaBuffer.size = roundedByteTransferLength;
+
+				//Set up DMA to read registers from CPU memory
+				status = CyU3PDmaChannelSetupSendBuffer(&MemoryToSPI, &SpiDmaBuffer);
 				if(status != CY_U3P_SUCCESS)
 				{
-					CyU3PDebugPrint (4, "Disabling block xfer failed, Error code = %d\r\n", status);
+					CyU3PDebugPrint (4, "Setting up the MemoryToSpi buffer channel failed!, error code = %d\r\n", status);
+				}
+
+				//Wait for transfer to finish
+				status = CyU3PSpiWaitForBlockXfer(CyTrue);
+				if(status != CY_U3P_SUCCESS)
+				{
+					CyU3PDebugPrint (4, "Waiting for the block xfer to finish failed!, error code = %d\r\n", status);
 				}
 
 				//Check that we haven't captured the desired number of frames or were asked to kill the thread early
 				if((numBuffersRead >= (numBuffers - 1)) || killEarly)
 				{
+					//Disable SPI DMA transfer
+					status = CyU3PSpiDisableBlockXfer(CyTrue, CyTrue);
+					if(status != CY_U3P_SUCCESS)
+					{
+						CyU3PDebugPrint (4, "Disabling block transfer failed!, error code = %d\r\n", status);
+					}
 					//Send whatever is in the buffer over to the PC
-					CyU3PDmaChannelSetWrapUp(&StreamingChannel);
+					status = CyU3PDmaChannelSetWrapUp(&StreamingChannel);
+					if(status != CY_U3P_SUCCESS)
+					{
+						CyU3PDebugPrint (4, "Wrapping up the streaming DMA channel failed!, error code = %d\r\n", status);
+					}
+					//Clear GPIO interrupts
+					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
 					//Reset frame counter
 					numBuffersRead = 0;
 					//Set ADI event flags
