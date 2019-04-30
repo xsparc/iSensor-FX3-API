@@ -34,11 +34,11 @@ Partial Class FX3Connection
     ''' Switches burstMode on and off. Set burstMode to the number of burst read registers. 
     ''' </summary>
     ''' <returns>The number of burst read registers.</returns>
-    Public Property BurstMode As UShort Implements IRegInterface.BurstMode
+    Public Property burstMode() As UShort Implements IRegInterface.burstMode
         Get
             Return m_burstMode
         End Get
-        Set(value As UShort)
+        Set(ByVal value As UShort)
             m_burstMode = value
         End Set
     End Property
@@ -119,7 +119,7 @@ Partial Class FX3Connection
             'Start the streaming threads
             StartRealTimeStreaming(numBuffers)
         Else
-            If BurstMode = 0 Then
+            If burstMode = 0 Then
                 'Generic stream manager implementation for IMU, etc
                 StartGenericStream(addr, numCaptures, numBuffers)
             Else
@@ -140,7 +140,7 @@ Partial Class FX3Connection
             End If
             'Update progress every percent
             If reportProgress Then
-                progress = GetNumBuffersRead / numBuffers
+                progress = (GetNumBuffersRead / numBuffers) * 100
                 If progress > oldProgress Then
                     worker.ReportProgress(progress)
                     oldProgress = progress
@@ -165,7 +165,7 @@ Partial Class FX3Connection
                 StopRealTimeStreaming()
             Else
                 'If streaming for other device is running then stop the stream
-                If BurstMode = 0 Then
+                If burstMode = 0 Then
                     StopGenericStream()
                 Else
                     StopBurstStream()

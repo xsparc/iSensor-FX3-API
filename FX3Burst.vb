@@ -91,7 +91,7 @@ Partial Class FX3Connection
     ''' </summary>
     ''' <remarks></remarks>
     Public Sub ClearBurstMode()
-        BurstMode = 0
+        burstMode = 0
     End Sub
 
     ''' <summary>
@@ -106,7 +106,7 @@ Partial Class FX3Connection
         If Me.TriggerReg Is Nothing Then
             Throw New InvalidOperationException("Trigger register must be set before performing a burst read Operaton.")
         End If
-        BurstMode = CUShort(Me.WordCount)
+        burstMode = CUShort(Me.WordCount)
     End Sub
 
 End Class

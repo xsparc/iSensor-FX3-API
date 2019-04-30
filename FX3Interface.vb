@@ -672,7 +672,7 @@ Public Class FX3Connection
     ''' If the data ready is used for register reads
     ''' </summary>
     ''' <returns></returns>
-    Public Property DrActive As Boolean Implements IRegInterface.DrActive
+    Public Property DrActive As Boolean Implements AdisApi.IRegInterface.DrActive
         Get
             Return m_FX3_SpiConfig.DrActive
         End Get
@@ -1074,7 +1074,7 @@ Public Class FX3Connection
 
 #Region "Private Member Functions"
 
-    Private Sub StartBurstStream(numBuffers As UInteger)
+    Private Sub StartBurstStream(ByVal numBuffers As UInteger)
 
         'Buffer to store command data
         Dim buf(8) As Byte
@@ -1107,17 +1107,16 @@ Public Class FX3Connection
         'Send start stream command to the DUT
         XferControlData(buf, 8, 2000)
 
-        'Set the thread control bool
-        StreamThreadRunning = True
-
         'Reset number of frames read
         FramesRead = 0
-        numBadFrames = 0
 
         'Set the total number of frames to read
         TotalBuffersToRead = numBuffers
 
-        'Spin up a RealTimeStreamManager thread
+        'Set the thread control bool
+        StreamThreadRunning = True
+
+        'Spin up a BurstStreamManager thread
         StreamThread = New Thread(AddressOf BurstStreamManager)
         StreamThread.Start()
 
@@ -1326,23 +1325,21 @@ Public Class FX3Connection
     Private Sub BurstStreamManager()
 
         'The length of one frame, in bytes
-        Dim burstLength As Integer
+        Dim frameLength As Integer
         'The index in the current raw buffer
         Dim index As Integer
         'The index in the current frame
         Dim frameIndex As Integer = 0
-        'The total number of frames read so far
-        Dim totalFrames As Integer = 0
         'Temporary value for converting two bytes to a UShort
         Dim shortValue As UShort
         'The USB transfer size (from the FX3)
         Dim transferSize As Integer
         'List used to construct frames out of the output buffer
-        Dim bufferBuilder As New List(Of UShort)
+        Dim frameBuilder As New List(Of UShort)
         'Bool to track the transfer status
         Dim transferStatus As Boolean
-        'Int to track number of buffers read
-        Dim numBuffersRead As Integer
+        'Int to track number of frames read
+        Dim framesCounter As Integer
 
         If FX3Board.bSuperSpeed Then
             transferSize = 1024
@@ -1360,33 +1357,44 @@ Public Class FX3Connection
             TotalBuffersToRead = Int32.MaxValue
         End If
 
-        'Determine the frame length based on configured word count plus trigger word
-        burstLength = m_WordCount + 2
+        'Determine the frame length (in bytes) based on configured word count plus trigger word
+        frameLength = (m_WordCount * 2) + 2
 
         'Set the stream thread running state variable
         StreamThreadRunning = True
         ThreadTerminated = False
+        framesCounter = 0
 
         While StreamThreadRunning
             'Configured transfer size bytes from the FX3
             transferStatus = StreamingEndPt.XferData(buf, transferSize)
-            'Parse the 1024 bytes into frames and add to StreamData if transaction was successful
+            'Parse bytes into frames and add to StreamData if transaction was successful
             If transferStatus Then
                 For index = 0 To transferSize - 2 Step 2
-                    For bufIndex = 0 To burstLength - 2 Step 2
-                        'Append every two bytes into words
-                        shortValue = buf(bufIndex)
-                        shortValue = shortValue << 8
-                        shortValue = shortValue + buf(bufIndex + 1)
-                        bufferBuilder.Add(shortValue)
-                    Next
-                    StreamData.Enqueue(bufferBuilder.ToArray())
-                    Interlocked.Increment(FramesRead)
-                    bufferBuilder.Clear()
-                    numBuffersRead = numBuffersRead + 1
-                    'Exit if the total number of buffers has been read
-                    If numBuffersRead >= TotalBuffersToRead Then
-                        Exit While
+                    'Append every two bytes into words
+                    shortValue = buf(index)
+                    shortValue = shortValue << 8
+                    shortValue = shortValue + buf(index + 1)
+                    frameBuilder.Add(shortValue)
+                    frameIndex = frameIndex + 2
+                    'Once the end of each frame is reached add it to the queue
+                    If frameIndex >= frameLength Then
+                        'Remove trigger word entry
+                        frameBuilder.RemoveAt(0)
+                        'Enqueue data into thread-safe queue
+                        StreamData.Enqueue(frameBuilder.ToArray())
+                        'Increment the shared frame counter
+                        Interlocked.Increment(FramesRead)
+                        'Increment the local frame counter
+                        framesCounter = framesCounter + 1
+                        'Reset frame builder list and counter
+                        frameIndex = 0
+                        frameBuilder.Clear()
+                        'Exit if the total number of buffers has been read
+                        If framesCounter >= TotalBuffersToRead Then
+                            'Stop streaming
+                            Exit While
+                        End If
                     End If
                 Next
             Else
