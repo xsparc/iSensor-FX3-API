@@ -32,6 +32,7 @@
 #include "cyu3i2c.h"
 #include "cyu3spi.h"
 #include "cyu3uart.h"
+#include "cyu3utils.h"
 #include "cyu3gpio.h"
 #include "cyu3vic.h"
 #include <sys/unistd.h>
@@ -89,17 +90,17 @@ void AdiDataStream_Entry(uint32_t input);
 //Real-time data stream functions.
 CyU3PReturnStatus_t AdiRealTimeStart();
 CyU3PReturnStatus_t AdiRealTimeFinished();
-void AdiRealTimeStop();
 
 //Generic data stream functions.
 CyU3PReturnStatus_t AdiGenericDataStreamStart();
 CyU3PReturnStatus_t AdiGenericDataStreamFinished();
-void AdiGenericDataStreamStop();
 
 //Burst stream functions.
 CyU3PReturnStatus_t AdiBurstStreamStart();
 CyU3PReturnStatus_t AdiBurstStreamFinished();
-void AdiBurstStreamStop();
+
+//General stream functions.
+void AdiStopAnyDataStream();
 
 //Enum for part type (used in streaming modes)
 typedef enum PartTye
