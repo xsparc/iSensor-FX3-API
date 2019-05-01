@@ -4,25 +4,11 @@
 '               implement the IRegInterface interface defined in the AdisApi.
 
 Imports System.ComponentModel
-Imports CyUSB
 Imports AdisApi
-Imports System.IO
-Imports System.Threading
-Imports System.Collections.Concurrent
-Imports RegMapClasses
 
 Partial Class FX3Connection
 
 #Region "IRegInterface Implementation"
-
-    Public Property BurstMode As UShort Implements IRegInterface.BurstMode
-        Get
-            Throw New NotImplementedException()
-        End Get
-        Set(value As UShort)
-            Throw New NotImplementedException()
-        End Set
-    End Property
 
     Public Sub StartStream(addr As IEnumerable(Of UInteger), numCaptures As UInteger) Implements IRegInterface.StartStream
         Throw New NotImplementedException()
@@ -43,6 +29,19 @@ Partial Class FX3Connection
     Public Sub Start() Implements IRegInterface.Start
         Throw New NotImplementedException()
     End Sub
+
+    ''' <summary>
+    ''' Switches burstMode on and off. Set burstMode to the number of burst read registers. 
+    ''' </summary>
+    ''' <returns>The number of burst read registers.</returns>
+    Public Property burstMode() As UShort Implements IRegInterface.burstMode
+        Get
+            Return m_burstMode
+        End Get
+        Set(ByVal value As UShort)
+            m_burstMode = value
+        End Set
+    End Property
 
     ''' <summary>
     ''' Sets the timeout for the Bulk Endpoint used in real time streaming modes
@@ -120,12 +119,17 @@ Partial Class FX3Connection
             'Start the streaming threads
             StartRealTimeStreaming(numBuffers)
         Else
-            'Generic stream manager implementation for IMU, etc
-            StartGenericStream(addr, numCaptures, numBuffers)
+            If burstMode = 0 Then
+                'Generic stream manager implementation for IMU, etc
+                StartGenericStream(addr, numCaptures, numBuffers)
+            Else
+                'Burst stream manager implementation
+                StartBurstStream(numBuffers)
+            End If
         End If
 
-        'While loop for worker events
-        While (GetNumBuffersRead < numBuffers) And StreamThreadRunning
+            'While loop for worker events
+            While (GetNumBuffersRead < numBuffers) And StreamThreadRunning
             'Check for cancellations
             If supportsCancellation Then
                 If worker.CancellationPending Then
@@ -136,7 +140,7 @@ Partial Class FX3Connection
             End If
             'Update progress every percent
             If reportProgress Then
-                progress = GetNumBuffersRead / numBuffers
+                progress = (GetNumBuffersRead / numBuffers) * 100
                 If progress > oldProgress Then
                     worker.ReportProgress(progress)
                     oldProgress = progress
@@ -161,9 +165,13 @@ Partial Class FX3Connection
                 StopRealTimeStreaming()
             Else
                 'If streaming for other device is running then stop the stream
-                StopGenericStream()
+                If burstMode = 0 Then
+                    StopGenericStream()
+                Else
+                    StopBurstStream()
+                End If
             End If
-        End If
+            End If
 
     End Sub
 

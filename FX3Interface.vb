@@ -109,6 +109,9 @@ Public Class FX3Connection
     'Tracks the selected sensor type
     Private m_sensorType As DeviceType
 
+    'Tracks how many bytes should be captured in burst mode
+    Private m_burstMode As UInteger = 0
+
 #End Region
 
 #Region "Class Constructors"
@@ -669,7 +672,7 @@ Public Class FX3Connection
     ''' If the data ready is used for register reads
     ''' </summary>
     ''' <returns></returns>
-    Public Property DrActive As Boolean Implements IRegInterface.DrActive
+    Public Property DrActive As Boolean Implements AdisApi.IRegInterface.DrActive
         Get
             Return m_FX3_SpiConfig.DrActive
         End Get
@@ -1071,6 +1074,55 @@ Public Class FX3Connection
 
 #Region "Private Member Functions"
 
+    Private Sub StartBurstStream(ByVal numBuffers As UInteger)
+
+        'Buffer to store command data
+        Dim buf(8) As Byte
+
+        'Wait for previous stream thread to exit, if any
+        StreamThreadRunning = False
+        While Not ThreadTerminated
+        End While
+
+        'Send number of buffers to read
+        buf(0) = numBuffers And &HFF
+        buf(1) = (numBuffers And &HFF00) >> 8
+        buf(2) = (numBuffers And &HFF0000) >> 16
+        buf(3) = (numBuffers And &HFF000000) >> 24
+
+        'Send word to trigger burst
+        buf(4) = (m_TriggerReg.Address And &HFF)
+        buf(5) = (m_TriggerReg.Address And &HFF00) >> 8
+
+        'Send number of words to capture
+        buf(6) = (m_WordCount And &HFF)
+        buf(7) = (m_WordCount And &HFF00) >> 8
+
+        'Reinitialize the thread safe queue
+        StreamData = New ConcurrentQueue(Of UShort())
+
+        ConfigureControlEndpoint(&HC1, True)
+        FX3Board.ControlEndPt.Value = 0 'DNC
+        FX3Board.ControlEndPt.Index = 1 'Start stream
+        'Send start stream command to the DUT
+        XferControlData(buf, 8, 2000)
+
+        'Reset number of frames read
+        FramesRead = 0
+
+        'Set the total number of frames to read
+        TotalBuffersToRead = numBuffers
+
+        'Set the thread control bool
+        StreamThreadRunning = True
+
+        'Spin up a BurstStreamManager thread
+        StreamThread = New Thread(AddressOf BurstStreamManager)
+        StreamThread.Start()
+
+    End Sub
+
+
     ''' <summary>
     ''' Starts a generic register stream
     ''' </summary>
@@ -1140,6 +1192,25 @@ Public Class FX3Connection
         Dim buf(3) As Byte
 
         ConfigureControlEndpoint(&HD0, False)
+        FX3Board.ControlEndPt.Value = 0
+        FX3Board.ControlEndPt.Index = 0
+
+        'Send command to the DUT to stop streaming data
+        XferControlData(buf, 4, 2000)
+
+        'Stop the stream manager thread
+        StreamThreadRunning = False
+
+    End Sub
+
+    ''' <summary>
+    ''' Stops a burst stream by setting the stream state variables
+    ''' </summary>
+    Public Sub StopBurstStream()
+
+        Dim buf(3) As Byte
+
+        ConfigureControlEndpoint(&HC1, False)
         FX3Board.ControlEndPt.Value = 0
         FX3Board.ControlEndPt.Index = 0
 
@@ -1230,6 +1301,96 @@ Public Class FX3Connection
                         frameIndex = 0
                         frameBuilder.Clear()
                         'Check that the total number of specified frames hasn't been read
+                        If framesCounter >= TotalBuffersToRead Then
+                            'Stop streaming
+                            Exit While
+                        End If
+                    End If
+                Next
+            Else
+                'Exit streaming mode if the transfer fails
+                Exit While
+            End If
+        End While
+
+        'Update streamThreadRunning state variable
+        StreamThreadRunning = False
+        ThreadTerminated = True
+
+    End Sub
+
+    ''' <summary>
+    ''' This function reads burst stream data from the DUT over the streaming endpoint. It is intended to operate in its own thread, and should not be called directly.
+    ''' </summary>
+    Private Sub BurstStreamManager()
+
+        'The length of one frame, in bytes
+        Dim frameLength As Integer
+        'The index in the current raw buffer
+        Dim index As Integer
+        'The index in the current frame
+        Dim frameIndex As Integer = 0
+        'Temporary value for converting two bytes to a UShort
+        Dim shortValue As UShort
+        'The USB transfer size (from the FX3)
+        Dim transferSize As Integer
+        'List used to construct frames out of the output buffer
+        Dim frameBuilder As New List(Of UShort)
+        'Bool to track the transfer status
+        Dim transferStatus As Boolean
+        'Int to track number of frames read
+        Dim framesCounter As Integer
+
+        If FX3Board.bSuperSpeed Then
+            transferSize = 1024
+        ElseIf FX3Board.bHighSpeed Then
+            transferSize = 512
+        Else
+            Throw New Exception("ERROR: Streaming application requires USB 2.0 or 3.0 connection to function")
+        End If
+
+        'Buffer to hold data from the FX3
+        Dim buf(transferSize - 1) As Byte
+
+        'Set total frames (infinite if less than 1)
+        If TotalBuffersToRead < 1 Then
+            TotalBuffersToRead = Int32.MaxValue
+        End If
+
+        'Determine the frame length (in bytes) based on configured word count plus trigger word
+        frameLength = (m_WordCount * 2) + 2
+
+        'Set the stream thread running state variable
+        StreamThreadRunning = True
+        ThreadTerminated = False
+        framesCounter = 0
+
+        While StreamThreadRunning
+            'Configured transfer size bytes from the FX3
+            transferStatus = StreamingEndPt.XferData(buf, transferSize)
+            'Parse bytes into frames and add to StreamData if transaction was successful
+            If transferStatus Then
+                For index = 0 To transferSize - 2 Step 2
+                    'Append every two bytes into words
+                    shortValue = buf(index)
+                    shortValue = shortValue << 8
+                    shortValue = shortValue + buf(index + 1)
+                    frameBuilder.Add(shortValue)
+                    frameIndex = frameIndex + 2
+                    'Once the end of each frame is reached add it to the queue
+                    If frameIndex >= frameLength Then
+                        'Remove trigger word entry
+                        frameBuilder.RemoveAt(0)
+                        'Enqueue data into thread-safe queue
+                        StreamData.Enqueue(frameBuilder.ToArray())
+                        'Increment the shared frame counter
+                        Interlocked.Increment(FramesRead)
+                        'Increment the local frame counter
+                        framesCounter = framesCounter + 1
+                        'Reset frame builder list and counter
+                        frameIndex = 0
+                        frameBuilder.Clear()
+                        'Exit if the total number of buffers has been read
                         If framesCounter >= TotalBuffersToRead Then
                             'Stop streaming
                             Exit While
