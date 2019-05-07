@@ -413,6 +413,54 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
     return isHandled;
 }
 
+
+CyU3PReturnStatus_t AdiBlinkLED()
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+
+	//Configure the GPIO pin as a driven output
+	CyU3PGpioSimpleConfig_t gpioConfig;
+	gpioConfig.outValue = CyTrue;
+	gpioConfig.inputEn = CyFalse;
+	gpioConfig.driveLowEn = CyTrue;
+	gpioConfig.driveHighEn = CyTrue;
+	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+
+	status = CyU3PGpioSetSimpleConfig(ADI_LED_GPIO, &gpioConfig);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Configuring LED blink pin failed!, error code = %d\r\n", status);
+		return status;
+	}
+	//Set LED pin high
+	status = CyU3PGpioSimpleSetValue(ADI_LED_GPIO, CyTrue);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Setting LED blink pin high failed!, error code = %d\r\n", status);
+		return status;
+	}
+	//Wait 500ms
+	CyU3PBusyWait(50000);
+	//Set LED pin low
+	status = CyU3PGpioSimpleSetValue(ADI_LED_GPIO, CyFalse);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Setting LED blink pin low failed!, error code = %d\r\n", status);
+		return status;
+	}
+	//Wait 500ms
+	CyU3PBusyWait(50000);
+
+	//Stop pin output drive and enable as input
+	gpioConfig.inputEn = CyTrue;
+	gpioConfig.driveLowEn = CyFalse;
+	gpioConfig.driveHighEn = CyFalse;
+	status = CyU3PGpioSetSimpleConfig(ADI_LED_GPIO, &gpioConfig);
+
+	return status;
+
+}
+
 /*
  * Function: AdiReadRegBytes(uint16_t addr)
  *

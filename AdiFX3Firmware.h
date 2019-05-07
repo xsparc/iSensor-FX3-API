@@ -211,6 +211,7 @@ struct BoardConfig
 #define ADI_PIN_DIO5							(0x5)	// Misc pin(s) used for triggering from test equipment
 #define ADI_PIN_DIO6							(0x6)	// Misc pin
 #define ADI_PIN_DIO7							(0x7)	// Misc pin
+#define ADI_LED_GPIO    						(54)	// LED indicator pin
 
 //Complex GPIO pin configured to act as a high-speed timer
 #define ADI_TIMER_PIN							(0x8)
