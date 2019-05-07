@@ -128,8 +128,8 @@ Partial Class FX3Connection
             End If
         End If
 
-            'While loop for worker events
-            While (GetNumBuffersRead < numBuffers) And StreamThreadRunning
+        'While loop for worker events
+        While (GetNumBuffersRead < numBuffers) And StreamThreadRunning
             'Check for cancellations
             If supportsCancellation Then
                 If worker.CancellationPending Then

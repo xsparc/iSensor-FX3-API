@@ -58,6 +58,9 @@ Public Class FX3Connection
     'Member variable to track firmware path
     Private m_FirmwarePath As String = "PathNotSet"
 
+    'Member variable to track blink firmware path
+    Private m_BlinkFirmwarePath As String = "PathNotSet"
+
     'String to track the current board communication status
     Private m_status As String = "Not Connected"
 
@@ -164,6 +167,8 @@ Public Class FX3Connection
 
         'Set the active device handle
         m_ActiveFX3 = deviceHandle
+
+        RefreshUSBStatus()
 
         'Check that the firmware path is valid
         If Not isFirmwarePathValid(FirmwarePath) Then
@@ -290,18 +295,138 @@ Public Class FX3Connection
         Dim success As Boolean = False
 
         ' Loop through list of USB devices and find the usb address in-use already
-        For i As Integer = 0 To tempUsbList.Count - 1
-            If m_ActiveFX3.USBAddress = CType(tempUsbList(i), CyFX3Device).USBAddress Then
-                m_ActiveFX3 = CType(tempUsbList(i), CyFX3Device)
-                success = True
-            End If
-            '  Throw an exception if the ID in use previously can't be found
-            If success = False Then
-                Throw New Exception("ERROR: Can't find the board I was communicating with. Was it removed?")
+        For Each value In tempUsbList
+            If m_ActiveFX3.Path = CType(value, CyFX3Device).Path Then
+                m_ActiveFX3 = CType(value, CyFX3Device)
             End If
         Next
+
+        '  Throw an exception if the ID in use previously can't be found
+        If success = False Then
+            Throw New Exception("ERROR: Can't find the board I was communicating with. Was it removed?")
+        End If
+
+        'For i As Integer = 0 To tempUsbList.Count - 1
+        '    If m_ActiveFX3.USBAddress = CType(tempUsbList(i), CyFX3Device).USBAddress Then
+        '        m_ActiveFX3 = CType(tempUsbList(i), CyFX3Device)
+        '        success = True
+        '    End If
+        '    '  Throw an exception if the ID in use previously can't be found
+        '    If success = False Then
+        '        Throw New Exception("ERROR: Can't find the board I was communicating with. Was it removed?")
+        '    End If
+        'Next
         'Update global FX3 USB list
         m_usbList = tempUsbList
+    End Sub
+
+    ''' <summary>
+    ''' Program a simple blink firmware to indicate the active FX3 board
+    ''' </summary>
+    ''' <param name="usbid">USB ID of the FX3 board</param>
+    Public Sub RunBlinkFirmware(usbid As Integer)
+
+        Dim buf(3) As Byte
+        Dim tempUsbList As New USBDeviceList(CyConst.DEVICES_CYUSB)
+        Dim devicehandle As CyFX3Device = Nothing
+        Dim success = False
+
+        'Check that the firmware path is valid
+        If Not isFirmwarePathValid(BlinkFirmwarePath) Then
+            Throw New Exception("ERROR: Must set blink firmware path before connecting")
+        End If
+
+        'Find handle for specified USB ID
+        For Each value In tempUsbList
+            If CType(value, CyFX3Device).USBAddress = usbid Then
+                devicehandle = value
+                success = True
+            End If
+        Next
+
+        '  Throw an exception if the ID in use previously can't be found
+        If success = False Then
+            Throw New Exception("ERROR: Can't find the board I was communicating with. Was it removed?")
+        End If
+
+        'If the board is not at the bootloader try and reset
+        If DebugEnabled = False Then
+            If Not deviceHandle.FriendlyName = "Cypress FX3 USB BootLoader Device" Then
+                'Set the control endpoint
+                FX3ControlEndPt = deviceHandle.ControlEndPt
+                'Configure the control endpoint
+                FX3ControlEndPt.ReqCode = &HB1
+                FX3ControlEndPt.ReqType = CyConst.REQ_VENDOR
+                FX3ControlEndPt.Target = CyConst.TGT_DEVICE
+                FX3ControlEndPt.Value = 0
+                FX3ControlEndPt.Index = 0
+                FX3ControlEndPt.Direction = CyConst.DIR_TO_DEVICE
+                FX3ControlEndPt.XferData(buf, 4)
+            End If
+            'Wait a bit for the board to be re-enumerated by Windows
+            Thread.Sleep(500)
+            If Not deviceHandle.FriendlyName = "Cypress FX3 USB BootLoader Device" Then
+                Throw New Exception("ERROR: Could not communicate with FX3")
+            End If
+        End If
+
+        Dim flashSuccess As FX3_FWDWNLOAD_ERROR_CODE
+
+        'Attempt to program the board
+        Try
+            flashSuccess = deviceHandle.DownloadFw(BlinkFirmwarePath, FX3_FWDWNLOAD_MEDIA_TYPE.RAM)
+        Catch ex As Exception
+            m_status = "ERROR: Exception occurred - " + ex.Message
+            Throw New Exception(m_status)
+        End Try
+
+        'If the firmware programming function failed
+        If Not flashSuccess = FX3_FWDWNLOAD_ERROR_CODE.SUCCESS Then
+            m_status = "ERROR Writing SDRAM: " + flashSuccess.ToString()
+            Throw New Exception(m_status)
+        End If
+
+    End Sub
+
+    Public Sub ExitBlinkFirmware(usbid As Integer)
+
+        Dim tempUsbList As New USBDeviceList(CyConst.DEVICES_CYUSB)
+        Dim devicehandle As CyFX3Device = Nothing
+        Dim success = False
+
+        Dim buf(3) As Byte
+
+        'Find handle for specified USB ID
+        For Each value In tempUsbList
+            If CType(value, CyFX3Device).USBAddress = usbid Then
+                devicehandle = value
+                success = True
+            End If
+        Next
+
+        '  Throw an exception if the ID in use previously can't be found
+        If success = False Then
+            Throw New Exception("ERROR: Can't find the board I was communicating with. Was it removed?")
+        End If
+
+        'Send the reset command over the control endpoint to re-enter bootloader mode
+        If DebugEnabled = False Then
+            If Not deviceHandle.FriendlyName = "Cypress FX3 USB BootLoader Device" Then
+                'Set the control endpoint
+                FX3ControlEndPt = deviceHandle.ControlEndPt
+                'Configure the control endpoint
+                FX3ControlEndPt.ReqCode = &HB1
+                FX3ControlEndPt.ReqType = CyConst.REQ_VENDOR
+                FX3ControlEndPt.Target = CyConst.TGT_DEVICE
+                FX3ControlEndPt.Value = 0
+                FX3ControlEndPt.Index = 0
+                FX3ControlEndPt.Direction = CyConst.DIR_TO_DEVICE
+                FX3ControlEndPt.XferData(buf, 4)
+            End If
+            'Wait a bit for the board to be re-enumerated by Windows
+            Thread.Sleep(500)
+        End If
+
     End Sub
 
     ''' <summary>
@@ -422,6 +547,22 @@ Public Class FX3Connection
             'Setter checks that the path is valid before setting
             If isFirmwarePathValid(value) Then
                 m_FirmwarePath = value
+            End If
+        End Set
+    End Property
+
+    ''' <summary>
+    ''' Set/get the blink firmware .img file used for multi-board identification
+    ''' </summary>
+    ''' <returns>A string representing the path to the firmware on the user machine</returns>
+    Public Property BlinkFirmwarePath As String
+        Get
+            Return m_BlinkFirmwarePath
+        End Get
+        Set(value As String)
+            'Setter checks that the path is valid before setting
+            If isFirmwarePathValid(value) Then
+                m_BlinkFirmwarePath = value
             End If
         End Set
     End Property
@@ -1619,12 +1760,15 @@ Public Class FX3Connection
                     Throw New Exception("ERROR: EnumerateFX3 failed - No Cypress Devices Connected")
                 End If
 
-                'Find boards by product and vendor id and remove ids that don't match the FX3
-                For i As Integer = 0 To tempUsbList.Count - 1
-                    If (tempUsbList(i).VendorID = &H4B4) Then
+                'Exit blink mode if the board is already in blink mode
+                For Each value In tempUsbList
+                    'Find boards by product and vendor id and remove ids that don't match the FX3
+                    If (CType(value, CyFX3Device).VendorID = &H4B4) Then
                         boardFound = True
-                    Else
-                        tempUsbList.Remove(i)
+                    End If
+                    'Find boards that may still be in blink mode and reset them
+                    If CType(value, CyFX3Device).FriendlyName = "Cypress FX3 USB BulkloopExample Device" Then
+                        ExitBlinkFirmware(CType(value, CyFX3Device).USBAddress)
                     End If
                 Next
 
