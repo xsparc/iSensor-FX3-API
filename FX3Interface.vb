@@ -1606,7 +1606,6 @@ Public Class FX3Connection
         Catch ex As Exception
             validPath = False
             'Pass the exception up
-            Throw ex
         End Try
 
         Return validPath

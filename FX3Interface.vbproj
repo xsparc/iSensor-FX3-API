@@ -19,7 +19,7 @@
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\Debug\</OutputPath>
     <DocumentationFile>FX3Interface.xml</DocumentationFile>
-    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
+    <NoWarn>41999,42016,42017,42018,42019,42032,42036</NoWarn>
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -29,7 +29,9 @@
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DocumentationFile>FX3Interface.xml</DocumentationFile>
-    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
+    <NoWarn>41999,42016,42017,42018,42019,42032,42036</NoWarn>
+    <PlatformTarget>x86</PlatformTarget>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup>
     <OptionExplicit>On</OptionExplicit>
@@ -53,12 +55,8 @@
     <Reference Include="adisInterface">
       <HintPath>Resources\adisInterface.dll</HintPath>
     </Reference>
-    <Reference Include="CyUSB, Version=1.2.3.0, Culture=neutral, PublicKeyToken=01f1d2b6c851ae92, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Resources\CyUSB.dll</HintPath>
-    </Reference>
-    <Reference Include="FX3Interface">
-      <HintPath>Resources\FX3Interface.dll</HintPath>
+    <Reference Include="CyUSB">
+      <HintPath>Resources\CyUSB.dll</HintPath>
     </Reference>
     <Reference Include="RegMapClasses">
       <HintPath>Resources\RegMapClasses.dll</HintPath>
@@ -126,21 +124,21 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\adisApi.dll" />
+    <EmbeddedResource Include="Resources\adisApi.dll" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\adisInterface.dll" />
+    <EmbeddedResource Include="Resources\adisInterface.dll" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\CyUSB.dll" />
+    <EmbeddedResource Include="Resources\CyUSB.dll" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\RegMapClasses.dll" />
+    <EmbeddedResource Include="Resources\RegMapClasses.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(TargetPath)" "$(ProjectDir)\Resources\FX3Interface.dll"
-copy /Y "$(TargetPath)" "$(ProjectDir)\Resources\FX3Interface.xml"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>copy /Y "C:\Users\jchong\Documents\GitHub\iSensor-FX3-Firmware\Debug\FX3_Firmware.img" "$(ProjectDir)\Resources\FX3_Firmware.img"</PreBuildEvent>

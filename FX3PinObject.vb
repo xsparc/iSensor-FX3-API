@@ -5,9 +5,9 @@
 ''' </summary>
 <DebuggerDisplay("ToString")>
     Public Class FX3PinObject
-        Implements AdisApi.IPinObject
+    Implements AdisApi.IPinObject
 
-        Private _pinNumber As UInteger = 0 ' internal storage field for pin number.  Access through PinNumber property
+    Private _pinNumber As UInteger = 0 ' internal storage field for pin number.  Access through PinNumber property
 
 #Region "Constructors"
         ''' <summary>
