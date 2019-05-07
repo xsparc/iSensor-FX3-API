@@ -125,6 +125,18 @@
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\adisApi.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\adisInterface.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CyUSB.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\RegMapClasses.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /Y "$(TargetPath)" "$(ProjectDir)\Resources\FX3Interface.dll"
