@@ -59,6 +59,7 @@ CyU3PReturnStatus_t AdiDeviceInit();
 void AdiFatalErrorHandler(uint32_t ErrorType);
 CyBool_t AdiLPMRequestHandler(CyU3PUsbLinkPowerMode link_mode);
 CyU3PReturnStatus_t AdiCreateEventFlagGroup();
+CyU3PReturnStatus_t AdiSpiResetFifo(CyBool_t isTx, CyBool_t isRx);
 
 //Pin functions.
 CyU3PReturnStatus_t AdiPulseDrive();

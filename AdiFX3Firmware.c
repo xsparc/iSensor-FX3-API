@@ -84,7 +84,7 @@ PartType DUTType;
  * Application constants
  */
 //Constant firmware ID string. Manually updated when building new firmware.
-const uint8_t FirmwareID[32] __attribute__ ((aligned (32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '1', '.', '0', '.', '2', '-','P','U','B',' ', '\0' };
+const uint8_t FirmwareID[32] __attribute__ ((aligned (32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '1', '.', '0', '.', '3', '-','P','U','B',' ', '\0' };
 
 //Constant error string used to write "ERROR" to output buffer
 const uint8_t ErrorString[16] __attribute__ ((aligned (16))) = { 'E', 'R', 'R', 'O', 'R', '\0'};
@@ -1331,6 +1331,9 @@ CyU3PReturnStatus_t AdiRealTimeStart()
 		AdiWaitForTimerTicks(stallTime);
 	}
 
+	//Manually reset SPI Rx/Tx FIFO
+	AdiSpiResetFifo(CyTrue, CyTrue);
+
 	//Set the SPI config for streaming mode
 	spiConfig.ssnCtrl = CY_U3P_SPI_SSN_CTRL_HW_END_OF_XFER;
 	spiConfig.wordLen = 8;
@@ -1533,6 +1536,9 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 
 	//Flush streaming end point
 	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
+
+	//Manually reset SPI Rx/Tx FIFO
+	AdiSpiResetFifo(CyTrue, CyTrue);
 
 	//Set the SPI config for streaming mode
 	spiConfig.ssnCtrl = CY_U3P_SPI_SSN_CTRL_HW_END_OF_XFER;
@@ -2131,6 +2137,62 @@ CyU3PReturnStatus_t AdiSpiInit()
     return status;
 }
 
+
+/*
+ * FunctionL AdiSpiResetFifo(CyBool_t isTx, CyBool_t isRx)
+ *
+ * This function resets the SPI FIFO and disables the SPI block after completion.
+ * It is a copy of the private CyU3PSpiResetFifo() function required due to our
+ * high-speed, register-initiated transfers.
+ *
+ * Returns: The success of the SPI reset FIFO operation
+ */
+CyU3PReturnStatus_t AdiSpiResetFifo(CyBool_t isTx, CyBool_t isRx)
+{
+	uint32_t intrMask;
+	uint32_t ctrlMask = 0;
+	uint32_t temp;
+
+	/* No lock is acquired or error checked */
+
+	/* Temporarily disable interrupts. */
+	intrMask = SPI->lpp_spi_intr_mask;
+	SPI->lpp_spi_intr_mask = 0;
+
+	if (isTx)
+	{
+		ctrlMask = CY_U3P_LPP_SPI_TX_CLEAR;
+	}
+	if (isRx)
+	{
+		ctrlMask |= CY_U3P_LPP_SPI_RX_CLEAR;
+	}
+
+	/* Disable the SPI block and reset. */
+	temp = ~(CY_U3P_LPP_SPI_RX_ENABLE | CY_U3P_LPP_SPI_TX_ENABLE |
+		CY_U3P_LPP_SPI_DMA_MODE | CY_U3P_LPP_SPI_ENABLE);
+	SPI->lpp_spi_config &= temp;
+	while ((SPI->lpp_spi_config & CY_U3P_LPP_SPI_ENABLE) != 0);
+
+	/* Clear the FIFOs and wait until they have been cleared. */
+	SPI->lpp_spi_config |= ctrlMask;
+	if (isTx)
+	{
+		while ((SPI->lpp_spi_status & CY_U3P_LPP_SPI_TX_DONE) == 0);
+	}
+	if (isRx)
+	{
+		while ((SPI->lpp_spi_status & CY_U3P_LPP_SPI_RX_DATA) != 0);
+	}
+	SPI->lpp_spi_config &= ~ctrlMask;
+
+	/* Clear all interrupts and re-enable them. */
+	SPI->lpp_spi_intr |= CY_U3P_LPP_SPI_TX_DONE;
+	SPI->lpp_spi_intr_mask = intrMask;
+
+	return CY_U3P_SUCCESS;
+}
+
 /*
  * Function: AdiSetDefaultSpiConfig()
  *
@@ -2244,6 +2306,7 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 			clockFrequency += USBBuffer[0] << 24;
 			spiConfig.clock = clockFrequency;
 			status = CyU3PSpiSetConfig (&spiConfig, NULL);
+			//CyU3PDebugPrint (4, "SCLK = %d\r\n", clockFrequency);
 		}
 		break;
 
@@ -2251,53 +2314,62 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 		//cpol
 		spiConfig.cpol = (CyBool_t) value;
 		status = CyU3PSpiSetConfig (&spiConfig, NULL);
+		//CyU3PDebugPrint (4, "cpol = %d\r\n", value);
 		break;
 
 	case 2:
 		//cpha
 		spiConfig.cpha = (CyBool_t) value;
 		status = CyU3PSpiSetConfig (&spiConfig, NULL);
+		//CyU3PDebugPrint (4, "cpha = %d\r\n", value);
 		break;
 
 	case 3:
 		//Chip Select Polarity
 		spiConfig.ssnPol = (CyBool_t) value;
 		status = CyU3PSpiSetConfig (&spiConfig, NULL);
+		//CyU3PDebugPrint (4, "ssnPol = %d\r\n", value);
 		break;
 
 	case 4:
 		//Chip Select Control
 		spiConfig.ssnCtrl = (CyU3PSpiSsnCtrl_t) value;
 		status = CyU3PSpiSetConfig (&spiConfig, NULL);
+		//CyU3PDebugPrint (4, "ssnCtrl = %d\r\n", value);
 		break;
 
 	case 5:
 		//Lead Time
 		spiConfig.leadTime = (CyU3PSpiSsnLagLead_t) value;
 		status = CyU3PSpiSetConfig (&spiConfig, NULL);
+		//CyU3PDebugPrint (4, "leadTime = %d\r\n", value);
 		break;
 
 	case 6:
 		//Lag Time
 		spiConfig.lagTime = (CyU3PSpiSsnLagLead_t) value;
 		status = CyU3PSpiSetConfig (&spiConfig, NULL);
+		//CyU3PDebugPrint (4, "lagTime = %d\r\n", value);
 		break;
 
 	case 7:
 		//Is LSB First
 		spiConfig.isLsbFirst = (CyBool_t) value;
 		status = CyU3PSpiSetConfig (&spiConfig, NULL);
+		//CyU3PDebugPrint (4, "isLsbFirst = %d\r\n", value);
 		break;
 
 	case 8:
 		//Word Length
 		spiConfig.wordLen = value & 0xFF;
 		status = CyU3PSpiSetConfig (&spiConfig, NULL);
+		//CyU3PDebugPrint (4, "wordLen = %d\r\n", value);
 		break;
 
 	case 9:
 		//Stall time in ticks (received in ticks from the PC, each tick = 1us)
 		stallTime = value;
+		//CyU3PDebugPrint (4, "stallTime = %d\r\n", value);
 		break;
 
 	case 10:
@@ -2306,39 +2378,44 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 		switch(DUTType)
 		{
 		case ADcmXL3021:
-			bytesPerFrame = 200;
+			bytesPerFrame = 200; /* (32 word x 3 axis) + 4 word status/counter/etc */
 			break;
 		case ADcmXL2021:
-			bytesPerFrame = 136;
+			bytesPerFrame = 152; /* (32 word x 2 axis) + 8 word padding + 4 word status/counter/etc */
 			break;
 		case ADcmXL1021:
-			bytesPerFrame = 72;
+			bytesPerFrame = 88; /* 32 word + 8 word padding + 4 word status/counter/etc */
 			break;
 		case Other:
 		default:
 			bytesPerFrame = 200;
 			break;
 		}
+		//CyU3PDebugPrint (4, "bytesPerFrame = %d\r\n", bytesPerFrame);
 		break;
 
 	case 11:
 		//DR polarity
 		DrPolarity = (CyBool_t) value;
+		//CyU3PDebugPrint (4, "DrPolarity = %d\r\n", value);
 		break;
 
 	case 12:
 		//DR active
 		DrActive = (CyBool_t) value;
+		//CyU3PDebugPrint (4, "DrActive = %d\r\n", value);
 		break;
 
 	case 13:
 		//Ready pin
 		dataReadyPin = value;
+		//CyU3PDebugPrint (4, "dataReadyPin = %d\r\n", value);
 		break;
 
 	default:
 		//Invalid Command
 		isHandled = CyFalse;
+		CyU3PDebugPrint (4, "ERROR: Invalid SPI config command!\r\n");
 		break;
 	}
 
@@ -3129,17 +3206,15 @@ void AdiDataStream_Entry(uint32_t input)
 					interruptTriggered = ((CyBool_t)(GPIO->lpp_gpio_intr0 & (1 << dataReadyPin)) && (CyBool_t)(GPIO->lpp_gpio_simple[dataReadyPin] & CY_U3P_LPP_GPIO_IN_VALUE));
 				}
 
-				//Clear the SPI Rx FIFO
-				SPI->lpp_spi_config |= CY_U3P_LPP_SPI_RX_CLEAR;
-				while((SPI->lpp_spi_status & CY_U3P_LPP_SPI_RX_DATA) != 0);
-				SPI->lpp_spi_config &= ~CY_U3P_LPP_SPI_RX_CLEAR;
-
-				//Set the config for DMA mode with RX enabled
-				SPI->lpp_spi_config |= (CY_U3P_LPP_SPI_DMA_MODE | CY_U3P_LPP_SPI_RX_ENABLE);
+				//Set the config for DMA mode
+				SPI->lpp_spi_config |= CY_U3P_LPP_SPI_DMA_MODE;
 
 				//Set the Tx/Rx count
 				SPI->lpp_spi_tx_byte_count = 0;
 				SPI->lpp_spi_rx_byte_count = bytesPerFrame;
+
+				//Enable Rx and Tx as required
+				SPI->lpp_spi_config |= CY_U3P_LPP_SPI_RX_ENABLE;
 
 				//Enable the SPI block
 				SPI->lpp_spi_config |= CY_U3P_LPP_SPI_ENABLE;
@@ -3210,17 +3285,15 @@ void AdiDataStream_Entry(uint32_t input)
 					}
 				}
 
-				//Clear the SPI RX and TX FIFO
-				SPI->lpp_spi_config |= (CY_U3P_LPP_SPI_RX_CLEAR | CY_U3P_LPP_SPI_TX_CLEAR);
-				while((SPI->lpp_spi_status & CY_U3P_LPP_SPI_RX_DATA) != 0);
-				SPI->lpp_spi_config &= ~(CY_U3P_LPP_SPI_RX_CLEAR | CY_U3P_LPP_SPI_TX_CLEAR);
-
 				//Set the config for DMA mode with RX and TX enabled
-				SPI->lpp_spi_config |= (CY_U3P_LPP_SPI_DMA_MODE | CY_U3P_LPP_SPI_RX_ENABLE | CY_U3P_LPP_SPI_TX_ENABLE);
+				SPI->lpp_spi_config |= CY_U3P_LPP_SPI_DMA_MODE;
 
 				//Set the Tx/Rx count
 				SPI->lpp_spi_tx_byte_count = transferByteLength;
 				SPI->lpp_spi_rx_byte_count = transferByteLength;
+
+				//Enable Rx and Tx as required
+				SPI->lpp_spi_config |= (CY_U3P_LPP_SPI_RX_ENABLE | CY_U3P_LPP_SPI_TX_ENABLE);
 
 				//Enable the SPI block
 				SPI->lpp_spi_config |= CY_U3P_LPP_SPI_ENABLE;
@@ -3228,6 +3301,8 @@ void AdiDataStream_Entry(uint32_t input)
 				/*
 				 * Note this section of code accomplishes the same as above, only
 				 * the statements above circumvent the API and are performed much faster.
+				 * The SPI FIFO must be properly cleaned up using AdiSpiResetFifo() before
+				 * initiating a transfer.
 				status = CyU3PSpiSetBlockXfer(transferByteLength, transferByteLength);
 				if(status != CY_U3P_SUCCESS)
 				{
