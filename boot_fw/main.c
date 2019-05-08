@@ -28,13 +28,12 @@
 /* Define LED GPIO */
 #define APP_LED_GPIO    (54)
 
+CyBool_t blinkLed = CyFalse;
+
 /* Enable this for booting off the USB */
-#define USB_BOOT
-#ifdef USB_BOOT
 extern void
 myUsbBoot (
         void);
-#endif
 
 /****************************************************************************
  * main:
@@ -78,25 +77,23 @@ main (
     if (status != CY_FX3_BOOT_SUCCESS)
         return status;
 
-#ifdef USB_BOOT
     /* Enable this for booting off the USB */
     myUsbBoot ();
-#endif
 
     while (1)
     {
-#ifdef USB_BOOT
         /* Enable this piece of code when using the USB module.
          * Call the new wrapper function which handles all state changes as required.
          */
         CyFx3BootUsbHandleEvents ();
-#endif
         /* Flash the LED */
-        CyFx3BootGpioSetValue (APP_LED_GPIO, CyTrue);
-        CyFx3BootBusyWait (65534);
-        CyFx3BootGpioSetValue (APP_LED_GPIO, CyFalse);
-        CyFx3BootBusyWait (65534);
-
+        if (blinkLed)
+        {
+            CyFx3BootGpioSetValue (APP_LED_GPIO, CyTrue);
+            CyFx3BootBusyWait (65534);
+            CyFx3BootGpioSetValue (APP_LED_GPIO, CyFalse);
+            CyFx3BootBusyWait (65534);
+        }
     }
 
     return 0;

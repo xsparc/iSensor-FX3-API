@@ -24,6 +24,7 @@
 #include "cyfx3device.h"
 #include "cyfx3utils.h"
 #include "cyfx3gpio.h"
+#include "main.h"
 
 /*
  * Note: Address of 4 KB DMA scratch buffer used for USB data transfers. This is located outside of the
@@ -591,11 +592,23 @@ myVendorCmdHandler (
         return;
     }
 
-    /* Vendor Command 0xB1 handling */
+    /* Vendor command 0xB1 handling */
     if (bReq == 0xB1)
     {
     	/* Reboot the FX3 device into bootloader mode */
     	CyFx3BootDeviceReset();
+    }
+
+    /* Vendor command 0xEE handling - Turn off LED blinking */
+    if (bReq == 0xEE)
+    {
+    	blinkLed = CyFalse;
+    }
+
+    /* Vendor command 0xEE handling - Turn on LED blinking */
+    if (bReq == 0xEF)
+    {
+    	blinkLed = CyTrue;
     }
 
     /* No other requests are supported. Stall the Endpoint */
@@ -734,12 +747,36 @@ myUsbBoot ()
     CyFx3BootErrorCode_t apiRetStatus;
     CyBool_t no_renum = CyFalse;
 
+    //Read die ID and set up memory for USB ID
+    static const char hex_digit[16] = "0123456789ABCDEF";
+    static uint32_t *EFUSE_DIE_ID = ((uint32_t *)0xE0055010);
+    uint32_t die_id[2];
+
     gConfig              = 0;
     gAltSetting          = 0;
     gUsbDevStatus        = 0;
     glUsbState           = 0;
     glCheckForDisconnect = 0;
     glInCompliance       = 0;
+
+    //Read EFUSE_DIE_ID data and store in local array
+    for (int i = 0; i < 2; i++)
+    {
+    	die_id[i] = *EFUSE_DIE_ID++;
+    }
+
+    //Write FX3 die ID to serial number descriptor memory
+    for (int i = 0; i < 2; i++)
+    {
+    	gbSerialNumDesc[i*16+ 2] = hex_digit[(die_id[1-i] >> 28) & 0xF];
+    	gbSerialNumDesc[i*16+ 4] = hex_digit[(die_id[1-i] >> 24) & 0xF];
+    	gbSerialNumDesc[i*16+ 6] = hex_digit[(die_id[1-i] >> 20) & 0xF];
+    	gbSerialNumDesc[i*16+ 8] = hex_digit[(die_id[1-i] >> 16) & 0xF];
+    	gbSerialNumDesc[i*16+10] = hex_digit[(die_id[1-i] >> 12) & 0xF];
+    	gbSerialNumDesc[i*16+12] = hex_digit[(die_id[1-i] >>  8) & 0xF];
+    	gbSerialNumDesc[i*16+14] = hex_digit[(die_id[1-i] >>  4) & 0xF];
+    	gbSerialNumDesc[i*16+16] = hex_digit[(die_id[1-i] >>  0) & 0xF];
+    }
 
     /* Enable this code for using the USB Bootloader */
     apiRetStatus = CyFx3BootUsbStart (CyTrue, myUsbEventCallback);

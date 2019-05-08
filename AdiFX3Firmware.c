@@ -89,7 +89,6 @@ const uint8_t FirmwareID[32] __attribute__ ((aligned (32))) = { 'A', 'D', 'I', '
 //Constant error string used to write "ERROR" to output buffer
 const uint8_t ErrorString[16] __attribute__ ((aligned (16))) = { 'E', 'R', 'R', 'O', 'R', '\0'};
 
-
 /*
  * Runtime Global Variables
  */
@@ -413,53 +412,6 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
     return isHandled;
 }
 
-
-CyU3PReturnStatus_t AdiBlinkLED()
-{
-	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-
-	//Configure the GPIO pin as a driven output
-	CyU3PGpioSimpleConfig_t gpioConfig;
-	gpioConfig.outValue = CyTrue;
-	gpioConfig.inputEn = CyFalse;
-	gpioConfig.driveLowEn = CyTrue;
-	gpioConfig.driveHighEn = CyTrue;
-	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
-
-	status = CyU3PGpioSetSimpleConfig(ADI_LED_GPIO, &gpioConfig);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Configuring LED blink pin failed!, error code = %d\r\n", status);
-		return status;
-	}
-	//Set LED pin high
-	status = CyU3PGpioSimpleSetValue(ADI_LED_GPIO, CyTrue);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Setting LED blink pin high failed!, error code = %d\r\n", status);
-		return status;
-	}
-	//Wait 500ms
-	CyU3PBusyWait(50000);
-	//Set LED pin low
-	status = CyU3PGpioSimpleSetValue(ADI_LED_GPIO, CyFalse);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Setting LED blink pin low failed!, error code = %d\r\n", status);
-		return status;
-	}
-	//Wait 500ms
-	CyU3PBusyWait(50000);
-
-	//Stop pin output drive and enable as input
-	gpioConfig.inputEn = CyTrue;
-	gpioConfig.driveLowEn = CyFalse;
-	gpioConfig.driveHighEn = CyFalse;
-	status = CyU3PGpioSetSimpleConfig(ADI_LED_GPIO, &gpioConfig);
-
-	return status;
-
-}
 
 /*
  * Function: AdiReadRegBytes(uint16_t addr)
@@ -2977,6 +2929,25 @@ CyU3PReturnStatus_t AdiDeviceInit()
 {
     CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
+    //Get USB serial number from FX3 die id
+    static const char hex_digit[16] = "0123456789ABCDEF";
+    static uint32_t *EFUSE_DIE_ID = ((uint32_t *)0xE0055010);
+    uint32_t die_id[2];
+
+	//Write FX3 die ID to USB serial number descriptor
+	CyU3PReadDeviceRegisters(EFUSE_DIE_ID, 2, die_id);
+	for (int i = 0; i < 2; i++)
+	{
+		CyFxUSBSerialNumDesc[i*16+ 2] = hex_digit[(die_id[1-i] >> 28) & 0xF];
+		CyFxUSBSerialNumDesc[i*16+ 4] = hex_digit[(die_id[1-i] >> 24) & 0xF];
+		CyFxUSBSerialNumDesc[i*16+ 6] = hex_digit[(die_id[1-i] >> 20) & 0xF];
+		CyFxUSBSerialNumDesc[i*16+ 8] = hex_digit[(die_id[1-i] >> 16) & 0xF];
+		CyFxUSBSerialNumDesc[i*16+10] = hex_digit[(die_id[1-i] >> 12) & 0xF];
+		CyFxUSBSerialNumDesc[i*16+12] = hex_digit[(die_id[1-i] >>  8) & 0xF];
+		CyFxUSBSerialNumDesc[i*16+14] = hex_digit[(die_id[1-i] >>  4) & 0xF];
+		CyFxUSBSerialNumDesc[i*16+16] = hex_digit[(die_id[1-i] >>  0) & 0xF];
+	}
+
     //Initialize USB
     status = CyU3PUsbStart();
     if (status != CY_U3P_SUCCESS)
@@ -3084,6 +3055,14 @@ CyU3PReturnStatus_t AdiDeviceInit()
     {
         CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = %d\r\n", status);
         return status;
+    }
+
+    /* Serial number descriptor */
+    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 3, (uint8_t *)CyFxUSBSerialNumDesc);
+    if (status != CY_U3P_SUCCESS)
+    {
+      CyU3PDebugPrint (4, "USB set serial number descriptor failed, Error code = %d\r\n", status);
+      return status;
     }
 
     /* Connect the USB Pins with super speed operation enabled. */

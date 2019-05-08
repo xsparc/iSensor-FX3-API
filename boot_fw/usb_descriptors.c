@@ -36,7 +36,7 @@ unsigned char gbDevDesc[] =
     0x00,0x00,                      /* Device release number */
     0x01,                           /* Manufacture string index */
     0x02,                           /* Product string index */
-    0x00,                           /* Serial number string index */
+    0x03,                           /* Serial number string index */
     0x01                            /* Number of configurations */
 };
 
@@ -126,11 +126,12 @@ unsigned char gbProductDesc[] =
 
 unsigned char gbSerialNumDesc [] = 
 {
-    0x1A,                           /* bLength */
+    0x22,                           /* bLength */
     0x03,                           /* bDescType */
-    '0',0,'0',0,'0',0,'0',0,'0',0,'0',0,
-    '0',0,'0',0,'0',0,'4',0,'B',0,'E',0,
-    0,0,                            /* long word align */
+    '0',0x00,'0',0x00,'0',0x00,'0',0x00,
+    '0',0x00,'0',0x00,'0',0x00,'0',0x00,
+    '0',0x00,'0',0x00,'0',0x00,'0',0x00,
+    '0',0x00,'0',0x00,'0',0x00,'0',0x00,
 };
 
 /* SuperSpeed descriptors */
@@ -231,7 +232,7 @@ unsigned char gbSsDevDesc[] =
     0x00,0x00,                      /* Device release number */
     0x01,                           /* Manufacture string index */
     0x02,                           /* Product string index */
-    0x00,                           /* Serial number string index */
+    0x03,                           /* Serial number string index */
     0x01                            /* Number of configurations */
 };
 
