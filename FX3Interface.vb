@@ -1485,15 +1485,15 @@ Public Class FX3Connection
         End If
 
         'Determine the frame length based on DUTType
-        If m_FX3_SpiConfig.DUTType = DUTType.ADcmXL3021 Then
-            'Three Axis
-            frameLength = 64 * 3 + 8
+        If m_FX3_SpiConfig.DUTType = DUTType.ADcmXL1021 Then
+            'Single Axis
+            frameLength = 64 * 1 + 16 + 8 '88
         ElseIf m_FX3_SpiConfig.DUTType = DUTType.ADcmXL2021 Then
             'Two Axis
-            frameLength = 64 * 2 + 8
+            frameLength = 64 * 2 + 16 + 8 '152
         Else
-            'Single Axis
-            frameLength = 64 * 1 + 8
+            'Three Axis (Default)
+            frameLength = 64 * 3 + 8 '200
         End If
 
         'Set the stream thread running state variable
@@ -1827,7 +1827,6 @@ Public Class FX3Connection
         Catch ex As Exception
             validPath = False
             'Pass the exception up
-            Throw ex
         End Try
 
         Return validPath
