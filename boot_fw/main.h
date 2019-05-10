@@ -9,5 +9,6 @@
 #define MAIN_H_
 
 extern CyBool_t blinkLed;
+extern CyBool_t ledState;
 
 #endif /* MAIN_H_ */

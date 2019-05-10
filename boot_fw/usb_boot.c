@@ -513,15 +513,15 @@ myVendorCmdHandler (
     /* Vendor Command 0xA0 handling */
     if (bReq == 0xA0)
     { 
-	/* Note: This is a command issued by the CyControl Application to detect the legacy products.
-	   As we are an FX3 device we stall the endpoint to indicate that this is not a legacy device.
-	 */
-	if (address == 0xE600)
-	{
-	    /* Stall the Endpoint */
-	    CyFx3BootUsbStall (0, CyTrue, CyFalse);
-	    return;
-	}
+		/* Note: This is a command issued by the CyControl Application to detect the legacy products.
+		   As we are an FX3 device we stall the endpoint to indicate that this is not a legacy device.
+		 */
+		if (address == 0xE600)
+		{
+			/* Stall the Endpoint */
+			CyFx3BootUsbStall (0, CyTrue, CyFalse);
+			return;
+		}
 
         status = myCheckAddress (address, len);
         if (len == 0)
@@ -595,20 +595,52 @@ myVendorCmdHandler (
     /* Vendor command 0xB1 handling */
     if (bReq == 0xB1)
     {
+    	CyFx3BootUsbAckSetup ();
+    	status = CyFx3BootUsbDmaXferData (0x00, (uint32_t)gEP0.pData, gEP0.wLen, CY_FX3_BOOT_WAIT_FOREVER);
     	/* Reboot the FX3 device into bootloader mode */
     	CyFx3BootDeviceReset();
+
+    	return;
+    }
+
+    /* Vendor command 0xEC handling - Turn on LED */
+    if (bReq == 0xEC)
+    {
+    	CyFx3BootUsbAckSetup ();
+    	status = CyFx3BootUsbDmaXferData (0x00, (uint32_t)gEP0.pData, gEP0.wLen, CY_FX3_BOOT_WAIT_FOREVER);
+    	ledState = CyTrue;
+
+    	return;
+    }
+
+    /* Vendor command 0xED handling - Turn off LED */
+    if (bReq == 0xED)
+    {
+    	CyFx3BootUsbAckSetup ();
+    	status = CyFx3BootUsbDmaXferData (0x00, (uint32_t)gEP0.pData, gEP0.wLen, CY_FX3_BOOT_WAIT_FOREVER);
+    	ledState = CyFalse;
+
+    	return;
     }
 
     /* Vendor command 0xEE handling - Turn off LED blinking */
     if (bReq == 0xEE)
     {
+    	CyFx3BootUsbAckSetup ();
+    	status = CyFx3BootUsbDmaXferData (0x00, (uint32_t)gEP0.pData, gEP0.wLen, CY_FX3_BOOT_WAIT_FOREVER);
     	blinkLed = CyFalse;
+
+    	return;
     }
 
-    /* Vendor command 0xEE handling - Turn on LED blinking */
+    /* Vendor command 0xEF handling - Turn on LED blinking */
     if (bReq == 0xEF)
     {
+    	CyFx3BootUsbAckSetup ();
+    	status = CyFx3BootUsbDmaXferData (0x00, (uint32_t)gEP0.pData, gEP0.wLen, CY_FX3_BOOT_WAIT_FOREVER);
     	blinkLed = CyTrue;
+
+    	return;
     }
 
     /* No other requests are supported. Stall the Endpoint */
