@@ -35,6 +35,8 @@ CyBool_t ledState = CyFalse;
 extern void
 myUsbBoot (
         void);
+extern uint8_t glCheckForDisconnect;
+extern uint8_t glInCompliance;
 
 /****************************************************************************
  * main:

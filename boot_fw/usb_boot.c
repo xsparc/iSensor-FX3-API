@@ -811,7 +811,7 @@ myUsbBoot ()
     }
 
     /* Enable this code for using the USB Bootloader */
-    apiRetStatus = CyFx3BootUsbStart (CyTrue, myUsbEventCallback);
+    apiRetStatus = CyFx3BootUsbStart (CyFalse, myUsbEventCallback);
     if (apiRetStatus == CY_FX3_BOOT_ERROR_NO_REENUM_REQUIRED)
         no_renum = CyTrue;
 
@@ -840,7 +840,7 @@ myUsbBoot ()
         CyFx3BootUsbSetDesc (CY_U3P_USB_SET_STRING_DESCR, 3, (uint8_t *)gbSerialNumDesc);
 
         gpUsbDescPtr = CyFx3BootUsbGetDesc ();
-        CyFx3BootUsbConnect (CyTrue, CyTrue);
+        CyFx3BootUsbConnect (CyTrue, CyFalse);
     }
     else
     {

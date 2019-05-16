@@ -267,7 +267,20 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 
             //Firmware Reset
             case ADI_FIRMWARE_RESET:
+            	CyU3PUsbAckSetup();
             	CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+            	CyU3PThreadSleep(500);
+            	CyU3PConnectState(CyFalse, CyTrue);
+
+            	/*
+            	CyU3PUartDeInit();
+            	CyU3PGpioDeInit();
+            	CyU3PSpiDeInit();
+            	CyU3PPibDeInit ();
+            	CyU3PThreadSleep(500);
+            	CyU3PDeviceReset(CyTrue);
+            	CyU3PThreadSleep(500);
+            	*/
             	CyU3PDeviceReset(CyFalse);
             	break;
 
@@ -3066,7 +3079,7 @@ CyU3PReturnStatus_t AdiDeviceInit()
     }
 
     /* Connect the USB Pins with super speed operation enabled. */
-    status = CyU3PConnectState (CyTrue, CyTrue);
+    status = CyU3PConnectState (CyTrue, CyFalse);
     if (status != CY_U3P_SUCCESS)
     {
         CyU3PDebugPrint (4, "USB Connect failed, Error code = %d\r\n", status);
