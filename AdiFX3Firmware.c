@@ -84,7 +84,7 @@ PartType DUTType;
  * Application constants
  */
 //Constant firmware ID string. Manually updated when building new firmware.
-const uint8_t FirmwareID[32] __attribute__ ((aligned (32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '1', '.', '0', '.', '3', '-','P','U','B',' ', '\0' };
+const uint8_t FirmwareID[32] __attribute__ ((aligned (32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '1', '.', '0', '.', '4', '-','P','U','B',' ', '\0' };
 
 //Constant error string used to write "ERROR" to output buffer
 const uint8_t ErrorString[16] __attribute__ ((aligned (16))) = { 'E', 'R', 'R', 'O', 'R', '\0'};
@@ -2536,37 +2536,15 @@ CyU3PReturnStatus_t AdiConfigureEndpoints()
 {
 	CyU3PEpConfig_t bulkCfg;
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-	uint16_t size;
 
 	//Clear the config
 	CyU3PMemSet ((uint8_t *)&bulkCfg, 0, sizeof (bulkCfg));
-
-	//Get the current USB speed
-    CyU3PUSBSpeed_t usbSpeed = CyU3PUsbGetSpeed();
-    switch (usbSpeed)
-    {
-        case CY_U3P_FULL_SPEED:
-            size = 64;
-            break;
-
-        case CY_U3P_HIGH_SPEED:
-            size = 512;
-            break;
-
-        case  CY_U3P_SUPER_SPEED:
-            size = 1024;
-            break;
-
-        default:
-        	size = 0;
-            break;
-    }
 
 	//Set bulk endpoint parameters
 	bulkCfg.enable = CyTrue;
 	bulkCfg.epType = CY_U3P_USB_EP_BULK;
 	bulkCfg.burstLen = 1;
-	bulkCfg.pcktSize = size;
+	bulkCfg.pcktSize = 512;
 	bulkCfg.streams = 0;
 
 	//Set endpoint config for real time streaming endpoint
@@ -2599,9 +2577,10 @@ CyU3PReturnStatus_t AdiConfigureEndpoints()
 	CyU3PUsbFlushEp(ADI_TO_PC_ENDPOINT);
 
 	//Configure DMA for real time streaming channel
+	//Force DMA packet size to match USB High Speed (512 bytes)
     CyU3PDmaChannelConfig_t dmaConfig;
-    dmaConfig.size = 1024;
-    dmaConfig.count = 64;
+    dmaConfig.size = 512;
+    dmaConfig.count = 256;
     dmaConfig.prodSckId = CY_U3P_LPP_SOCKET_SPI_PROD;
     dmaConfig.consSckId = CY_U3P_UIB_SOCKET_CONS_1;
     dmaConfig.dmaMode = CY_U3P_DMA_MODE_BYTE;
@@ -2614,6 +2593,7 @@ CyU3PReturnStatus_t AdiConfigureEndpoints()
     dmaConfig.cb             = NULL;
     dmaConfig.prodAvailCount = 0;
 
+    //Configure DMA for RealTimeStreamingChannel
     status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_AUTO, &dmaConfig);
 	if(status != CY_U3P_SUCCESS)
 	{
@@ -2998,27 +2978,11 @@ CyU3PReturnStatus_t AdiDeviceInit()
         return status;
     }
 
-    /* High speed device descriptor. */
-    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_HS_DEVICE_DESCR, 0, (uint8_t *)CyFxUSB20DeviceDscr);
+    /* Full speed configuration descriptor */
+    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_FS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBFSConfigDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set device descriptor failed, Error code = %d\r\n", status);
-        return status;
-    }
-
-    /* BOS descriptor */
-    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_BOS_DESCR, 0, (uint8_t *)CyFxUSBBOSDscr);
-    if (status != CY_U3P_SUCCESS)
-    {
-        CyU3PDebugPrint (4, "USB set configuration descriptor failed, Error code = %d\r\n", status);
-        return status;
-    }
-
-    /* Device qualifier descriptor */
-    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_DEVQUAL_DESCR, 0, (uint8_t *)CyFxUSBDeviceQualDscr);
-    if (status != CY_U3P_SUCCESS)
-    {
-        CyU3PDebugPrint (4, "USB set device qualifier descriptor failed, Error code = %d\r\n", status);
+        CyU3PDebugPrint (4, "USB Set Configuration Descriptor failed, Error Code = %d\r\n", status);
         return status;
     }
 
@@ -3030,19 +2994,35 @@ CyU3PReturnStatus_t AdiDeviceInit()
         return status;
     }
 
+    /* BOS descriptor */
+    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_BOS_DESCR, 0, (uint8_t *)CyFxUSBBOSDscr);
+    if (status != CY_U3P_SUCCESS)
+    {
+        CyU3PDebugPrint (4, "USB set configuration descriptor failed, Error code = %d\r\n", status);
+        return status;
+    }
+
+    /* High speed device descriptor. */
+    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_HS_DEVICE_DESCR, 0, (uint8_t *)CyFxUSB20DeviceDscr);
+    if (status != CY_U3P_SUCCESS)
+    {
+        CyU3PDebugPrint (4, "USB set device descriptor failed, Error code = %d\r\n", status);
+        return status;
+    }
+
+    /* Device qualifier descriptor */
+    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_DEVQUAL_DESCR, 0, (uint8_t *)CyFxUSBDeviceQualDscr);
+    if (status != CY_U3P_SUCCESS)
+    {
+        CyU3PDebugPrint (4, "USB set device qualifier descriptor failed, Error code = %d\r\n", status);
+        return status;
+    }
+
     /* High speed configuration descriptor */
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_HS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBHSConfigDscr);
     if (status != CY_U3P_SUCCESS)
     {
         CyU3PDebugPrint (4, "USB Set Other Speed Descriptor failed, Error Code = %d\r\n", status);
-        return status;
-    }
-
-    /* Full speed configuration descriptor */
-    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_FS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBFSConfigDscr);
-    if (status != CY_U3P_SUCCESS)
-    {
-        CyU3PDebugPrint (4, "USB Set Configuration Descriptor failed, Error Code = %d\r\n", status);
         return status;
     }
 
@@ -3077,6 +3057,8 @@ CyU3PReturnStatus_t AdiDeviceInit()
       CyU3PDebugPrint (4, "USB set serial number descriptor failed, Error code = %d\r\n", status);
       return status;
     }
+
+
 
     /* Connect the USB Pins with high speed operation enabled (for greater compatibility) */
     status = CyU3PConnectState (CyTrue, CyFalse);
