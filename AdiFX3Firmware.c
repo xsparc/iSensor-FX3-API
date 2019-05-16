@@ -3078,7 +3078,7 @@ CyU3PReturnStatus_t AdiDeviceInit()
       return status;
     }
 
-    /* Connect the USB Pins with super speed operation enabled. */
+    /* Connect the USB Pins with high speed operation enabled (for greater compatibility) */
     status = CyU3PConnectState (CyTrue, CyFalse);
     if (status != CY_U3P_SUCCESS)
     {

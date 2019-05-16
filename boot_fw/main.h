@@ -8,7 +8,6 @@
 #ifndef MAIN_H_
 #define MAIN_H_
 
-extern CyBool_t blinkLed;
-extern CyBool_t ledState;
+extern uint16_t mode;
 
 #endif /* MAIN_H_ */

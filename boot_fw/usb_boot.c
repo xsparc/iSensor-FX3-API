@@ -608,7 +608,7 @@ myVendorCmdHandler (
     {
     	CyFx3BootUsbAckSetup ();
     	status = CyFx3BootUsbDmaXferData (0x00, (uint32_t)gEP0.pData, gEP0.wLen, CY_FX3_BOOT_WAIT_FOREVER);
-    	ledState = CyTrue;
+    	mode = 2;
 
     	return;
     }
@@ -618,7 +618,7 @@ myVendorCmdHandler (
     {
     	CyFx3BootUsbAckSetup ();
     	status = CyFx3BootUsbDmaXferData (0x00, (uint32_t)gEP0.pData, gEP0.wLen, CY_FX3_BOOT_WAIT_FOREVER);
-    	ledState = CyFalse;
+    	mode = 3;
 
     	return;
     }
@@ -628,7 +628,7 @@ myVendorCmdHandler (
     {
     	CyFx3BootUsbAckSetup ();
     	status = CyFx3BootUsbDmaXferData (0x00, (uint32_t)gEP0.pData, gEP0.wLen, CY_FX3_BOOT_WAIT_FOREVER);
-    	blinkLed = CyFalse;
+    	mode = 0;
 
     	return;
     }
@@ -638,7 +638,7 @@ myVendorCmdHandler (
     {
     	CyFx3BootUsbAckSetup ();
     	status = CyFx3BootUsbDmaXferData (0x00, (uint32_t)gEP0.pData, gEP0.wLen, CY_FX3_BOOT_WAIT_FOREVER);
-    	blinkLed = CyTrue;
+    	mode = 1;
 
     	return;
     }

@@ -28,8 +28,7 @@
 /* Define LED GPIO */
 #define APP_LED_GPIO    (54)
 
-CyBool_t blinkLed = CyFalse;
-CyBool_t ledState = CyFalse;
+uint16_t mode = 0;
 
 /* Enable this for booting off the USB */
 extern void
@@ -90,25 +89,29 @@ main (
          */
         CyFx3BootUsbHandleEvents ();
 
-        /* Flash the LED */
-        if (blinkLed)
-        {
+        /* Handle blinking the LED */
+
+        switch(mode)
+		{
+        case 1: /* Blink LED */
             CyFx3BootGpioSetValue (APP_LED_GPIO, CyTrue);
             CyFx3BootBusyWait (65534);
             CyFx3BootGpioSetValue (APP_LED_GPIO, CyFalse);
             CyFx3BootBusyWait (65534);
-        }
-        else
-        {
-        	if (ledState)
-        	{
-        		CyFx3BootGpioSetValue (APP_LED_GPIO, CyFalse);
-        	}
-        	else
-        	{
-        		CyFx3BootGpioSetValue (APP_LED_GPIO, CyTrue);
-        	}
-        }
+            break;
+
+        case 2: /* Turn LED on */
+        	CyFx3BootGpioSetValue (APP_LED_GPIO, CyFalse);
+        	break;
+
+        case 3: /* Turn LED off*/
+        	CyFx3BootGpioSetValue (APP_LED_GPIO, CyTrue);
+        	break;
+
+        default: /* Turn LED off*/
+        	CyFx3BootGpioSetValue (APP_LED_GPIO, CyTrue);
+		}
+
     }
 
     return 0;

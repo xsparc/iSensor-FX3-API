@@ -92,7 +92,7 @@ const uint8_t CyFxUSBHSConfigDscr[] __attribute__ ((aligned (32))) =
     CY_U3P_USB_ENDPNT_DESCR,        /* Endpoint descriptor type */
     ADI_TO_PC_ENDPOINT,             /* Endpoint address and description */
     CY_U3P_USB_EP_BULK,             /* Bulk endpoint type */
-    0x00,                           /* Max packet size = 1024 bytes */
+    0x00,                           /* Max packet size = 512 bytes */
     0x02,
     0x00                            /* Servicing interval for data transfers : 0 for bulk */
 };
