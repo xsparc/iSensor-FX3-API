@@ -28,15 +28,6 @@ Public Class FX3Connection
 
     'Private variables
 
-    'Flags to track the state of the event handlers
-    <Flags()>
-    Private Enum eventHandlerFlags As Integer
-        m_programMode = 1
-    End Enum
-
-    'Set up a flag to use throughought the project
-    Dim eventFlags As eventHandlerFlags
-
     'Bool to track if the FX3 is currently connected
     Private m_FX3Connected As Boolean
 
@@ -154,7 +145,7 @@ Public Class FX3Connection
     ''' <param name="deviceSn">Serial number of the device being connected to.</param>
     Public Sub Connect(ByVal deviceSn As String)
 
-        Dim targetDetected As Boolean = False
+        Dim tempHandle As CyFX3Device = Nothing
 
         'Exit sub if we're already connected to a device
         If m_FX3Connected = True Then
@@ -165,70 +156,54 @@ Public Class FX3Connection
         For Each item In usbList
             'Look for the selected serial number, get its handle, and set it as the active device
             If String.Equals(CType(item, CyFX3Device).SerialNumber, deviceSn) Then
-                m_ActiveFX3 = CType(item, CyFX3Device)
-                m_ActiveFX3SN = deviceSn
-                targetDetected = True
+                tempHandle = CType(item, CyFX3Device)
             End If
         Next
 
         'Exit if we can't find the correct board
-        If targetDetected = False Then
+        If tempHandle Is Nothing Then
             'Set default values for the interface
             SetDefaultValues(m_sensorType)
             Throw New Exception("ERROR: Could not find the board selected to connect to. Was it removed?")
         End If
 
-        'Reset the target indicator
-        targetDetected = False
-
-        'If the connection is not super speed or high speed throw an exception
-        If Not (m_ActiveFX3.bHighSpeed Or m_ActiveFX3.bSuperSpeed) Then
-            'Set default values for the interface
-            SetDefaultValues(m_sensorType)
-            Throw New Exception("ERROR: This application requires USB 2.0 connection or better.")
-        End If
-
         'Program the FX3 board with the application firmware
-        'Place the event handler in "Program Mode" to keep from overriding the application firmware
-        eventFlags = eventFlags Or eventHandlerFlags.m_programMode
         'Check the active FX3 firmware and compare against the requested serial number
-        If String.Equals(m_ActiveFX3.SerialNumber, m_ActiveFX3SN) Then
+        If String.Equals(tempHandle.SerialNumber, deviceSn) Then
             'If the board is already programmed and in streamer mode, then don't re-program
-            If Not String.Equals(m_ActiveFX3.FriendlyName, "Cypress FX3 USB StreamerExample Device") Then
+            If Not String.Equals(tempHandle.FriendlyName, "Cypress FX3 USB StreamerExample Device") Then
                 'Program the application firmware over the boot firmware
-                ProgramSDRAM(FirmwarePath, m_ActiveFX3)
-                'Set flag indicating that the FX3 successfully connected. Must be set before leaving program mode
+                ProgramSDRAM(FirmwarePath, tempHandle)
+                'Set flag indicating that the FX3 successfully connected
                 m_FX3Connected = True
             End If
         End If
-        'Remove the program mode flag
-        eventFlags = eventFlags Xor eventHandlerFlags.m_programMode
 
         'Update the handle for the newly programmed board
         For Each item In usbList
             'Look for the selected serial number, get its handle, and set it as the active device
             If String.Equals(CType(item, CyFX3Device).SerialNumber, deviceSn) Then
                 'Wait for the streamer device to fully enumerate before continuing
-                WaitForStreamer()
-                targetDetected = True
+                'Note: m_ActiveFX3 and m_ActiveFX3SN are both set in WaitForStreamer()
+                WaitForStreamer(deviceSn)
             End If
         Next
 
         'Exit if we can't find the correct board
-        If targetDetected = False Then
+        If m_ActiveFX3SN Is Nothing Then
             'Set default values for the interface
             SetDefaultValues(m_sensorType)
             Throw New Exception("ERROR: Could not find the board selected to connect to. Was it removed?")
         End If
 
-        'Check that we're talking to a board running the application firmware
-        FX3CodeRunning()
+        'Check that we're talking to the target board and it's running the application firmware
+        FX3CodeRunningOnTarget()
 
         'Check that the connection speed is adequate
-        CheckConnectionSpeed()
+        CheckConnectionSpeedOnTarget()
 
         'Set up endpoints
-        EnumerateEndpoints()
+        EnumerateEndpointsOnTarget()
 
         'Check that endpoints are properly enumerated
         If Not CheckEndpointStatus() Then
@@ -256,7 +231,7 @@ Public Class FX3Connection
         'Clear the connected state to treat the FX3 as a new board once it reboots
         m_FX3Connected = False
         'Reset the FX3 currently in use
-        ResetFX3(m_ActiveFX3)
+        ResetFX3Firmware(m_ActiveFX3)
         'Small delay to let Windows catch up
         Thread.Sleep(1000)
         'Set default values for the interface
@@ -304,6 +279,12 @@ Public Class FX3Connection
     Public ReadOnly Property GetVersion As String
         Get
             Return GetFirmwareID()
+        End Get
+    End Property
+
+    Public ReadOnly Property GetTargetSerialNumber As String
+        Get
+            Return GetSerialNumber()
         End Get
     End Property
 
@@ -1407,6 +1388,7 @@ Public Class FX3Connection
         End If
 
         usbList = New USBDeviceList(CyConst.DEVICES_CYUSB)
+
         AddHandler usbList.DeviceRemoved, New EventHandler(AddressOf usbList_DeviceRemoved)
         AddHandler usbList.DeviceAttached, New EventHandler(AddressOf usbList_DeviceAttached)
 
@@ -1427,9 +1409,12 @@ Public Class FX3Connection
                 End If
 
             Else 'FX3 not connected
-                'Program any FX3 device that is not in Bulkloop mode (low-level bootloader mode)
-                If Not String.Equals(CType(item, CyFX3Device).FriendlyName, "Cypress FX3 USB BulkloopExample Device") Then
-                    ProgramSDRAM(BlinkFirmwarePath, CType(item, CyFX3Device))
+                'Skip devices that are already in streamer mode (allows for multiple boards to function)
+                If Not String.Equals(CType(item, CyFX3Device).FriendlyName, "Cypress FX3 USB StreamerExample Device") Then
+                    'Program any FX3 device that is not in Bulkloop mode (low-level bootloader mode)
+                    If Not String.Equals(CType(item, CyFX3Device).FriendlyName, "Cypress FX3 USB BulkloopExample Device") Then
+                        ProgramSDRAM(BlinkFirmwarePath, CType(item, CyFX3Device))
+                    End If
                 End If
             End If
         Next
@@ -1494,9 +1479,8 @@ Public Class FX3Connection
     ''' Function which checks if the FX3 is connected and programmed
     ''' </summary>
     ''' <returns>A boolean indicating if the board is programmed</returns>
-    Public Function FX3CodeRunning() As Boolean
+    Public Function FX3CodeRunningOnTarget() As Boolean
 
-        Dim boardConnected As Boolean = True
         Dim tempString As String = ""
 
         'Return false if the board hasn't been connected yet
@@ -1504,25 +1488,29 @@ Public Class FX3Connection
             Return False
         End If
 
-        Try
-            'Make sure we can talk to the selected board
-            tempString = m_ActiveFX3.FriendlyName
-        Catch ex As Exception
-            tempString = ""
+        'Make sure the selected board identifies as a "streamer" device
+        tempString = m_ActiveFX3.FriendlyName
+        If Not String.Equals(tempString, "Cypress FX3 USB StreamerExample Device") Then
+            Throw New Exception("ERROR: The target board is not running the application firmware")
             Return False
-        End Try
-
-        'Get the firmware ID from the board
-        tempString = GetFirmwareID()
-
-        'If the firmware string doesn't contain FX3
-        If tempString.IndexOf("FX3") = -1 Then
-            boardConnected = False
-            m_FX3Connected = False
-            m_status = "ERROR: Board not responding to requests"
         End If
 
-        Return boardConnected
+        'Make sure the selected board is reporting back the correct serial (using the control endpoint, not the USB descriptor)
+        tempString = GetSerialNumber()
+        If Not String.Equals(m_ActiveFX3SN, tempString) Then
+            Throw New Exception("ERROR: The target board reported a different serial number. You're probably talking to the wrong board!")
+            Return False
+        End If
+
+        'Get the firmware ID from the board and check whether it contains "FX3"
+        tempString = GetFirmwareID()
+        If tempString.IndexOf("FX3") = -1 Then
+            Throw New Exception("ERROR: Board not responding to requests")
+            Return False
+        End If
+
+        'If we make it past all the checks, return true
+        Return True
 
     End Function
 
@@ -1565,7 +1553,7 @@ Public Class FX3Connection
     Public ReadOnly Property GetBootStatus As String
         Get
             'Check if the board is running
-            FX3CodeRunning()
+            FX3CodeRunningOnTarget()
             'Return the status
             Return m_status
         End Get
@@ -1594,10 +1582,10 @@ Public Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Send a reset command to the FX3
+    ''' Send a reset command to the FX3 firmware. This command works for either the application or bootloader firmware.
     ''' </summary>
     ''' <param name="boardHandle">Handle of the board to be reset.</param>
-    Private Sub ResetFX3(ByVal boardHandle As CyFX3Device)
+    Private Sub ResetFX3Firmware(ByVal boardHandle As CyFX3Device)
 
         'Sub assumes the board has firmware loaded on it that will respond to reset commands
         Dim buf(3) As Byte
@@ -1624,7 +1612,7 @@ Public Class FX3Connection
 
         For Each item In usbList
             If String.Equals(CType(item, CyFX3Device).FriendlyName, "Cypress FX3 USB StreamerExample Device") Then
-                ResetFX3(CType(item, CyFX3Device))
+                ResetFX3Firmware(CType(item, CyFX3Device))
             End If
         Next
 
@@ -1634,7 +1622,8 @@ Public Class FX3Connection
     ''' Wait for a newly-programmed FX3 to enumerate as a streamer (application) device
     ''' </summary>
     ''' <param name="timeout">Optional timeout to wait for a board to re-enumerate.</param>
-    Private Sub WaitForStreamer(Optional ByVal timeout As Integer = 3000)
+    ''' <param name="sn">Serial number of device we're waiting for.</param>
+    Private Sub WaitForStreamer(ByVal sn As String, Optional ByVal timeout As Integer = 3000)
         Dim timer As New Stopwatch
         Dim tempList As New USBDeviceList(CyConst.DEVICES_CYUSB)
         Dim streamerDetected As Boolean = False
@@ -1647,14 +1636,23 @@ Public Class FX3Connection
             For Each item In tempList
                 'Look for the selected serial number, get its handle, and set it as the active device
                 If String.Equals(CType(item, CyFX3Device).FriendlyName, "Cypress FX3 USB StreamerExample Device") Then
-                    m_ActiveFX3 = CType(item, CyFX3Device)
-                    streamerDetected = True
+                    If String.Equals(CType(item, CyFX3Device).SerialNumber, sn) Then
+                        m_ActiveFX3 = CType(item, CyFX3Device)
+                        m_ActiveFX3SN = sn
+                        streamerDetected = True
+                    Else
+                        Thread.Sleep(200)
+                    End If
                 Else
                     Thread.Sleep(200)
                 End If
             Next
 
         End While
+
+        If Not streamerDetected Then
+            Throw New Exception("ERROR: Could not find the FX3 board after programming the application firmware")
+        End If
 
         timer.Reset()
 
@@ -1741,6 +1739,9 @@ Public Class FX3Connection
         Dim startTime As New Stopwatch
         Dim validTransfer As Boolean = True
 
+        'Point the API to the target FX3
+        FX3ControlEndPt = m_ActiveFX3.ControlEndPt
+
         'Block control endpoint transfers while streaming (except cancel)
         If StreamThreadRunning And Not (FX3ControlEndPt.ReqCode = &HD0) Then
             Return False
@@ -1773,7 +1774,7 @@ Public Class FX3Connection
     ''' <returns>A boolean indicating the success of the operation</returns>
     Private Function ConfigureControlEndpoint(ByVal Reqcode As UInt16, ByVal toDevice As Boolean) As Boolean
 
-        'Set the control endpoint
+        'Point the API to the target FX3
         FX3ControlEndPt = m_ActiveFX3.ControlEndPt
 
         'Configure the control endpoint
@@ -1802,6 +1803,19 @@ Public Class FX3Connection
         XferControlData(buf, 32, 2000)
         firmwareID = System.Text.Encoding.UTF8.GetString(buf)
         Return firmwareID
+    End Function
+
+    ''' <summary>
+    ''' Gets the serial number of the target FX3 using the control endpoint
+    ''' </summary>
+    ''' <returns>The unique FX3 serial number</returns>
+    Private Function GetSerialNumber() As String
+        Dim serialNumber As String
+        Dim buf(31) As Byte
+        ConfigureControlEndpoint(&HB5, False)
+        XferControlData(buf, 32, 2000)
+        serialNumber = System.Text.Encoding.Unicode.GetString(buf)
+        Return serialNumber
     End Function
 
     ''' <summary>
@@ -2058,7 +2072,7 @@ Public Class FX3Connection
     ''' <summary>
     ''' Enumerates all the FX3 endpoints used
     ''' </summary>
-    Private Sub EnumerateEndpoints()
+    Private Sub EnumerateEndpointsOnTarget()
 
         'Enumerate the bulk endpoints
         For Each endpoint In m_ActiveFX3.EndPoints
@@ -2079,7 +2093,7 @@ Public Class FX3Connection
     ''' <summary>
     ''' Checks that the board is enumerated and connected via USB 2.0 or 3.0
     ''' </summary>
-    Private Sub CheckConnectionSpeed()
+    Private Sub CheckConnectionSpeedOnTarget()
 
         If IsNothing(m_ActiveFX3) Then
             'Clear the active FX3 device handle
