@@ -89,6 +89,14 @@ const uint8_t FirmwareID[32] __attribute__ ((aligned (32))) = { 'A', 'D', 'I', '
 //Constant error string used to write "ERROR" to output buffer
 const uint8_t ErrorString[16] __attribute__ ((aligned (16))) = { 'E', 'R', 'R', 'O', 'R', '\0'};
 
+//Constant FX3 unique serial number
+char serial_number[] __attribute__ ((aligned (32))) = {
+	    '0',0x00,'0',0x00,'0',0x00,'0',0x00,
+	    '0',0x00,'0',0x00,'0',0x00,'0',0x00,
+	    '0',0x00,'0',0x00,'0',0x00,'0',0x00,
+	    '0',0x00,'0',0x00,'0',0x00,'0',0x00,
+};
+
 /*
  * Runtime Global Variables
  */
@@ -259,6 +267,15 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
         	//ID Check
             case ADI_FIRMWARE_ID_CHECK:
                 status = CyU3PUsbSendEP0Data (32, (uint8_t *)FirmwareID);
+            	if (status != CY_U3P_SUCCESS)
+            	{
+            		isHandled = CyFalse;
+            	}
+                break;
+
+            //Serial Number Check
+            case ADI_SERIAL_NUMBER_CHECK:
+            	status = CyU3PUsbSendEP0Data (32, (uint8_t *)serial_number);
             	if (status != CY_U3P_SUCCESS)
             	{
             		isHandled = CyFalse;
@@ -2923,14 +2940,15 @@ CyU3PReturnStatus_t AdiDeviceInit()
     CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
     //Get USB serial number from FX3 die id
-    static const char hex_digit[16] = "0123456789ABCDEF";
     static uint32_t *EFUSE_DIE_ID = ((uint32_t *)0xE0055010);
+    static const char hex_digit[16] = "0123456789ABCDEF";
     uint32_t die_id[2];
 
-	//Write FX3 die ID to USB serial number descriptor
+	//Write FX3 die ID to USB serial number descriptor and a global variable
 	CyU3PReadDeviceRegisters(EFUSE_DIE_ID, 2, die_id);
 	for (int i = 0; i < 2; i++)
 	{
+		//Access via the USB descriptor
 		CyFxUSBSerialNumDesc[i*16+ 2] = hex_digit[(die_id[1-i] >> 28) & 0xF];
 		CyFxUSBSerialNumDesc[i*16+ 4] = hex_digit[(die_id[1-i] >> 24) & 0xF];
 		CyFxUSBSerialNumDesc[i*16+ 6] = hex_digit[(die_id[1-i] >> 20) & 0xF];
@@ -2939,6 +2957,17 @@ CyU3PReturnStatus_t AdiDeviceInit()
 		CyFxUSBSerialNumDesc[i*16+12] = hex_digit[(die_id[1-i] >>  8) & 0xF];
 		CyFxUSBSerialNumDesc[i*16+14] = hex_digit[(die_id[1-i] >>  4) & 0xF];
 		CyFxUSBSerialNumDesc[i*16+16] = hex_digit[(die_id[1-i] >>  0) & 0xF];
+
+		//Access via a vendor command
+		serial_number[i*16+ 0] = hex_digit[(die_id[1-i] >> 28) & 0xF];
+		serial_number[i*16+ 2] = hex_digit[(die_id[1-i] >> 24) & 0xF];
+		serial_number[i*16+ 4] = hex_digit[(die_id[1-i] >> 20) & 0xF];
+		serial_number[i*16+ 6] = hex_digit[(die_id[1-i] >> 16) & 0xF];
+		serial_number[i*16+ 8] = hex_digit[(die_id[1-i] >> 12) & 0xF];
+		serial_number[i*16+10] = hex_digit[(die_id[1-i] >>  8) & 0xF];
+		serial_number[i*16+12] = hex_digit[(die_id[1-i] >>  4) & 0xF];
+		serial_number[i*16+14] = hex_digit[(die_id[1-i] >>  0) & 0xF];
+
 	}
 
     //Initialize USB

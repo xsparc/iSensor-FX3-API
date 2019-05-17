@@ -145,6 +145,9 @@ struct BoardConfig
 //Return the current status of the FX3 firmware
 #define ADI_GET_STATUS							(0xB4)
 
+//Return the FX3 unique serial number
+#define ADI_SERIAL_NUMBER_CHECK					(0xB5)
+
 //Start/stop a generic data stream
 #define ADI_STREAM_GENERIC_DATA					(0xC0)
 
