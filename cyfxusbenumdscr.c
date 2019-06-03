@@ -56,7 +56,7 @@ const uint8_t CyFxUSBHSConfigDscr[] __attribute__ ((aligned (32))) =
     0x01,                           /* Configuration number */
     0x00,                           /* COnfiguration string index */
     0x80,                           /* Config characteristics - bus powered */
-    0xFA,                           /* Max power consumption of device (in 2mA unit) : 500mA */
+    0x32,                           /* Max power consumption of device (in 2mA unit) : 500mA */
 
     /* Interface descriptor */
     0x09,                           /* Descriptor size */
@@ -74,8 +74,7 @@ const uint8_t CyFxUSBHSConfigDscr[] __attribute__ ((aligned (32))) =
     CY_U3P_USB_ENDPNT_DESCR,        /* Endpoint descriptor type */
     ADI_STREAMING_ENDPOINT,         /* Endpoint address and description */
     CY_U3P_USB_EP_BULK,             /* Bulk endpoint type */
-    0x00,                           /* Max packet size = 512 bytes */
-    0x02,
+    0x00,0x02,                      /* Max packet size = 512 bytes */
     0x00,                           /* Servicing interval for data transfers : 0 for bulk */
 
     /* Endpoint descriptor for ADI_FROM_PC endpoint */
@@ -83,8 +82,7 @@ const uint8_t CyFxUSBHSConfigDscr[] __attribute__ ((aligned (32))) =
     CY_U3P_USB_ENDPNT_DESCR,        /* Endpoint descriptor type */
     ADI_FROM_PC_ENDPOINT,           /* Endpoint address and description */
     CY_U3P_USB_EP_BULK,             /* Bulk endpoint type */
-    0x00,                           /* Max packet size = 512 bytes */
-    0x02,
+    0x00,0x02,                      /* Max packet size = 512 bytes */
     0x00,                           /* Servicing interval for data transfers : 0 for bulk */
 
     /* Endpoint descriptor for ADI_TO_PC endpoint */
@@ -92,8 +90,7 @@ const uint8_t CyFxUSBHSConfigDscr[] __attribute__ ((aligned (32))) =
     CY_U3P_USB_ENDPNT_DESCR,        /* Endpoint descriptor type */
     ADI_TO_PC_ENDPOINT,             /* Endpoint address and description */
     CY_U3P_USB_EP_BULK,             /* Bulk endpoint type */
-    0x00,                           /* Max packet size = 512 bytes */
-    0x02,
+    0x00,0x02,                      /* Max packet size = 512 bytes */
     0x00                            /* Servicing interval for data transfers : 0 for bulk */
 };
 
@@ -154,8 +151,7 @@ const uint8_t CyFxUSBBOSDscr[] __attribute__ ((aligned (32))) =
     0x07,                           /* Descriptor size */
     CY_U3P_DEVICE_CAPB_DESCR,       /* Device capability type descriptor */
     CY_U3P_USB2_EXTN_CAPB_TYPE,     /* USB 2.0 extension capability type */
-    0x1E,0x64,0x00,0x00,            /* Supported device level features: LPM support, BESL supported,
-                                       Baseline BESL=400 us, Deep BESL=1000 us. */
+    0x2,0x00,0x00,0x00,             /* Supported device level features: LPM support */
 
     /* SuperSpeed device capability */
     0x0A,                           /* Descriptor size */
@@ -179,7 +175,7 @@ const uint8_t CyFxUSBSSConfigDscr[] __attribute__ ((aligned (32))) =
     0x01,                           /* Configuration number */
     0x00,                           /* Configuration string index */
     0x80,                           /* Config characteristics - Bus powered */
-    0x3E,                           /* Max power consumption of device (in 8mA unit) : 496mA */
+    0x32,                           /* Max power consumption of device (in 8mA unit) : 400mA */
 
     /* Interface descriptor */
     0x09,                           /* Descriptor size */
@@ -268,7 +264,7 @@ const uint8_t CyFxUSBFSConfigDscr[] __attribute__ ((aligned (32))) =
     0x01,                           /* Configuration number */
     0x00,                           /* COnfiguration string index */
     0x80,                           /* Config characteristics - bus powered */
-    0xFA,                           /* Max power consumption of device (in 2mA unit) : 500mA */
+    0x32,                           /* Max power consumption of device (in 2mA unit) : 100mA */
 
     /* Interface descriptor */
     0x09,                           /* Descriptor size */

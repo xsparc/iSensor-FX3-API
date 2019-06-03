@@ -96,6 +96,7 @@ CyU3PReturnStatus_t AdiRealTimeFinished();
 //Generic data stream functions.
 CyU3PReturnStatus_t AdiGenericDataStreamStart();
 CyU3PReturnStatus_t AdiGenericDataStreamFinished();
+void AdiGenericDataStreamTransmit();
 
 //Burst stream functions.
 CyU3PReturnStatus_t AdiBurstStreamStart();
@@ -303,13 +304,14 @@ struct BoardConfig
 #define ADI_DATA_STREAMING_START				(1 << 3)
 #define ADI_DATA_STREAMING_STOP					(1 << 4)
 #define ADI_DATA_STREAMING_DONE					(1 << 5)
-#define ADI_GENERIC_STREAM_ENABLE				(1 << 6)
+#define ADI_DATA_STREAMING_TRANSMIT				(1 << 6)
 #define ADI_REAL_TIME_STREAM_ENABLE				(1 << 7)
 #define ADI_KILL_THREAD_EARLY					(1 << 8)	//Currently unused.
 #define ADI_BURST_STREAMING_START				(1 << 9)
 #define ADI_BURST_STREAMING_STOP				(1 << 10)
 #define ADI_BURST_STREAMING_DONE				(1 << 11)
 #define ADI_BURST_STREAM_ENABLE					(1 << 12)
+#define ADI_GENERIC_STREAM_ENABLE				(1 << 13)
 
 
 /*
