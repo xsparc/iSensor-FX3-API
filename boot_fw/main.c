@@ -34,8 +34,6 @@ uint16_t mode = 0;
 extern void
 myUsbBoot (
         void);
-extern uint8_t glCheckForDisconnect;
-extern uint8_t glInCompliance;
 
 /****************************************************************************
  * main:
