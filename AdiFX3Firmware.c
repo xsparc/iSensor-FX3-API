@@ -2537,172 +2537,7 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 	return isHandled;
 }
 
-/*
- * Function: AdiDebugInit()
- *
- * This function initializes the UART controller to send debug messages.
- * The debug prints are routed to the UART and can be seen using a UART console
- * running at 115200 baud rate.
- *
- * Returns: Void
- */
-void AdiDebugInit(void)
-{
-    CyU3PUartConfig_t uartConfig;
-    CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
-    /* Initialize the UART for printing debug messages */
-    status = CyU3PUartInit();
-    if (status != CY_U3P_SUCCESS)
-    {
-        /* Error handling */
-        AdiAppErrorHandler(status);
-    }
-
-    /* Set UART configuration */
-    CyU3PMemSet ((uint8_t *)&uartConfig, 0, sizeof (uartConfig));
-    uartConfig.baudRate = CY_U3P_UART_BAUDRATE_115200;
-    uartConfig.stopBit = CY_U3P_UART_ONE_STOP_BIT;
-    uartConfig.parity = CY_U3P_UART_NO_PARITY;
-    uartConfig.txEnable = CyTrue;
-    uartConfig.rxEnable = CyFalse;
-    uartConfig.flowCtrl = CyFalse;
-    uartConfig.isDma = CyTrue;
-
-    /* Set the UART configuration */
-    status = CyU3PUartSetConfig (&uartConfig, NULL);
-    if (status != CY_U3P_SUCCESS)
-    {
-    	AdiAppErrorHandler(status);
-    }
-
-    /* Set the UART transfer to a really large value. */
-    status = CyU3PUartTxSetBlockXfer (0xFFFFFFFF);
-    if (status != CY_U3P_SUCCESS)
-    {
-    	AdiAppErrorHandler(status);
-    }
-
-    /* Initialize the debug module. */
-    status = CyU3PDebugInit (CY_U3P_LPP_SOCKET_UART_CONS, 8);
-    if (status != CY_U3P_SUCCESS)
-    {
-    	AdiAppErrorHandler(status);
-    }
-
-    /* Turn off the preamble to the debug messages. */
-    CyU3PDebugPreamble(CyFalse);
-
-    /* Send a success command over the newly-created debug port. */
-    CyU3PDebugPrint (4, "\r\n");
-    CyU3PDebugPrint (4, "Debugger successfully initialized!\r\n");
-    CyU3PDebugPrint (4, "\r\n");
-}
-
-/*
- * Function: AdiConfigureBulkEndpoint()
- *
- * This function configures Bulk-In endpoint 1 (FX3 to PC). It also sets up a DMA channel
- * to connect the SPI producer with the USB consumer, allowing automatic DMA transfer in
- * real time streaming mode.
- *
- * Returns: The success of the endpoint configuration operation
- */
-CyU3PReturnStatus_t AdiConfigureEndpoints()
-{
-	CyU3PEpConfig_t bulkCfg;
-	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-
-	//Clear the config
-	CyU3PMemSet ((uint8_t *)&bulkCfg, 0, sizeof (bulkCfg));
-
-	//Set bulk endpoint parameters
-	bulkCfg.enable = CyTrue;
-	bulkCfg.epType = CY_U3P_USB_EP_BULK;
-	bulkCfg.burstLen = 1;
-	bulkCfg.pcktSize = 512;
-	bulkCfg.streams = 0;
-
-	//Set endpoint config for real time streaming endpoint
-	status = CyU3PSetEpConfig(ADI_STREAMING_ENDPOINT, &bulkCfg);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Setting RTS endpoint failed, Error Code = %d\n", status);
-		return status;
-	}
-
-	//Set endpoint config for the PC to FX3 direction
-	status = CyU3PSetEpConfig(ADI_FROM_PC_ENDPOINT, &bulkCfg);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Setting PC to FX3 endpoint failed, Error Code = %d\n", status);
-		return status;
-	}
-
-	//Set endpoint config for the FX3 to PC direction
-	status = CyU3PSetEpConfig(ADI_TO_PC_ENDPOINT, &bulkCfg);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Setting FX3 to PC endpoint failed, Error Code = %d\n", status);
-		return status;
-	}
-
-	//Flush endpoint memory
-	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
-	CyU3PUsbFlushEp(ADI_FROM_PC_ENDPOINT);
-	CyU3PUsbFlushEp(ADI_TO_PC_ENDPOINT);
-
-	//Configure DMA for real time streaming channel
-	//Force DMA packet size to match USB High Speed (512 bytes)
-    CyU3PDmaChannelConfig_t dmaConfig;
-    dmaConfig.size = 512;
-    dmaConfig.count = 256;
-    dmaConfig.prodSckId = CY_U3P_LPP_SOCKET_SPI_PROD;
-    dmaConfig.consSckId = CY_U3P_UIB_SOCKET_CONS_1;
-    dmaConfig.dmaMode = CY_U3P_DMA_MODE_BYTE;
-
-    //Disable DMA callbacks
-    dmaConfig.prodHeader     = 0;
-    dmaConfig.prodFooter     = 0;
-    dmaConfig.consHeader     = 0;
-    dmaConfig.notification   = 0;
-    dmaConfig.cb             = NULL;
-    dmaConfig.prodAvailCount = 0;
-
-    //Configure DMA for RealTimeStreamingChannel
-    status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_AUTO, &dmaConfig);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Configuring the RTS DMA failed, Error Code = %d\n", status);
-		return status;
-	}
-
-    //Configure DMA for ChannelFromPC
-    dmaConfig.count = 0;
-    dmaConfig.prodSckId = CY_U3P_UIB_SOCKET_PROD_1;
-    dmaConfig.consSckId = CY_U3P_CPU_SOCKET_CONS;
-
-    status = CyU3PDmaChannelCreate(&ChannelFromPC, CY_U3P_DMA_TYPE_MANUAL_IN, &dmaConfig);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Configuring the ChannelFromPC DMA failed, Error Code = %d\n", status);
-		return status;
-	}
-
-    //Configure DMA for ChannelToPC
-    dmaConfig.count = 0;
-    dmaConfig.prodSckId = CY_U3P_CPU_SOCKET_PROD;
-    dmaConfig.consSckId = CY_U3P_UIB_SOCKET_CONS_2;
-
-    status = CyU3PDmaChannelCreate(&ChannelToPC, CY_U3P_DMA_TYPE_MANUAL_OUT, &dmaConfig);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Configuring the ChannelToPC DMA failed, Error Code = %d\n", status);
-		return status;
-	}
-
-	return status;
-}
 
 /*
  * Function: AdiBulkEndpointHandler(CyU3PUsbEpEvtType evType,CyU3PUSBSpeed_t usbSpeed, uint8_t epNum)
@@ -3109,6 +2944,68 @@ void AdiDataStream_Entry(uint32_t input)
         /* Allow other ready threads to run. */
         CyU3PThreadRelinquish ();
 	}
+}
+
+/*
+ * Function: AdiDebugInit()
+ *
+ * This function initializes the UART controller to send debug messages.
+ * The debug prints are routed to the UART and can be seen using a UART console
+ * running at 115200 baud rate.
+ *
+ * Returns: Void
+ */
+void AdiDebugInit(void)
+{
+    CyU3PUartConfig_t uartConfig;
+    CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+
+    /* Initialize the UART for printing debug messages */
+    status = CyU3PUartInit();
+    if (status != CY_U3P_SUCCESS)
+    {
+        /* Error handling */
+        AdiAppErrorHandler(status);
+    }
+
+    /* Set UART configuration */
+    CyU3PMemSet ((uint8_t *)&uartConfig, 0, sizeof (uartConfig));
+    uartConfig.baudRate = CY_U3P_UART_BAUDRATE_115200;
+    uartConfig.stopBit = CY_U3P_UART_ONE_STOP_BIT;
+    uartConfig.parity = CY_U3P_UART_NO_PARITY;
+    uartConfig.txEnable = CyTrue;
+    uartConfig.rxEnable = CyFalse;
+    uartConfig.flowCtrl = CyFalse;
+    uartConfig.isDma = CyTrue;
+
+    /* Set the UART configuration */
+    status = CyU3PUartSetConfig (&uartConfig, NULL);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+    /* Set the UART transfer to a really large value. */
+    status = CyU3PUartTxSetBlockXfer (0xFFFFFFFF);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+    /* Initialize the debug module. */
+    status = CyU3PDebugInit (CY_U3P_LPP_SOCKET_UART_CONS, 8);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+    /* Turn off the preamble to the debug messages. */
+    CyU3PDebugPreamble(CyFalse);
+
+    /* Send a success command over the newly-created debug port. */
+    CyU3PDebugPrint (4, "\r\n");
+    CyU3PDebugPrint (4, "Debugger successfully initialized!\r\n");
+    CyU3PDebugPrint (4, "\r\n");
 }
 
 /*
