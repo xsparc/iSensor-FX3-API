@@ -35,6 +35,7 @@
 #include "cyu3utils.h"
 #include "cyu3gpio.h"
 #include "cyu3vic.h"
+#include "cyu3pib.h"
 #include <stdlib.h>
 #include <sys/unistd.h>
 
@@ -49,18 +50,25 @@
  * Function Declarations
  */
 //Initialization and configuration functions.
-CyU3PReturnStatus_t AdiGetSpiSettings();
-CyU3PReturnStatus_t AdiSpiInit();
 void AdiDebugInit(void);
-void AdiSetDefaultSpiConfig();
-CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length);
-CyU3PReturnStatus_t AdiConfigureEndpoints();
-CyU3PReturnStatus_t AdiGPIOInit();
 void AdiAppInit(void);
-CyBool_t AdiLPMRequestHandler(CyU3PUsbLinkPowerMode link_mode);
-CyU3PReturnStatus_t AdiCreateEventFlagGroup();
-CyU3PReturnStatus_t AdiSpiResetFifo(CyBool_t isTx, CyBool_t isRx);
+void AdiAppStart (void);
+void AdiAppStop (void);
 void AdiAppErrorHandler (CyU3PReturnStatus_t status);
+CyU3PReturnStatus_t AdiGetSpiSettings();
+CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length);
+CyU3PReturnStatus_t AdiSpiResetFifo(CyBool_t isTx, CyBool_t isRx);
+
+/* Event Handlers */
+CyBool_t AdiControlEndpointHandler(uint32_t setupdat0, uint32_t setupdat1);
+void AdiBulkEndpointHandler(CyU3PUsbEpEvtType evType,CyU3PUSBSpeed_t usbSpeed, uint8_t epNum);
+void AdiUSBEventHandler(CyU3PUsbEventType_t evtype, uint16_t evdata);
+CyBool_t AdiLPMRequestHandler(CyU3PUsbLinkPowerMode link_mode);
+void AdiGPIOEventHandler(uint8_t gpioId);
+
+/* Application entry points */
+void AppThread_Entry(uint32_t input);
+void AdiDataStream_Entry(uint32_t input);
 
 //Pin functions.
 CyU3PReturnStatus_t AdiPulseDrive();
@@ -72,7 +80,6 @@ CyU3PReturnStatus_t AdiPinRead(uint16_t pin);
 CyU3PReturnStatus_t AdiReadTimerValue();
 uint32_t AdiMStoTicks(uint32_t desiredStallTime);
 void AdiWaitForTimerTicks(uint32_t numTicks);
-void AdiGPIOEventHandler(uint8_t gpioId);
 
 //Peripheral read-write functions.
 CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data);
@@ -81,13 +88,6 @@ CyU3PReturnStatus_t AdiBulkByteTransfer(uint16_t numBytes, uint16_t bytesPerCapt
 CyU3PReturnStatus_t AdiWritePageReg(uint16_t pageNumber);
 CyU3PReturnStatus_t AdiReadSpiReg(uint16_t address, uint16_t page, uint16_t numBytes, uint8_t  *buffer);
 CyU3PReturnStatus_t AdiWriteSpiReg(uint16_t address, uint16_t page, uint16_t numBytes, uint8_t  *buffer);
-void AdiBulkEndpointHandler(CyU3PUsbEpEvtType evType,CyU3PUSBSpeed_t usbSpeed, uint8_t epNum);
-CyBool_t AdiControlEndpointHandler(uint32_t setupdat0, uint32_t setupdat1);
-void AdiUSBEventHandler(CyU3PUsbEventType_t evtype, uint16_t evdata);
-
-//Application entry points.
-void AppThread_Entry(uint32_t input);
-void AdiDataStream_Entry(uint32_t input);
 
 //Real-time data stream functions.
 CyU3PReturnStatus_t AdiRealTimeStart();
@@ -134,8 +134,8 @@ struct BoardConfig
 //Return FX3 firmware ID (defined below)
 #define ADI_FIRMWARE_ID_CHECK					(0xB0)
 
-//Reset the FX3 firmware
-#define ADI_FIRMWARE_RESET						(0xB1)
+/* Hard-reset the FX3 firmware (return to bootloader mode) */
+#define ADI_HARD_RESET							(0xB1)
 
 //Set FX3 SPI configuration
 #define ADI_SET_SPI_CONFIG						(0xB2)
@@ -148,6 +148,9 @@ struct BoardConfig
 
 //Return the FX3 unique serial number
 #define ADI_SERIAL_NUMBER_CHECK					(0xB5)
+
+/* Soft-reset the FX3 firmware (don't return to bootloader mode) */
+#define ADI_WARM_RESET							(0xB6)
 
 //Start/stop a generic data stream
 #define ADI_STREAM_GENERIC_DATA					(0xC0)
