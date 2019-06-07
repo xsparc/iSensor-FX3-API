@@ -141,7 +141,10 @@
     </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>copy /Y "C:\Users\jchong\Documents\GitHub\iSensor-FX3-Firmware\Debug\FX3_Firmware.img" "$(ProjectDir)\Resources\FX3_Firmware.img"</PreBuildEvent>
+    <PreBuildEvent>copy /Y "C:\Users\jchong\Documents\GitHub\iSensor-FX3-Firmware\Debug\FX3_Firmware.img" "$(ProjectDir)\Resources\FX3_Firmware.img"
+copy /Y "C:\Users\jchong\Documents\ADI GitLab\AdisInterface\src\app\bin\x86\Debug\adisInterface.dll" "$(ProjectDir)Resources\adisInterface.dll"
+copy /Y "C:\Users\jchong\Documents\ADI GitLab\AdisInterface\src\app\bin\x86\Debug\adisInterface.pdb" "$(ProjectDir)Resources\adisInterface.pdb"
+copy /Y "C:\Users\jchong\Documents\ADI GitLab\AdisInterface\src\app\bin\x86\Debug\adisInterface.xml" "$(ProjectDir)Resources\adisInterface.xml"</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

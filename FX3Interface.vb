@@ -9,7 +9,6 @@ Imports AdisApi
 Imports System.IO
 Imports System.Threading
 Imports System.Collections.Concurrent
-Imports RegMapClasses
 
 ''' <summary>
 ''' Class for interfacing with the FX3 based eval platform. Implements IRegInterface and IPinFcns
@@ -28,18 +27,14 @@ Public Class FX3Connection
 
     'Private variables
 
-    Private m_Workers As IList(Of BackgroundWorker) = New List(Of BackgroundWorker)
+    'Add event handlers for programming the FX3 board
+    Private WithEvents appBw As BackgroundWorker
 
-    Private Structure ProgrammerArgs
-        Dim boardId As CyFX3Device
-        Dim firmwarePath As String
-    End Structure
+    'Bool to track if programming has completed
+    Private m_ProgrammingFinished As Boolean = False
 
     'Bool to track if the FX3 is currently connected
     Private m_FX3Connected As Boolean
-
-    'Bool to enable/disable handling USB disconnect events (used for programming)
-    Private m_disableDisconnect As Boolean
 
     'SPI config struct for tracking the current FX3 configuration
     Private m_FX3_SpiConfig As SPIConfig
@@ -134,7 +129,10 @@ Public Class FX3Connection
     ''' </summary>
     ''' <param name="SensorType">The sensor type. Valid inputs are IMU and ADcmXL. Default is IMU.</param>
     Public Sub New(ByVal FX3FirmwarePath As String, ByVal FX3BlinkFirmwarePath As String, Optional ByVal SensorType As DeviceType = DeviceType.IMU)
-
+        'Initialize background workers
+        appBw = New BackgroundWorker
+        appBw.WorkerReportsProgress = True
+        appBw.WorkerSupportsCancellation = True
         'Store sensor type in a local variable
         m_sensorType = SensorType
         'Set the firmware path
@@ -159,6 +157,7 @@ Public Class FX3Connection
     Public Sub Connect(ByVal deviceSn As String)
 
         Dim tempHandle As CyUSBDevice = Nothing
+        Dim timeoutTimer As New Stopwatch
 
         'Exit sub if we're already connected to a device
         If m_FX3Connected = True Then
@@ -184,20 +183,30 @@ Public Class FX3Connection
         'Check the active FX3 firmware and compare against the requested serial number
         If String.Equals(tempHandle.SerialNumber, deviceSn) Then
             'If the board is already programmed and in streamer mode, then don't re-program
-            If Not String.Equals(tempHandle.FriendlyName, "Cypress FX3 USB StreamerExample Device") Then
+            If String.Equals(tempHandle.FriendlyName, "Cypress FX3 USB StreamerExample Device") Then
+                'Set flag indicating that the FX3 successfully connected
+                m_FX3Connected = True
+            Else
+                If Not CType(tempHandle, CyFX3Device).IsBootLoaderRunning Then
+                    Throw New Exception("ERROR: Selected FX3 is not in bootloader mode. Please reset the FX3.")
+                End If
+
+                If FirmwarePath Is Nothing Then
+                    Throw New Exception("ERROR: The firmware path is invalid.")
+                End If
+                timeoutTimer.Start()
                 'Program the application firmware over the boot firmware
-                Dim worker As BackgroundWorker = New BackgroundWorker
-                Dim progArgs As New ProgrammerArgs
-                progArgs.boardId = tempHandle
-                progArgs.firmwarePath = FirmwarePath
-                AddHandler worker.DoWork, AddressOf worker_ProgramSDRAM
-                worker.RunWorkerAsync(progArgs)
+                appBw.RunWorkerAsync(tempHandle)
+                'Wait for board to be programmed and re-enumerate
+                While (timeoutTimer.ElapsedMilliseconds < 11000) And Not m_ProgrammingFinished
+                    Thread.Sleep(500)
+                End While
+                'Reset programming flag
+                m_ProgrammingFinished = False
                 'Set flag indicating that the FX3 successfully connected
                 m_FX3Connected = True
             End If
         End If
-
-        Thread.Sleep(1000)
 
         RefreshDeviceList()
 
@@ -205,11 +214,8 @@ Public Class FX3Connection
         For Each item As CyUSBDevice In m_usbList
             'Look for the selected serial number, get its handle, and set it as the active device
             If String.Equals(item.SerialNumber, deviceSn) Then
-                'Wait for the streamer device to fully enumerate before continuing
-                'Note: m_ActiveFX3 and m_ActiveFX3SN are both set in WaitForStreamer()
                 m_ActiveFX3 = CType(item, CyFX3Device)
                 m_ActiveFX3SN = deviceSn
-                'WaitForStreamer(deviceSn)
             End If
         Next
 
@@ -260,6 +266,8 @@ Public Class FX3Connection
         Thread.Sleep(1000)
         'Set default values for the interface
         SetDefaultValues(m_sensorType)
+        'Force a refresh of the board list
+        RefreshDeviceList()
 
     End Sub
 
@@ -1041,67 +1049,6 @@ Public Class FX3Connection
 #Region "Generic Stream Functions"
 
     ''' <summary>
-    ''' Starts a generic register stream
-    ''' </summary>
-    ''' <param name="addr">List of registers to read</param>
-    ''' <param name="numCaptures">Number of times to read the register list in each buffer</param>
-    ''' <param name="numBuffers">Total number of buffers to capture</param>
-    Private Sub StartGenericStream(addr As IEnumerable(Of UInteger), numCaptures As UInteger, numBuffers As UInteger)
-
-        'Buffer to store control data
-        Dim buf As New List(Of Byte)
-        'Number of bytes per buffer
-        Dim numBytesPerBuffer As Integer
-
-        'Wait for previous stream thread to exit, if any
-        StreamThreadRunning = False
-        While Not ThreadTerminated
-        End While
-
-        'Calculate number of bytes per buffer
-        numBytesPerBuffer = addr.Count() * numCaptures
-
-        'Add numBuffers
-        buf.Add(numBuffers And &HFF)
-        buf.Add((numBuffers And &HFF00) >> 8)
-        buf.Add((numBuffers And &HFF0000) >> 16)
-        buf.Add((numBuffers And &HFF000000) >> 24)
-
-        'Add numCaptures
-        buf.Add(numCaptures And &HFF)
-        buf.Add((numCaptures And &HFF00) >> 8)
-        buf.Add((numCaptures And &HFF0000) >> 16)
-        buf.Add((numCaptures And &HFF000000) >> 24)
-
-        'Add address list
-        For Each address In addr
-            buf.Add(address And &HFF)
-        Next
-
-        'Configure the control endpoint
-        ConfigureControlEndpoint(&HC0, True)
-
-        'Configure settings to enable/disable streaming
-        m_ActiveFX3.ControlEndPt.Value = 0
-        m_ActiveFX3.ControlEndPt.Index = 1
-
-        'Send start command to the FX3
-        If Not XferControlData(buf.ToArray(), buf.Count, 5000) Then
-            Throw New Exception("ERROR: Control Endpoint transfer timed out")
-        End If
-
-        'Set the streaming state variables
-        TotalBuffersToRead = numBuffers
-        StreamThreadRunning = True
-        FramesRead = 0
-
-        'Start the streaming thread
-        StreamThread = New Thread(AddressOf GenericStreamManager)
-        StreamThread.Start(numBytesPerBuffer)
-
-    End Sub
-
-    ''' <summary>
     ''' Stops a generic stream by setting the stream state variables
     ''' </summary>
     Public Sub StopGenericStream()
@@ -1124,13 +1071,24 @@ Public Class FX3Connection
     ''' This function pulls generic stream data from the FX3 over a bulk endpoint (DataIn). It is intended to run in its own thread,
     ''' and should not be called by itself.
     ''' </summary>
-    ''' <param name="BytesPerBuffer">The number of bytes per USB transaction</param>
-    Private Sub GenericStreamManager(ByVal BytesPerBuffer As Object)
+    ''' <param name="addr"></param>
+    ''' <param name="numBuffers"></param>
+    ''' <param name="numCaptures"></param>
+    Private Sub RunGenericStream(addr As IEnumerable(Of AddrDataPair), numCaptures As UInteger, numBuffers As UInteger)
 
+        'Buffer to store control data
+        Dim buf As New List(Of Byte)
+        'Number of bytes per buffer
+        Dim wordsPerTransfer As Integer = (addr.Count() * numCaptures)
+        'Reset frame counter
+        FramesRead = 0
+        'Set the total number of frames to read
+        TotalBuffersToRead = numBuffers
         'Get the number of bytes per transfer from the DUT
-        Dim bytesPerTransfer As Integer = (Convert.ToInt32(BytesPerBuffer) * 2)
+        Dim bytesPerTransfer As Integer = (wordsPerTransfer * 2)
         'Buffer to store data from the FX3
-        Dim buf(bytesPerTransfer - 1) As Byte
+        'Dim dataBuffer(bytesPerTransfer - 1) As Byte
+        Dim dataBuffer(1023) As Byte
         'Bool to track if transfer from FX3 board is successful
         Dim validTransfer As Boolean = True
         'Variable to track number of buffers read
@@ -1139,12 +1097,44 @@ Public Class FX3Connection
         Dim bufferBuilder As New List(Of UShort)
         'Int to track buffer index
         Dim bufIndex As Integer = 0
+        'Int to track frame index
+        Dim frameIndex As Integer = 0
         'Short value for flipping bytes
         Dim shortValue As UShort
 
-        'Set total frames (infinite if less than 1)
-        If TotalBuffersToRead < 1 Then
-            TotalBuffersToRead = Int32.MaxValue
+        'Add numBuffers
+        buf.Add(numBuffers And &HFF)
+        buf.Add((numBuffers And &HFF00) >> 8)
+        buf.Add((numBuffers And &HFF0000) >> 16)
+        buf.Add((numBuffers And &HFF000000) >> 24)
+
+        'Add numCaptures
+        buf.Add(numCaptures And &HFF)
+        buf.Add((numCaptures And &HFF00) >> 8)
+        buf.Add((numCaptures And &HFF0000) >> 16)
+        buf.Add((numCaptures And &HFF000000) >> 24)
+
+        'Add address list
+        For Each item In addr
+            If item.data Is Nothing Then
+                buf.Add(item.addr And &HFF)
+                buf.Add(&H0)
+            Else
+                buf.Add(item.addr And &HFF)
+                buf.Add(item.data And &HFF)
+            End If
+        Next
+
+        'Configure the control endpoint
+        ConfigureControlEndpoint(&HC0, True)
+
+        'Configure settings to enable/disable streaming
+        m_ActiveFX3.ControlEndPt.Value = 0
+        m_ActiveFX3.ControlEndPt.Index = 1
+
+        'Send start command to the FX3
+        If Not XferControlData(buf.ToArray(), buf.Count, 5000) Then
+            Throw New Exception("ERROR: Control Endpoint transfer timed out")
         End If
 
         'Set the thread state flags
@@ -1153,25 +1143,30 @@ Public Class FX3Connection
 
         While StreamThreadRunning
             'Read data from FX3
-            validTransfer = DataInEndPt.XferData(buf, bytesPerTransfer)
-            'Exit the loop when transfer fails
+            validTransfer = DataInEndPt.XferData(dataBuffer, 1024)
+            'Exit the loop if transfer fails
             If validTransfer Then
                 'Build the output buffer
-                For bufIndex = 0 To bytesPerTransfer - 2 Step 2
+                For bufIndex = 0 To (((1024 / bytesPerTransfer) * bytesPerTransfer) - 2) Step 2
                     'Flip bytes
-                    shortValue = buf(bufIndex)
+                    shortValue = dataBuffer(bufIndex)
                     shortValue = shortValue << 8
-                    shortValue = shortValue + buf(bufIndex + 1)
+                    shortValue = shortValue + dataBuffer(bufIndex + 1)
                     bufferBuilder.Add(shortValue)
+                    frameIndex = frameIndex + 2
+                    'Once the end of each frame is reached add it to the queue
+                    If frameIndex >= bytesPerTransfer Then
+                        StreamData.Enqueue(bufferBuilder.ToArray())
+                        Interlocked.Increment(FramesRead)
+                        bufferBuilder.Clear()
+                        numBuffersRead = numBuffersRead + 1
+                        frameIndex = 0
+                        'Exit if the total number of buffers has been read
+                        If numBuffersRead >= TotalBuffersToRead Then
+                            Exit While
+                        End If
+                    End If
                 Next
-                StreamData.Enqueue(bufferBuilder.ToArray())
-                Interlocked.Increment(FramesRead)
-                bufferBuilder.Clear()
-                numBuffersRead = numBuffersRead + 1
-                'Exit if the total number of buffers has been read
-                If numBuffersRead >= TotalBuffersToRead Then
-                    Exit While
-                End If
             Else
                 Exit While
             End If
@@ -1434,15 +1429,14 @@ Public Class FX3Connection
         For Each item As USBDevice In tempList
             'Program any device that enumerates as a stock FX3
             If String.Equals(item.FriendlyName, "Cypress FX3 USB BootLoader Device") Then
-                Dim worker As BackgroundWorker = New BackgroundWorker
-                Dim progArgs As New ProgrammerArgs
-                AddHandler worker.DoWork, AddressOf worker_ProgramSDRAM
-                progArgs.boardId = CType(item, CyFX3Device)
-                progArgs.firmwarePath = BlinkFirmwarePath
-                worker.RunWorkerAsync(progArgs)
+                Dim bootProgWorker As BackgroundWorker = New BackgroundWorker
+                AddHandler bootProgWorker.DoWork, AddressOf bootProgWorker_DoWork
+                AddHandler bootProgWorker.RunWorkerCompleted, AddressOf bootProgWorker_RunWorkerCompleted
+                bootProgWorker.RunWorkerAsync(CType(item, CyFX3Device))
 
                 'Dim programThread = New Thread(Sub() ProgramSDRAM(BlinkFirmwarePath, CType(item, CyFX3Device)))
                 'programThread.Start()
+
             End If
         Next
 
@@ -1455,7 +1449,7 @@ Public Class FX3Connection
     ''' </summary>
     ''' <param name="sender"></param>
     ''' <param name="e"></param>
-    Private Sub usbDevices_DeviceAttached(ByVal sender As Object, e As EventArgs)
+    Private Sub usbDevices_DeviceAttached(ByVal sender As Object, ByVal e As EventArgs)
 
         Dim usbEvent As USBEventArgs = TryCast(e, USBEventArgs)
 
@@ -1468,38 +1462,88 @@ Public Class FX3Connection
     ''' </summary>
     ''' <param name="sender"></param>
     ''' <param name="e"></param>
-    Private Sub usbDevices_DeviceRemoved(ByVal sender As Object, e As EventArgs)
+    Private Sub usbDevices_DeviceRemoved(ByVal sender As Object, ByVal e As EventArgs)
 
         Dim usbEvent As USBEventArgs = TryCast(e, USBEventArgs)
 
-        If Not m_disableDisconnect Then
-            RefreshDeviceList()
-        End If
+        RefreshDeviceList()
 
     End Sub
 
     ''' <summary>
     ''' Loads the firmware image at the specified file path into the FX3 RAM
     ''' </summary>
-    Private Sub worker_ProgramSDRAM(ByVal sender As Object, e As DoWorkEventArgs)
+    Private Sub appBw_DoWork(ByVal sender As Object, ByVal e As DoWorkEventArgs) Handles appBw.DoWork
 
-        Dim progArgs As ProgrammerArgs = e.Argument
+        Dim worker As BackgroundWorker = CType(sender, BackgroundWorker)
+        Dim status As Boolean = False
 
-        If progArgs.boardId Is Nothing Then
-            Throw New Exception("ERROR: Could not convert USB device type.")
+        status = ProgramAppFirmware(e.Argument, worker, e)
+
+        If status Then
+            m_ProgrammingFinished = True
+            appBw.Dispose()
         End If
 
-        If Not progArgs.boardId.IsBootLoaderRunning Then
+    End Sub
+
+    Private Function ProgramAppFirmware(ByVal boardId As CyFX3Device, ByVal worker As BackgroundWorker, ByVal e As DoWorkEventArgs) As Boolean
+
+        Dim progOk As Boolean = False
+        Dim flashFailed As Boolean = False
+        Dim timeoutDelay = 10000
+        Dim timeoutTimer As New Stopwatch
+
+        'Dim timer As New Stopwatch
+        Dim flashStatus As FX3_FWDWNLOAD_ERROR_CODE = FX3_FWDWNLOAD_ERROR_CODE.SUCCESS
+        Dim serialNumber As String = boardId.SerialNumber
+
+        'Attempt to program the board
+        flashStatus = boardId.DownloadFw(FirmwarePath, FX3_FWDWNLOAD_MEDIA_TYPE.RAM)
+
+        If flashStatus = FX3_FWDWNLOAD_ERROR_CODE.FAILED Then
+            flashFailed = True
+        End If
+
+        If flashFailed = True Then
+            progOk = False
+        Else
+            timeoutTimer.Start()
+            While ((timeoutTimer.ElapsedMilliseconds < timeoutDelay) And progOk = False)
+                Thread.Sleep(200)
+                RefreshDeviceList()
+                For Each item As CyUSBDevice In m_usbList
+                    'Look for the device we just programmed
+                    If String.Equals(item.FriendlyName, "Cypress FX3 USB StreamerExample Device") And String.Equals(item.SerialNumber, serialNumber) Then
+                        progOk = True
+                    End If
+                Next
+            End While
+            timeoutTimer.Stop()
+        End If
+
+        Return progOk
+
+    End Function
+
+    ''' <summary>
+    ''' Loads the firmware image at the specified file path into the FX3 RAM
+    ''' </summary>
+    Private Sub bootProgWorker_DoWork(ByVal sender As Object, ByVal e As DoWorkEventArgs)
+
+        Dim boardId As CyFX3Device = e.Argument
+
+        If Not boardId.IsBootLoaderRunning Then
             Throw New Exception("ERROR: Selected FX3 is not in bootloader mode. Please reset the FX3.")
         End If
 
         Dim timer As New Stopwatch
         Dim progOk As Boolean = False
         Dim flashStatus As FX3_FWDWNLOAD_ERROR_CODE = FX3_FWDWNLOAD_ERROR_CODE.SUCCESS
-        Dim devicePath As String = progArgs.boardId.Path
+        Dim devicePath As String = boardId.Path
 
         'Attempt to program the board
-        flashStatus = progArgs.boardId.DownloadFw(progArgs.firmwarePath, FX3_FWDWNLOAD_MEDIA_TYPE.RAM)
+        flashStatus = boardId.DownloadFw(BlinkFirmwarePath, FX3_FWDWNLOAD_MEDIA_TYPE.RAM)
 
         If flashStatus = FX3_FWDWNLOAD_ERROR_CODE.FAILED Then
             Throw New Exception("ERROR: Flash download failed.")
@@ -1508,11 +1552,10 @@ Public Class FX3Connection
         timer.Start()
 
         While (timer.ElapsedMilliseconds < 5000 And Not progOk)
-            Thread.Sleep(250)
-            'Look for the device with a stock serial number
+            Thread.Sleep(500)
             For Each item As CyUSBDevice In m_usbList
                 'Look for the device we just programmed
-                If Not item Is Nothing AndAlso String.Equals(item.FriendlyName, "Cypress FX3 USB StreamerExample Device") AndAlso String.Equals(item.Path, devicePath) Then
+                If String.Equals(item.FriendlyName, "Cypress FX3 USB BulkloopExample Device") And String.Equals(item.Path, devicePath) Then
                     progOk = True
                 End If
             Next
@@ -1523,6 +1566,10 @@ Public Class FX3Connection
         End If
 
         timer.Reset()
+
+    End Sub
+
+    Private Sub bootProgWorker_RunWorkerCompleted(ByVal sender As Object, ByVal e As RunWorkerCompletedEventArgs)
 
     End Sub
 
