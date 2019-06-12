@@ -34,6 +34,11 @@ Public Class FX3Connection
     'Delay (in ms) in polling the cypress USB driver for new devices connected
     Const DeviceListDelay As Integer = 200
 
+    'Connection Events
+
+    'This event is raised when the active board is disconnected unexpectedly (ie unplugged)
+    Event UnexpectedDisconnect(ByVal FX3SerialNum As String)
+
     'Private member variables
 
     'Thread to program the FX3 with the bootloader as needed

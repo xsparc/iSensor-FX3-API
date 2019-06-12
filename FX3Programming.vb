@@ -251,6 +251,9 @@ Partial Class FX3Connection
 
             'Update the FX3Interface device list
             RefreshDeviceList()
+
+            'Raise event so programs up the stack can handle
+            RaiseEvent UnexpectedDisconnect(usbEvent.SerialNum)
         End If
 
     End Sub
