@@ -237,6 +237,7 @@ Partial Class FX3Connection
     ''' <param name="addrData">The AddrDataPair to be written</param>
     Public Sub WriteRegByte(addrData As AddrDataPair) Implements IRegInterface.WriteRegByte
 
+        'Make a call to the hardware level WriteRegByte function with the given data
         WriteRegByte(addrData.addr, addrData.data)
 
     End Sub
@@ -247,6 +248,7 @@ Partial Class FX3Connection
     ''' <param name="addrData">The list of AddrDataPair to be written to DUT</param>
     Public Sub WriteRegByte(addrData As IEnumerable(Of AddrDataPair)) Implements IRegInterface.WriteRegByte
 
+        'Iterate through the IEnumerable list, performing writes as needed
         For Each value In addrData
             WriteRegByte(value.addr, value.data)
         Next
@@ -260,6 +262,9 @@ Partial Class FX3Connection
     ''' <param name="data">The byte of data to write</param>
     Public Sub WriteRegByte(addr As UInteger, data As UInteger) Implements IRegInterface.WriteRegByte
 
+        'Transfer buffer
+        Dim buf(3) As Byte
+
         'Configure control endpoint for a single byte register write
         If Not ConfigureControlEndpoint(&HF1, False) Then
             Throw New Exception("ERROR: Control endpoint configuration failed")
@@ -268,7 +273,6 @@ Partial Class FX3Connection
         FX3ControlEndPt.Index = addr And &HFFFF
 
         'Transfer data
-        Dim buf(3) As Byte
         If Not XferControlData(buf, 4, 2000) Then
             Throw New Exception("ERROR: WriteRegByte timed out - Check board connection")
         End If
@@ -295,7 +299,9 @@ Partial Class FX3Connection
 
     Public Sub WriteRegByte(addr As IEnumerable(Of UInteger), data As IEnumerable(Of UInteger)) Implements IRegInterface.WriteRegByte
 
+        'Index in the IEnumerable register list
         Dim index As Integer = 0
+
         'For each address / data pair, call writeRegByte
         While index < addr.Count And index < data.Count
             WriteRegByte(addr(index), data(index))
@@ -474,10 +480,9 @@ Partial Class FX3Connection
     ''' <returns>Returns the value read in over SPI as a short</returns>
     Public Function ReadRegByte(addr As UInteger) As UShort Implements IRegInterface.ReadRegByte
 
-        'Return upper byte if even address, lower if odd
-
         Dim value As UShort = ReadRegWord(addr)
 
+        'Return upper byte if even address, lower if odd
         If addr Mod 2 = 0 Then
             'Even case
             Return value And &HFF
@@ -495,7 +500,12 @@ Partial Class FX3Connection
     ''' <returns>The 16 bit register value, as a UShort</returns>
     Public Function ReadRegWord(addr As UInteger) As UShort Implements IRegInterface.ReadRegWord
 
+        'Transfer buffer
         Dim buf(1) As Byte
+
+        'Variables to parse value from the buffer
+        Dim returnValue, shiftValue As UShort
+
         'Configure the control endpoint for a single register read
         ConfigureControlEndpoint(&HF0, False)
 
@@ -511,7 +521,6 @@ Partial Class FX3Connection
         End If
 
         'Calculate reg value
-        Dim returnValue, shiftValue As UShort
         shiftValue = buf(0)
         shiftValue = shiftValue << 8
         returnValue = shiftValue + buf(1)

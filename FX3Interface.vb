@@ -3,38 +3,44 @@
 'Description:   Main interfacing library for the Cypress FX3 based eval platform. FX3Connection implements
 '               IRegInterface and IPinFcns, and can be used in place of iSensorSpi in most applications.
 
-Imports System.ComponentModel
 Imports CyUSB
 Imports AdisApi
-Imports System.IO
 Imports System.Threading
 Imports System.Collections.Concurrent
 
 ''' <summary>
-''' Class for interfacing with the FX3 based eval platform. Implements IRegInterface and IPinFcns
+''' Class for interfacing with the FX3 based eval platform. Implements IRegInterface and IPinFcns, in addition
+''' to a superset of extra FX3 specific interfacing functions.
 ''' </summary>
 Public Class FX3Connection
     Implements IRegInterface, IPinFcns
 
 #Region "Interface Variable Initialization"
-    'Public variables
-    Public Enum DeviceType
-        'Specifies default SPI settings compatible with most IMUs
-        IMU = 0
-        'Specifies devault SPI settings for ADcmXL devices
-        ADcmXL
-    End Enum
 
-    'Private variables
+    'Constant definitions
+
+    'Friendly Name for the Cypress bootloader
+    Const CypressBootloaderName As String = "Cypress FX3 USB BootLoader Device"
+
+    'Friendly name for the ADI bootloader
+    Const ADIBootloaderName As String = "Cypress FX3 USB BulkloopExample Device"
+
+    'Friendly name for the ADI Application Firmware
+    Const ApplicationName As String = "Cypress FX3 USB StreamerExample Device"
+
+    'Timeout (in ms) for programming a board with the application firmware
+    Const ProgrammingTimeout As Integer = 10000
+
+    'Delay (in ms) in polling the cypress USB driver for new devices connected
+    Const DeviceListDelay As Integer = 200
+
+    'Private member variables
 
     'Thread to program the FX3 with the bootloader as needed
     Private BootloaderThread As Thread
 
     'Blocking queue to tell the bootloader thread a new board needs to be programmed
     Private BootloaderQueue As BlockingCollection(Of CyFX3Device)
-
-    'Control if bootloader thread is running
-    Private BootloaderThreadRunning As Boolean
 
     'Bool to track if the FX3 is currently connected
     Private m_FX3Connected As Boolean
@@ -128,8 +134,10 @@ Public Class FX3Connection
 #Region "Class Constructors"
 
     ''' <summary>
-    ''' Class Constructor. Loads IMU SPI settings and default values for the interface.
+    ''' Class Constructor. Loads SPI settings and default values for the interface.
     ''' </summary>
+    ''' <param name="FX3FirmwarePath">The path to the FX3 Application Firmware</param>
+    ''' <param name="FX3BlinkFirmwarePath">The path to the ADI FX3 Bootloader</param>
     ''' <param name="SensorType">The sensor type. Valid inputs are IMU and ADcmXL. Default is IMU.</param>
     Public Sub New(ByVal FX3FirmwarePath As String, ByVal FX3BlinkFirmwarePath As String, Optional ByVal SensorType As DeviceType = DeviceType.IMU)
         'Store sensor type in a local variable
@@ -141,7 +149,6 @@ Public Class FX3Connection
         'Initialize default values for the interface and look for connected boards
         SetDefaultValues(m_sensorType)
         'Start the bootloader programmer thread
-        BootloaderThreadRunning = True
         BootloaderQueue = New BlockingCollection(Of CyFX3Device)
         BootloaderThread = New Thread(AddressOf ProgramBootloader_Thread)
         BootloaderThread.IsBackground = True
@@ -195,9 +202,9 @@ Public Class FX3Connection
 #Region "SPI Configuration"
 
     ''' <summary>
-    ''' The current SPI clock frequency, in MHZ
+    ''' Property to get or set the FX3 SPI clock frequency setting.
     ''' </summary>
-    ''' <returns></returns>
+    ''' <returns>The current SPI clock frequency, in MHZ</returns>
     Public Property SclkFrequency As Int32
         'Reqcode:   B2
         'Value:     Don't Care
@@ -222,9 +229,9 @@ Public Class FX3Connection
 
 
     ''' <summary>
-    ''' The current FX3 SPI controller clock polarity setting (True - Idles High, False - Idles Low)
+    ''' Property to get or set the FX3 SPI controller clock polarity setting (True - Idles High, False - Idles Low)
     ''' </summary>
-    ''' <returns></returns>
+    ''' <returns>The current polarity setting</returns>
     Public Property Cpol As Boolean
         'Reqcode:   B2
         'Value:     Polarity (0 active low, 1 active high)
@@ -246,9 +253,9 @@ Public Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' The current FX3 SPI controller chip select phase
+    ''' Property to get or set the FX3 SPI controller chip select phase
     ''' </summary>
-    ''' <returns></returns>
+    ''' <returns>The current chip select phase setting</returns>
     Public Property Cpha As Boolean
         'Reqcode:   B2
         'Value:     Polarity (0 active low, 1 active high)
@@ -269,9 +276,9 @@ Public Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' The current chip select polarity (True - Active High, False - Active Low)
+    ''' Property to get or set the FX3 SPI chip select polarity (True - Active High, False - Active Low)
     ''' </summary>
-    ''' <returns></returns>
+    ''' <returns>The current chip select polarity</returns>
     Public Property ChipSelectPolarity As Boolean
         'Reqcode:   B2
         'Value:     Polarity (0 active low, 1 active high)
@@ -292,9 +299,9 @@ Public Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' The FX3 SPI controller chip select setting. Should be left on hardware control.
+    ''' Property to get or set the FX3 SPI controller chip select setting. Should be left on hardware control.
     ''' </summary>
-    ''' <returns></returns>
+    ''' <returns>The current chip select control mode</returns>
     Public Property ChipSelectControl As SpiChipselectControl
         'Reqcode:   B2
         'Value:     Desired setting ( as SpiChipselectControl )
@@ -477,7 +484,7 @@ Public Class FX3Connection
     ''' <summary>
     ''' If the data ready is used for register reads
     ''' </summary>
-    ''' <returns></returns>
+    ''' <returns>The current data ready usage setting</returns>
     Public Property DrActive As Boolean Implements AdisApi.IRegInterface.DrActive
         Get
             Return m_FX3_SpiConfig.DrActive
@@ -493,9 +500,9 @@ Public Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Property to get the data ready pin
+    ''' Property to get or set the DUT data ready pin
     ''' </summary>
-    ''' <returns></returns>
+    ''' <returns>The IPinObject of the pin currently configured as the data ready</returns>
     Public Property ReadyPin As IPinObject
         Get
             Return m_FX3_SpiConfig.DataReadyPin
@@ -515,7 +522,7 @@ Public Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Property to get the timer tick scale factor used for converting ticks to ms
+    ''' Read only property to get the timer tick scale factor used for converting ticks to ms
     ''' </summary>
     ''' <returns></returns>
     Public ReadOnly Property TimerTickScaleFactor As UInteger
@@ -540,6 +547,17 @@ Public Class FX3Connection
     ''' <returns>Returns a SPIConfig struct representing the current board configuration</returns>
     Private Function GetBoardSpiParameters() As SPIConfig
 
+        'Output buffer
+        Dim buf(22) As Byte
+
+        'Variables to store output config
+        Dim returnConfig As New SPIConfig
+        Dim tempValue As UInteger
+        Dim newClock As Integer
+        Dim newStall As UInteger
+        Dim newTimerTick As UInteger
+        Dim drPinNumber As UInteger
+
         'Configure control end point for vendor command to read SPI settings
         m_ActiveFX3.ControlEndPt.Target = CyConst.TGT_DEVICE
         m_ActiveFX3.ControlEndPt.Direction = CyConst.DIR_FROM_DEVICE
@@ -548,19 +566,8 @@ Public Class FX3Connection
         m_ActiveFX3.ControlEndPt.Value = 0
         m_ActiveFX3.ControlEndPt.Index = 0
 
-        'Output buffer
-        Dim buf(22) As Byte
-
         'Transfer data from the part
         XferControlData(buf, 23, 2000)
-
-        'Parse output config
-        Dim returnConfig As New SPIConfig
-        Dim tempValue As UInteger
-        Dim newClock As Integer
-        Dim newStall As UInteger
-        Dim newTimerTick As UInteger
-        Dim drPinNumber As UInteger
 
         'Get the SPI Clock from buf 0 - 3
         newClock = buf(0)
@@ -713,6 +720,9 @@ Public Class FX3Connection
     ''' <param name="clockFrequency">The SPI clock frequency, if it needs to be set</param>
     Private Sub ConfigureSPI(Optional ByVal clockFrequency As Integer = 0)
 
+        'Create buffer for transfer
+        Dim buf(3) As Byte
+
         'Exit if the board is not yet set
         If Not m_FX3Connected Then
             Exit Sub
@@ -723,9 +733,6 @@ Public Class FX3Connection
         m_ActiveFX3.ControlEndPt.Direction = CyConst.DIR_TO_DEVICE
         m_ActiveFX3.ControlEndPt.ReqType = CyConst.REQ_VENDOR
         m_ActiveFX3.ControlEndPt.ReqCode = &HB2
-
-        'Create buffer for transfer
-        Dim buf(3) As Byte
 
         'Store the clock frequency in the buffer
         If Not clockFrequency = 0 Then
@@ -748,7 +755,7 @@ Public Class FX3Connection
     'The functions in this region are not a part of the IDutInterface, and are specific to the FX3 board
 
     ''' <summary>
-    ''' Gets the number of bad frames purged with a call to PurgeBadFrameData
+    ''' Readonly property to get the number of bad frames purged with a call to PurgeBadFrameData
     ''' </summary>
     ''' <returns>Number of frames purged from data array</returns>
     Public ReadOnly Property NumFramesPurged As Long
@@ -758,9 +765,9 @@ Public Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Gets the device type the FX3Interface was initialized for
+    ''' Readonly property to get the device type the FX3Interface was initialized for
     ''' </summary>
-    ''' <returns></returns>
+    ''' <returns>The current device mode, as an FX3Interface.DeviceType</returns>
     Public ReadOnly Property SensorType As DeviceType
         Get
             Return m_sensorType
@@ -930,11 +937,12 @@ Public Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Gets the number of buffers read in from the DUT in buffered streaming mode
+    ''' Readonly property to get the number of buffers read in from the DUT in buffered streaming mode
     ''' </summary>
-    ''' <returns></returns>
+    ''' <returns>The current buffer read count</returns>
     Public ReadOnly Property GetNumBuffersRead As Long
         Get
+            'Interlocked is used to ensure atomic integer read operation
             Return Interlocked.Read(FramesRead)
         End Get
     End Property
@@ -963,6 +971,10 @@ Public Class FX3Connection
 
 #Region "Burst Stream Functions"
 
+    ''' <summary>
+    ''' Function to start a burst read using the BurstStreamManager
+    ''' </summary>
+    ''' <param name="numBuffers">The number of buffers to read in the stream operation</param>
     Private Sub StartBurstStream(ByVal numBuffers As UInteger)
 
         'Buffer to store command data
@@ -1016,6 +1028,7 @@ Public Class FX3Connection
     ''' </summary>
     Public Sub StopBurstStream()
 
+        'Buffer to store command data
         Dim buf(3) As Byte
 
         ConfigureControlEndpoint(&HC1, False)
@@ -1051,6 +1064,8 @@ Public Class FX3Connection
         Dim transferStatus As Boolean
         'Int to track number of frames read
         Dim framesCounter As Integer
+        'Buffer to hold data from the FX3
+        Dim buf(transferSize - 1) As Byte
 
         If m_ActiveFX3.bSuperSpeed Then
             transferSize = 1024
@@ -1059,9 +1074,6 @@ Public Class FX3Connection
         Else
             Throw New Exception("ERROR: Streaming application requires USB 2.0 or 3.0 connection to function")
         End If
-
-        'Buffer to hold data from the FX3
-        Dim buf(transferSize - 1) As Byte
 
         'Set total frames (infinite if less than 1)
         If TotalBuffersToRead < 1 Then
@@ -1129,6 +1141,7 @@ Public Class FX3Connection
     ''' </summary>
     Public Sub StopGenericStream()
 
+        'Buffer to hold command data
         Dim buf(3) As Byte
 
         ConfigureControlEndpoint(&HD0, False)
@@ -1307,6 +1320,7 @@ Public Class FX3Connection
     ''' </summary>
     Public Sub StopRealTimeStreaming()
 
+        'Buffer to hold command data
         Dim buf(3) As Byte
 
         ConfigureControlEndpoint(&HD0, False)
@@ -1417,10 +1431,13 @@ Public Class FX3Connection
 
     End Sub
 
+
     ''' <summary>
     ''' This function checks the CRC of each frame stored in the Stream Data Queue, and purges the bad ones
     ''' </summary>
+    ''' <returns>The success of the data purge operation</returns>
     Public Function PurgeBadFrameData() As Boolean
+
 
         Dim purgeSuccess As Boolean = True
         Dim frameDequeued As Boolean = False
@@ -1508,7 +1525,7 @@ Public Class FX3Connection
     ''' <param name="UShortData">The data to calculate CRC for</param>
     ''' <returns>The CRC value</returns>
     Private Function calcCCITT16(UShortData() As UShort) As UInteger
-
+        'Variable initialization
         Dim crc As UInteger = &HFFFF
         Dim poly As UInteger = &H1021
         Dim dat As UInteger
