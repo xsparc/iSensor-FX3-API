@@ -187,11 +187,11 @@ Partial Class FX3Connection
     Private Sub InitBoardList()
 
         'Set up device list
-        usbDevices = New USBDeviceList(CyConst.DEVICES_CYUSB)
+        Dim m_usbList = New USBDeviceList(CyConst.DEVICES_CYUSB)
 
         'Register all event handlers
-        AddHandler usbDevices.DeviceRemoved, New EventHandler(AddressOf usbDevices_DeviceRemoved)
-        AddHandler usbDevices.DeviceAttached, New EventHandler(AddressOf usbDevices_DeviceAttached)
+        AddHandler m_usbList.DeviceRemoved, New EventHandler(AddressOf usbDevices_DeviceRemoved)
+        AddHandler m_usbList.DeviceAttached, New EventHandler(AddressOf usbDevices_DeviceAttached)
 
         'Refresh device list to program any boards in cypress bootloader mode
         RefreshDeviceList()
@@ -220,11 +220,38 @@ Partial Class FX3Connection
     ''' <param name="e"></param>
     Private Sub usbDevices_DeviceRemoved(ByVal sender As Object, ByVal e As EventArgs)
 
-        'Parse event data
+        'Parse event data and handle
         Dim usbEvent As USBEventArgs = TryCast(e, USBEventArgs)
+        CheckDisconnectEvent(usbEvent)
 
-        'Update the FX3Interface device list
-        RefreshDeviceList()
+    End Sub
+
+    ''' <summary>
+    ''' This function checks the event arguments when a USB disconnect occurs. If the FX3 which was
+    ''' disconnected is marked as the active device, this function attepmpts to gracefully update the 
+    ''' interface state to prevent application lockup from accessing a disconnected board.
+    ''' </summary>
+    ''' <param name="usbEvent">The event to handle</param>
+    Private Sub CheckDisconnectEvent(ByVal usbEvent As USBEventArgs)
+
+        If IsNothing(m_ActiveFX3) Then
+            'If the active board is set to nothing then this was an "expected" disconnect event
+            Exit Sub
+        End If
+
+        'Determine if disconnect event observed is for the active board
+        If usbEvent.FriendlyName = ApplicationName And usbEvent.SerialNum = m_ActiveFX3SN Then
+            'This is an unexpected disconnect of the active board
+
+            'Set default values for the interface
+            SetDefaultValues(m_sensorType)
+
+            'Set status message
+            m_status = "ERROR: Unexpected FX3 Disconnect"
+
+            'Update the FX3Interface device list
+            RefreshDeviceList()
+        End If
 
     End Sub
 
@@ -255,7 +282,14 @@ Partial Class FX3Connection
             'This function blocks until a new board is available to be programmed
             selectedBoard = BootloaderQueue.Take()
             'Program the indicated board (in cypress bootloader mode)
-            ProgramBootloader(selectedBoard)
+            Try
+                ProgramBootloader(selectedBoard)
+            Catch ex As Exception
+                If ex.Message = "ERROR: Selected FX3 is not in bootloader mode. Please reset the FX3." Then
+                    'Don't need to do anything, this is to catch exceptions caused by a concurrent program of the FX3 by multiple instances of the FX3Connection
+                End If
+            End Try
+
         End While
 
     End Sub
@@ -460,8 +494,11 @@ Partial Class FX3Connection
         'track number of boards reset
         Dim numBoardsReset As Integer = 0
 
+        'Refresh the connected board list
+        RefreshDeviceList()
+
         'Loop through current device list and reporgram all boards running the ADI Application firmware
-        For Each item As CyFX3Device In usbDevices
+        For Each item As CyFX3Device In m_usbList
             If String.Equals(item.FriendlyName, ApplicationName) Then
                 ResetFX3Firmware(item)
                 numBoardsReset = numBoardsReset + 1
