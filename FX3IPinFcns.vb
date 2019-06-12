@@ -3,13 +3,7 @@
 'Description:   Extension of the FX3Connection class. Has all the functions needed to 
 '               implement the IPinFcns interface defined in the AdisApi.
 
-Imports System.ComponentModel
-Imports CyUSB
 Imports AdisApi
-Imports System.IO
-Imports System.Threading
-Imports System.Collections.Concurrent
-Imports RegMapClasses
 
 Partial Class FX3Connection
 
