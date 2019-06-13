@@ -34,7 +34,7 @@ Partial Class FX3Connection
     ''' Switches burstMode on and off. Set burstMode to the number of burst read registers. 
     ''' </summary>
     ''' <returns>The number of burst read registers.</returns>
-    Public Property burstMode() As UShort Implements IRegInterface.burstMode
+    Public Property burstMode() As UShort Implements IRegInterface.BurstMode
         Get
             Return m_burstMode
         End Get
@@ -155,7 +155,7 @@ Partial Class FX3Connection
         End If
 
         'While loop for worker events
-        While (GetNumBuffersRead < numBuffers) And StreamThreadRunning
+        While (GetNumBuffersRead < numBuffers) And m_StreamThreadRunning
             'Check for cancellations
             If supportsCancellation Then
                 If worker.CancellationPending Then
@@ -184,7 +184,7 @@ Partial Class FX3Connection
     Public Sub StopStream() Implements IRegInterface.StopStream
 
         'If the DUT is set to ADcmXLx021 and it is streaming then stop
-        If StreamThreadRunning Then
+        If m_StreamThreadRunning Then
             If PartType = DUTType.ADcmXL1021 Or PartType = DUTType.ADcmXL2021 Or PartType = DUTType.ADcmXL3021 Then
                 StopRealTimeStreaming()
             Else
@@ -195,7 +195,7 @@ Partial Class FX3Connection
                     StopBurstStream()
                 End If
             End If
-            End If
+        End If
 
     End Sub
 
@@ -351,8 +351,8 @@ Partial Class FX3Connection
 
             'Build bulk transfer buffer for when DR is enabled
             If DrActive Then
-                While (bufIndex <= (bufSize - BytesPerBulkRead)) And (addrIndex < addr.Count)
-                    For i As Integer = 0 To BytesPerBulkRead / 2
+                While (bufIndex <= (bufSize - m_BytesPerBulkRead)) And (addrIndex < addr.Count)
+                    For i As Integer = 0 To m_BytesPerBulkRead / 2
                         buf(bufIndex) = addr(addrIndex)
                         buf(bufIndex + 1) = 0
                         bufIndex = bufIndex + 2
@@ -375,7 +375,7 @@ Partial Class FX3Connection
             FX3ControlEndPt.Index = bufIndex
             'Set the value to the number of bytes per data ready
             If DrActive Then
-                FX3ControlEndPt.Value = BytesPerBulkRead
+                FX3ControlEndPt.Value = m_BytesPerBulkRead
             Else
                 FX3ControlEndPt.Value = 0
             End If
@@ -455,9 +455,9 @@ Partial Class FX3Connection
 
         'Set the bytes per data ready
         If DrActive Then
-            BytesPerBulkRead = addr.Count * 2
+            m_BytesPerBulkRead = addr.Count * 2
         Else
-            BytesPerBulkRead = 0
+            m_BytesPerBulkRead = 0
         End If
 
         'Build address list

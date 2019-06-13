@@ -148,13 +148,42 @@ Partial Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Property which returns all FX3 boards detected on the system.
+    ''' Property which returns a list of the serial numbers of all FX3 boards running the ADI bootloader
     ''' </summary>
     ''' <returns>All detected FX3 boards.</returns>
-    Public ReadOnly Property DetectedFX3s As USBDeviceList
+    Public ReadOnly Property AvailableFX3s As List(Of String)
         Get
+            Dim parsedList As New List(Of String)
             RefreshDeviceList()
-            Return m_usbList
+
+            'Run through list looking for boards in bootloader mode
+            For Each item As CyFX3Device In m_usbList
+                If item.FriendlyName = ADIBootloaderName Then
+                    parsedList.Add(item.SerialNumber)
+                End If
+            Next
+            Return parsedList
+
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' Property which returns a list of the serial numbers of all FX3 boards currently in use, running the application firmware.
+    ''' </summary>
+    ''' <returns>The list of board serial numbers</returns>
+    Public ReadOnly Property BusyFX3s As List(Of String)
+        Get
+            Dim parsedList As New List(Of String)
+            RefreshDeviceList()
+
+            'Run through list looking for boards in bootloader mode
+            For Each item As CyFX3Device In m_usbList
+                If item.FriendlyName = ApplicationName Then
+                    parsedList.Add(item.SerialNumber)
+                End If
+            Next
+            Return parsedList
+
         End Get
     End Property
 
@@ -640,7 +669,7 @@ Partial Class FX3Connection
         FX3ControlEndPt = m_ActiveFX3.ControlEndPt
 
         'Block control endpoint transfers while streaming (except cancel)
-        If StreamThreadRunning And Not (FX3ControlEndPt.ReqCode = &HD0) Then
+        If m_StreamThreadRunning And Not (FX3ControlEndPt.ReqCode = &HD0) Then
             Return False
         End If
 

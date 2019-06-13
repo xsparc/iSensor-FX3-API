@@ -15,7 +15,7 @@ Imports System.Collections.Concurrent
 Public Class FX3Connection
     Implements IRegInterface, IPinFcns
 
-#Region "Interface Variable Initialization"
+#Region "Interface Variable Declaration"
 
     'Constant definitions
 
@@ -33,6 +33,20 @@ Public Class FX3Connection
 
     'Delay (in ms) in polling the cypress USB driver for new devices connected
     Const DeviceListDelay As Integer = 200
+
+    'Cypress driver objects
+
+    'CyUSB Control Endpoint
+    Private FX3ControlEndPt As CyUSB.CyControlEndPoint
+
+    'CyUSB Bulk Endpoint for streaming real time data from FX3 to PC
+    Private StreamingEndPt As CyUSB.CyBulkEndPoint
+
+    'CyUSB bulk endpoint for streaming register data from FX3 to PC
+    Private DataInEndPt As CyUSB.CyBulkEndPoint
+
+    'CyUSB bulk endpoint for streaming register data from the PC to the FX3
+    Private DataOutEndPt As CyUSB.CyBulkEndPoint
 
     'Private member variables
 
@@ -54,18 +68,6 @@ Public Class FX3Connection
     'Serial number of the active FX3 board
     Private m_ActiveFX3SN As String = Nothing
 
-    'CyUSB Control Endpoint
-    Private FX3ControlEndPt As CyUSB.CyControlEndPoint
-
-    'CyUSB Bulk Endpoint for streaming real time data from FX3 to PC
-    Private StreamingEndPt As CyUSB.CyBulkEndPoint
-
-    'CyUSB bulk endpoint for streaming register data from FX3 to PC
-    Private DataInEndPt As CyUSB.CyBulkEndPoint
-
-    'CyUSB bulk endpoint for streaming register data from the PC to the FX3
-    Private DataOutEndPt As CyUSB.CyBulkEndPoint
-
     'Member variable to track the stream timeout time
     Private m_StreamTimeout As Integer
 
@@ -82,25 +84,25 @@ Public Class FX3Connection
     Private m_DrPolarity As Boolean = True
 
     'Thread safe queue to store real time data frames as UShort arrrays
-    Private StreamData As ConcurrentQueue(Of UShort())
+    Private m_StreamData As ConcurrentQueue(Of UShort())
 
     'Tracks the number of frames read in from DUT in real time mode
-    Private FramesRead As Long = 0
+    Private m_FramesRead As Long = 0
 
     'Thread for pulling real time data off the DUT
-    Private StreamThread As Thread
+    Private m_StreamThread As Thread
 
     'Boolean to track if the streaming thread is currently running
-    Private StreamThreadRunning As Boolean
+    Private m_StreamThreadRunning As Boolean
 
     'Boolean to track if current thread has exited
-    Private ThreadTerminated As Boolean
+    Private m_StreamThreadTerminated As Boolean
 
     'The total number of buffers to read in real time stream (AdcmXLx021 or IMU)
-    Private TotalBuffersToRead As Integer = 0
+    Private m_TotalBuffersToRead As Integer = 0
 
     'Total number of bytes to read between data ready's (when DrActive = True)
-    Private BytesPerBulkRead As UInt16
+    Private m_BytesPerBulkRead As UInt16
 
     'List of available SPI clock frequencies
     Private m_SPIFrequencies As List(Of Double)
@@ -109,10 +111,10 @@ Public Class FX3Connection
     Private m_usbList As USBDeviceList
 
     'Tracks the number of bad frames in a given read from the ADcmXLx021
-    Private numBadFrames As Long
+    Private m_numBadFrames As Long
 
     'Timer for tracking stream timeouts
-    Private streamTimeoutTimer As Stopwatch
+    Private m_streamTimeoutTimer As Stopwatch
 
     'Tracks enable/disable pin exit post-RT capture
     Private m_pinExit As UInteger = 0
@@ -197,13 +199,13 @@ Public Class FX3Connection
         m_ActiveFX3SN = Nothing
 
         'Reinitialize the thread safe queue 
-        StreamData = New ConcurrentQueue(Of UShort())
+        m_StreamData = New ConcurrentQueue(Of UShort())
 
         'Set streaming variables
-        StreamThreadRunning = False
-        ThreadTerminated = True
-        TotalBuffersToRead = 0
-        numBadFrames = 0
+        m_StreamThreadRunning = False
+        m_StreamThreadTerminated = True
+        m_TotalBuffersToRead = 0
+        m_numBadFrames = 0
         m_StreamTimeout = 5
 
         'Set the SPI frequencies list
@@ -211,7 +213,7 @@ Public Class FX3Connection
         m_SPIFrequencies.Sort()
 
         'Set timer
-        streamTimeoutTimer = New Stopwatch
+        m_streamTimeoutTimer = New Stopwatch
 
     End Sub
 
@@ -778,7 +780,7 @@ Public Class FX3Connection
     ''' <returns>Number of frames purged from data array</returns>
     Public ReadOnly Property NumFramesPurged As Long
         Get
-            Return numBadFrames
+            Return m_numBadFrames
         End Get
     End Property
 
@@ -940,15 +942,15 @@ Public Class FX3Connection
     ''' <returns>The frame, as a byte array</returns>
     Public ReadOnly Property GetBuffer As UShort()
         Get
-            If (StreamData.Count = 0) And (Not StreamThreadRunning) Then
+            If (m_StreamData.Count = 0) And (Not m_StreamThreadRunning) Then
                 Return Nothing
             End If
             Dim buffer() As UShort = Nothing
             Dim validData As Boolean = False
             'Wait for a buffer to be avialable and dequeue
-            streamTimeoutTimer.Restart()
-            While (Not validData) And (streamTimeoutTimer.ElapsedMilliseconds < 1000)
-                validData = StreamData.TryDequeue(buffer)
+            m_streamTimeoutTimer.Restart()
+            While (Not validData) And (m_streamTimeoutTimer.ElapsedMilliseconds < 1000)
+                validData = m_StreamData.TryDequeue(buffer)
             End While
             Return buffer
         End Get
@@ -961,7 +963,7 @@ Public Class FX3Connection
     Public ReadOnly Property GetNumBuffersRead As Long
         Get
             'Interlocked is used to ensure atomic integer read operation
-            Return Interlocked.Read(FramesRead)
+            Return Interlocked.Read(m_FramesRead)
         End Get
     End Property
 
@@ -972,15 +974,15 @@ Public Class FX3Connection
     Public ReadOnly Property BufferAvailable As Boolean
         Get
             Dim goodBuffer As Boolean = False
-            streamTimeoutTimer.Restart()
-            While (streamTimeoutTimer.ElapsedMilliseconds() < (1000 * StreamTimeoutSeconds)) And (Not goodBuffer)
-                If Not IsNothing(StreamData) Then
-                    If StreamData.Count > 0 Or StreamThreadRunning Then
+            m_streamTimeoutTimer.Restart()
+            While (m_streamTimeoutTimer.ElapsedMilliseconds() < (1000 * StreamTimeoutSeconds)) And (Not goodBuffer)
+                If Not IsNothing(m_StreamData) Then
+                    If m_StreamData.Count > 0 Or m_StreamThreadRunning Then
                         goodBuffer = True
                     End If
                 End If
             End While
-            streamTimeoutTimer.Reset()
+            m_streamTimeoutTimer.Reset()
             Return goodBuffer
         End Get
     End Property
@@ -999,8 +1001,8 @@ Public Class FX3Connection
         Dim buf(8) As Byte
 
         'Wait for previous stream thread to exit, if any
-        StreamThreadRunning = False
-        While Not ThreadTerminated
+        m_StreamThreadRunning = False
+        While Not m_StreamThreadTerminated
         End While
 
         'Send number of buffers to read
@@ -1018,7 +1020,7 @@ Public Class FX3Connection
         buf(7) = (m_WordCount And &HFF00) >> 8
 
         'Reinitialize the thread safe queue
-        StreamData = New ConcurrentQueue(Of UShort())
+        m_StreamData = New ConcurrentQueue(Of UShort())
 
         ConfigureControlEndpoint(&HC1, True)
         m_ActiveFX3.ControlEndPt.Value = 0 'DNC
@@ -1027,17 +1029,17 @@ Public Class FX3Connection
         XferControlData(buf, 8, 2000)
 
         'Reset number of frames read
-        FramesRead = 0
+        m_FramesRead = 0
 
         'Set the total number of frames to read
-        TotalBuffersToRead = numBuffers
+        m_TotalBuffersToRead = numBuffers
 
         'Set the thread control bool
-        StreamThreadRunning = True
+        m_StreamThreadRunning = True
 
         'Spin up a BurstStreamManager thread
-        StreamThread = New Thread(AddressOf BurstStreamManager)
-        StreamThread.Start()
+        m_StreamThread = New Thread(AddressOf BurstStreamManager)
+        m_StreamThread.Start()
 
     End Sub
 
@@ -1057,7 +1059,7 @@ Public Class FX3Connection
         XferControlData(buf, 4, 2000)
 
         'Stop the stream manager thread
-        StreamThreadRunning = False
+        m_StreamThreadRunning = False
 
     End Sub
 
@@ -1094,22 +1096,22 @@ Public Class FX3Connection
         End If
 
         'Set total frames (infinite if less than 1)
-        If TotalBuffersToRead < 1 Then
-            TotalBuffersToRead = Int32.MaxValue
+        If m_TotalBuffersToRead < 1 Then
+            m_TotalBuffersToRead = Int32.MaxValue
         End If
 
         'Determine the frame length (in bytes) based on configured word count plus trigger word
         frameLength = (m_WordCount * 2) + 2
 
         'Set the stream thread running state variable
-        StreamThreadRunning = True
-        ThreadTerminated = False
+        m_StreamThreadRunning = True
+        m_StreamThreadTerminated = False
         framesCounter = 0
 
-        While StreamThreadRunning
+        While m_StreamThreadRunning
             'Configured transfer size bytes from the FX3
             transferStatus = StreamingEndPt.XferData(buf, transferSize)
-            'Parse bytes into frames and add to StreamData if transaction was successful
+            'Parse bytes into frames and add to m_StreamData if transaction was successful
             If transferStatus Then
                 For index = 0 To transferSize - 2 Step 2
                     'Append every two bytes into words
@@ -1123,16 +1125,16 @@ Public Class FX3Connection
                         'Remove trigger word entry
                         frameBuilder.RemoveAt(0)
                         'Enqueue data into thread-safe queue
-                        StreamData.Enqueue(frameBuilder.ToArray())
+                        m_StreamData.Enqueue(frameBuilder.ToArray())
                         'Increment the shared frame counter
-                        Interlocked.Increment(FramesRead)
+                        Interlocked.Increment(m_FramesRead)
                         'Increment the local frame counter
                         framesCounter = framesCounter + 1
                         'Reset frame builder list and counter
                         frameIndex = 0
                         frameBuilder.Clear()
                         'Exit if the total number of buffers has been read
-                        If framesCounter >= TotalBuffersToRead Then
+                        If framesCounter >= m_TotalBuffersToRead Then
                             'Stop streaming
                             Exit While
                         End If
@@ -1144,9 +1146,9 @@ Public Class FX3Connection
             End If
         End While
 
-        'Update streamThreadRunning state variable
-        StreamThreadRunning = False
-        ThreadTerminated = True
+        'Update m_StreamThreadRunning state variable
+        m_StreamThreadRunning = False
+        m_StreamThreadTerminated = True
 
     End Sub
 
@@ -1170,7 +1172,7 @@ Public Class FX3Connection
         XferControlData(buf, 4, 2000)
 
         'Stop the stream manager thread
-        StreamThreadRunning = False
+        m_StreamThreadRunning = False
 
     End Sub
 
@@ -1188,9 +1190,9 @@ Public Class FX3Connection
         'Number of bytes per buffer
         Dim wordsPerTransfer As Integer = (addr.Count() * numCaptures)
         'Reset frame counter
-        FramesRead = 0
+        m_FramesRead = 0
         'Set the total number of frames to read
-        TotalBuffersToRead = numBuffers
+        m_TotalBuffersToRead = numBuffers
         'Get the number of bytes per transfer from the DUT
         Dim bytesPerTransfer As Integer = (wordsPerTransfer * 2)
         'Buffer to store data from the FX3
@@ -1245,10 +1247,10 @@ Public Class FX3Connection
         End If
 
         'Set the thread state flags
-        ThreadTerminated = False
-        StreamThreadRunning = True
+        m_StreamThreadTerminated = False
+        m_StreamThreadRunning = True
 
-        While StreamThreadRunning
+        While m_StreamThreadRunning
             'Read data from FX3
             validTransfer = DataInEndPt.XferData(dataBuffer, 1024)
             'Exit the loop if transfer fails
@@ -1263,13 +1265,13 @@ Public Class FX3Connection
                     frameIndex = frameIndex + 2
                     'Once the end of each frame is reached add it to the queue
                     If frameIndex >= bytesPerTransfer Then
-                        StreamData.Enqueue(bufferBuilder.ToArray())
-                        Interlocked.Increment(FramesRead)
+                        m_StreamData.Enqueue(bufferBuilder.ToArray())
+                        Interlocked.Increment(m_FramesRead)
                         bufferBuilder.Clear()
                         numBuffersRead = numBuffersRead + 1
                         frameIndex = 0
                         'Exit if the total number of buffers has been read
-                        If numBuffersRead >= TotalBuffersToRead Then
+                        If numBuffersRead >= m_TotalBuffersToRead Then
                             Exit While
                         End If
                     End If
@@ -1280,8 +1282,8 @@ Public Class FX3Connection
         End While
 
         'Set thread state flags
-        ThreadTerminated = True
-        StreamThreadRunning = False
+        m_StreamThreadTerminated = True
+        m_StreamThreadRunning = False
 
     End Sub
 
@@ -1298,8 +1300,8 @@ Public Class FX3Connection
         Dim buf(4) As Byte
 
         'Wait for previous stream thread to exit, if any
-        StreamThreadRunning = False
-        While Not ThreadTerminated
+        m_StreamThreadRunning = False
+        While Not m_StreamThreadTerminated
         End While
 
         buf(0) = numFrames And &HFF
@@ -1309,7 +1311,7 @@ Public Class FX3Connection
         buf(4) = (m_pinStart)
 
         'Reinitialize the thread safe queue
-        StreamData = New ConcurrentQueue(Of UShort())
+        m_StreamData = New ConcurrentQueue(Of UShort())
 
         ConfigureControlEndpoint(&HD0, True)
         m_ActiveFX3.ControlEndPt.Value = m_pinExit
@@ -1318,18 +1320,18 @@ Public Class FX3Connection
         XferControlData(buf, 5, 2000)
 
         'Set the thread control bool
-        StreamThreadRunning = True
+        m_StreamThreadRunning = True
 
         'Reset number of frames read
-        FramesRead = 0
-        numBadFrames = 0
+        m_FramesRead = 0
+        m_numBadFrames = 0
 
         'Set the total number of frames to read
-        TotalBuffersToRead = numFrames
+        m_TotalBuffersToRead = numFrames
 
         'Spin up a RealTimeStreamManager thread
-        StreamThread = New Thread(AddressOf RealTimeStreamManager)
-        StreamThread.Start()
+        m_StreamThread = New Thread(AddressOf RealTimeStreamManager)
+        m_StreamThread.Start()
 
     End Sub
 
@@ -1348,7 +1350,7 @@ Public Class FX3Connection
         XferControlData(buf, 4, 2000)
 
         'Stop the stream manager thread
-        StreamThreadRunning = False
+        m_StreamThreadRunning = False
 
     End Sub
 
@@ -1388,8 +1390,8 @@ Public Class FX3Connection
         Dim buf(transferSize - 1) As Byte
 
         'Set total frames (infinite if less than 1)
-        If TotalBuffersToRead < 1 Then
-            TotalBuffersToRead = Int32.MaxValue
+        If m_TotalBuffersToRead < 1 Then
+            m_TotalBuffersToRead = Int32.MaxValue
         End If
 
         'Determine the frame length based on DUTType
@@ -1405,14 +1407,14 @@ Public Class FX3Connection
         End If
 
         'Set the stream thread running state variable
-        StreamThreadRunning = True
-        ThreadTerminated = False
+        m_StreamThreadRunning = True
+        m_StreamThreadTerminated = False
         framesCounter = 0
 
-        While StreamThreadRunning
+        While m_StreamThreadRunning
             'Pull 1024 bytes from the DUT
             TransferStatus = StreamingEndPt.XferData(buf, transferSize)
-            'Parse the 1024 bytes into frames and add to StreamData if transaction was successful
+            'Parse the 1024 bytes into frames and add to m_StreamData if transaction was successful
             If TransferStatus Then
                 For index = 0 To transferSize - 2 Step 2
                     'Flip bytes
@@ -1423,15 +1425,15 @@ Public Class FX3Connection
                     frameIndex = frameIndex + 2
                     'Once the end of each frame is reached add it to the queue
                     If frameIndex >= frameLength Then
-                        StreamData.Enqueue(frameBuilder.ToArray())
+                        m_StreamData.Enqueue(frameBuilder.ToArray())
                         'Increment shared frame counter
-                        Interlocked.Increment(FramesRead)
+                        Interlocked.Increment(m_FramesRead)
                         framesCounter = framesCounter + 1
                         'Reset frame builder list
                         frameIndex = 0
                         frameBuilder.Clear()
                         'Check that the total number of specified frames hasn't been read
-                        If framesCounter >= TotalBuffersToRead Then
+                        If framesCounter >= m_TotalBuffersToRead Then
                             'Stop streaming
                             Exit While
                         End If
@@ -1443,9 +1445,9 @@ Public Class FX3Connection
             End If
         End While
 
-        'Update streamThreadRunning state variable
-        StreamThreadRunning = False
-        ThreadTerminated = True
+        'Update m_StreamThreadRunning state variable
+        m_StreamThreadRunning = False
+        m_StreamThreadTerminated = True
 
     End Sub
 
@@ -1469,32 +1471,32 @@ Public Class FX3Connection
         End If
 
         'Cannot run while streaming data
-        If StreamThreadRunning Then
+        If m_StreamThreadRunning Then
             purgeSuccess = False
             Return purgeSuccess
         End If
 
         'Pull data from queue
-        numBadFrames = 0
+        m_numBadFrames = 0
         If purgeSuccess Then
-            While Not StreamData.Count = 0
+            While Not m_StreamData.Count = 0
                 'Dequeue the frame
                 frameDequeued = False
-                While Not frameDequeued And StreamData.Count > 0
-                    frameDequeued = StreamData.TryDequeue(frame)
+                While Not frameDequeued And m_StreamData.Count > 0
+                    frameDequeued = m_StreamData.TryDequeue(frame)
                 End While
                 'Check the CRC
                 If CheckDUTCRC(frame) Then
                     tempQueue.Enqueue(frame)
                 Else
-                    numBadFrames = numBadFrames + 1
+                    m_numBadFrames = m_numBadFrames + 1
                 End If
             End While
         End If
 
         'Set the output queue equal to the temp queue
-        StreamData = tempQueue
-        FramesRead = StreamData.Count
+        m_StreamData = tempQueue
+        m_FramesRead = m_StreamData.Count
 
         Return purgeSuccess
 
