@@ -34,11 +34,6 @@ Public Class FX3Connection
     'Delay (in ms) in polling the cypress USB driver for new devices connected
     Const DeviceListDelay As Integer = 200
 
-    'Connection Events
-
-    'This event is raised when the active board is disconnected unexpectedly (ie unplugged)
-    Event UnexpectedDisconnect(ByVal FX3SerialNum As String)
-
     'Private member variables
 
     'Thread to program the FX3 with the bootloader as needed
@@ -130,6 +125,27 @@ Public Class FX3Connection
 
     'Tracks how many bytes should be captured in burst mode
     Private m_burstMode As UInteger = 0
+
+    'Global Timer for measuring disconnect event time
+    Private m_disconnectTimer As Stopwatch
+
+    'String to track the serial number of the last board which was disconnected
+    Private m_disconnectedFX3SN As String
+
+    'Events
+
+    ''' <summary>
+    ''' This event is raised when the active board is disconnected unexpectedly (ie unplugged)
+    ''' </summary>
+    ''' <param name="FX3SerialNum">Serial number of the board which was disconnected</param>
+    Event UnexpectedDisconnect(ByVal FX3SerialNum As String)
+
+    ''' <summary>
+    ''' This event is raised when the disconnect event for a board has finished, and it is reprogrammed with the ADI bootloader
+    ''' </summary>
+    ''' <param name="FX3SerialNum">Serial number of the board</param>
+    ''' <param name="DisconnectTime">Time (in ms) elapsed between the disconnect call and board re-enumeration</param>
+    Event DisconnectFinished(ByVal FX3SerialNum As String, ByVal DisconnectTime As Integer)
 
 #End Region
 

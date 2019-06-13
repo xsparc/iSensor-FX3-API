@@ -110,16 +110,17 @@ Partial Class FX3Connection
             Exit Sub
         End If
 
-        'Clear the connected state to treat the FX3 as a new board once it reboots
-        m_FX3Connected = False
+        'Start timer
+        m_disconnectTimer = New Stopwatch()
+        m_disconnectTimer.Start()
+
+        'Save the current active board serial number
+        m_disconnectedFX3SN = m_ActiveFX3SN
+
         'Reset the FX3 currently in use
         ResetFX3Firmware(m_ActiveFX3)
-        'Small delay to let Windows catch up
-        Thread.Sleep(1000)
         'Set default values for the interface
         SetDefaultValues(m_sensorType)
-        'Force a refresh of the board list
-        RefreshDeviceList()
 
     End Sub
 
@@ -207,6 +208,7 @@ Partial Class FX3Connection
 
         'Parse the event data
         Dim usbEvent As USBEventArgs = TryCast(e, USBEventArgs)
+        CheckConnectEvent(usbEvent)
 
         'Update the FX3Interface device list, programming new boards as needed
         RefreshDeviceList()
@@ -254,6 +256,31 @@ Partial Class FX3Connection
 
             'Raise event so programs up the stack can handle
             RaiseEvent UnexpectedDisconnect(usbEvent.SerialNum)
+        End If
+
+    End Sub
+
+    ''' <summary>
+    ''' This function parses connect events. If the board connecting is running the ADI bootloader,
+    ''' and has a serial number which matches that of the most recently disconnected FX3, a disconnect
+    ''' finished event is raised. This allows GUIs or applications up the stack to better manage their
+    ''' event flow (rather than blocking in a disconnect call).
+    ''' </summary>
+    ''' <param name="usbEvent">The event to handle</param>
+    Private Sub CheckConnectEvent(ByVal usbEvent As USBEventArgs)
+
+        'exit if the board wasn't disconnected
+        If IsNothing(m_disconnectedFX3SN) Then
+            Exit Sub
+        End If
+
+        If usbEvent.FriendlyName = ADIBootloaderName And usbEvent.SerialNum = m_disconnectedFX3SN Then
+            'Raise event
+            RaiseEvent DisconnectFinished(m_disconnectedFX3SN, m_disconnectTimer.ElapsedMilliseconds())
+            'Reset the timer
+            m_disconnectTimer.Reset()
+            'Reset the disconnected serial number
+            m_disconnectedFX3SN = Nothing
         End If
 
     End Sub
