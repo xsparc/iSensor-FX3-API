@@ -274,6 +274,7 @@ Partial Class FX3Connection
             Exit Sub
         End If
 
+        'Check board name and SN
         If usbEvent.FriendlyName = ADIBootloaderName And usbEvent.SerialNum = m_disconnectedFX3SN Then
             'Raise event
             RaiseEvent DisconnectFinished(m_disconnectedFX3SN, m_disconnectTimer.ElapsedMilliseconds())
@@ -281,7 +282,24 @@ Partial Class FX3Connection
             m_disconnectTimer.Reset()
             'Reset the disconnected serial number
             m_disconnectedFX3SN = Nothing
+            'return
+            Exit Sub
         End If
+
+        'Sometimes when there are multiple boards connected the event handling doesn't work as expected
+        'To verify, will manually parse the device list
+        For Each item As CyFX3Device In m_usbList
+            If item.FriendlyName = ADIBootloaderName And item.SerialNumber = m_disconnectedFX3SN Then
+                'Raise event
+                RaiseEvent DisconnectFinished(m_disconnectedFX3SN, m_disconnectTimer.ElapsedMilliseconds())
+                'Reset the timer
+                m_disconnectTimer.Reset()
+                'Reset the disconnected serial number
+                m_disconnectedFX3SN = Nothing
+                'return
+                Exit Sub
+            End If
+        Next
 
     End Sub
 
