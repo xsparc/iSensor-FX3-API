@@ -547,17 +547,14 @@ Partial Class FX3Connection
         'Sub assumes the board has firmware loaded on it that will respond to reset commands
         Dim buf(3) As Byte
 
-        'Set board handle
-        FX3ControlEndPt = boardHandle.ControlEndPt
-
         'Configure the control endpoint
-        FX3ControlEndPt.ReqCode = &HB1
-        FX3ControlEndPt.ReqType = CyConst.REQ_VENDOR
-        FX3ControlEndPt.Target = CyConst.TGT_ENDPT
-        FX3ControlEndPt.Value = 0
-        FX3ControlEndPt.Index = 0
-        FX3ControlEndPt.Direction = CyConst.DIR_TO_DEVICE
-        FX3ControlEndPt.XferData(buf, 4)
+        boardHandle.ControlEndPt.ReqCode = &HB1
+        boardHandle.ControlEndPt.ReqType = CyConst.REQ_VENDOR
+        boardHandle.ControlEndPt.Target = CyConst.TGT_ENDPT
+        boardHandle.ControlEndPt.Value = 0
+        boardHandle.ControlEndPt.Index = 0
+        boardHandle.ControlEndPt.Direction = CyConst.DIR_TO_DEVICE
+        boardHandle.ControlEndPt.XferData(buf, 4)
 
     End Sub
 
@@ -566,7 +563,7 @@ Partial Class FX3Connection
     ''' Note: Should not be used if running multiple instances of the GUI.
     ''' </summary>
     ''' <returns>The number of boards running the application firmware which were reset</returns>
-    Private Function ResetAllFX3s() As Integer
+    Public Function ResetAllFX3s() As Integer
 
         'track number of boards reset
         Dim numBoardsReset As Integer = 0
