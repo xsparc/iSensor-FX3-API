@@ -49,17 +49,24 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="adisApi">
-      <HintPath>Resources\adisApi.dll</HintPath>
+    <Reference Include="adisApi, Version=1.2.0.999, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\AdisInterface\src\app\bin\Debug\adisApi.dll</HintPath>
     </Reference>
-    <Reference Include="adisInterface">
-      <HintPath>Resources\adisInterface.dll</HintPath>
+    <Reference Include="adisInterface, Version=1.1.0.1, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\AdisInterface\src\app\bin\Debug\adisInterface.dll</HintPath>
     </Reference>
     <Reference Include="CyUSB">
       <HintPath>Resources\CyUSB.dll</HintPath>
     </Reference>
-    <Reference Include="RegMapClasses">
-      <HintPath>Resources\RegMapClasses.dll</HintPath>
+    <Reference Include="RegMapClasses, Version=1.1.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\AdisInterface\src\app\bin\Debug\RegMapClasses.dll</HintPath>
+    </Reference>
+    <Reference Include="sdpApi1, Version=2.1.969.16, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\AdisInterface\src\app\bin\Debug\sdpApi1.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -142,7 +149,8 @@
     </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>copy /Y "C:\Users\anolan3\Documents\iSensor-FX3-Firmware\Debug\FX3_Firmware.img" "$(ProjectDir)\Resources\FX3_Firmware.img"</PreBuildEvent>
+    <PreBuildEvent>copy /Y "C:\Users\jchong\Documents\iSensor-FX3-Firmware\Debug\FX3_Firmware.img" "$(ProjectDir)\Resources\FX3_Firmware.img"
+copy /Y "C:\Users\jchong\Documents\iSensor-FX3-Firmware\boot_fw\Debug\Fx3BootAppGcc.img" "$(ProjectDir)\Resources\boot_fw.img"</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
