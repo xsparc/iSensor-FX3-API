@@ -1572,13 +1572,13 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint16_t bytesRead;
 
-	//Disable VBUS ISR
+	/* Disable VBUS ISR */
 	CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
 
-	//Disable GPIO interrupt before attaching interrupt to pin
+	/* Disable GPIO interrupt before attaching interrupt to pin */
 	CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
 
-	//Make sure the global data ready pin is configured as an input and attach the correct pin interrupt
+	/* Make sure the global data ready pin is configured as an input and attach the interrupt to the correct edge */
 	CyU3PGpioSimpleConfig_t gpioConfig;
 	gpioConfig.outValue = CyTrue;
 	gpioConfig.inputEn = CyTrue;
@@ -1599,7 +1599,7 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 		AdiAppErrorHandler(status);
 	}
 
-	//Get number of frames to capture from control endpoint
+	/* Get the number of buffers, trigger word, and transfer length from the control endpoint */
 	CyU3PUsbGetEP0Data(8, USBBuffer, &bytesRead);
 	if(status != CY_U3P_SUCCESS)
 	{
@@ -1611,25 +1611,25 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	numBuffers += (USBBuffer[2] << 16);
 	numBuffers += (USBBuffer[3] << 24);
 
-	//Get number of words per burst transfer (minus the trigger word)
+	/* Get number of words to capture per transfer (minus the trigger word) */
 	transferWordLength = USBBuffer[6];
 	transferWordLength += (USBBuffer[7] << 8);
 
-	//Calculate number of bytes to transfer from words to transfer and add trigger word
-	//We're going to overwrite the first two bytes with the trigger word, so make the burst length 2 bytes wider
+	/* Calculate the total number of bytes to transfer and add the trigger word */
+	/* We're going to overwrite the first two bytes with the trigger word, so make the burst length 2 bytes larger */
 	transferByteLength = (transferWordLength * 2) + 2;
 
-	//Set regList memory to correct length plus trigger word
+	/* Set regList memory to correct length plus trigger word */
 	regBuffer = CyU3PDmaBufferAlloc(sizeof(uint8_t) * transferByteLength);
 
-	//Clear (zero) contents of regList memory. Burst transfers are DNC, so we're sending zeros.
+	/* Clear (zero) contents of regList memory. Burst transfers are DNC, so we're sending zeros */
 	CyU3PMemSet(regBuffer, 0, sizeof(uint8_t) * transferByteLength);
 
-	//Append burst trigger word to the first two bytes of regBuffer
+	/* Append burst trigger word to the first two bytes of regBuffer */
 	regBuffer[0] = USBBuffer[4];
 	regBuffer[1] = USBBuffer[5];
 
-	//Calculate the required memory block (in bytes) to be a multiple of 16
+	/* Calculate the required memory block (in bytes) to be a multiple of 16 */
 	uint16_t remainder = transferByteLength % 16;
 	if (remainder == 0)
 	{
@@ -1648,7 +1648,7 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	 CyU3PDebugPrint (4, "transferWordLength:  %d\r\n", transferWordLength);
 	 CyU3PDebugPrint (4, "numBuffers:  %d\r\n", numBuffers); */
 
-	/* Configure the Burst DMA Streaming Channel */
+	/* Configure the Burst DMA Streaming Channel (SPI to PC) for Auto DMA */
 	CyU3PDmaChannelConfig_t dmaConfig;
 	CyU3PMemSet ((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
 	dmaConfig.size 				= usbBufferSize;
@@ -1663,7 +1663,6 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	dmaConfig.cb            	= NULL;
 	dmaConfig.prodAvailCount	= 0;
 
-	/* Configure DMA for Burst Streaming */
 	status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_AUTO, &dmaConfig);
 	if(status != CY_U3P_SUCCESS)
 	{
@@ -1671,9 +1670,9 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 		AdiAppErrorHandler(status);
 	}
 
-	//Configure SPI TX DMA (CPU memory to SPI for burst mode)
-	//Transfer length must equal length of message to be sent
-	//Count not required since the DMA will be run in override mode
+	/* Configure SPI TX DMA (CPU memory to SPI for burst mode)
+	 * Transfer length must equal length of message to be sent
+	 * Count not required since the DMA will be run in override mode */
 	CyU3PMemSet ((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
     dmaConfig.size 				= roundedByteTransferLength;
     dmaConfig.count 			= 0;
@@ -1694,7 +1693,7 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 		AdiAppErrorHandler(status);
 	}
 
-	//Flush streaming end point
+	/* Flush the streaming endpoint */
 	status = CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
 	if(status != CY_U3P_SUCCESS)
 	{
@@ -1702,10 +1701,10 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 		AdiAppErrorHandler(status);
 	}
 
-	//Manually reset SPI Rx/Tx FIFO
+	/* Manually reset the SPI Rx/Tx FIFO */
 	AdiSpiResetFifo(CyTrue, CyTrue);
 
-	//Set the SPI config for streaming mode
+	/* Set the SPI config for streaming mode */
 	spiConfig.ssnCtrl = CY_U3P_SPI_SSN_CTRL_HW_END_OF_XFER;
 	spiConfig.wordLen = 8;
 	status = CyU3PSpiSetConfig(&spiConfig, NULL);
@@ -1715,12 +1714,14 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 		AdiAppErrorHandler(status);
 	}
 
-	//Configure SpiDmaBuffer
+	/* Configure SpiDmaBuffer and feed it regBuffer*/
 	CyU3PMemSet ((uint8_t *)&SpiDmaBuffer, 0, sizeof(SpiDmaBuffer));
+	SpiDmaBuffer.count = transferByteLength;
+	SpiDmaBuffer.size = roundedByteTransferLength;
 	SpiDmaBuffer.buffer = regBuffer;
 	SpiDmaBuffer.status = 0;
 
-	//Set infinite DMA transfer on streaming channel
+	/* Enable an infinite DMA transfer on the streaming channel */
 	status = CyU3PDmaChannelSetXfer(&StreamingChannel, 0);
 	if(status != CY_U3P_SUCCESS)
 	{
@@ -1728,7 +1729,7 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 		AdiAppErrorHandler(status);
 	}
 
-	//Set the burst stream flag to notify the streaming thread
+	/* Set the burst stream flag to notify the streaming thread it should take over */
 	CyU3PEventSet (&eventHandler, ADI_BURST_STREAM_ENABLE, CYU3P_EVENT_OR);
 
 	return status;
@@ -1749,11 +1750,11 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
-	//Reset the SPI controller
+	/* Reset the SPI controller */
 	SPI->lpp_spi_config &= ~(CY_U3P_LPP_SPI_RX_ENABLE | CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_DMA_MODE | CY_U3P_LPP_SPI_ENABLE);
 	while ((SPI->lpp_spi_config & CY_U3P_LPP_SPI_ENABLE) != 0);
 
-	//Remove the interrupt from the global data ready pin
+	/* Remove the interrupt from the global data ready pin */
 	CyU3PGpioSimpleConfig_t gpioConfig;
 	gpioConfig.outValue = CyTrue;
 	gpioConfig.inputEn = CyTrue;
@@ -1761,10 +1762,9 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 	gpioConfig.driveHighEn = CyFalse;
 	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
 
-	//Write GPIO config
 	CyU3PGpioSetSimpleConfig(dataReadyPin, &gpioConfig);
 
-	//Destroy MemoryToSpi DMA channel
+	/* Destroy MemoryToSpi DMA channel */
     status = CyU3PDmaChannelDestroy(&MemoryToSPI);
 	if(status != CY_U3P_SUCCESS)
 	{
@@ -1772,7 +1772,7 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 		return status;
 	}
 
-    /* Tear down the burst DMA channel */
+    /* Destroy the burst DMA channel (and recover a LOT of memory) */
     status = CyU3PDmaChannelDestroy(&StreamingChannel);
 	if(status != CY_U3P_SUCCESS)
 	{
@@ -1780,27 +1780,27 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 		return status;
 	}
 
-	//Flush streaming end point
+	/* Flush the streaming end point */
 	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
 
-	//Clear all interrupt flags
+	/* Clear all interrupt flags */
 	CyU3PVicClearInt();
 
-	//Re-enable relevant ISRs
+	/* Re-enable relevant ISRs */
 	CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
 	CyU3PVicEnableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
 
-	//Additional clean-up after a user requests an early cancellation
+	/* Additional clean-up after a user requests an early cancellation */
 	if(killEarly)
 	{
-		//Send status back over control endpoint to end USB transaction and signal cancel was completed successfully
+		/* Send status back over control endpoint to end USB transaction and signal cancel was completed successfully */
 		USBBuffer[0] = status & 0xFF;
 		USBBuffer[1] = (status & 0xFF00) >> 8;
 		USBBuffer[2] = (status & 0xFF0000) >> 16;
 		USBBuffer[3] = (status & 0xFF000000) >> 24;
 		CyU3PUsbSendEP0Data (4, USBBuffer);
 
-		//Reset killEarly flag in case the user wants to capture data again
+		/* Reset killEarly flag in case the user wants to capture data again */
 		killEarly = CyFalse;
 	}
 
@@ -2903,11 +2903,7 @@ void AdiDataStream_Entry(uint32_t input)
 			/* Burst stream case */
 			if (eventFlag & ADI_BURST_STREAM_ENABLE)
 			{
-				//Configure MemoryToSPI DMA
-				SpiDmaBuffer.count = transferByteLength;
-				SpiDmaBuffer.size = roundedByteTransferLength;
-
-				//Set up DMA to read registers from CPU memory
+				/* Set up DMA to read registers from CPU memory */
 				status = CyU3PDmaChannelSetupSendBuffer(&MemoryToSPI, &SpiDmaBuffer);
 				if(status != CY_U3P_SUCCESS)
 				{
@@ -2915,12 +2911,12 @@ void AdiDataStream_Entry(uint32_t input)
 					AdiAppErrorHandler(status);
 				}
 
-				//Wait for DR if enabled
+				/* Wait for DR if enabled */
 				if (DrActive)
 				{
-					//Clear GPIO interrupts
+					/* Clear GPIO interrupts */
 					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
-					//Loop until interrupt is triggered
+					/* Loop until interrupt is triggered */
 					interruptTriggered = CyFalse;
 					while(!interruptTriggered)
 					{
@@ -2928,17 +2924,17 @@ void AdiDataStream_Entry(uint32_t input)
 					}
 				}
 
-				//Set the config for DMA mode with RX and TX enabled
+				/* Set the config for DMA mode with RX and TX enabled */
 				SPI->lpp_spi_config |= CY_U3P_LPP_SPI_DMA_MODE;
 
-				//Set the Tx/Rx count
+				/* Set the Tx/Rx count */
 				SPI->lpp_spi_tx_byte_count = transferByteLength;
 				SPI->lpp_spi_rx_byte_count = transferByteLength;
 
-				//Enable Rx and Tx as required
+				/* Enable SPI Rx and Tx */
 				SPI->lpp_spi_config |= (CY_U3P_LPP_SPI_RX_ENABLE | CY_U3P_LPP_SPI_TX_ENABLE);
 
-				//Enable the SPI block
+				/* Enable the SPI block */
 				SPI->lpp_spi_config |= CY_U3P_LPP_SPI_ENABLE;
 
 				/*
@@ -2953,7 +2949,7 @@ void AdiDataStream_Entry(uint32_t input)
 				}
 				*/
 
-				//Wait for transfer to finish
+				/* Wait for SPI transfer to finish */
 				status = CyU3PSpiWaitForBlockXfer(CyTrue);
 				if(status != CY_U3P_SUCCESS)
 				{
@@ -2961,10 +2957,10 @@ void AdiDataStream_Entry(uint32_t input)
 					AdiAppErrorHandler(status);
 				}
 
-				//Check that we haven't captured the desired number of frames or were asked to kill the thread early
+				/* Check that we haven't captured the desired number of frames or that we were asked to kill the thread early */
 				if((numBuffersRead >= (numBuffers - 1)) || killEarly)
 				{
-					//Disable SPI DMA transfer
+					/* Disable the SPI DMA transfer */
 					status = CyU3PSpiDisableBlockXfer(CyTrue, CyTrue);
 					if(status != CY_U3P_SUCCESS)
 					{
@@ -2972,7 +2968,7 @@ void AdiDataStream_Entry(uint32_t input)
 						AdiAppErrorHandler(status);
 					}
 
-					//Send whatever is in the buffer over to the PC
+					/* Send whatever is in the buffer over to the PC */
 					status = CyU3PDmaChannelSetWrapUp(&StreamingChannel);
 					if(status != CY_U3P_SUCCESS)
 					{
@@ -2980,18 +2976,18 @@ void AdiDataStream_Entry(uint32_t input)
 						AdiAppErrorHandler(status);
 					}
 
-					//Clear GPIO interrupts
+					/* Clear GPIO interrupts */
 					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
-					//Reset frame counter
+					/* Reset frame counter */
 					numBuffersRead = 0;
-					//Set ADI event flags
+					/* Set ADI event flags */
 					CyU3PEventSet(&eventHandler, ADI_BURST_STREAMING_DONE, CYU3P_EVENT_OR);
 				}
 				else
 				{
-					//increment the frame counter
+					/* Increment the frame counter */
 					numBuffersRead++;
-					//Reset real-time data capture thread flag
+					/* Reset the real-time data capture thread flag */
 					CyU3PEventSet (&eventHandler, ADI_BURST_STREAM_ENABLE, CYU3P_EVENT_OR);
 				}
 			}
