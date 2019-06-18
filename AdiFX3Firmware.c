@@ -225,24 +225,14 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
         		CyU3PUsbSendEP0Data (4, USBBuffer);
         		break;
 
-        	//Read bytes for IRegInterface
+        	//Read single word for IRegInterface
         	case ADI_READ_BYTES:
-        		status = AdiReadRegBytes(wIndex);
-        		USBBuffer[0] = status & 0xFF;
-        		USBBuffer[1] = (status & 0xFF00) >> 8;
-        		USBBuffer[2] = (status & 0xFF0000) >> 16;
-        		USBBuffer[3] = (status & 0xFF000000) >> 24;
-        		CyU3PUsbSendEP0Data (4, USBBuffer);
+        		AdiReadRegBytes(wIndex);
         		break;
 
         	//Write single byte for IRegInterface
         	case ADI_WRITE_BYTE:
-        		status = AdiWriteRegByte(wIndex, wValue & 0xFF);
-        		USBBuffer[0] = status & 0xFF;
-        		USBBuffer[1] = (status & 0xFF00) >> 8;
-        		USBBuffer[2] = (status & 0xFF0000) >> 16;
-        		USBBuffer[3] = (status & 0xFF000000) >> 24;
-        		CyU3PUsbSendEP0Data (4, USBBuffer);
+        		AdiWriteRegByte(wIndex, wValue & 0xFF);
         		break;
 
         	//Pulse drive for a specified amount of time
@@ -521,43 +511,51 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 /*
  * Function: AdiReadRegBytes(uint16_t addr)
  *
- * This function reads a single word over SPI
+ * This function reads a single word over SPI. Note that reads are not "full duplex"
+ * and will require a discrete read to set the address to be read from.
  *
  * addr: The address to send to the DUT in the first SPI transaction
  *
- * Returns: The status of the SPI register read operation
+ * Returns: void
  */
-CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr)
+void AdiReadRegBytes(uint16_t addr)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint8_t tempBuffer[2];
 
-	//Set the address
+	/* Set the address to read from */
 	tempBuffer[0] = (0x7F) & addr;
-	//Set the second byte to 0's
+	/* Set the second byte to 0's */
 	tempBuffer[1] = 0;
-	//Send SPI Read command
+	/* Send SPI Read command */
 	status = CyU3PSpiTransmitWords(tempBuffer, 2);
-	//Check that the transfer was successful, end function if failed
+	/* Check that the transfer was successful and end function if failed */
 	if (status != CY_U3P_SUCCESS)
 	{
-		return status;
+        CyU3PDebugPrint (4, "Error! CyU3PSpiTransmitWords failed!.\r\n");
+        //AdiAppErrorHandler (status);
 	}
 
-	//Stall
+	/* Stall for user-specified time */
 	AdiWaitForTimerTicks(stallTime);
 
-	//Receive the data in the next frame
+	/* Receive the data requested */
 	status = CyU3PSpiReceiveWords(tempBuffer, 2);
+	/* Check that the transfer was successful and end function if failed */
 	if (status != CY_U3P_SUCCESS)
 	{
-		return status;
+        CyU3PDebugPrint (4, "Error! CyU3PSpiReceiveWords failed!.\r\n");
+        //AdiAppErrorHandler (status);
 	}
 
-	//Send data back via control endpoint
-	status = CyU3PUsbSendEP0Data(2, tempBuffer);
-
-	return status;
+	/* Send data and status back via control endpoint */
+	USBBuffer[0] = tempBuffer[0];
+	USBBuffer[1] = tempBuffer[1];
+	USBBuffer[2] = status & 0xFF;
+	USBBuffer[3] = (status & 0xFF00) >> 8;
+	USBBuffer[4] = (status & 0xFF0000) >> 16;
+	USBBuffer[5] = (status & 0xFF000000) >> 24;
+	CyU3PUsbSendEP0Data (6, USBBuffer);
 }
 
 /*
@@ -569,16 +567,27 @@ CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr)
  *
  * data: The byte of data to write to the address
  *
- * Returns: The success of the SPI write operation
+ * Returns: void
  */
-CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data)
+void AdiWriteRegByte(uint16_t addr, uint8_t data)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-	uint8_t buffer[2];
-	buffer[0] = 0x80 | addr;
-	buffer[1] = data;
-	status = CyU3PSpiTransmitWords(buffer, 2);
-	return status;
+	uint8_t tempBuffer[2];
+	tempBuffer[0] = 0x80 | addr;
+	tempBuffer[1] = data;
+	status = CyU3PSpiTransmitWords (tempBuffer, 2);
+	/* Check that the transfer was successful and end function if failed */
+	if (status != CY_U3P_SUCCESS)
+	{
+        CyU3PDebugPrint (4, "Error! CyU3PSpiTransmitWords failed!.\r\n");
+        //AdiAppErrorHandler (status);
+	}
+	/* Send write status over the control endpoint */
+	USBBuffer[0] = status & 0xFF;
+	USBBuffer[1] = (status & 0xFF00) >> 8;
+	USBBuffer[2] = (status & 0xFF0000) >> 16;
+	USBBuffer[3] = (status & 0xFF000000) >> 24;
+	CyU3PUsbSendEP0Data (4, USBBuffer);
 }
 
 /*

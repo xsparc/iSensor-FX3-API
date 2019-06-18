@@ -82,8 +82,8 @@ uint32_t AdiMStoTicks(uint32_t desiredStallTime);
 void AdiWaitForTimerTicks(uint32_t numTicks);
 
 //Peripheral read-write functions.
-CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data);
-CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr);
+void AdiWriteRegByte(uint16_t addr, uint8_t data);
+void AdiReadRegBytes(uint16_t addr);
 CyU3PReturnStatus_t AdiBulkByteTransfer(uint16_t numBytes, uint16_t bytesPerCapture);
 CyU3PReturnStatus_t AdiWritePageReg(uint16_t pageNumber);
 CyU3PReturnStatus_t AdiReadSpiReg(uint16_t address, uint16_t page, uint16_t numBytes, uint8_t  *buffer);
