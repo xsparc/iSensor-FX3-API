@@ -265,6 +265,12 @@ Partial Class FX3Connection
         'Transfer buffer
         Dim buf(3) As Byte
 
+        'status message
+        Dim status As UInt32
+
+        Dim timeout As New Stopwatch
+        timeout.Start()
+
         'Configure control endpoint for a single byte register write
         If Not ConfigureControlEndpoint(&HF1, False) Then
             Throw New Exception("ERROR: Control endpoint configuration failed")
@@ -278,22 +284,15 @@ Partial Class FX3Connection
         End If
 
         'Read back the operation status from the return buffer
-        Dim status, shiftedValue As UInteger
-        status = buf(0)
-        shiftedValue = buf(1)
-        shiftedValue = shiftedValue << 8
-        status = status + shiftedValue
-        shiftedValue = buf(2)
-        shiftedValue = shiftedValue << 16
-        status = status + shiftedValue
-        shiftedValue = buf(3)
-        shiftedValue = shiftedValue << 24
-        status = status + shiftedValue
+        status = BitConverter.ToUInt32(buf, 0)
 
         If Not status = 0 Then
             m_status = "ERROR: Bad write command - " + status.ToString("X4")
             Throw New Exception("ERROR: Bad write command - " + status.ToString("X4"))
         End If
+
+        timeout.Stop()
+        status = 0
 
     End Sub
 
@@ -501,7 +500,12 @@ Partial Class FX3Connection
     Public Function ReadRegWord(addr As UInteger) As UShort Implements IRegInterface.ReadRegWord
 
         'Transfer buffer
-        Dim buf(1) As Byte
+        Dim buf(5) As Byte
+        Dim timeout As New Stopwatch
+        timeout.Start()
+
+        'Status word
+        Dim status As UInt32
 
         'Variables to parse value from the buffer
         Dim returnValue, shiftValue As UShort
@@ -516,14 +520,25 @@ Partial Class FX3Connection
         FX3ControlEndPt.Index = addr
 
         'Transfer the data
-        If Not XferControlData(buf, 2, 2000) Then
+        If Not XferControlData(buf, 6, 2000) Then
             Throw New Exception("ERROR: FX3 is not responding to transfer request")
         End If
 
         'Calculate reg value
-        shiftValue = buf(0)
+        shiftValue = buf(4)
         shiftValue = shiftValue << 8
-        returnValue = shiftValue + buf(1)
+        returnValue = shiftValue + buf(5)
+
+        'Read back the operation status from the return buffer
+        status = BitConverter.ToUInt32(buf, 0)
+
+        If Not status = 0 Then
+            m_status = "ERROR: Bad read command - " + status.ToString("X4")
+            Throw New Exception("ERROR: Bad read command - " + status.ToString("X4"))
+        End If
+
+        timeout.Stop()
+        status = 0
 
         Return returnValue
 
