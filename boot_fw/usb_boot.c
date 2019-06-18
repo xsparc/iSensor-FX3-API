@@ -530,7 +530,7 @@ myVendorCmdHandler (
             CyFx3BootUsbConnect (CyFalse, CyTrue);
 
             /* Change GPIO state while switching control to main firmware. */
-            CyFx3BootGpioSetValue (50, CyTrue);
+            CyFx3BootGpioSetValue (APP_SCLK_GPIO, CyTrue);
 
             /* Transfer to Program Entry */    
             CyFx3BootJumpToProgramEntry (address);
