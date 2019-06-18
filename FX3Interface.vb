@@ -1084,8 +1084,6 @@ Public Class FX3Connection
         Dim transferStatus As Boolean
         'Int to track number of frames read
         Dim framesCounter As Integer
-        'Buffer to hold data from the FX3
-        Dim buf(transferSize - 1) As Byte
 
         If m_ActiveFX3.bSuperSpeed Then
             transferSize = 1024
@@ -1094,6 +1092,9 @@ Public Class FX3Connection
         Else
             Throw New Exception("ERROR: Streaming application requires USB 2.0 or 3.0 connection to function")
         End If
+
+        'Buffer to hold data from the FX3
+        Dim buf(transferSize - 1) As Byte
 
         'Set total frames (infinite if less than 1)
         If m_TotalBuffersToRead < 1 Then
