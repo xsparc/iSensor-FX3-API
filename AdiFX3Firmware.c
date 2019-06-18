@@ -548,13 +548,13 @@ void AdiReadRegBytes(uint16_t addr)
         //AdiAppErrorHandler (status);
 	}
 
-	/* Send data and status back via control endpoint */
-	USBBuffer[0] = tempBuffer[0];
-	USBBuffer[1] = tempBuffer[1];
-	USBBuffer[2] = status & 0xFF;
-	USBBuffer[3] = (status & 0xFF00) >> 8;
-	USBBuffer[4] = (status & 0xFF0000) >> 16;
-	USBBuffer[5] = (status & 0xFF000000) >> 24;
+	/* Send status and data back via control endpoint */
+	USBBuffer[0] = status & 0xFF;
+	USBBuffer[1] = (status & 0xFF00) >> 8;
+	USBBuffer[2] = (status & 0xFF0000) >> 16;
+	USBBuffer[3] = (status & 0xFF000000) >> 24;
+	USBBuffer[4] = tempBuffer[0];
+	USBBuffer[5] = tempBuffer[1];
 	CyU3PUsbSendEP0Data (6, USBBuffer);
 }
 
