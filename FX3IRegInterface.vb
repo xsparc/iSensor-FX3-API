@@ -501,8 +501,6 @@ Partial Class FX3Connection
 
         'Transfer buffer
         Dim buf(5) As Byte
-        Dim timeout As New Stopwatch
-        timeout.Start()
 
         'Status word
         Dim status As UInt32
@@ -536,9 +534,6 @@ Partial Class FX3Connection
             m_status = "ERROR: Bad read command - " + status.ToString("X4")
             Throw New Exception("ERROR: Bad read command - " + status.ToString("X4"))
         End If
-
-        timeout.Stop()
-        status = 0
 
         Return returnValue
 
