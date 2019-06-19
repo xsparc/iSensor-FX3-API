@@ -289,7 +289,7 @@ Partial Class FX3Connection
         timeout.Start()
 
         'Configure control endpoint for a single byte register write
-        If Not ConfigureControlEndpoint(&HF1, False) Then
+        If Not ConfigureControlEndpoint(USBCommands.ADI_WRITE_BYTE, False) Then
             Throw New Exception("ERROR: Control endpoint configuration failed")
         End If
         FX3ControlEndPt.Value = data And &HFFFF
@@ -386,7 +386,7 @@ Partial Class FX3Connection
             End If
 
             'Send control transfer
-            ConfigureControlEndpoint(&HF2, True)
+            ConfigureControlEndpoint(USBCommands.ADI_BULK_REGISTER_TRANSFER, True)
             'Set the index equal to the number of bytes to read
             FX3ControlEndPt.Index = bufIndex
             'Set the value to the number of bytes per data ready
@@ -526,7 +526,7 @@ Partial Class FX3Connection
         Dim returnValue, shiftValue As UShort
 
         'Configure the control endpoint for a single register read
-        ConfigureControlEndpoint(&HF0, False)
+        ConfigureControlEndpoint(USBCommands.ADI_READ_BYTES, False)
 
         'Set the value to 0
         FX3ControlEndPt.Value = 0
