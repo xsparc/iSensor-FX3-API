@@ -79,31 +79,30 @@ CyU3PReturnStatus_t AdiWaitForPin(uint32_t pinNumber, CyU3PGpioIntrMode_t interr
 CyU3PReturnStatus_t AdiPinRead(uint16_t pin);
 CyU3PReturnStatus_t AdiReadTimerValue();
 uint32_t AdiMStoTicks(uint32_t desiredStallTime);
-void AdiWaitForTimerTicks(uint32_t numTicks);
+CyU3PReturnStatus_t AdiWaitForTimerTicks(uint32_t numTicks);
 
 //Peripheral read-write functions.
-void AdiWriteRegByte(uint16_t addr, uint8_t data);
-void AdiReadRegBytes(uint16_t addr);
+CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data);
+CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr);
 CyU3PReturnStatus_t AdiBulkByteTransfer(uint16_t numBytes, uint16_t bytesPerCapture);
 CyU3PReturnStatus_t AdiWritePageReg(uint16_t pageNumber);
 CyU3PReturnStatus_t AdiReadSpiReg(uint16_t address, uint16_t page, uint16_t numBytes, uint8_t  *buffer);
 CyU3PReturnStatus_t AdiWriteSpiReg(uint16_t address, uint16_t page, uint16_t numBytes, uint8_t  *buffer);
 
 //Real-time data stream functions.
-CyU3PReturnStatus_t AdiRealTimeStart();
-CyU3PReturnStatus_t AdiRealTimeFinished();
+CyU3PReturnStatus_t AdiRealTimeStreamStart();
+CyU3PReturnStatus_t AdiRealTimeStreamFinished();
 
 //Generic data stream functions.
-CyU3PReturnStatus_t AdiGenericDataStreamStart();
-CyU3PReturnStatus_t AdiGenericDataStreamFinished();
-void AdiGenericStreamDmaCallback (CyU3PDmaChannel *handle, CyU3PDmaCbType_t type, CyU3PDmaCBInput_t *input);
+CyU3PReturnStatus_t AdiGenericStreamStart();
+CyU3PReturnStatus_t AdiGenericStreamFinished();
 
 //Burst stream functions.
 CyU3PReturnStatus_t AdiBurstStreamStart();
 CyU3PReturnStatus_t AdiBurstStreamFinished();
 
 //General stream functions.
-void AdiStopAnyDataStream();
+CyU3PReturnStatus_t AdiStopAnyDataStream();
 
 //Enum for part type (used in streaming modes)
 typedef enum PartTye
@@ -304,9 +303,9 @@ struct BoardConfig
 #define ADI_RT_STREAMING_START					(1 << 0)
 #define ADI_RT_STREAMING_DONE					(1 << 1)
 #define ADI_RT_STREAMING_STOP					(1 << 2)
-#define ADI_DATA_STREAMING_START				(1 << 3)
-#define ADI_DATA_STREAMING_STOP					(1 << 4)
-#define ADI_DATA_STREAMING_DONE					(1 << 5)
+#define ADI_GENERIC_STREAMING_START				(1 << 3)
+#define ADI_GENERIC_STREAMING_STOP					(1 << 4)
+#define ADI_GENERIC_STREAMING_DONE					(1 << 5)
 #define ADI_GENERIC_STREAM_ENABLE				(1 << 6)
 #define ADI_REAL_TIME_STREAM_ENABLE				(1 << 7)
 #define ADI_KILL_THREAD_EARLY					(1 << 8)	//Currently unused.
