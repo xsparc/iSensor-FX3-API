@@ -69,14 +69,19 @@ Public Enum USBCommands
     'Return data over a bulk endpoint before a bulk read/write operation
     ADI_BULK_REGISTER_TRANSFER = &HF2
 
-    'Blink the LED when the FX3 board is running the ADI bootloader
-    ADI_BOOTLOADER_LEDBLINK = &HEF
+    'The following commands are for the ADI bootloader only
 
-    'Turn on the LED when the FX3 board is running the ADI bootloader
-    ADI_BOOTLOADER_LEDON = &HEC
+    ' Turn on APP_LED_GPIO solid 
+    ADI_LED_ON = &HEC
 
-    'Turn off the LED when the FX3 board is running the ADI bootloader
-    ADI_BOOTLOADER_LEDOFF = &HEE
+    ' Turn off APP_LED_GPIO 
+    ADI_LED_OFF = &HED
+
+    ' Turn off APP_LED_GPIO blinking 
+    ADI_LED_BLINKING_OFF = &HEE
+
+    ' Turn on APP_LED_GPIO blinking 
+    ADI_LED_BLINKING_ON = &HEF
 
 End Enum
 

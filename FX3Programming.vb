@@ -862,7 +862,7 @@ Partial Class FX3Connection
         FX3ControlEndPt = tempHandle.ControlEndPt
 
         'Configure the control endpoint
-        FX3ControlEndPt.ReqCode = USBCommands.ADI_BOOTLOADER_LEDBLINK
+        FX3ControlEndPt.ReqCode = USBCommands.ADI_LED_BLINKING_ON
         FX3ControlEndPt.ReqType = CyConst.REQ_VENDOR
         FX3ControlEndPt.Target = CyConst.TGT_ENDPT
         FX3ControlEndPt.Value = 0
@@ -904,7 +904,7 @@ Partial Class FX3Connection
         FX3ControlEndPt = tempHandle.ControlEndPt
 
         'Configure the control endpoint
-        FX3ControlEndPt.ReqCode = USBCommands.ADI_BOOTLOADER_LEDOFF
+        FX3ControlEndPt.ReqCode = USBCommands.ADI_LED_OFF
         FX3ControlEndPt.ReqType = CyConst.REQ_VENDOR
         FX3ControlEndPt.Target = CyConst.TGT_ENDPT
         FX3ControlEndPt.Value = 0
@@ -946,7 +946,7 @@ Partial Class FX3Connection
         FX3ControlEndPt = tempHandle.ControlEndPt
 
         'Configure the control endpoint
-        FX3ControlEndPt.ReqCode = USBCommands.ADI_BOOTLOADER_LEDON
+        FX3ControlEndPt.ReqCode = USBCommands.ADI_LED_ON
         FX3ControlEndPt.ReqType = CyConst.REQ_VENDOR
         FX3ControlEndPt.Target = CyConst.TGT_ENDPT
         FX3ControlEndPt.Value = 0
