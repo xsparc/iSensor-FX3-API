@@ -846,7 +846,7 @@ Public Class FX3Connection
         timeoutTimer.Start()
 
         'Send vendor command to request DR frequency
-        ConfigureControlEndpoint(&HC8, True)
+        ConfigureControlEndpoint(USBCommands.ADI_MEASURE_DR, True)
         If Not XferControlData(buf, 11, 2000) Then
             Throw New Exception("ERROR: DR frequency read timed out")
         End If
@@ -1004,9 +1004,10 @@ Public Class FX3Connection
         'Reinitialize the thread safe queue
         m_StreamData = New ConcurrentQueue(Of UShort())
 
-        ConfigureControlEndpoint(&HC1, True)
+        ConfigureControlEndpoint(USBCommands.ADI_STREAM_BURST_DATA, True)
         m_ActiveFX3.ControlEndPt.Value = 0 'DNC
         m_ActiveFX3.ControlEndPt.Index = 1 'Start stream
+
         'Send start stream command to the DUT
         XferControlData(buf, 8, 2000)
 
@@ -1033,7 +1034,7 @@ Public Class FX3Connection
         'Buffer to store command data
         Dim buf(3) As Byte
 
-        ConfigureControlEndpoint(&HC1, False)
+        ConfigureControlEndpoint(USBCommands.ADI_STREAM_BURST_DATA, False)
         m_ActiveFX3.ControlEndPt.Value = 0
         m_ActiveFX3.ControlEndPt.Index = 0
 
@@ -1147,7 +1148,7 @@ Public Class FX3Connection
         'Buffer to hold command data
         Dim buf(3) As Byte
 
-        ConfigureControlEndpoint(&HD0, False)
+        ConfigureControlEndpoint(USBCommands.ADI_STREAM_REALTIME, False)
         m_ActiveFX3.ControlEndPt.Value = 0
         m_ActiveFX3.ControlEndPt.Index = 0
 
@@ -1206,7 +1207,7 @@ Public Class FX3Connection
         Next
 
         'Configure the control endpoint
-        ConfigureControlEndpoint(&HC0, True)
+        ConfigureControlEndpoint(USBCommands.ADI_STREAM_GENERIC_DATA, True)
 
         'Configure settings to enable/disable streaming
         m_ActiveFX3.ControlEndPt.Value = 0
@@ -1320,7 +1321,7 @@ Public Class FX3Connection
         'Reinitialize the thread safe queue
         m_StreamData = New ConcurrentQueue(Of UShort())
 
-        ConfigureControlEndpoint(&HD0, True)
+        ConfigureControlEndpoint(USBCommands.ADI_STREAM_REALTIME, True)
         m_ActiveFX3.ControlEndPt.Value = m_pinExit
         m_ActiveFX3.ControlEndPt.Index = 1
         'Send start stream command to the DUT
@@ -1350,7 +1351,7 @@ Public Class FX3Connection
         'Buffer to hold command data
         Dim buf(3) As Byte
 
-        ConfigureControlEndpoint(&HD0, False)
+        ConfigureControlEndpoint(USBCommands.ADI_STREAM_REALTIME, False)
         m_ActiveFX3.ControlEndPt.Value = m_pinExit
         m_ActiveFX3.ControlEndPt.Index = 0
         'Send command to the DUT to stop streaming data
