@@ -722,7 +722,7 @@ Partial Class FX3Connection
     Private Function GetFirmwareID() As String
         Dim firmwareID As String
         Dim buf(31) As Byte
-        ConfigureControlEndpoint(&HB0, False)
+        ConfigureControlEndpoint(USBCommands.ADI_FIRMWARE_ID_CHECK, False)
         XferControlData(buf, 32, 2000)
         firmwareID = System.Text.Encoding.UTF8.GetString(buf)
         Return firmwareID
@@ -735,7 +735,7 @@ Partial Class FX3Connection
     Private Function GetSerialNumber() As String
         Dim serialNumber As String
         Dim buf(31) As Byte
-        ConfigureControlEndpoint(&HB5, False)
+        ConfigureControlEndpoint(USBCommands.ADI_SERIAL_NUMBER_CHECK, False)
         XferControlData(buf, 32, 2000)
         serialNumber = System.Text.Encoding.Unicode.GetString(buf)
         Return serialNumber
