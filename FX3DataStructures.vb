@@ -5,6 +5,73 @@
 #Region "Helper Data Structures"
 
 ''' <summary>
+''' This enum lists all supported vendor commands for the application firmware.
+''' </summary>
+Public Enum USBCommands
+
+    'Return FX3 firmware ID
+    ADI_FIRMWARE_ID_CHECK = &HB0
+
+    'Hard-reset the FX3 firmware (return to bootloader mode)
+    ADI_HARD_RESET = &HB1
+
+    'Set FX3 SPI configuration
+    ADI_SET_SPI_CONFIG = &HB2
+
+    'Return FX3 SPI configuration
+    ADI_READ_SPI_CONFIG = &HB3
+
+    'Return the current status of the FX3 firmware
+    ADI_GET_STATUS = &HB4
+
+    'Return the FX3 unique serial number
+    ADI_SERIAL_NUMBER_CHECK = &HB5
+
+    ' Soft-reset the FX3 firmware (don't return to bootloader mode)
+    ADI_WARM_RESET = &HB6
+
+    'Start/stop a generic data stream
+    ADI_STREAM_GENERIC_DATA = &HC0
+
+    'Start/stop a burst data stream
+    ADI_STREAM_BURST_DATA = &HC1
+
+    'Read the value of a user-specified GPIO
+    ADI_READ_PIN = &HC3
+
+    'Read the current FX3 timer register value
+    ADI_READ_TIMER_VALUE = &HC4
+
+    'Drive a user-specified GPIO for a user-specified time
+    ADI_PULSE_DRIVE = &HC5
+
+    'Wait for a user-specified pin to reach a user-specified level (with timeout)
+    ADI_PULSE_WAIT = &HC6
+
+    'Drive a user-specified GPIO
+    ADI_SET_PIN = &HC7
+
+    'Return the pulse frequency (data ready on a user-specified pin
+    ADI_MEASURE_DR = &HC8
+
+    'Start/stop a real-time stream
+    ADI_STREAM_REALTIME = &HD0
+
+    'Do nothing (default case
+    ADI_NULL_COMMAND = &HD1
+
+    'Read a word at a specified address and return the data over the control endpoint
+    ADI_READ_BYTES = &HF0
+
+    'Write one byte of data to a user-specified address
+    ADI_WRITE_BYTE = &HF1
+
+    'Return data over a bulk endpoint before a bulk read/write operation
+    ADI_BULK_REGISTER_TRANSFER = &HF2
+
+End Enum
+
+''' <summary>
 ''' Class for all the programmable SPI configuration options on the FX3 when using ADcmXL devices
 ''' </summary>
 Public Class SPIConfig
