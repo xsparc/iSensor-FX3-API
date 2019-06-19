@@ -19,7 +19,7 @@ Partial Class FX3Connection
     Public Sub PulseDrive(pin As IPinObject, polarity As UInteger, pperiod As Double, mode As UInteger) Implements IPinFcns.PulseDrive
 
         'Send a vendor command to drive pin (returns immediatly)
-        ConfigureControlEndpoint(&HC5, True)
+        ConfigureControlEndpoint(USBCommands.ADI_PULSE_DRIVE, True)
         Dim buf(6) As Byte
         Dim intPeriod As UInteger = Convert.ToUInt32(pperiod)
         Dim status, shiftedValue As UInteger
@@ -126,7 +126,7 @@ Partial Class FX3Connection
         timeoutTimer.Start()
 
         'Send a vendor command to start a pulse wait operation (returns immediatly)
-        ConfigureControlEndpoint(&HC6, True)
+        ConfigureControlEndpoint(USBCommands.ADI_PULSE_WAIT, True)
         If Not XferControlData(buf, 11, 2000) Then
             Throw New Exception("ERROR: Control Endpoint transfer timed out")
         End If
@@ -198,7 +198,7 @@ Partial Class FX3Connection
         Dim status, shiftedValue As UInteger
 
         'Configure control endpoint for pin read
-        ConfigureControlEndpoint(&HC3, False)
+        ConfigureControlEndpoint(USBCommands.ADI_READ_PIN, False)
         FX3ControlEndPt.Index = pin.pinConfig And &HFF
 
         'Transfer data
@@ -284,7 +284,7 @@ Partial Class FX3Connection
         End If
 
         'Setup a set pin command
-        ConfigureControlEndpoint(&HC7, False)
+        ConfigureControlEndpoint(USBCommands.ADI_SET_PIN, False)
         FX3ControlEndPt.Index = pin.pinConfig And &HFF
         FX3ControlEndPt.Value = value
 
