@@ -564,7 +564,7 @@ Public Class FX3Connection
         m_ActiveFX3.ControlEndPt.Target = CyConst.TGT_DEVICE
         m_ActiveFX3.ControlEndPt.Direction = CyConst.DIR_FROM_DEVICE
         m_ActiveFX3.ControlEndPt.ReqType = CyConst.REQ_VENDOR
-        m_ActiveFX3.ControlEndPt.ReqCode = &HB3
+        m_ActiveFX3.ControlEndPt.ReqCode = USBCommands.ADI_READ_SPI_CONFIG
         m_ActiveFX3.ControlEndPt.Value = 0
         m_ActiveFX3.ControlEndPt.Index = 0
 
@@ -734,7 +734,7 @@ Public Class FX3Connection
         m_ActiveFX3.ControlEndPt.Target = CyConst.TGT_DEVICE
         m_ActiveFX3.ControlEndPt.Direction = CyConst.DIR_TO_DEVICE
         m_ActiveFX3.ControlEndPt.ReqType = CyConst.REQ_VENDOR
-        m_ActiveFX3.ControlEndPt.ReqCode = &HB2
+        m_ActiveFX3.ControlEndPt.ReqCode = USBCommands.ADI_SET_SPI_CONFIG
 
         'Store the clock frequency in the buffer
         If Not clockFrequency = 0 Then

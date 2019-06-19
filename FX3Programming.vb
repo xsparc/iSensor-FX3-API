@@ -548,7 +548,7 @@ Partial Class FX3Connection
         Dim buf(3) As Byte
 
         'Configure the control endpoint
-        boardHandle.ControlEndPt.ReqCode = &HB1
+        boardHandle.ControlEndPt.ReqCode = USBCommands.ADI_HARD_RESET
         boardHandle.ControlEndPt.ReqType = CyConst.REQ_VENDOR
         boardHandle.ControlEndPt.Target = CyConst.TGT_ENDPT
         boardHandle.ControlEndPt.Value = 0
@@ -666,7 +666,7 @@ Partial Class FX3Connection
         FX3ControlEndPt = m_ActiveFX3.ControlEndPt
 
         'Block control endpoint transfers while streaming (except cancel)
-        If m_StreamThreadRunning And Not (FX3ControlEndPt.ReqCode = &HD0) Then
+        If m_StreamThreadRunning And Not (FX3ControlEndPt.ReqCode = USBCommands.ADI_STREAM_REALTIME) Then
             Return False
         End If
 
@@ -862,7 +862,7 @@ Partial Class FX3Connection
         FX3ControlEndPt = tempHandle.ControlEndPt
 
         'Configure the control endpoint
-        FX3ControlEndPt.ReqCode = &HEF
+        FX3ControlEndPt.ReqCode = USBCommands.ADI_BOOTLOADER_LEDBLINK
         FX3ControlEndPt.ReqType = CyConst.REQ_VENDOR
         FX3ControlEndPt.Target = CyConst.TGT_ENDPT
         FX3ControlEndPt.Value = 0
@@ -904,7 +904,7 @@ Partial Class FX3Connection
         FX3ControlEndPt = tempHandle.ControlEndPt
 
         'Configure the control endpoint
-        FX3ControlEndPt.ReqCode = &HEE
+        FX3ControlEndPt.ReqCode = USBCommands.ADI_BOOTLOADER_LEDOFF
         FX3ControlEndPt.ReqType = CyConst.REQ_VENDOR
         FX3ControlEndPt.Target = CyConst.TGT_ENDPT
         FX3ControlEndPt.Value = 0
@@ -946,7 +946,7 @@ Partial Class FX3Connection
         FX3ControlEndPt = tempHandle.ControlEndPt
 
         'Configure the control endpoint
-        FX3ControlEndPt.ReqCode = &HEC
+        FX3ControlEndPt.ReqCode = USBCommands.ADI_BOOTLOADER_LEDON
         FX3ControlEndPt.ReqType = CyConst.REQ_VENDOR
         FX3ControlEndPt.Target = CyConst.TGT_ENDPT
         FX3ControlEndPt.Value = 0
