@@ -31,6 +31,24 @@ Partial Class FX3Connection
     End Sub
 
     ''' <summary>
+    ''' If the data ready is used for register reads
+    ''' </summary>
+    ''' <returns>The current data ready usage setting</returns>
+    Public Property DrActive As Boolean Implements AdisApi.IRegInterface.DrActive
+        Get
+            Return m_FX3_SpiConfig.DrActive
+        End Get
+        Set(value As Boolean)
+            m_FX3_SpiConfig.DrActive = value
+            If m_FX3Connected Then
+                m_ActiveFX3.ControlEndPt.Index = 12
+                m_ActiveFX3.ControlEndPt.Value = m_FX3_SpiConfig.DrActive
+                ConfigureSPI()
+            End If
+        End Set
+    End Property
+
+    ''' <summary>
     ''' Switches burstMode on and off. Set burstMode to the number of burst read registers. 
     ''' </summary>
     ''' <returns>The number of burst read registers.</returns>
@@ -146,8 +164,7 @@ Partial Class FX3Connection
         Else
             If burstMode = 0 Then
                 'Generic stream manager implementation for IMU, etc
-                Dim StreamThread = New Threading.Thread(Sub() RunGenericStream(addrData, numCaptures, numBuffers))
-                StreamThread.Start()
+                StartGenericStream(addrData, numCaptures, numBuffers)
             Else
                 'Burst stream manager implementation
                 StartBurstStream(numBuffers)

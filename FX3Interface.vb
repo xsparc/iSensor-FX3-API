@@ -502,24 +502,6 @@ Public Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' If the data ready is used for register reads
-    ''' </summary>
-    ''' <returns>The current data ready usage setting</returns>
-    Public Property DrActive As Boolean Implements AdisApi.IRegInterface.DrActive
-        Get
-            Return m_FX3_SpiConfig.DrActive
-        End Get
-        Set(value As Boolean)
-            m_FX3_SpiConfig.DrActive = value
-            If m_FX3Connected Then
-                m_ActiveFX3.ControlEndPt.Index = 12
-                m_ActiveFX3.ControlEndPt.Value = m_FX3_SpiConfig.DrActive
-                ConfigureSPI()
-            End If
-        End Set
-    End Property
-
-    ''' <summary>
     ''' Property to get or set the DUT data ready pin
     ''' </summary>
     ''' <returns>The IPinObject of the pin currently configured as the data ready</returns>
@@ -1178,39 +1160,27 @@ Public Class FX3Connection
     End Sub
 
     ''' <summary>
-    ''' This function pulls generic stream data from the FX3 over a bulk endpoint (DataIn). It is intended to run in its own thread,
-    ''' and should not be called by itself.
+    ''' Starts a generic data stream. This allows you to read/write a set of registers on the DUT, triggering off the data ready if needed.
+    ''' The data read is placed in the threadsafe queue and can be retrieved with a call to GetBuffer. Each "buffer" is the result of
+    ''' reading the addr list of registers numCaptures times. For example, if addr is set to [0, 2, 4] and numCaptures is set to 10, each
+    ''' buffer will contain the 30 register values. The total number of register reads performed is numCaptures * numBuffers
     ''' </summary>
-    ''' <param name="addr"></param>
-    ''' <param name="numBuffers"></param>
-    ''' <param name="numCaptures"></param>
-    Private Sub RunGenericStream(addr As IEnumerable(Of AddrDataPair), numCaptures As UInteger, numBuffers As UInteger)
+    ''' <param name="addr">The list of registers to </param>
+    ''' <param name="numCaptures">The number of captures of the register list per data ready</param>
+    ''' <param name="numBuffers">The total number of capture sequences to perform</param>
+    Public Sub StartGenericStream(addr As IEnumerable(Of AddrDataPair), numCaptures As UInteger, numBuffers As UInteger)
 
         'Buffer to store control data
         Dim buf As New List(Of Byte)
+        Dim BytesPerBuffer As Integer
+
         'Number of bytes per buffer
-        Dim wordsPerTransfer As Integer = (addr.Count() * numCaptures)
+        BytesPerBuffer = (addr.Count() * numCaptures) * 2
+
         'Reset frame counter
         m_FramesRead = 0
         'Set the total number of frames to read
         m_TotalBuffersToRead = numBuffers
-        'Get the number of bytes per transfer from the DUT
-        Dim bytesPerTransfer As Integer = (wordsPerTransfer * 2)
-        'Buffer to store data from the FX3
-        'Dim dataBuffer(bytesPerTransfer - 1) As Byte
-        Dim dataBuffer(1023) As Byte
-        'Bool to track if transfer from FX3 board is successful
-        Dim validTransfer As Boolean = True
-        'Variable to track number of buffers read
-        Dim numBuffersRead As Integer = 0
-        'List to build output buffer in USHORT format
-        Dim bufferBuilder As New List(Of UShort)
-        'Int to track buffer index
-        Dim bufIndex As Integer = 0
-        'Int to track frame index
-        Dim frameIndex As Integer = 0
-        'Short value for flipping bytes
-        Dim shortValue As UShort
 
         'Add numBuffers
         buf.Add(numBuffers And &HFF)
@@ -1247,30 +1217,65 @@ Public Class FX3Connection
             Throw New Exception("ERROR: Control Endpoint transfer timed out")
         End If
 
+        'Start the Generic Stream Thread
+        m_StreamThread = New Thread(AddressOf GenericStreamManager)
+        m_StreamThread.Start(BytesPerBuffer)
+
+    End Sub
+
+
+    ''' <summary>
+    ''' This function pulls generic stream data from the FX3 over a bulk endpoint (DataIn). It is intended to run in its own thread,
+    ''' and should not be called by itself.
+    ''' </summary>
+    ''' <param name="BytesPerBuffer">Number of bytes per generic stream buffer</param>
+    Private Sub GenericStreamManager(BytesPerBuffer As Integer)
+
+        'Bool to track if transfer from FX3 board is successful
+        Dim validTransfer As Boolean = True
+        'Variable to track number of buffers read
+        Dim numBuffersRead As Integer = 0
+        'List to build output buffer in USHORT format
+        Dim bufferBuilder As New List(Of UShort)
+        'Int to track buffer indexrsfer sf
+        Dim bufIndex As Integer = 0
+        'Short value for flipping bytes
+        Dim shortValue As UShort
+
+        'Find transfer size and create data buffer
+        Dim transferSize As Integer
+        If m_ActiveFX3.bSuperSpeed Then
+            transferSize = 1024
+        ElseIf m_ActiveFX3.bHighSpeed Then
+            transferSize = 512
+        Else
+            Throw New Exception("ERROR: Streaming application requires USB 2.0 or 3.0 connection to function")
+        End If
+
+        'Buffer to hold data from the FX3
+        Dim buf(transferSize - 1) As Byte
+
         'Set the thread state flags
         m_StreamThreadTerminated = False
         m_StreamThreadRunning = True
 
         While m_StreamThreadRunning
             'Read data from FX3
-            validTransfer = DataInEndPt.XferData(dataBuffer, 1024)
-            'Exit the loop if transfer fails
+            validTransfer = DataInEndPt.XferData(buf, transferSize)
+            'Check that the data was read correctly
             If validTransfer Then
                 'Build the output buffer
-                For bufIndex = 0 To (((1024 / bytesPerTransfer) * bytesPerTransfer) - 2) Step 2
+                For bufIndex = 0 To (transferSize - 2) Step 2
                     'Flip bytes
-                    shortValue = dataBuffer(bufIndex)
+                    shortValue = buf(bufIndex)
                     shortValue = shortValue << 8
-                    shortValue = shortValue + dataBuffer(bufIndex + 1)
+                    shortValue = shortValue + buf(bufIndex + 1)
                     bufferBuilder.Add(shortValue)
-                    frameIndex = frameIndex + 2
-                    'Once the end of each frame is reached add it to the queue
-                    If frameIndex >= bytesPerTransfer Then
+                    If bufferBuilder.Count() * 2 >= BytesPerBuffer Then
                         m_StreamData.Enqueue(bufferBuilder.ToArray())
                         Interlocked.Increment(m_FramesRead)
                         bufferBuilder.Clear()
                         numBuffersRead = numBuffersRead + 1
-                        frameIndex = 0
                         'Exit if the total number of buffers has been read
                         If numBuffersRead >= m_TotalBuffersToRead Then
                             Exit While
@@ -1278,6 +1283,7 @@ Public Class FX3Connection
                     End If
                 Next
             Else
+                'Exit for a failed data transfer
                 Exit While
             End If
         End While
