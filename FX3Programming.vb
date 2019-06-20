@@ -13,7 +13,8 @@ Partial Class FX3Connection
 #Region "Connection Functions"
 
     ''' <summary>
-    ''' Attempts to program the selected FX3 board with the application firmware.
+    ''' Attempts to program the selected FX3 board with the application firmware. The FX3 board should be programmed
+    ''' with the ADI bootloader.
     ''' </summary>
     ''' <param name="deviceSn">Serial number of the device being connected to.</param>
     Public Sub Connect(ByVal deviceSn As String)
@@ -388,7 +389,7 @@ Partial Class FX3Connection
         'Attempt to program the board
         flashStatus = selectedBoard.DownloadFw(BlinkFirmwarePath, FX3_FWDWNLOAD_MEDIA_TYPE.RAM)
 
-        If flashStatus = FX3_FWDWNLOAD_ERROR_CODE.FAILED Then
+        If Not flashStatus = FX3_FWDWNLOAD_ERROR_CODE.SUCCESS Then
             Throw New Exception("ERROR: Bootloader download failed.")
         End If
 
@@ -414,7 +415,7 @@ Partial Class FX3Connection
         flashStatus = selectedBoard.DownloadFw(FirmwarePath, FX3_FWDWNLOAD_MEDIA_TYPE.RAM)
 
         'If the cypress driver level programming fails return false
-        If flashStatus = FX3_FWDWNLOAD_ERROR_CODE.FAILED Then
+        If Not flashStatus = FX3_FWDWNLOAD_ERROR_CODE.SUCCESS Then
             Return False
         End If
 
