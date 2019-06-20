@@ -1,4 +1,5 @@
-﻿'Author:        Alex Nolan, Juan Chong
+﻿'File:          FX3Exceptions.vb
+'Author:        Alex Nolan (alex.nolan@analog.com), Juan Chong (juan.chong@analog.com)
 'Date:          6/19/2019
 'Description:   This file defines the custom exceptions used by the FX3Connection.
 '               These exceptions allow for greater granularity and consistency in

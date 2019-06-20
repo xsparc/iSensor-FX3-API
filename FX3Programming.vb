@@ -1,8 +1,8 @@
-﻿'File: FX3Programming.vb
-'Author: Alex Nolan
-'Date: 6/10/2019
-'This file is an extension of the primary FX3 Connection class. It contains all the functions
-'related to board enumeration, connection, and programming.
+﻿'File:          FX3Programming.vb
+'Author:        Alex Nolan (alex.nolan@analog.com), Juan Chong (juan.chong@analog.com)
+'Date:          6/10/2019
+'Description:   This file is an extension of the primary FX3 Connection class. It contains all the functions
+'               related to board enumeration, connection, and programming.
 
 Imports CyUSB
 Imports System.IO
@@ -16,8 +16,8 @@ Partial Class FX3Connection
     ''' Attempts to program the selected FX3 board with the application firmware. The FX3 board should be programmed
     ''' with the ADI bootloader.
     ''' </summary>
-    ''' <param name="deviceSn">Serial number of the device being connected to.</param>
-    Public Sub Connect(ByVal deviceSn As String)
+    ''' <param name="FX3SerialNumber">Serial number of the device being connected to.</param>
+    Public Sub Connect(ByVal FX3SerialNumber As String)
 
         Dim tempHandle As CyUSBDevice = Nothing
         Dim timeoutTimer As New Stopwatch
@@ -30,7 +30,7 @@ Partial Class FX3Connection
         'Find the device handle using the selected serial number
         For Each item As CyFX3Device In m_usbList
             'Look for the selected serial number and get its handle
-            If String.Equals(item.SerialNumber, deviceSn) Then
+            If String.Equals(item.SerialNumber, FX3SerialNumber) Then
                 tempHandle = item
             End If
         Next
@@ -39,12 +39,12 @@ Partial Class FX3Connection
         If tempHandle Is Nothing Then
             'Set default values for the interface
             SetDefaultValues(m_sensorType)
-            Throw New Exception("ERROR: Could not find the board selected to connect to. Was it removed?")
+            Throw New FX3ProgrammingException("ERROR: Could not find the board selected to connect to. Was it removed?")
         End If
 
         'Program the FX3 board with the application firmware
         'Check the active FX3 firmware and compare against the requested serial number
-        If String.Equals(tempHandle.SerialNumber, deviceSn) Then
+        If String.Equals(tempHandle.SerialNumber, FX3SerialNumber) Then
             'If the board is already programmed and in streamer mode, then don't re-program
             If String.Equals(tempHandle.FriendlyName, ApplicationName) Then
                 'Set flag indicating that the FX3 successfully connected
@@ -59,9 +59,9 @@ Partial Class FX3Connection
         'Update the handle for the newly programmed board
         For Each item As CyUSBDevice In m_usbList
             'Look for the selected serial number, get its handle, and set it as the active device
-            If String.Equals(item.SerialNumber, deviceSn) Then
+            If String.Equals(item.SerialNumber, FX3SerialNumber) Then
                 m_ActiveFX3 = CType(item, CyFX3Device)
-                m_ActiveFX3SN = deviceSn
+                m_ActiveFX3SN = FX3SerialNumber
                 'Set flag indicating that the FX3 successfully connected
                 m_FX3Connected = True
                 'exit the loop early
@@ -73,13 +73,16 @@ Partial Class FX3Connection
         If m_ActiveFX3SN Is Nothing Then
             'Set default values for the interface
             SetDefaultValues(m_sensorType)
-            Throw New Exception("ERROR: Could not find the board selected to connect to. Was it removed?")
+            'Throw exception
+            Throw New FX3ProgrammingException("ERROR: Could not find the board selected to connect to. Was it removed?")
         End If
 
         'Check that we're talking to the target board and it's running the application firmware
         If Not FX3CodeRunningOnTarget() Then
-            m_FX3Connected = False
-            Throw New Exception("ERROR: FX3 Board not successfully connected")
+            'Set default values for the interface
+            SetDefaultValues(m_sensorType)
+            'Throw exception
+            Throw New FX3ProgrammingException("ERROR: FX3 Board not successfully connected")
         End If
 
         'Check that the connection speed is adequate
@@ -90,14 +93,18 @@ Partial Class FX3Connection
 
         'Check that endpoints are properly enumerated
         If Not CheckEndpointStatus() Then
-            m_status = "ERROR: Unable to enumerate endpoints"
             'Set default values for the interface
             SetDefaultValues(m_sensorType)
-            Throw New Exception("ERROR: Unable to configure endpoints")
+            'Throw exception
+            Throw New FX3GeneralException("ERROR: Unable to configure endpoints")
         End If
 
         'Make sure that the board SPI parameters match current setting
         WriteBoardSpiParameters()
+
+        'Set the board info
+        m_ActiveFX3Info = New FX3Board(FX3SerialNumber, DateTime.Now)
+        m_ActiveFX3Info.SetFirmwareVersion(GetFirmwareID())
 
     End Sub
 
@@ -111,7 +118,7 @@ Partial Class FX3Connection
             Exit Sub
         End If
 
-        'Start timer
+        'Start global timer. Used for managing disconnect events
         m_disconnectTimer = New Stopwatch()
         m_disconnectTimer.Start()
 
@@ -126,12 +133,16 @@ Partial Class FX3Connection
     End Sub
 
     ''' <summary>
-    ''' Property which returns the active FX3 board.
+    ''' Property which returns the active FX3 board. Returns nothing if there is not a board connected.
     ''' </summary>
-    ''' <returns>Returns active FX3 device ID if enumeration has been completed. Returns nothing otherwise.</returns>
-    Public ReadOnly Property ActiveFX3 As CyFX3Device
+    ''' <returns>Returns active FX3 board if enumeration has been completed. Returns nothing otherwise.</returns>
+    Public ReadOnly Property ActiveFX3 As FX3Board
         Get
-            Return m_ActiveFX3
+            If m_FX3Connected Then
+                Return m_ActiveFX3Info
+            Else
+                Return Nothing
+            End If
         End Get
     End Property
 
@@ -192,7 +203,7 @@ Partial Class FX3Connection
     ''' Property which reads the firmware version from the FX3
     ''' </summary>
     ''' <returns>The firmware version, as a string</returns>
-    Public ReadOnly Property GetVersion As String
+    Public ReadOnly Property GetFirmwareVersion As String
         Get
             Return GetFirmwareID()
         End Get
@@ -201,7 +212,7 @@ Partial Class FX3Connection
     ''' <summary>
     ''' Readonly property to get the serial number of the active FX3 board
     ''' </summary>
-    ''' <returns>THe current serial number, as a string</returns>
+    ''' <returns>The current serial number, as a string</returns>
     Public ReadOnly Property GetTargetSerialNumber As String
         Get
             Return GetSerialNumber()
@@ -278,9 +289,6 @@ Partial Class FX3Connection
             'Set default values for the interface
             SetDefaultValues(m_sensorType)
 
-            'Set status message
-            m_status = "ERROR: Unexpected FX3 Disconnect"
-
             'Update the FX3Interface device list
             RefreshDeviceList()
 
@@ -351,7 +359,7 @@ Partial Class FX3Connection
     ''' is connected to the system, the device identifier is placed in a queue, indicating to this thread
     ''' that a new board needs to be programmed with the ADI bootloader.
     ''' </summary>
-    Private Sub ProgramBootloader_Thread()
+    Private Sub ProgramBootloaderThread()
 
         'Message from the queue
         Dim selectedBoard As CyFX3Device
@@ -362,10 +370,11 @@ Partial Class FX3Connection
             'Program the indicated board (in cypress bootloader mode)
             Try
                 ProgramBootloader(selectedBoard)
-            Catch ex As Exception
-                If ex.Message = "ERROR: Selected FX3 is not in bootloader mode. Please reset the FX3." Then
-                    'Don't need to do anything, this is to catch exceptions caused by a concurrent program of the FX3 by multiple instances of the FX3Connection
-                End If
+            Catch ex As FX3ProgrammingException
+                'Don't need to do anything
+                'This can be caused when a second instance of the FX3Connection generates a race condition
+                System.Threading.Thread.Sleep(1000)
+                RefreshDeviceList()
             End Try
 
         End While
@@ -376,21 +385,22 @@ Partial Class FX3Connection
     ''' This function programs the bootloader of a single board
     ''' </summary>
     ''' <param name="selectedBoard">The handle for the FX3 board to be programmed with the ADI bootloader firmware</param>
-    Private Sub ProgramBootloader(ByVal selectedBoard As CyFX3Device)
+    Private Sub ProgramBootloader(ByVal SelectedBoard As CyFX3Device)
 
         'Programming status
         Dim flashStatus As FX3_FWDWNLOAD_ERROR_CODE = FX3_FWDWNLOAD_ERROR_CODE.SUCCESS
 
         'Check that the cypress bootloader is currently running
-        If Not selectedBoard.IsBootLoaderRunning Then
-            Throw New Exception("ERROR: Selected FX3 is not in bootloader mode. Please reset the FX3.")
+        If Not SelectedBoard.IsBootLoaderRunning Then
+            Throw New FX3ProgrammingException("ERROR: Selected FX3 is not in bootloader mode. Please reset the FX3.")
         End If
 
         'Attempt to program the board
-        flashStatus = selectedBoard.DownloadFw(BlinkFirmwarePath, FX3_FWDWNLOAD_MEDIA_TYPE.RAM)
+        flashStatus = SelectedBoard.DownloadFw(BlinkFirmwarePath, FX3_FWDWNLOAD_MEDIA_TYPE.RAM)
 
+        'Validate the flash status
         If Not flashStatus = FX3_FWDWNLOAD_ERROR_CODE.SUCCESS Then
-            Throw New Exception("ERROR: Bootloader download failed.")
+            Throw New FX3ProgrammingException("ERROR: Bootloader download failed with code " + flashStatus.ToString())
         End If
 
     End Sub
@@ -399,8 +409,7 @@ Partial Class FX3Connection
     ''' This function programs a single board running the ADI bootloader with the ADI application firmware.
     ''' </summary>
     ''' <param name="selectedBoard">The handle for the board to be programmed with the ADI application firmware</param>
-    ''' <returns></returns>
-    Private Function ProgramAppFirmware(ByVal selectedBoard As CyFX3Device) As Boolean
+    Private Sub ProgramAppFirmware(ByVal selectedBoard As CyFX3Device)
 
         'If the board programmed successfully
         Dim boardProgrammed As Boolean = False
@@ -416,7 +425,7 @@ Partial Class FX3Connection
 
         'If the cypress driver level programming fails return false
         If Not flashStatus = FX3_FWDWNLOAD_ERROR_CODE.SUCCESS Then
-            Return False
+            Throw New FX3ProgrammingException("ERROR: Application firmware download failed with code " + flashStatus.ToString())
         End If
 
         'Check that the board appropriately re-enumerates
@@ -433,9 +442,11 @@ Partial Class FX3Connection
         End While
         timeoutTimer.Stop()
 
-        Return boardProgrammed
+        If Not boardProgrammed Then
+            Throw New FX3ProgrammingException("ERROR: Timeout occured during the FX3 re-enumeration process")
+        End If
 
-    End Function
+    End Sub
 
     ''' <summary>
     ''' Function which checks if the FX3 is connected and programmed
@@ -448,21 +459,19 @@ Partial Class FX3Connection
             Return False
         End If
 
-        'Make sure the selected board identifies as a "streamer" device
+        'Make sure the selected board identifies as a "streamer" device running the application firmware
         If Not String.Equals(m_ActiveFX3.FriendlyName, ApplicationName) Then
-            Throw New Exception("ERROR: The target board is not running the application firmware")
             Return False
         End If
 
         'Make sure the selected board is reporting back the correct serial (using the control endpoint, not the USB descriptor)
-        If Not String.Equals(m_ActiveFX3SN, GetSerialNumber()) Then
-            Throw New Exception("ERROR: The target board reported a different serial number. You're probably talking to the wrong board!")
+        Dim boardSerialNumber As String = GetSerialNumber()
+        If Not String.Equals(m_ActiveFX3SN, boardSerialNumber) Then
             Return False
         End If
 
         'Get the firmware ID from the board and check whether it contains "FX3"
         If GetFirmwareID().IndexOf("FX3") = -1 Then
-            Throw New Exception("ERROR: Board not responding to requests")
             Return False
         End If
 
@@ -483,6 +492,8 @@ Partial Class FX3Connection
             'Setter checks that the path is valid before setting
             If isFirmwarePathValid(value) Then
                 m_FirmwarePath = value
+            Else
+                Throw New FX3ConfigurationException("ERROR: Invalid application firmware path provided: " + value)
             End If
         End Set
     End Property
@@ -499,6 +510,8 @@ Partial Class FX3Connection
             'Setter checks that the path is valid before setting
             If isFirmwarePathValid(value) Then
                 m_BlinkFirmwarePath = value
+            Else
+                Throw New FX3ConfigurationException("ERROR: Invalid bootloader path provided: " + value)
             End If
         End Set
     End Property
@@ -510,9 +523,11 @@ Partial Class FX3Connection
     Public ReadOnly Property GetBootStatus As String
         Get
             'Check if the board is running
-            FX3CodeRunningOnTarget()
-            'Return the status
-            Return m_status
+            If FX3CodeRunningOnTarget() Then
+                Return "Application firmware running on FX3"
+            Else
+                Return "Application firmware Not running on FX3"
+            End If
         End Get
     End Property
 
@@ -522,40 +537,31 @@ Partial Class FX3Connection
     ''' <returns>A boolean indicating if there is an FX3 attached</returns>
     Public ReadOnly Property FX3BoardAttached As Boolean
         Get
+            'Force an update of the device list
             RefreshDeviceList()
-            'Return false if none
-            If m_usbList.Count = 0 Then
-                Return False
-            End If
-            'Check if one is an FX3
-            For Each item In m_usbList
-                'Return true if we found an FX3
-                If CType(item, CyFX3Device).VendorID = &H4B4 Then
-                    Return True
-                End If
-            Next
-            'Return false if no FX3 found
-            Return False
+            'Return true if count is not 0
+            Return (Not m_usbList.Count = 0)
         End Get
     End Property
 
     ''' <summary>
     ''' Send a reset command to the FX3 firmware. This command works for either the application or bootloader firmware.
     ''' </summary>
-    ''' <param name="boardHandle">Handle of the board to be reset.</param>
-    Private Sub ResetFX3Firmware(ByVal boardHandle As CyFX3Device)
+    ''' <param name="BoardHandle">Handle of the board to be reset.</param>
+    Private Sub ResetFX3Firmware(ByVal BoardHandle As CyFX3Device)
 
         'Sub assumes the board has firmware loaded on it that will respond to reset commands
         Dim buf(3) As Byte
 
         'Configure the control endpoint
-        boardHandle.ControlEndPt.ReqCode = USBCommands.ADI_HARD_RESET
-        boardHandle.ControlEndPt.ReqType = CyConst.REQ_VENDOR
-        boardHandle.ControlEndPt.Target = CyConst.TGT_ENDPT
-        boardHandle.ControlEndPt.Value = 0
-        boardHandle.ControlEndPt.Index = 0
-        boardHandle.ControlEndPt.Direction = CyConst.DIR_TO_DEVICE
-        boardHandle.ControlEndPt.XferData(buf, 4)
+        BoardHandle.ControlEndPt.ReqCode = USBCommands.ADI_HARD_RESET
+        BoardHandle.ControlEndPt.ReqType = CyConst.REQ_VENDOR
+        BoardHandle.ControlEndPt.Target = CyConst.TGT_ENDPT
+        BoardHandle.ControlEndPt.Value = 0
+        BoardHandle.ControlEndPt.Index = 0
+        BoardHandle.ControlEndPt.Direction = CyConst.DIR_TO_DEVICE
+        'Not throwing an exception here, its possible to send to a board which isn't configured with the application firmware.
+        BoardHandle.ControlEndPt.XferData(buf, 4)
 
     End Sub
 
@@ -584,81 +590,40 @@ Partial Class FX3Connection
     End Function
 
     ''' <summary>
-    ''' Wait for a newly-programmed FX3 to enumerate as a streamer (application) device
-    ''' </summary>
-    ''' <param name="timeout">Optional timeout to wait for a board to re-enumerate.</param>
-    ''' <param name="sn">Serial number of device we're waiting for.</param>
-    Private Sub WaitForStreamer(ByVal sn As String, Optional ByVal timeout As Integer = 3000)
-        Dim timer As New Stopwatch
-        Dim tempList As New USBDeviceList(CyConst.DEVICES_CYUSB)
-        Dim streamerDetected As Boolean = False
-
-        timer.Start()
-        While (timer.ElapsedMilliseconds < timeout And Not streamerDetected)
-            tempList = New USBDeviceList(CyConst.DEVICES_CYUSB)
-            'Look for the device with a stock serial number
-            For Each item In tempList
-                'Look for the selected serial number, get its handle, and set it as the active device
-                If String.Equals(CType(item, CyFX3Device).FriendlyName, ApplicationName) Then
-                    If String.Equals(CType(item, CyFX3Device).SerialNumber, sn) Then
-                        m_ActiveFX3 = CType(item, CyFX3Device)
-                        m_ActiveFX3SN = sn
-                        streamerDetected = True
-                    Else
-                        Thread.Sleep(DeviceListDelay)
-                    End If
-                Else
-                    Thread.Sleep(DeviceListDelay)
-                End If
-            Next
-
-        End While
-
-        If Not streamerDetected Then
-            Throw New Exception("ERROR: Could not find the FX3 board after programming the application firmware")
-        End If
-
-        timer.Reset()
-
-    End Sub
-
-    ''' <summary>
     ''' Checks to see if a provided firmware path is valid. Throws exception if it is not.
     ''' </summary>
-    ''' <param name="path">The firmware path to check</param>
+    ''' <param name="Path">The firmware path to check</param>
     ''' <returns>A boolean indicating if the firmware path is valid</returns>
-    Private Function isFirmwarePathValid(ByRef path As String) As Boolean
-        Dim validPath As Boolean = True
-        Try
-            'Check file path length
-            If Not path.Length > 4 Then
-                Throw New Exception("ERROR: Firmware path too short")
-            End If
-            'Check that it is a .img file
-            If Not path.Substring(path.Length - 4, 4) = ".img" Then
-                Throw New Exception("ERROR: Firmware must be a .img file")
-            End If
-            'Check that the file exists
-            If Not File.Exists(path) Then
-                Throw New Exception("ERROR: Firmware file does not exist")
-            End If
-        Catch ex As Exception
-            validPath = False
-            'Pass the exception up
-        End Try
+    Private Function isFirmwarePathValid(ByRef Path As String) As Boolean
 
-        Return validPath
+        'Check file path length
+        If Not Path.Length > 4 Then
+            Return False
+        End If
+
+        'Check that it is a .img file
+        If Not Path.Substring(Path.Length - 4, 4) = ".img" Then
+            Return False
+        End If
+
+        'Check that the file exists
+        If Not File.Exists(Path) Then
+            Return False
+        End If
+
+        'Return true if all tests pass
+        Return True
 
     End Function
 
     ''' <summary>
     ''' Performs a data transfer on the control endpoint with a check to see if the transaction times out
     ''' </summary>
-    ''' <param name="buf">The buffer to transfer</param>
-    ''' <param name="numBytes">The number of bytes to transfer</param>
-    ''' <param name="timeout">The timeout time (in milliseconds)</param>
+    ''' <param name="Buf">The buffer to transfer</param>
+    ''' <param name="NumBytes">The number of bytes to transfer</param>
+    ''' <param name="Timeout">The timeout time (in milliseconds)</param>
     ''' <returns>Returns a boolean indicating if the transfer timed out or not</returns>
-    Private Function XferControlData(ByRef buf As Byte(), ByVal numBytes As Integer, ByVal timeout As Integer) As Boolean
+    Private Function XferControlData(ByRef Buf As Byte(), ByVal NumBytes As Integer, ByVal Timeout As Integer) As Boolean
 
         Dim startTime As New Stopwatch
         Dim validTransfer As Boolean = True
@@ -673,7 +638,7 @@ Partial Class FX3Connection
 
         'Perform transfer
         startTime.Start()
-        validTransfer = FX3ControlEndPt.XferData(buf, numBytes)
+        validTransfer = FX3ControlEndPt.XferData(Buf, NumBytes)
         startTime.Stop()
 
         'Check transfer status
@@ -682,7 +647,7 @@ Partial Class FX3Connection
         End If
 
         'Check and see if timeout expired
-        If startTime.ElapsedMilliseconds() > timeout Then
+        If startTime.ElapsedMilliseconds() > Timeout Then
             Return False
         Else
             Return True
@@ -695,38 +660,63 @@ Partial Class FX3Connection
     ''' </summary>
     ''' <param name="Reqcode">The vendor command reqcode to provide</param>
     ''' <param name="toDevice">Whether the transaction is DIR_TO_DEVICE (true) or DIR_FROM_DEVICE(false)</param>
-    ''' <returns>A boolean indicating the success of the operation</returns>
-    Private Function ConfigureControlEndpoint(ByVal Reqcode As UInt16, ByVal toDevice As Boolean) As Boolean
+    Private Sub ConfigureControlEndpoint(ByVal ReqCode As UInt16, ByVal ToDevice As Boolean)
+
+        'Validate inputs
+        If IsNothing(m_ActiveFX3) Then
+            Throw New FX3GeneralException("ERROR: Attempted to configure control endpoint without FX3 being enumerated.")
+        End If
+
+        If Not m_FX3Connected Then
+            Throw New FX3GeneralException("ERROR: Attempted to configure control endpoint without FX3 connected.")
+        End If
 
         'Point the API to the target FX3
         FX3ControlEndPt = m_ActiveFX3.ControlEndPt
 
         'Configure the control endpoint
-        FX3ControlEndPt.ReqCode = Reqcode
+        FX3ControlEndPt.ReqCode = ReqCode
         FX3ControlEndPt.ReqType = CyConst.REQ_VENDOR
         FX3ControlEndPt.Target = CyConst.TGT_DEVICE
         FX3ControlEndPt.Value = 0
         FX3ControlEndPt.Index = 0
-        If toDevice Then
+        If ToDevice Then
             FX3ControlEndPt.Direction = CyConst.DIR_TO_DEVICE
         Else
             FX3ControlEndPt.Direction = CyConst.DIR_FROM_DEVICE
         End If
-        Return True
 
-    End Function
+    End Sub
 
     ''' <summary>
     ''' Gets the current firmware ID from the FX3
     ''' </summary>
     ''' <returns>Returns the firmware ID, as a string</returns>
     Private Function GetFirmwareID() As String
+
+        'The firmware ID to return
         Dim firmwareID As String
+
+        'Transfer buffer
         Dim buf(31) As Byte
+
+        'Set up control endpoint
         ConfigureControlEndpoint(USBCommands.ADI_FIRMWARE_ID_CHECK, False)
-        XferControlData(buf, 32, 2000)
-        firmwareID = System.Text.Encoding.UTF8.GetString(buf)
+
+        If Not XferControlData(buf, 32, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer timed out while reading firmware ID")
+        End If
+
+        'Parse result
+        Try
+            firmwareID = System.Text.Encoding.UTF8.GetString(buf)
+        Catch ex As Exception
+            'Throw the exception up
+            Throw New FX3GeneralException("ERROR: Parsing firmware ID failed", ex)
+        End Try
+
         Return firmwareID
+
     End Function
 
     ''' <summary>
@@ -734,11 +724,27 @@ Partial Class FX3Connection
     ''' </summary>
     ''' <returns>The unique FX3 serial number</returns>
     Private Function GetSerialNumber() As String
+
+        'The serial number to return
         Dim serialNumber As String
+
+        'Transfer buffer
         Dim buf(31) As Byte
+
+        'Set up the control endpoint
         ConfigureControlEndpoint(USBCommands.ADI_SERIAL_NUMBER_CHECK, False)
-        XferControlData(buf, 32, 2000)
-        serialNumber = System.Text.Encoding.Unicode.GetString(buf)
+
+        If Not XferControlData(buf, 32, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer timed out while reading FX3 serial number")
+        End If
+
+        'Parse result
+        Try
+            serialNumber = System.Text.Encoding.Unicode.GetString(buf)
+        Catch ex As Exception
+            'Throw the exception up
+            Throw New FX3GeneralException("ERROR: Parsing FX3 serial number failed", ex)
+        End Try
         Return serialNumber
     End Function
 
@@ -747,33 +753,30 @@ Partial Class FX3Connection
     ''' </summary>
     ''' <returns>A boolean indicating if the endpoints are properly enumerated</returns>
     Private Function CheckEndpointStatus() As Boolean
-        Dim returnValue As Boolean = True
 
         'Check if control endpoint is set
         If FX3ControlEndPt Is Nothing Then
-            returnValue = False
-            Throw New Exception("ERROR: Control Endpoint not configured")
+            Return False
         End If
 
         'Check if streaming endpoint is set
         If StreamingEndPt Is Nothing Then
-            returnValue = False
-            Throw New Exception("ERROR: Streaming Endpoint not configured")
+            Return False
         End If
 
         'Check if bulk data in endpoint is set
         If DataInEndPt Is Nothing Then
-            returnValue = False
-            Throw New Exception("ERROR: Data In Endpoint not configured")
+            Return False
         End If
 
         'Check if bulk data out endpoint is set
         If DataOutEndPt Is Nothing Then
-            returnValue = False
-            Throw New Exception("ERROR: Data Out Endpoint not configured")
+            Return False
         End If
 
-        Return returnValue
+        'Return true if all tests pass
+        Return True
+
     End Function
 
     ''' <summary>
@@ -781,6 +784,12 @@ Partial Class FX3Connection
     ''' </summary>
     Private Sub ResetEndpoints()
 
+        'Exit if the board is not enumerated yet
+        If m_ActiveFX3 Is Nothing Then
+            Exit Sub
+        End If
+
+        'Reset each listed endpoint
         For Each endpoint In m_ActiveFX3.EndPoints
             endpoint.Reset()
         Next
@@ -794,11 +803,11 @@ Partial Class FX3Connection
 
         'Enumerate the bulk endpoints
         For Each endpoint In m_ActiveFX3.EndPoints
-            If endpoint.Address = 1 Then
+            If endpoint.Address = EndpointAddresses.ADI_FROM_PC_ENDPOINT Then
                 DataOutEndPt = endpoint
-            ElseIf endpoint.Address = 129 Then
+            ElseIf endpoint.Address = EndpointAddresses.ADI_STREAMING_ENDPOINT Then
                 StreamingEndPt = endpoint
-            ElseIf endpoint.Address = 130 Then
+            ElseIf endpoint.Address = EndpointAddresses.ADI_TO_PC_ENDPOINT Then
                 DataInEndPt = endpoint
             End If
         Next
@@ -809,20 +818,18 @@ Partial Class FX3Connection
     End Sub
 
     ''' <summary>
-    ''' Checks that the board is enumerated and connected via USB 2.0 or 3.0
+    ''' Checks that the board is enumerated and connected via USB 2.0 or 3.0. Throws general exceptions for an invalid speed.
     ''' </summary>
     Private Sub CheckConnectionSpeedOnTarget()
 
         If IsNothing(m_ActiveFX3) Then
-            'Clear the active FX3 device handle
-            m_ActiveFX3 = Nothing
-            Throw New Exception("ERROR: FX3 Board not enumerated")
+            Throw New FX3GeneralException("ERROR: FX3 Board not enumerated")
         End If
 
         If Not (m_ActiveFX3.bHighSpeed Or m_ActiveFX3.bSuperSpeed) Then
             'Clear the active FX3 device handle
             m_ActiveFX3 = Nothing
-            Throw New Exception("ERROR: FX3 must be connected with USB 2.0 or better")
+            Throw New FX3GeneralException("ERROR: FX3 must be connected with USB 2.0 or better")
         End If
 
     End Sub
@@ -834,8 +841,8 @@ Partial Class FX3Connection
     ''' <summary>
     ''' BOOTLOADER FW: Blink the onboard LED
     ''' </summary>
-    ''' <param name="sn">Serial number of the selected board</param>
-    Public Sub BootloaderBlinkLED(ByVal sn As String)
+    ''' <param name="SerialNumber">Serial number of the selected board</param>
+    Public Sub BootloaderBlinkLED(ByVal SerialNumber As String)
 
         'Sub assumes the board has firmware loaded on it that will respond to reset commands
         Dim buf(3) As Byte
@@ -845,18 +852,18 @@ Partial Class FX3Connection
         'Find the device handle using the selected serial number
         For Each item In m_usbList
             'Look for the selected serial number, get its handle, and set it as the active device
-            If String.Equals(CType(item, CyFX3Device).SerialNumber, sn) Then
+            If String.Equals(CType(item, CyFX3Device).SerialNumber, SerialNumber) Then
                 tempHandle = CType(item, CyFX3Device)
                 boardOk = True
             End If
         Next
 
         If Not String.Equals(tempHandle.FriendlyName, ADIBootloaderName) Then
-            Throw New Exception("ERROR: The selected board is not in bootloader mode")
+            Throw New FX3GeneralException("ERROR: The selected board is not in bootloader mode")
         End If
 
         If Not boardOk Then
-            Throw New Exception("ERROR: Could not find the board ID matching the serial number specified")
+            Throw New FX3GeneralException("ERROR: Could not find the board ID matching the serial number specified")
         End If
 
         'Set board handle
@@ -869,15 +876,19 @@ Partial Class FX3Connection
         FX3ControlEndPt.Value = 0
         FX3ControlEndPt.Index = 0
         FX3ControlEndPt.Direction = CyConst.DIR_TO_DEVICE
-        FX3ControlEndPt.XferData(buf, 4)
+
+        'Transfer command to bootloader
+        If Not FX3ControlEndPt.XferData(buf, 4) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer failed when sending LED blink command to bootloader.")
+        End If
 
     End Sub
 
     ''' <summary>
     ''' BOOTLOADER FW: Turn off the LED
     ''' </summary>
-    ''' <param name="sn">Serial number of the selected board</param>
-    Public Sub BootloaderTurnOffLED(ByVal sn As String)
+    ''' <param name="SerialNumber">Serial number of the selected board</param>
+    Public Sub BootloaderTurnOffLED(ByVal SerialNumber As String)
 
         'Sub assumes the board has firmware loaded on it that will respond to reset commands
         Dim buf(3) As Byte
@@ -887,18 +898,18 @@ Partial Class FX3Connection
         'Find the device handle using the selected serial number
         For Each item In m_usbList
             'Look for the selected serial number, get its handle, and set it as the active device
-            If String.Equals(CType(item, CyFX3Device).SerialNumber, sn) Then
+            If String.Equals(CType(item, CyFX3Device).SerialNumber, SerialNumber) Then
                 tempHandle = CType(item, CyFX3Device)
                 boardOk = True
             End If
         Next
 
         If Not String.Equals(tempHandle.FriendlyName, ADIBootloaderName) Then
-            Throw New Exception("ERROR: The selected board is not in bootloader mode")
+            Throw New FX3GeneralException("ERROR: The selected board is not in bootloader mode")
         End If
 
         If Not boardOk Then
-            Throw New Exception("ERROR: Could not find the board ID matching the serial number specified")
+            Throw New FX3GeneralException("ERROR: Could not find the board ID matching the serial number specified")
         End If
 
         'Set board handle
@@ -911,15 +922,19 @@ Partial Class FX3Connection
         FX3ControlEndPt.Value = 0
         FX3ControlEndPt.Index = 0
         FX3ControlEndPt.Direction = CyConst.DIR_TO_DEVICE
-        FX3ControlEndPt.XferData(buf, 4)
+
+        'Transfer control data
+        If Not FX3ControlEndPt.XferData(buf, 4) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer failed when sending LED off command to bootloader.")
+        End If
 
     End Sub
 
     ''' <summary>
     ''' BOOTLOADER FW: Turn on the LED
     ''' </summary>
-    ''' <param name="sn">Serial number of the selected board</param>
-    Public Sub BootloaderTurnOnLED(ByVal sn As String)
+    ''' <param name="SerialNumber">Serial number of the selected board</param>
+    Public Sub BootloaderTurnOnLED(ByVal SerialNumber As String)
 
         'Sub assumes the board has firmware loaded on it that will respond to reset commands
         Dim buf(3) As Byte
@@ -929,18 +944,18 @@ Partial Class FX3Connection
         'Find the device handle using the selected serial number
         For Each item In m_usbList
             'Look for the selected serial number, get its handle, and set it as the active device
-            If String.Equals(CType(item, CyFX3Device).SerialNumber, sn) Then
+            If String.Equals(CType(item, CyFX3Device).SerialNumber, SerialNumber) Then
                 tempHandle = CType(item, CyFX3Device)
                 boardOk = True
             End If
         Next
 
         If Not String.Equals(tempHandle.FriendlyName, ADIBootloaderName) Then
-            Throw New Exception("ERROR: The selected board is not in bootloader mode")
+            Throw New FX3GeneralException("ERROR: The selected board is not in bootloader mode")
         End If
 
         If Not boardOk Then
-            Throw New Exception("ERROR: Could not find the board ID matching the serial number specified")
+            Throw New FX3GeneralException("ERROR: Could not find the board ID matching the serial number specified")
         End If
 
         'Set board handle
@@ -953,7 +968,11 @@ Partial Class FX3Connection
         FX3ControlEndPt.Value = 0
         FX3ControlEndPt.Index = 0
         FX3ControlEndPt.Direction = CyConst.DIR_TO_DEVICE
-        FX3ControlEndPt.XferData(buf, 4)
+
+        'Transfer control data
+        If Not FX3ControlEndPt.XferData(buf, 4) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer failed when sending LED on command to bootloader.")
+        End If
 
     End Sub
 

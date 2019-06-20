@@ -1,4 +1,4 @@
-﻿'Author:        Alex Nolan
+﻿'Author:        Alex Nolan (alex.nolan@analog.com), Juan Chong (juan.chong@analog.com)
 'Date:          8/1/2018
 'Description:   Extension of the FX3Connection class. Has all the functions needed to 
 '               implement the IPinFcns interface defined in the AdisApi.
@@ -37,16 +37,16 @@ Partial Class FX3Connection
         buf(6) = (intPeriod And &HFF000000) >> 24
 
         'Start data transfer
-        XferControlData(buf, 7, 2000)
+        If Not XferControlData(buf, 7, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer failed before pulse drive.")
+        End If
 
         'Function should block until end of pin drive
         System.Threading.Thread.Sleep(pperiod + 100)
 
         'Wait for the status to be returned over BULK-In
-        goodTransfer = DataInEndPt.XferData(buf, 4)
-
-        If Not goodTransfer Then
-            Throw New Exception("ERROR: Transfer from FX3 after pin drive failed")
+        If Not DataInEndPt.XferData(buf, 4) Then
+            Throw New FX3CommunicationException("ERROR: Transfer from FX3 after pulse drive failed")
         End If
 
         'Get the status from the buffer
@@ -63,7 +63,7 @@ Partial Class FX3Connection
 
         'Throw exception if the operation failed
         If Not status = 0 Then
-            Throw New Exception("ERROR: Pin Drive Failed, Status: " + status.ToString("X4"))
+            Throw New FX3BadStatusException("ERROR: Pin Drive Failed, Status: " + status.ToString("X4"))
         End If
 
     End Sub
@@ -128,7 +128,7 @@ Partial Class FX3Connection
         'Send a vendor command to start a pulse wait operation (returns immediatly)
         ConfigureControlEndpoint(USBCommands.ADI_PULSE_WAIT, True)
         If Not XferControlData(buf, 11, 2000) Then
-            Throw New Exception("ERROR: Control Endpoint transfer timed out")
+            Throw New FX3CommunicationException("ERROR: Control Endpoint transfer timed out")
         End If
 
         'Start bulk transfer
@@ -175,7 +175,7 @@ Partial Class FX3Connection
 
         'If operation failed on FX3 throw an exception
         If waitTime = &HFFFFFFFF Then
-            Throw New Exception("ERROR: Pin read on FX3 failed")
+            Throw New FX3CommunicationException("ERROR: Pin read on FX3 failed")
         End If
 
         'Scale the time waited to MS
@@ -204,7 +204,7 @@ Partial Class FX3Connection
         'Transfer data
         If Not XferControlData(buf, 5, 1000) Then
             'Throw an exception if the transaction times out
-            Throw New Exception("ERROR: Pin read timed out")
+            Throw New FX3CommunicationException("ERROR: Pin read timed out")
         End If
 
         'Get the status from the buffer
@@ -221,7 +221,7 @@ Partial Class FX3Connection
 
         'If the status is not success throw an exception
         If Not status = 0 Then
-            Throw New Exception("ERROR: Pin read failed, status - " + status.ToString("X4"))
+            Throw New FX3BadStatusException("ERROR: Pin read failed, status - " + status.ToString("X4"))
         End If
 
         'Return the input bit of the pin register
@@ -250,14 +250,17 @@ Partial Class FX3Connection
     ''' <returns>The pin values, as a UInteger. The first pin is in bit 0, second is in bit 1, and so on</returns>
     Public Function ReadPins(pins As IEnumerable(Of IPinObject)) As UInteger Implements IPinFcns.ReadPins
 
+        'Validate input
+        If pins.Count > 32 Then
+            Throw New FX3ConfigurationException("ERROR: Cannot read more than 32 pins in one call to ReadPins")
+        End If
+
         Dim shiftValue As Integer = 0
         Dim pinResult As UInteger = 0
+        'Build the pin values into a UInteger
         For Each pin In pins
             pinResult = pinResult And (ReadPin(pin) << shiftValue)
             shiftValue = shiftValue + 1
-            If shiftValue > 31 Then
-                Throw New Exception("ERROR: Cannot read more than 32 pins in one call to ReadPins")
-            End If
         Next
 
         Return pinResult
@@ -290,7 +293,7 @@ Partial Class FX3Connection
 
         'Transfer data
         If Not XferControlData(buf, 4, 2000) Then
-            Throw New Exception("ERROR: Pin set operation timed out")
+            Throw New FX3CommunicationException("ERROR: Pin set operation timed out")
         End If
 
         'Get the status from the buffer
@@ -307,7 +310,7 @@ Partial Class FX3Connection
 
         'If the status is not success throw an exception
         If Not status = 0 Then
-            Throw New Exception("ERROR: Pin set failed, status - " + status.ToString("X4"))
+            Throw New FX3BadStatusException("ERROR: Pin set failed, status - " + status.ToString("X4"))
         End If
 
     End Sub

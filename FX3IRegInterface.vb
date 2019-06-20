@@ -1,4 +1,5 @@
-﻿'Author:        Alex Nolan
+﻿'File:          FX3IRegInterface.vb
+'Author:        Alex Nolan (alex.nolan@analog.com), Juan Chong (juan.chong@analog.com)
 'Date:          8/1/2018
 'Description:   Extension of the FX3Connection class. Has all the functions needed to 
 '               implement the IRegInterface interface defined in the AdisApi.
@@ -75,7 +76,7 @@ Partial Class FX3Connection
         End Get
         Set(value As Integer)
             If value < 1 Then
-                Throw New Exception("ERROR: Stream timeout invalid")
+                Throw New FX3ConfigurationException("ERROR: Stream timeout invalid")
             End If
             m_StreamTimeout = value
         End Set
@@ -148,7 +149,7 @@ Partial Class FX3Connection
 
         'Throw exception if the number of buffers (reads) is invalid
         If numBuffers < 1 Then
-            Throw New Exception("ERROR: numBuffers must be at least one")
+            Throw New FX3ConfigurationException("ERROR: numBuffers must be at least one")
         End If
 
         'Initialize progress counters
@@ -285,31 +286,21 @@ Partial Class FX3Connection
         'status message
         Dim status As UInt32
 
-        Dim timeout As New Stopwatch
-        timeout.Start()
-
         'Configure control endpoint for a single byte register write
-        If Not ConfigureControlEndpoint(USBCommands.ADI_WRITE_BYTE, False) Then
-            Throw New Exception("ERROR: Control endpoint configuration failed")
-        End If
+        ConfigureControlEndpoint(USBCommands.ADI_WRITE_BYTE, False)
         FX3ControlEndPt.Value = data And &HFFFF
         FX3ControlEndPt.Index = addr And &HFFFF
 
         'Transfer data
         If Not XferControlData(buf, 4, 2000) Then
-            Throw New Exception("ERROR: WriteRegByte timed out - Check board connection")
+            Throw New FX3CommunicationException("ERROR: WriteRegByte timed out - Check board connection")
         End If
 
         'Read back the operation status from the return buffer
         status = BitConverter.ToUInt32(buf, 0)
-
         If Not status = 0 Then
-            m_status = "ERROR: Bad write command - " + status.ToString("X4")
-            Throw New Exception("ERROR: Bad write command - " + status.ToString("X4"))
+            Throw New FX3BadStatusException("ERROR: Bad write command - " + status.ToString("X4"))
         End If
-
-        timeout.Stop()
-        status = 0
 
     End Sub
 
@@ -396,16 +387,20 @@ Partial Class FX3Connection
                 FX3ControlEndPt.Value = 0
             End If
             If Not XferControlData(buf, 4, 2000) Then
-                Throw New Exception("ERROR: Control Endpoint transfer timed out")
+                Throw New FX3CommunicationException("ERROR: Control Endpoint transfer timed out")
             End If
 
             'Send bulk transfer
             tempBufSize = bufIndex
-            DataOutEndPt.XferData(buf, tempBufSize)
+            If Not DataOutEndPt.XferData(buf, tempBufSize) Then
+                Throw New FX3CommunicationException("ERROR: Bulk endpoint data transfer out failed")
+            End If
 
             'Receieve data back
             tempBufSize = bufIndex
-            DataInEndPt.XferData(buf, tempBufSize)
+            If Not DataInEndPt.XferData(buf, tempBufSize) Then
+                Throw New FX3CommunicationException("ERROR: Bulk endpoint data transfer in failed")
+            End If
 
             'Build the return array
             For i As Integer = 0 To bufIndex - 2 Step 2
@@ -536,7 +531,7 @@ Partial Class FX3Connection
 
         'Transfer the data
         If Not XferControlData(buf, 6, 2000) Then
-            Throw New Exception("ERROR: FX3 is not responding to transfer request")
+            Throw New FX3CommunicationException("ERROR: FX3 is not responding to transfer request")
         End If
 
         'Calculate reg value
@@ -548,8 +543,7 @@ Partial Class FX3Connection
         status = BitConverter.ToUInt32(buf, 0)
 
         If Not status = 0 Then
-            m_status = "ERROR: Bad read command - " + status.ToString("X4")
-            Throw New Exception("ERROR: Bad read command - " + status.ToString("X4"))
+            Throw New FX3BadStatusException("ERROR: Bad read command - " + status.ToString("X4"))
         End If
 
         Return returnValue
