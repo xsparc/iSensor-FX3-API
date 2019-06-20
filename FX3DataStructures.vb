@@ -79,7 +79,7 @@ End Class
 ''' <summary>
 ''' This enum lists all USB endpoints generated and used by the application firmware.
 ''' </summary>
-Public Enum EndpointAddress
+Public Enum EndpointAddresses
     ADI_STREAMING_ENDPOINT = &H81
     ADI_FROM_PC_ENDPOINT = &H1
     ADI_TO_PC_ENDPOINT = &H82
