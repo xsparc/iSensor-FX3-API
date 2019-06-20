@@ -5,6 +5,78 @@
 #Region "Helper Data Structures"
 
 ''' <summary>
+''' This class contains information about the connected FX3 board
+''' </summary>
+Public Class FX3Board
+
+    'Private member variables
+    Private m_SerialNumber As String
+    Private m_bootTime As DateTime
+    Private m_firmwareVersion As String
+
+    Public Sub New(ByVal SerialNumber As String, ByVal BootTime As DateTime)
+        'Set the serial number as a long
+        Dim sn_long As Long
+        Try
+            sn_long = Convert.ToInt64(SerialNumber)
+        Catch ex As Exception
+            Throw New FX3ConfigurationException("Error: Bad Serial Number")
+        End Try
+
+        'set the serial number string
+        m_SerialNumber = SerialNumber
+
+        'Set the boot time
+        m_bootTime = BootTime
+
+    End Sub
+
+    'Public interfaces
+
+    ''' <summary>
+    ''' Readonly property to get the current board uptime
+    ''' </summary>
+    ''' <returns>The board uptime, in ms, as a long</returns>
+    Public ReadOnly Property Uptime As Long
+        Get
+            Return CLng(DateTime.Now.Subtract(m_bootTime).TotalMilliseconds)
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' Readonly property to get the active FX3 serial number
+    ''' </summary>
+    ''' <returns>The board serial number, as a string</returns>
+    Public ReadOnly Property SerialNumber As String
+        Get
+            Return m_SerialNumber
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' Readonly property to get the current application firmware version on the FX3
+    ''' </summary>
+    ''' <returns>The firmware version, as a string</returns>
+    Public ReadOnly Property FirmwareVersion As String
+        Get
+            Return m_firmwareVersion
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' Set the firmware version. Is friend so as to not be accessible to outside classes.
+    ''' </summary>
+    ''' <param name="FirmwareVersion">The firmware version to set, as a string</param>
+    Friend Sub SetFirmwareVersion(ByVal FirmwareVersion As String)
+        If IsNothing(FirmwareVersion) Or FirmwareVersion = "" Then
+            Throw New FX3ConfigurationException("Error: Bad firmware version number")
+        End If
+        m_firmwareVersion = FirmwareVersion
+    End Sub
+
+End Class
+
+''' <summary>
 ''' This enum lists all supported vendor commands for the application firmware.
 ''' </summary>
 Public Enum USBCommands
