@@ -91,6 +91,7 @@
   <ItemGroup>
     <Compile Include="FX3Burst.vb" />
     <Compile Include="FX3DataStructures.vb" />
+    <Compile Include="FX3Exceptions.vb" />
     <Compile Include="FX3Interface.vb" />
     <Compile Include="FX3IPinFcns.vb" />
     <Compile Include="FX3IRegInterface.vb" />
@@ -149,8 +150,8 @@
     </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>copy /Y "C:\Users\jchong\Documents\iSensor-FX3-Firmware\Debug\FX3_Firmware.img" "$(ProjectDir)\Resources\FX3_Firmware.img"
-copy /Y "C:\Users\jchong\Documents\iSensor-FX3-Firmware\boot_fw\Debug\Fx3BootAppGcc.img" "$(ProjectDir)\Resources\boot_fw.img"</PreBuildEvent>
+    <PreBuildEvent>copy /Y "C:\Users\anolan3\Documents\iSensor-FX3-Firmware\Debug\FX3_Firmware.img" "$(ProjectDir)\Resources\FX3_Firmware.img"
+copy /Y "C:\Users\anolan3\Documents\iSensor-FX3-Firmware\boot_fw\Debug\Fx3BootAppGcc.img" "$(ProjectDir)\Resources\boot_fw.img"</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
