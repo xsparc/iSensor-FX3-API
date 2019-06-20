@@ -1,4 +1,4 @@
-﻿'Author:       Alex Nolan
+﻿'Author:       Alex Nolan (alex.nolan@analog.com), Juan Chong (juan.chong@analog.com)
 'Date:         7/31/2018     
 'Description:  Collection of helper data structures used in the FX3Connection 
 
@@ -75,6 +75,15 @@ Public Class FX3Board
     End Sub
 
 End Class
+
+''' <summary>
+''' This enum lists all USB endpoints generated and used by the application firmware.
+''' </summary>
+Public Enum EndpointAddress
+    ADI_STREAMING_ENDPOINT = &H81
+    ADI_FROM_PC_ENDPOINT = &H1
+    ADI_TO_PC_ENDPOINT = &H82
+End Enum
 
 ''' <summary>
 ''' This enum lists all supported vendor commands for the application firmware.
