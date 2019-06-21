@@ -11,22 +11,46 @@ Partial Class FX3Connection
 
 #Region "IRegInterface Implementation"
 
+    ''' <summary>
+    ''' This function is not currently implemented. Calling it will throw a NotImplementedException.
+    ''' </summary>
+    ''' <param name="addr"></param>
+    ''' <param name="numCaptures"></param>
     Public Sub StartStream(addr As IEnumerable(Of UInteger), numCaptures As UInteger) Implements IRegInterface.StartStream
         Throw New NotImplementedException()
     End Sub
 
+    ''' <summary>
+    ''' This function is not currently implemented. Calling it will throw a NotImplementedException.
+    ''' </summary>
+    ''' <returns></returns>
     Public Function GetStreamDataPacketU16() As UShort() Implements IRegInterface.GetStreamDataPacketU16
         Throw New NotImplementedException()
     End Function
 
+    ''' <summary>
+    ''' This function is not currently implemented. Calling it will throw a NotImplementedException.
+    ''' </summary>
+    ''' <param name="addrData"></param>
+    ''' <param name="numCaptures"></param>
+    ''' <param name="numBuffers"></param>
+    ''' <returns></returns>
     Public Function ReadRegArrayStream(addrData As IEnumerable(Of AddrDataPair), numCaptures As UInteger, numBuffers As UInteger) As UShort() Implements IRegInterface.ReadRegArrayStream
         Throw New NotImplementedException()
     End Function
 
+    ''' <summary>
+    ''' This function is not currently implemented. Calling it will throw a NotImplementedException.
+    ''' </summary>
+    ''' <param name="addr"></param>
+    ''' <param name="data"></param>
     Public Sub WriteRegWord(addr As UInteger, data As UInteger) Implements IRegInterface.WriteRegWord
         Throw New NotImplementedException()
     End Sub
 
+    ''' <summary>
+    ''' This function is not currently implemented. Calling it will throw a NotImplementedException.
+    ''' </summary>
     Public Sub Start() Implements IRegInterface.Start
         Throw New NotImplementedException()
     End Sub
@@ -63,7 +87,7 @@ Partial Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Sets the timeout for the Bulk Endpoint used in real time streaming modes
+    ''' Sets the timeout for the Bulk Endpoint used in real time streaming modes.
     ''' </summary>
     ''' <returns>The timeout time, in seconds</returns>
     Public Property StreamTimeoutSeconds As Integer Implements IRegInterface.StreamTimeoutSeconds
@@ -95,13 +119,13 @@ Partial Class FX3Connection
     End Sub
 
     ''' <summary>
-    ''' Starts a buffered stream operation. 
+    ''' Starts a buffered stream operation. The registers listed in addr are read numCaptures times per register buffer. This process is repeated numBuffers times. 
     ''' </summary>
-    ''' <param name="addr"></param>
-    ''' <param name="numCaptures"></param>
-    ''' <param name="numBuffers"></param>
-    ''' <param name="timeoutSeconds"></param>
-    ''' <param name="worker"></param>
+    ''' <param name="addr">List of register addresses to read</param>
+    ''' <param name="numCaptures">Number of times to read the register list per buffer.</param>
+    ''' <param name="numBuffers">Number of total register buffers to read.</param>
+    ''' <param name="timeoutSeconds">Stream timeout, in seconds</param>
+    ''' <param name="worker">Background worker to handle progress updates</param>
     Public Sub StartBufferedStream(addr As IEnumerable(Of UInteger), numCaptures As UInteger, numBuffers As UInteger, timeoutSeconds As Integer, worker As BackgroundWorker) Implements IRegInterface.StartBufferedStream
 
         'Insert "Nothing" to make StartBufferedStream() happy
@@ -197,7 +221,7 @@ Partial Class FX3Connection
     End Sub
 
     ''' <summary>
-    ''' Stops the currently running stream, if any
+    ''' Stops the currently running data stream, if any.
     ''' </summary>
     Public Sub StopStream() Implements IRegInterface.StopStream
 
@@ -224,12 +248,12 @@ Partial Class FX3Connection
     Public Function GetBufferedStreamDataPacket() As UShort() Implements IRegInterface.GetBufferedStreamDataPacket
 
         'Wait for the frame (or buffer in case of IMU) and then return it
-        Return GetBuffer
+        Return GetBuffer()
 
     End Function
 
     ''' <summary>
-    ''' This 
+    ''' This function reads a set of registers using a streaming endpoint from the FX3.
     ''' </summary>
     ''' <param name="addr"></param>
     ''' <param name="numCaptures"></param>
@@ -304,6 +328,11 @@ Partial Class FX3Connection
 
     End Sub
 
+    ''' <summary>
+    ''' Overload of WriteRegByte which allows for multiple registers to be specified to write to, as an IEnumerable list of register addresses.
+    ''' </summary>
+    ''' <param name="addr">The list of register addresses to write to.</param>
+    ''' <param name="data">The data to write to each register in the address list.</param>
     Public Sub WriteRegByte(addr As IEnumerable(Of UInteger), data As IEnumerable(Of UInteger)) Implements IRegInterface.WriteRegByte
 
         'Index in the IEnumerable register list

@@ -152,10 +152,11 @@ Public Class FX3Connection
 #Region "Class Constructors"
 
     ''' <summary>
-    ''' Class Constructor. Loads SPI settings and default values for the interface.
+    ''' Class Constructor. Loads SPI settings and default values for the interface, and starts a background thread to manage programming newly
+    ''' connected boards with the ADI bootloader.
     ''' </summary>
-    ''' <param name="FX3FirmwarePath">The path to the FX3 Application Firmware</param>
-    ''' <param name="FX3BlinkFirmwarePath">The path to the ADI FX3 Bootloader</param>
+    ''' <param name="FX3FirmwarePath">The path to the FX3 application firmware image file.</param>
+    ''' <param name="FX3BlinkFirmwarePath">The path to the ADI FX3 bootloader image file.</param>
     ''' <param name="SensorType">The sensor type. Valid inputs are IMU and ADcmXL. Default is IMU.</param>
     Public Sub New(ByVal FX3FirmwarePath As String, ByVal FX3BlinkFirmwarePath As String, Optional ByVal SensorType As DeviceType = DeviceType.IMU)
 
@@ -228,7 +229,7 @@ Public Class FX3Connection
     ''' Length:    4
     ''' Data:      Clock Frequency to be set
     ''' </summary>
-    ''' <returns>The current SPI clock frequency, in MHZ</returns>
+    ''' <returns>The current SPI clock frequency, in MHZ. Valid values are in the range 1 to 40,000,000</returns>
     Public Property SclkFrequency As Int32
         Get
             Return m_FX3_FX3SPIConfig.ClockFrequency
@@ -317,7 +318,7 @@ Public Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Property to get or set the FX3 SPI controller chip select setting. Should be left on hardware control.
+    ''' Property to get or set the FX3 SPI controller chip select setting. Should be left on hardware control, changing modes will likely cause unexpected behavior.
     ''' Reqcode:   B2
     ''' Value:     Desired setting ( as SpiChipselectControl )
     ''' Index:     4  
@@ -459,7 +460,7 @@ Public Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' The DUT Type (single axis or three axis)
+    ''' The DUT type connected to the board.
     ''' Reqcode:   B2
     ''' Value:     Part type to set
     ''' Index:     10 
@@ -482,7 +483,7 @@ Public Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' The Data Ready polarity for streaming mode
+    ''' The Data Ready polarity for streaming mode.
     ''' </summary>
     ''' <returns>The data ready polarity, as a boolean (True - low to high, False - high to low)</returns>
     Public Property DrPolarity As Boolean
@@ -500,7 +501,7 @@ Public Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Property to get or set the DUT data ready pin
+    ''' Property to get or set the DUT data ready pin.
     ''' </summary>
     ''' <returns>The IPinObject of the pin currently configured as the data ready</returns>
     Public Property ReadyPin As IPinObject
@@ -522,7 +523,7 @@ Public Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Read only property to get the timer tick scale factor used for converting ticks to ms
+    ''' Read only property to get the timer tick scale factor used for converting ticks to ms.
     ''' </summary>
     ''' <returns></returns>
     Public ReadOnly Property TimerTickScaleFactor As UInteger
@@ -749,7 +750,8 @@ Public Class FX3Connection
     'The functions in this region are not a part of the IDutInterface, and are specific to the FX3 board
 
     ''' <summary>
-    ''' Readonly property to get the number of bad frames purged with a call to PurgeBadFrameData
+    ''' Readonly property to get the number of bad frames purged with a call to PurgeBadFrameData. Frames are purged when the CRC appended to the end of
+    ''' the frame does not match the expected CRC.
     ''' </summary>
     ''' <returns>Number of frames purged from data array</returns>
     Public ReadOnly Property NumFramesPurged As Long
@@ -911,41 +913,8 @@ Public Class FX3Connection
     End Function
 
     ''' <summary>
-    ''' Gets one frame from the thread safe queue. Waits to return until a frame is available
-    ''' </summary>
-    ''' <returns>The frame, as a byte array</returns>
-    Public ReadOnly Property GetBuffer As UShort()
-        Get
-            'Return nothing if there is no data in the queue and the producer thread is idle
-            If (m_StreamData.Count = 0) And (Not m_StreamThreadRunning) Then
-                Return Nothing
-            End If
-
-            'Set up variables for return buffer
-            Dim buffer() As UShort = Nothing
-            Dim validData As Boolean = False
-            m_streamTimeoutTimer.Restart()
-            'Wait for a buffer to be avialable and dequeue
-            While (Not validData) And (m_streamTimeoutTimer.ElapsedMilliseconds < 1000)
-                validData = m_StreamData.TryDequeue(buffer)
-            End While
-            Return buffer
-        End Get
-    End Property
-
-    ''' <summary>
-    ''' Readonly property to get the number of buffers read in from the DUT in buffered streaming mode
-    ''' </summary>
-    ''' <returns>The current buffer read count</returns>
-    Public ReadOnly Property GetNumBuffersRead As Long
-        Get
-            'Interlocked is used to ensure atomic integer read operation
-            Return Interlocked.Read(m_FramesRead)
-        End Get
-    End Property
-
-    ''' <summary>
-    ''' Checks if a frame is available, or will be available soon in thread safe queue
+    ''' Checks if a streaming frame is available, or will be available soon in thread safe queue. If there is no data in the queue
+    ''' and the streaming thread is not currently running, it will return false.
     ''' </summary>
     ''' <returns>The frame availability</returns>
     Public ReadOnly Property BufferAvailable As Boolean
@@ -961,6 +930,40 @@ Public Class FX3Connection
             End While
             m_streamTimeoutTimer.Reset()
             Return goodBuffer
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' Gets one frame from the thread safe queue. Waits to return until a frame is available if there is a stream running. If
+    ''' there is not a stream running, and there is no data in the queue this call returns "Nothing".
+    ''' </summary>
+    ''' <returns>The frame, as a byte array</returns>
+    Public Function GetBuffer() As UShort()
+        'Return nothing if there is no data in the queue and the producer thread is idle
+        If (m_StreamData.Count = 0) And (Not m_StreamThreadRunning) Then
+            Return Nothing
+        End If
+
+        'Set up variables for return buffer
+        Dim buffer() As UShort = Nothing
+        Dim validData As Boolean = False
+        m_streamTimeoutTimer.Restart()
+
+        'Wait for a buffer to be avialable and dequeue
+        While (Not validData) And (m_streamTimeoutTimer.ElapsedMilliseconds < 1000)
+            validData = m_StreamData.TryDequeue(buffer)
+        End While
+        Return buffer
+    End Function
+
+    ''' <summary>
+    ''' Readonly property to get the number of buffers read in from the DUT in buffered streaming mode
+    ''' </summary>
+    ''' <returns>The current buffer read count</returns>
+    Public ReadOnly Property GetNumBuffersRead As Long
+        Get
+            'Interlocked is used to ensure atomic integer read operation
+            Return Interlocked.Read(m_FramesRead)
         End Get
     End Property
 
