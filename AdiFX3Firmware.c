@@ -81,7 +81,7 @@ PartType DUTType;
  * Application constants
  */
 //Constant firmware ID string. Manually updated when building new firmware.
-const uint8_t FirmwareID[32] __attribute__ ((aligned (32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '1', '.', '0', '.', '7', '-','P','U','B',' ', '\0' };
+const uint8_t FirmwareID[32] __attribute__ ((aligned (32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '1', '.', '0', '.', '8', '-','P','U','B',' ', '\0' };
 
 //Constant error string used to write "ERROR" to output buffer
 const uint8_t ErrorString[16] __attribute__ ((aligned (16))) = { 'E', 'R', 'R', 'O', 'R', '\0'};
@@ -165,6 +165,8 @@ uint16_t bytesPerBuffer = 0;
 uint8_t *regList;
 
 uint16_t bytesPerUsbPacket = 0;
+
+uint32_t timerPinConfig;
 
 /*
  * Function: AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
@@ -2732,8 +2734,9 @@ void AdiDataStream_Entry(uint32_t input)
 	CyBool_t interruptTriggered = CyFalse;
 
 	//Delay timer definitions
-	uint32_t counter = 0;
-	uint32_t stopCount = 0;
+	uint32_t timerVal;
+
+	uint16_t regIndex;
 
 	/* Generic stream local variables */
 	CyU3PDmaBuffer_t genBuf_p;
@@ -2778,31 +2781,37 @@ void AdiDataStream_Entry(uint32_t input)
 				tempData[1] = regList[1];
 				CyU3PSpiTransmitWords(tempData, 2);
 
+				//Set the pin timer to 0
+				GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+
 				//Read the registers in the register list into regList
-				for(uint16_t regIndex = 0; regIndex < (bytesPerBuffer - 1); regIndex += 2)
+				for(regIndex = 0; regIndex < (bytesPerBuffer - 1); regIndex += 2)
 				{
-					/* Ugly delay counter based on the core system clock.
-					 * This was the most efficient way to add a quick delay between words.
-					 * Note that 12us is the smallest delay supported when streaming using this mode. */
-					if (stallTime > 12)
+					//Wait for the complex GPIO timer to reach the stall time
+					timerVal = 0;
+					while(timerVal < stallTime)
 					{
-						stopCount = stallTime * 10;
-						while(counter < stopCount)
-						{
-							counter++;
-						}
-						counter = 0;
+						//Set the pin config for sample now mode
+						GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (timerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
+						//wait for sample to finish
+						while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
+						//read timer value
+						timerVal = GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
 					}
+
 					//Prepare, transmit, and receive SPI words
 					tempData[0] = regList[regIndex + 2];
 					tempData[1] = regList[regIndex + 3];
 					CyU3PSpiTransferWords(tempData, 2, tempPtr, 2);
+					//Set the pin timer to 0
+					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+					//Update counters
 					tempPtr += 2;
 					byteCounter += 2;
 
+					//Check if a transmission is needed
 					if (byteCounter >= (bytesPerUsbPacket - 1))
 					{
-
 						status = CyU3PDmaChannelCommitBuffer (&StreamingChannel, usbBufferSize, 0);
 						if (status != CY_U3P_SUCCESS)
 						{
@@ -3271,13 +3280,16 @@ void AdiAppStart (void)
 	gpioComplexConfig.intrMode = CY_U3P_GPIO_NO_INTR;
 	gpioComplexConfig.timerMode = CY_U3P_GPIO_TIMER_LOW_FREQ;
 	gpioComplexConfig.timer = 0;
-	gpioComplexConfig.period = 0xffffffff;
-	gpioComplexConfig.threshold = 0xffffffff;
+	gpioComplexConfig.period = 0xFFFFFFFF;
+	gpioComplexConfig.threshold = 0xFFFFFFFF;
 	status = CyU3PGpioSetComplexConfig(ADI_TIMER_PIN, &gpioComplexConfig);
     if (status != CY_U3P_SUCCESS)
     {
     	AdiAppErrorHandler(status);
     }
+
+    //Save bitmask of the timer pin config
+	timerPinConfig = (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & ~CY_U3P_LPP_GPIO_INTR);
 
     /* Configure the SPI controller */
 

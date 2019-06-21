@@ -222,6 +222,7 @@ struct BoardConfig
 
 /* Complex GPIO assigned as a timer input */
 #define ADI_TIMER_PIN							(0x8)
+#define ADI_TIMER_PIN_INDEX						(0x0) //ADI_TIMER_PIN % 8
 
 /*
  * Endpoint Related Defines
