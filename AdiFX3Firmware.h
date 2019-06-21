@@ -304,8 +304,8 @@ struct BoardConfig
 #define ADI_RT_STREAMING_DONE					(1 << 1)
 #define ADI_RT_STREAMING_STOP					(1 << 2)
 #define ADI_GENERIC_STREAMING_START				(1 << 3)
-#define ADI_GENERIC_STREAMING_STOP					(1 << 4)
-#define ADI_GENERIC_STREAMING_DONE					(1 << 5)
+#define ADI_GENERIC_STREAMING_STOP				(1 << 4)
+#define ADI_GENERIC_STREAMING_DONE				(1 << 5)
 #define ADI_GENERIC_STREAM_ENABLE				(1 << 6)
 #define ADI_REAL_TIME_STREAM_ENABLE				(1 << 7)
 #define ADI_KILL_THREAD_EARLY					(1 << 8)	//Currently unused.

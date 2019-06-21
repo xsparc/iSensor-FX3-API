@@ -164,10 +164,7 @@ uint16_t bytesPerBuffer = 0;
 //Pointer to byte array of registers needing to be read by the generic data stream
 uint8_t *regList;
 
-//Pointer to hold temporary register list
-uint8_t *tempBuf;
-
-CyU3PDmaBuffer_t genPtr;
+uint16_t bytesPerUsbPacket = 0;
 
 /*
  * Function: AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
@@ -1899,6 +1896,8 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 	/* Number of times to read each set of registers * (number of registers - control registers) */
 	bytesPerBuffer = numCaptures * (transferByteLength - 8);
 
+	bytesPerUsbPacket = ((usbBufferSize / bytesPerBuffer) * bytesPerBuffer);
+
 	/* Flush the streaming endpoint */
 	status = CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
 	if(status != CY_U3P_SUCCESS)
@@ -1930,7 +1929,7 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 	}
 
 	/* Set DMA transfer mode */
-	status = CyU3PDmaChannelSetXfer(&ChannelToPC, 0);
+	status = CyU3PDmaChannelSetXfer(&StreamingChannel, 0);
 	if(status != CY_U3P_SUCCESS)
 	{
 		CyU3PDebugPrint (4, "CyU3PDmaChannelSetXfer failed, Error Code = %d\n", status);
@@ -1971,7 +1970,6 @@ CyU3PReturnStatus_t AdiGenericStreamFinished()
 	if(status != CY_U3P_SUCCESS)
 	{
 		CyU3PDebugPrint (4, "Tearing down the Streaming DMA channel failed, Error Code = %d\n", status);
-		return status;
 	}
 
 	/* Flush the streaming end point */
@@ -2736,7 +2734,12 @@ void AdiDataStream_Entry(uint32_t input)
 	//Delay timer definitions
 	uint32_t counter = 0;
 	uint32_t stopCount = 0;
-	uint32_t numPackets = 0;
+
+	/* Generic stream local variables */
+	CyU3PDmaBuffer_t genBuf_p;
+	uint32_t byteCounter = 0;
+	uint8_t *tempPtr;
+	CyBool_t newBuffer = CyTrue;
 
 	for (;;)
 	{
@@ -2746,78 +2749,90 @@ void AdiDataStream_Entry(uint32_t input)
 			/* Generic register stream case */
 			if (eventFlag & ADI_GENERIC_STREAM_ENABLE)
 			{
-				//Offset the pointer position
-				genPtr.buffer += (numPackets * bytesPerBuffer);
-
-				//Loop to read data
-				for (uint32_t numCapturesRead = 0; numCapturesRead < numCaptures; numCapturesRead++)
+				if (newBuffer)
 				{
-					//Wait for DR if enabled
-					if (DrActive)
-					{
-						//Clear GPIO interrupts
-						GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
-						//Loop until interrupt is triggered
-						interruptTriggered = CyFalse;
-						while(!interruptTriggered)
-						{
-							interruptTriggered = ((CyBool_t)(GPIO->lpp_gpio_intr0 & (1 << dataReadyPin)));
-						}
-						//Clear GPIO interrupts
-						GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
-					}
-					//Transmit first word without reading back
-					tempData[0] = regList[0];
-					tempData[1] = regList[1];
-					CyU3PSpiTransmitWords(tempData, 2);
-
-					//Read the registers in the register list into regList
-					for(uint16_t regIndex = 0; regIndex < (transferByteLength - 8); regIndex += 2)
-					{
-						/* Ugly delay counter based on the core system clock.
-						 * This was the most efficient way to add a quick delay between words.
-						 * Note that 12us is the smallest delay supported when streaming using this mode. */
-						if (stallTime > 12)
-						{
-							stopCount = stallTime * 10;
-							while(counter < stopCount)
-							{
-								counter++;
-							}
-							counter = 0;
-						}
-						//Prepare, transmit, and receive SPI words
-						tempData[0] = regList[regIndex + 2];
-						tempData[1] = regList[regIndex + 3];
-						CyU3PSpiTransferWords(tempData, 2, genPtr.buffer, 2);
-						genPtr.buffer += 2;
-					}
-				}
-				//Transmit the buffered data to the PC if packet is full
-				if ((numPackets >= ((512/bytesPerBuffer) - 1)) || killEarly)
-				{
-					/* Commit DMA buffer */
-					status = CyU3PDmaChannelCommitBuffer (&ChannelToPC, genPtr.size, 0);
+					status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &genBuf_p, CYU3P_WAIT_FOREVER);
 					if (status != CY_U3P_SUCCESS)
 					{
-						CyU3PDebugPrint (4, "CyU3PDmaChannelCommitBuffer in loop failed, Error code = %d\r\n", status);
+						CyU3PDebugPrint (4, "CyU3PDmaChannelGetBuffer in generic capture failed, Error code = %d\r\n", status);
 					}
-					//Reset counters
-					numPackets = 0;
+					tempPtr = genBuf_p.buffer;
+					newBuffer = CyFalse;
 				}
-				else
+				//Wait for DR if enabled
+				if (DrActive)
 				{
-					//Increment packet counter
-					numPackets++;
+					//Clear GPIO interrupts
+					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
+					//Loop until interrupt is triggered
+					interruptTriggered = CyFalse;
+					while(!interruptTriggered)
+					{
+						interruptTriggered = ((CyBool_t)(GPIO->lpp_gpio_intr0 & (1 << dataReadyPin)));
+					}
+					//Clear GPIO interrupts
+					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
+				}
+				//Transmit first word without reading back
+				tempData[0] = regList[0];
+				tempData[1] = regList[1];
+				CyU3PSpiTransmitWords(tempData, 2);
+
+				//Read the registers in the register list into regList
+				for(uint16_t regIndex = 0; regIndex < (bytesPerBuffer - 1); regIndex += 2)
+				{
+					/* Ugly delay counter based on the core system clock.
+					 * This was the most efficient way to add a quick delay between words.
+					 * Note that 12us is the smallest delay supported when streaming using this mode. */
+					if (stallTime > 12)
+					{
+						stopCount = stallTime * 10;
+						while(counter < stopCount)
+						{
+							counter++;
+						}
+						counter = 0;
+					}
+					//Prepare, transmit, and receive SPI words
+					tempData[0] = regList[regIndex + 2];
+					tempData[1] = regList[regIndex + 3];
+					CyU3PSpiTransferWords(tempData, 2, tempPtr, 2);
+					tempPtr += 2;
+					byteCounter += 2;
+
+					if (byteCounter >= (bytesPerUsbPacket - 1))
+					{
+
+						status = CyU3PDmaChannelCommitBuffer (&StreamingChannel, usbBufferSize, 0);
+						if (status != CY_U3P_SUCCESS)
+						{
+							CyU3PDebugPrint (4, "CyU3PDmaChannelCommitBuffer in loop failed, Error code = %d\r\n", status);
+						}
+
+						byteCounter = 0;
+						newBuffer = CyTrue;
+
+					}
 				}
 
 				//Check to see if we've captured enough buffers or if we were asked to stop data capture early
 				if ((numBuffersRead >= (numBuffers - 1)) || killEarly)
 				{
-					//Reset counters
-					numPackets = 0;
 					//Reset buffer counter
 					numBuffersRead = 0;
+					newBuffer = CyTrue;
+
+					if (byteCounter)
+					{
+						status = CyU3PDmaChannelCommitBuffer (&StreamingChannel, usbBufferSize, 0);
+						if (status != CY_U3P_SUCCESS)
+						{
+							CyU3PDebugPrint (4, "CyU3PDmaChannelCommitBuffer in loop failed, Error code = %d\r\n", status);
+						}
+
+						byteCounter = 0;
+					}
+
 					//Clear GPIO interrupts
 					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
 					//Don't reset flag
