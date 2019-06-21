@@ -1,4 +1,5 @@
-﻿'Author:        Alex Nolan (alex.nolan@analog.com), Juan Chong (juan.chong@analog.com)
+﻿'File:          FX3IPinFcns.vb
+'Author:        Alex Nolan (alex.nolan@analog.com), Juan Chong (juan.chong@analog.com)
 'Date:          8/1/2018
 'Description:   Extension of the FX3Connection class. Has all the functions needed to 
 '               implement the IPinFcns interface defined in the AdisApi.
@@ -23,7 +24,6 @@ Partial Class FX3Connection
         Dim buf(6) As Byte
         Dim intPeriod As UInteger = Convert.ToUInt32(pperiod)
         Dim status, shiftedValue As UInteger
-        Dim goodTransfer As Boolean
 
         'Set the GPIO pin number (only 1 byte in FX3PinObject)
         buf(0) = pin.pinConfig And &HFF

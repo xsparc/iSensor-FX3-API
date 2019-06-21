@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{A553CAC3-91BB-4ED1-914B-F55F1468B0C6}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>FX3Interface</RootNamespace>
-    <AssemblyName>FX3Interface</AssemblyName>
+    <RootNamespace>FX3Api</RootNamespace>
+    <AssemblyName>FX3Api</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MyType>Windows</MyType>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
@@ -18,7 +18,7 @@
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>FX3Interface.xml</DocumentationFile>
+    <DocumentationFile>FX3Api.xml</DocumentationFile>
     <NoWarn>41999,42016,42017,42018,42019,42032,42036</NoWarn>
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
@@ -28,7 +28,7 @@
     <DefineTrace>true</DefineTrace>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>FX3Interface.xml</DocumentationFile>
+    <DocumentationFile>FX3Api.xml</DocumentationFile>
     <NoWarn>41999,42016,42017,42018,42019,42032,42036</NoWarn>
     <PlatformTarget>x86</PlatformTarget>
     <RunCodeAnalysis>false</RunCodeAnalysis>
@@ -89,10 +89,10 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FX3Api.vb" />
     <Compile Include="FX3Burst.vb" />
     <Compile Include="FX3DataStructures.vb" />
     <Compile Include="FX3Exceptions.vb" />
-    <Compile Include="FX3Interface.vb" />
     <Compile Include="FX3IPinFcns.vb" />
     <Compile Include="FX3IRegInterface.vb" />
     <Compile Include="FX3PinObject.vb" />
@@ -150,8 +150,8 @@
     </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>copy /Y "C:\Users\anolan3\Documents\iSensor-FX3-Firmware\Debug\FX3_Firmware.img" "$(ProjectDir)\Resources\FX3_Firmware.img"
-copy /Y "C:\Users\anolan3\Documents\iSensor-FX3-Firmware\boot_fw\Debug\Fx3BootAppGcc.img" "$(ProjectDir)\Resources\boot_fw.img"</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

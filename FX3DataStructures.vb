@@ -1,4 +1,5 @@
-﻿'Author:       Alex Nolan (alex.nolan@analog.com), Juan Chong (juan.chong@analog.com)
+﻿'File:         FX3DataStructures.vb
+'Author:       Alex Nolan (alex.nolan@analog.com), Juan Chong (juan.chong@analog.com)
 'Date:         7/31/2018     
 'Description:  Collection of helper data structures used in the FX3Connection 
 
@@ -15,13 +16,6 @@ Public Class FX3Board
     Private m_firmwareVersion As String
 
     Public Sub New(ByVal SerialNumber As String, ByVal BootTime As DateTime)
-        'Set the serial number as a long
-        Dim sn_long As Long
-        Try
-            sn_long = Convert.ToInt64(SerialNumber)
-        Catch ex As Exception
-            Throw New FX3ConfigurationException("Error: Bad Serial Number")
-        End Try
 
         'set the serial number string
         m_SerialNumber = SerialNumber
@@ -86,7 +80,7 @@ Public Enum EndpointAddresses
 End Enum
 
 ''' <summary>
-''' This enum lists all supported vendor commands for the application firmware.
+''' This enum lists all supported vendor commands for the FX3 firmware. The LED commands can only be used with the ADI bootloader firmware.
 ''' </summary>
 Public Enum USBCommands
 
@@ -167,9 +161,9 @@ Public Enum USBCommands
 End Enum
 
 ''' <summary>
-''' Class for all the programmable SPI configuration options on the FX3 when using ADcmXL devices
+''' Class for all the programmable SPI configuration options on the FX3.
 ''' </summary>
-Public Class SPIConfig
+Public Class FX3SPIConfig
 
     'Public Variables
     Public ClockFrequency As Int32

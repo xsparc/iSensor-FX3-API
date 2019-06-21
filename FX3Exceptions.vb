@@ -87,7 +87,8 @@ End Class
 
 ''' <summary>
 ''' This exception is used when the status returned from the FX3 board is not success (0). This typically
-''' indicates some sort of failure in the FX3 application firmware, which may require a board reset.
+''' indicates some sort of failure in the FX3 application firmware, which may require a board reset. The
+''' status codes are defined in the Cypress FX3 SDK.
 ''' </summary>
 Public Class FX3BadStatusException : Inherits System.Exception
 
@@ -117,7 +118,8 @@ Public Class FX3BadStatusException : Inherits System.Exception
 End Class
 
 ''' <summary>
-''' This exception is used when the FX3 board enumeration and programming process fails.
+''' This exception is used when the FX3 board enumeration and programming process fails. This typically
+''' indicates a flash failure at the cypress driver level, or a timeout when re-enumerating a programmed board.
 ''' </summary>
 Public Class FX3ProgrammingException : Inherits System.Exception
 
