@@ -1284,7 +1284,11 @@ Public Class FX3Connection
                         Interlocked.Increment(m_FramesRead)
                         bufferBuilder.Clear()
                         numBuffersRead = numBuffersRead + 1
-                        'Exit if the total number of buffers has been read
+                        'Exit for loop if total integer number of buffers for the USB packet have been read
+                        If (transferSize - bufIndex) < BytesPerBuffer Then
+                            Exit For
+                        End If
+                        'Exit while loop if the total number of buffers has been read
                         If numBuffersRead >= m_TotalBuffersToRead Then
                             Exit While
                         End If
