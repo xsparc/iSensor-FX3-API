@@ -59,5 +59,55 @@ Namespace My.Resources
                 resourceCulture = value
             End Set
         End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to Tue 06/25/2019 10:54:15.08 
+        '''.
+        '''</summary>
+        Friend ReadOnly Property BuildDate() As String
+            Get
+                Return ResourceManager.GetString("BuildDate", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to FX3Api 
+        '''.
+        '''</summary>
+        Friend ReadOnly Property BuildName() As String
+            Get
+                Return ResourceManager.GetString("BuildName", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to generic_stream
+        '''.
+        '''</summary>
+        Friend ReadOnly Property CurrentBranch() As String
+            Get
+                Return ResourceManager.GetString("CurrentBranch", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to 61109cd3a3b51d33b239df3e4d8b0b7aa8a50f07
+        '''.
+        '''</summary>
+        Friend ReadOnly Property CurrentCommit() As String
+            Get
+                Return ResourceManager.GetString("CurrentCommit", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to https://github.com/juchong/iSensor-FX3-Interface.git
+        '''.
+        '''</summary>
+        Friend ReadOnly Property CurrentURL() As String
+            Get
+                Return ResourceManager.GetString("CurrentURL", resourceCulture)
+            End Get
+        End Property
     End Module
 End Namespace
