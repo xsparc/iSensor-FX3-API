@@ -141,7 +141,8 @@ Public Class FX3Connection
     Event UnexpectedDisconnect(ByVal FX3SerialNum As String)
 
     ''' <summary>
-    ''' This event is raised when the disconnect event for a board has finished, and it is reprogrammed with the ADI bootloader
+    ''' This event is raised when the disconnect event for a board has finished, and it is reprogrammed with the ADI bootloader. This event only is triggered for boards
+    ''' which were explicitly disconnected (boards which were physically reset will not trigger this event).
     ''' </summary>
     ''' <param name="FX3SerialNum">Serial number of the board</param>
     ''' <param name="DisconnectTime">Time (in ms) elapsed between the disconnect call and board re-enumeration</param>
@@ -213,7 +214,7 @@ Public Class FX3Connection
         m_StreamTimeout = 5
 
         'Set timer
-        m_streamTimeoutTimer = New Stopwatch
+        m_streamTimeoutTimer = New Stopwatch()
 
     End Sub
 
@@ -236,7 +237,7 @@ Public Class FX3Connection
         End Get
         Set(value As Int32)
             'Throw an exception if the value is out of the range of frequencies supported by the board
-            If value > 40000000 Or value < 1 Then
+            If IsNothing(value) Or value > 40000000 Or value < 1 Then
                 Throw New FX3ConfigurationException("ERROR: Invalid Sclk Frequency entered. Must be in the range (1-40000000)")
             End If
             m_FX3_FX3SPIConfig.ClockFrequency = value
@@ -510,7 +511,7 @@ Public Class FX3Connection
         End Get
         Set(value As IPinObject)
             'throw an exception if the pin object is not an FX3PinObject
-            If Not value.ToString().Substring(0, 3) = "FX3" Then
+            If Not IsFX3Pin(value) Then
                 Throw New FX3ConfigurationException("ERROR: FX3 Connection must take an FX3 pin object")
             End If
             m_FX3_FX3SPIConfig.DataReadyPin = value
@@ -749,6 +750,22 @@ Public Class FX3Connection
 
     'The functions in this region are not a part of the IDutInterface, and are specific to the FX3 board
 
+    Public ReadOnly Property GetFX3ApiInfo As String
+        Get
+            Dim ApiInfo As String = ""
+            ApiInfo = ApiInfo + "Library: " + My.Resources.BuildName
+            'Add compile time
+            ApiInfo = ApiInfo + "Build Date: " + My.Resources.BuildDate
+            'Add url
+            ApiInfo = ApiInfo + "Remote URL: " + My.Resources.CurrentURL
+            'Add git branch
+            ApiInfo = ApiInfo + "Current Branch: " + My.Resources.CurrentBranch
+            'commit sha1
+            ApiInfo = ApiInfo + "Last Commit SHA1: " + My.Resources.CurrentCommit
+            Return ApiInfo
+        End Get
+    End Property
+
     ''' <summary>
     ''' Readonly property to get the number of bad frames purged with a call to PurgeBadFrameData. Frames are purged when the CRC appended to the end of
     ''' the frame does not match the expected CRC.
@@ -805,6 +822,7 @@ Public Class FX3Connection
     ''' <returns>The DR frequency in Hz</returns>
     Public Function ReadDRFreq(pin As IPinObject, polarity As UInteger, timeoutInMs As UInteger) As Double
 
+        'Variable initialization
         Dim buf(10) As Byte
         Dim freq As Double
         Dim deltat, shiftedValue, shiftedConversionFactor As UInteger
@@ -817,6 +835,16 @@ Public Class FX3Connection
         Dim timeoutFlag As UInteger = 0
 
         totalTime = timeoutInMs
+
+        'Validate pin type
+        If Not IsFX3Pin(pin) Then
+            Throw New FX3GeneralException("ERROR: Data ready pin type must be an FX3PinObject")
+        End If
+
+        'Validate the polarity (must be 0 or 1)
+        If Not (polarity = 0 Or polarity = 1) Then
+            Throw New FX3ConfigurationException("ERROR: Invalid data ready polarity: " + polarity.ToString() + ", it must be 0 or 1")
+        End If
 
         'Set the pin
         buf(0) = pin.pinConfig And &HFF
@@ -966,6 +994,21 @@ Public Class FX3Connection
             Return Interlocked.Read(m_FramesRead)
         End Get
     End Property
+
+    ''' <summary>
+    ''' This function determines if the pin object being passed is an FX3 version of the IPinObject (as opposed to a blackfin pin for the SDP).
+    ''' </summary>
+    ''' <param name="Pin">The pin to check</param>
+    ''' <returns>True if Pin is an FX3 pin, false if not</returns>
+    Private Function IsFX3Pin(ByVal Pin As IPinObject) As Boolean
+        Dim validPin As Boolean = False
+        'Check the tostring overload and type
+        If Pin.ToString().Substring(0, 3) = "FX3" And (Pin.GetType() = GetType(FX3PinObject)) Then
+            validPin = True
+        End If
+        Return validPin
+
+    End Function
 
 #End Region
 
