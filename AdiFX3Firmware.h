@@ -244,7 +244,7 @@ struct BoardConfig
  * Clock defines
  */
 //Conversion factor from clock ticks to milliseconds on GPIO timer
-#define MS_TO_TICKS_MULT						(1000) //(Previously 953)
+#define MS_TO_TICKS_MULT						(10000) //(Previously 953)
 
  //Minimum achievable stall time in microseconds (limited by the high-speed, complex GPIO)
 #define ADI_STALL_OFFSET						(14)

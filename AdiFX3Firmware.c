@@ -81,7 +81,7 @@ PartType DUTType;
  * Application constants
  */
 //Constant firmware ID string. Manually updated when building new firmware.
-const uint8_t FirmwareID[32] __attribute__ ((aligned (32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '1', '.', '0', '.', '8', '-','P','U','B',' ', '\0' };
+const uint8_t FirmwareID[32] __attribute__ ((aligned (32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '1', '.', '0', '.', '9', '-','P','U','B',' ', '\0' };
 
 //Constant error string used to write "ERROR" to output buffer
 const uint8_t ErrorString[16] __attribute__ ((aligned (16))) = { 'E', 'R', 'R', 'O', 'R', '\0'};
@@ -110,7 +110,7 @@ CyBool_t appActive = CyFalse;
 /* Track the number of bytes per real time frame */
 uint32_t bytesPerFrame = 200;
 
-/* Track the stall time in ticks */
+/* Track the stall time in microseconds. This is the same as the FX3Api stall time setting */
 uint32_t stallTime;
 
 /* Track the busy pin number */
@@ -131,14 +131,8 @@ CyBool_t pinExitEnableDisable = CyFalse;
 /* Track the pin start setting for RT stream mode (True = enabled, False = disabled) */
 CyBool_t pinStartEnableDisable = CyFalse;
 
-
-
-
-
-
 //Track the number of real-time captures to record (0 = Infinite)
 uint32_t numRealTimeCaptures = 0;
-
 
 //Signal RT thread to kill data capture early (True = kill thread signaled, False = allow execution)
 static volatile CyBool_t killEarly = CyFalse;
@@ -166,6 +160,7 @@ uint8_t *regList;
 
 uint16_t bytesPerUsbPacket = 0;
 
+//Bitmask of the starting timer pin configuration
 uint32_t timerPinConfig;
 
 /*
@@ -192,6 +187,9 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
     CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
     uint16_t *bytesRead = 0;
 
+    //int to store timer value
+    uint32_t timerVal;
+
     /* Decode the fields from the setup request. */
     bReqType = (setupdat0 & CY_U3P_USB_REQUEST_TYPE_MASK);
     bType    = (bReqType & CY_U3P_USB_TYPE_MASK);
@@ -210,6 +208,61 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 
         switch (bRequest)
         {
+        	case 0xFF:
+            	CyU3PUsbAckSetup();
+            	CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+            	CyU3PDebugPrint (4, "status: %x\r\n", GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status);
+            	CyU3PDebugPrint (4, "intr0: %x\r\n", GPIO->lpp_gpio_intr0);
+            	CyU3PDebugPrint (4, "intr1: %x\r\n", GPIO->lpp_gpio_intr1);
+        		break;
+
+
+        	case 0xFE:
+            	CyU3PUsbAckSetup();
+            	CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+        		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+        		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold = 50000000;
+
+        		break;
+
+        	case 0xFD:
+            	CyU3PUsbAckSetup();
+            	CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+        		/* Disable VBUS ISR */
+        		CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
+
+        		/* Disable GPIO interrupt before attaching interrupt to pin */
+        		CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
+        		break;
+
+        	case 0xFC:
+            	CyU3PUsbAckSetup();
+            	CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+        		/* Disable VBUS ISR */
+        		CyU3PVicEnableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
+
+        		/* Disable GPIO interrupt before attaching interrupt to pin */
+        		CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
+        		break;
+
+        	case 0xFB:
+            	CyU3PUsbAckSetup();
+            	CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+            	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
+        		break;
+
+        	case 0xFA:
+            	CyU3PUsbAckSetup();
+            	CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+				//Set the pin config for sample now mode
+				GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (timerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
+				//wait for sample to finish
+				while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
+				//read timer value
+				timerVal = GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
+        		CyU3PDebugPrint (4, "TimerValue: %d\r\n", timerVal);
+        		break;
+
         	//Bulk register read/write using RegReadArray
         	case ADI_BULK_REGISTER_TRANSFER:
         		CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
@@ -1879,6 +1932,10 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 	numCaptures += (USBBuffer[6] << 16);
 	numCaptures += (USBBuffer[7] << 24);
 
+	/* Calculate the number of bytes per buffer */
+	/* Number of times to read each set of registers * (number of registers - control registers) */
+	bytesPerBuffer = numCaptures * (transferByteLength - 8);
+
 	/* Set regList memory ((transferByteLength - (number of config bytes) * numCaptures) + trigger word) */
 	regList = CyU3PMemAlloc(sizeof(uint8_t) * (((transferByteLength - 8) * numCaptures) + 2));
 
@@ -1886,18 +1943,16 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 	CyU3PMemSet(regList, 0, sizeof(uint8_t) * (((transferByteLength - 8) * numCaptures) + 2));
 
 	/* Write register list values to regList */
-	for (uint16_t i = 0; i < numCaptures; i++)
+	uint16_t i, j;
+	for (i = 0; i < numCaptures; i++)
 	{
-		for(uint16_t j = 0; j < transferByteLength; j++)
+		for(j = 0; j < (transferByteLength - 8); j++)
 		{
-			regList[(i * transferByteLength) + j] = USBBuffer[j + 8];
+			regList[(i * (transferByteLength - 8)) + j] = USBBuffer[j + 8];
 		}
 	}
 
-	/* Calculate the number of bytes per buffer */
-	/* Number of times to read each set of registers * (number of registers - control registers) */
-	bytesPerBuffer = numCaptures * (transferByteLength - 8);
-
+	//Find number of register "buffers" which fit in a USB buffer
 	bytesPerUsbPacket = ((usbBufferSize / bytesPerBuffer) * bytesPerBuffer);
 
 	/* Flush the streaming endpoint */
@@ -1937,6 +1992,9 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 		CyU3PDebugPrint (4, "CyU3PDmaChannelSetXfer failed, Error Code = %d\n", status);
 		return status;
 	}
+
+	//Set the timer pin threshold to correspond with the stall time
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold = (stallTime * 10) - 90;
 
 	//Enable generic data capture thread
 	status = CyU3PEventSet (&eventHandler, ADI_GENERIC_STREAM_ENABLE, CYU3P_EVENT_OR);
@@ -2731,10 +2789,7 @@ void AdiDataStream_Entry(uint32_t input)
 
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint32_t numFramesCaptured;
-	CyBool_t interruptTriggered = CyFalse;
-
-	//Delay timer definitions
-	uint32_t timerVal;
+	CyBool_t interruptTriggered;
 
 	uint16_t regIndex;
 
@@ -2742,7 +2797,7 @@ void AdiDataStream_Entry(uint32_t input)
 	CyU3PDmaBuffer_t genBuf_p;
 	uint32_t byteCounter = 0;
 	uint8_t *tempPtr;
-	CyBool_t newBuffer = CyTrue;
+	CyBool_t firstRun = CyTrue;
 
 	for (;;)
 	{
@@ -2752,7 +2807,7 @@ void AdiDataStream_Entry(uint32_t input)
 			/* Generic register stream case */
 			if (eventFlag & ADI_GENERIC_STREAM_ENABLE)
 			{
-				if (newBuffer)
+				if (firstRun)
 				{
 					status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &genBuf_p, CYU3P_WAIT_FOREVER);
 					if (status != CY_U3P_SUCCESS)
@@ -2760,7 +2815,7 @@ void AdiDataStream_Entry(uint32_t input)
 						CyU3PDebugPrint (4, "CyU3PDmaChannelGetBuffer in generic capture failed, Error code = %d\r\n", status);
 					}
 					tempPtr = genBuf_p.buffer;
-					newBuffer = CyFalse;
+					firstRun = CyFalse;
 				}
 				//Wait for DR if enabled
 				if (DrActive)
@@ -2768,12 +2823,8 @@ void AdiDataStream_Entry(uint32_t input)
 					//Clear GPIO interrupts
 					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
 					//Loop until interrupt is triggered
-					interruptTriggered = CyFalse;
-					while(!interruptTriggered)
-					{
-						interruptTriggered = ((CyBool_t)(GPIO->lpp_gpio_intr0 & (1 << dataReadyPin)));
-					}
-					//Clear GPIO interrupts
+					while(!(GPIO->lpp_gpio_intr0 & (1 << dataReadyPin)));
+					//Clear GPIO interrupt bit
 					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
 				}
 				//Transmit first word without reading back
@@ -2783,28 +2834,25 @@ void AdiDataStream_Entry(uint32_t input)
 
 				//Set the pin timer to 0
 				GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+				//clear interrupt flag
+				GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
 
 				//Read the registers in the register list into regList
 				for(regIndex = 0; regIndex < (bytesPerBuffer - 1); regIndex += 2)
 				{
 					//Wait for the complex GPIO timer to reach the stall time
-					timerVal = 0;
-					while(timerVal < stallTime)
-					{
-						//Set the pin config for sample now mode
-						GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (timerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
-						//wait for sample to finish
-						while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
-						//read timer value
-						timerVal = GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
-					}
+					while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
 
 					//Prepare, transmit, and receive SPI words
 					tempData[0] = regList[regIndex + 2];
 					tempData[1] = regList[regIndex + 3];
 					CyU3PSpiTransferWords(tempData, 2, tempPtr, 2);
+
 					//Set the pin timer to 0
 					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+					//clear interrupt flag
+					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
+
 					//Update counters
 					tempPtr += 2;
 					byteCounter += 2;
@@ -2817,10 +2865,13 @@ void AdiDataStream_Entry(uint32_t input)
 						{
 							CyU3PDebugPrint (4, "CyU3PDmaChannelCommitBuffer in loop failed, Error code = %d\r\n", status);
 						}
-
+						status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &genBuf_p, CYU3P_WAIT_FOREVER);
+						if (status != CY_U3P_SUCCESS)
+						{
+							CyU3PDebugPrint (4, "CyU3PDmaChannelGetBuffer in generic capture failed, Error code = %d\r\n", status);
+						}
+						tempPtr = genBuf_p.buffer;
 						byteCounter = 0;
-						newBuffer = CyTrue;
-
 					}
 				}
 
@@ -2829,8 +2880,7 @@ void AdiDataStream_Entry(uint32_t input)
 				{
 					//Reset buffer counter
 					numBuffersRead = 0;
-					newBuffer = CyTrue;
-
+					firstRun = CyTrue;
 					if (byteCounter)
 					{
 						status = CyU3PDmaChannelCommitBuffer (&StreamingChannel, usbBufferSize, 0);
@@ -2851,6 +2901,8 @@ void AdiDataStream_Entry(uint32_t input)
 				{
 					//Increment buffer counter
 					numBuffersRead++;
+					//Wait for the complex GPIO timer to reach the stall time
+					while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
 					//Reset flag
 					CyU3PEventSet (&eventHandler, ADI_GENERIC_STREAM_ENABLE, CYU3P_EVENT_OR);
 				}
@@ -3143,10 +3195,10 @@ void AdiAppStart (void)
 	 * is 403.2MHz / (13 * 31) = 1.000 MHz. GPIO sample clock = 201.6 MHz */
 	CyU3PGpioClock_t gpioClock;
 	CyU3PMemSet ((uint8_t *)&gpioClock, 0, sizeof (gpioClock));
-	gpioClock.fastClkDiv = 13;
-	gpioClock.slowClkDiv = 31;
+	gpioClock.fastClkDiv = 10;
+	gpioClock.slowClkDiv = 0;
 	gpioClock.simpleDiv = CY_U3P_GPIO_SIMPLE_DIV_BY_2;
-	gpioClock.clkSrc = CY_U3P_SYS_CLK;
+	gpioClock.clkSrc = CY_U3P_SYS_CLK_BY_4;
 	gpioClock.halfDiv = 0;
 
 	/* Set GPIO configuration and attach GPIO event handler */
@@ -3277,8 +3329,8 @@ void AdiAppStart (void)
 	gpioComplexConfig.driveLowEn = CyTrue;
 	gpioComplexConfig.driveHighEn = CyTrue;
 	gpioComplexConfig.pinMode = CY_U3P_GPIO_MODE_STATIC;
-	gpioComplexConfig.intrMode = CY_U3P_GPIO_NO_INTR;
-	gpioComplexConfig.timerMode = CY_U3P_GPIO_TIMER_LOW_FREQ;
+	gpioComplexConfig.intrMode = CY_U3P_GPIO_INTR_TIMER_THRES;
+	gpioComplexConfig.timerMode = CY_U3P_GPIO_TIMER_HIGH_FREQ;
 	gpioComplexConfig.timer = 0;
 	gpioComplexConfig.period = 0xFFFFFFFF;
 	gpioComplexConfig.threshold = 0xFFFFFFFF;
