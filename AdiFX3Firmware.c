@@ -22,6 +22,7 @@
 /*
  * Thread and Thread Management Definitions
  */
+
 //Thread for real time streaming function
 CyU3PThread streamingThread;
 
@@ -34,10 +35,10 @@ CyU3PEvent eventHandler;
 //ADI GPIO event structure
 CyU3PEvent gpioHandler;
 
-
 /*
  * DMA Channel Definitions
  */
+
 //DMA channel for real time streaming (SPI to USB BULK-IN 0x81)
 CyU3PDmaChannel StreamingChannel;
 
@@ -50,20 +51,20 @@ CyU3PDmaChannel ChannelToPC;
 //DMA channel for reading a memory location into a DMA consumer
 CyU3PDmaChannel MemoryToSPI;
 
-
 /*
  * Buffer Definitions
  */
+
 //USB Data buffer
 uint8_t USBBuffer[4096] __attribute__ ((aligned (32)));
 
 //Bulk endpoint output buffer
 uint8_t BulkBuffer[12288] __attribute__ ((aligned (32)));
 
-
 /*
  * Application Configuration Definitions
  */
+
 //Global variable to track the SPI configuration
 CyU3PSpiConfig_t spiConfig;
 
@@ -76,10 +77,10 @@ CyU3PDmaBuffer_t SpiDmaBuffer;
 //Global to track the part type
 PartType DUTType;
 
-
 /*
  * Application constants
  */
+
 //Constant firmware ID string. Manually updated when building new firmware.
 const uint8_t FirmwareID[32] __attribute__ ((aligned (32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '1', '.', '0', '.', '9', '-','P','U','B',' ', '\0' };
 
@@ -98,22 +99,24 @@ char serial_number[] __attribute__ ((aligned (32))) = {
  * Runtime Global Variables
  */
 
-/* Global application variables */
-/* Track the USB connection speed */
+/*
+ * Global application variables
+ */
+
+//Track the USB connection speed
 uint16_t usbBufferSize = 0;
 
-/* Track main application execution */
+//Track main application execution
 CyBool_t appActive = CyFalse;
-
 
 /* Global user configuration variables */
 /* Track the number of bytes per real time frame */
 uint32_t bytesPerFrame = 200;
 
-/* Track the stall time in microseconds. This is the same as the FX3Api stall time setting */
+// Track the stall time in microseconds. This is the same as the FX3Api stall time setting
 uint32_t stallTime;
 
-/* Track the busy pin number */
+// Track the busy pin number
 uint16_t busyPin = 4;
 
 /* Track the data ready pin number */
@@ -158,9 +161,10 @@ uint16_t bytesPerBuffer = 0;
 //Pointer to byte array of registers needing to be read by the generic data stream
 uint8_t *regList;
 
+//Number of bytes per USB packet in generic data stream mode
 uint16_t bytesPerUsbPacket = 0;
 
-//Bitmask of the starting timer pin configuration
+//Bit mask of the starting timer pin configuration
 uint32_t timerPinConfig;
 
 /*
@@ -208,61 +212,6 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 
         switch (bRequest)
         {
-        	case 0xFF:
-            	CyU3PUsbAckSetup();
-            	CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
-            	CyU3PDebugPrint (4, "status: %x\r\n", GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status);
-            	CyU3PDebugPrint (4, "intr0: %x\r\n", GPIO->lpp_gpio_intr0);
-            	CyU3PDebugPrint (4, "intr1: %x\r\n", GPIO->lpp_gpio_intr1);
-        		break;
-
-
-        	case 0xFE:
-            	CyU3PUsbAckSetup();
-            	CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
-        		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
-        		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold = 50000000;
-
-        		break;
-
-        	case 0xFD:
-            	CyU3PUsbAckSetup();
-            	CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
-        		/* Disable VBUS ISR */
-        		CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
-
-        		/* Disable GPIO interrupt before attaching interrupt to pin */
-        		CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
-        		break;
-
-        	case 0xFC:
-            	CyU3PUsbAckSetup();
-            	CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
-        		/* Disable VBUS ISR */
-        		CyU3PVicEnableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
-
-        		/* Disable GPIO interrupt before attaching interrupt to pin */
-        		CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
-        		break;
-
-        	case 0xFB:
-            	CyU3PUsbAckSetup();
-            	CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
-            	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
-        		break;
-
-        	case 0xFA:
-            	CyU3PUsbAckSetup();
-            	CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
-				//Set the pin config for sample now mode
-				GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (timerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
-				//wait for sample to finish
-				while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
-				//read timer value
-				timerVal = GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
-        		CyU3PDebugPrint (4, "TimerValue: %d\r\n", timerVal);
-        		break;
-
         	//Bulk register read/write using RegReadArray
         	case ADI_BULK_REGISTER_TRANSFER:
         		CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
