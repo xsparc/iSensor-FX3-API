@@ -109,8 +109,17 @@ uint16_t usbBufferSize = 0;
 //Track main application execution
 CyBool_t appActive = CyFalse;
 
-/* Global user configuration variables */
-/* Track the number of bytes per real time frame */
+//Signal RT thread to kill data capture early (True = kill thread signaled, False = allow execution)
+static volatile CyBool_t killEarly = CyFalse;
+
+//Bit mask of the starting timer pin configuration
+uint32_t timerPinConfig;
+
+/*
+ * Global user configuration variables
+ */
+
+// Track the number of bytes per real time frame
 uint32_t bytesPerFrame = 200;
 
 // Track the stall time in microseconds. This is the same as the FX3Api stall time setting
@@ -119,31 +128,28 @@ uint32_t stallTime;
 // Track the busy pin number
 uint16_t busyPin = 4;
 
-/* Track the data ready pin number */
+//Track the data ready pin number
 uint16_t dataReadyPin = 3;
 
-/* Track if data ready is active (True = active, False = inactive) */
+// Track if data ready is active (True = active, False = inactive)
 CyBool_t DrActive = CyFalse;
 
-/* Track data ready polarity (True = rising, False = falling) */
+// Track data ready polarity (True = rising, False = falling)
 CyBool_t DrPolarity = CyTrue;
 
-/* Track the pin exit setting for RT stream mode (True = enabled, False = disabled) */
+// Track the pin exit setting for RT stream mode (True = enabled, False = disabled)
 CyBool_t pinExitEnableDisable = CyFalse;
 
-/* Track the pin start setting for RT stream mode (True = enabled, False = disabled) */
+// Track the pin start setting for RT stream mode (True = enabled, False = disabled)
 CyBool_t pinStartEnableDisable = CyFalse;
 
 //Track the number of real-time captures to record (0 = Infinite)
 uint32_t numRealTimeCaptures = 0;
 
-//Signal RT thread to kill data capture early (True = kill thread signaled, False = allow execution)
-static volatile CyBool_t killEarly = CyFalse;
-
 //Track the total size of generic stream transfer in 16-bit words
 uint16_t transferWordLength = 0;
 
-//Track the total size of generic and burst stream transfers in 8-bit bytes
+//Track the total size of generic and burst stream transfers in bytes
 uint32_t transferByteLength = 0;
 
 //Track the total size of a generic or burst stream rounded to a multiple of 16
@@ -163,9 +169,6 @@ uint8_t *regList;
 
 //Number of bytes per USB packet in generic data stream mode
 uint16_t bytesPerUsbPacket = 0;
-
-//Bit mask of the starting timer pin configuration
-uint32_t timerPinConfig;
 
 /*
  * Function: AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
@@ -190,9 +193,6 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
     CyBool_t isHandled = CyFalse;
     CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
     uint16_t *bytesRead = 0;
-
-    //int to store timer value
-    uint32_t timerVal;
 
     /* Decode the fields from the setup request. */
     bReqType = (setupdat0 & CY_U3P_USB_REQUEST_TYPE_MASK);

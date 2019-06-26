@@ -39,12 +39,10 @@
 #include <stdlib.h>
 #include <sys/unistd.h>
 
-
 //Lower level register access includes
 #include "gpio_regs.h"
 #include "spi_regs.h"
 #include "gctlaon_regs.h"
-
 
 /*
  * Function Declarations
@@ -119,6 +117,14 @@ typedef enum Boolean
 	True = 1,
 	False = 0
 }Boolean;
+
+//Enum for the complex GPIO timers available
+typedef enum Timer
+{
+	ADITimer10MHz = 0,
+	ADITimer1MHz = 1,
+	ADITimer10KHz = 2
+}Timer;
 
 //Struct to store relevant board parameters
 struct BoardConfig
