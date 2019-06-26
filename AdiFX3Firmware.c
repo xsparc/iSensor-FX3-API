@@ -23,71 +23,71 @@
  * Thread and Thread Management Definitions
  */
 
-//Thread for real time streaming function
+/*Thread for real time streaming function */
 CyU3PThread streamingThread;
 
-//Thread for the main application
+/*Thread for the main application */
 CyU3PThread appThread;
 
-//ADI event structure
+/*ADI event structure */
 CyU3PEvent eventHandler;
 
-//ADI GPIO event structure
+/*ADI GPIO event structure */
 CyU3PEvent gpioHandler;
 
 /*
  * DMA Channel Definitions
  */
 
-//DMA channel for real time streaming (SPI to USB BULK-IN 0x81)
+/*DMA channel for real time streaming (SPI to USB BULK-IN 0x81) */
 CyU3PDmaChannel StreamingChannel;
 
-//DMA channel for BULK-OUT endpoint 0x1 (PC to FX3)
+/*DMA channel for BULK-OUT endpoint 0x1 (PC to FX3) */
 CyU3PDmaChannel ChannelFromPC;
 
-//DMA channel for BULK-IN endpoint 0x82 (FX3 to PC)
+/*DMA channel for BULK-IN endpoint 0x82 (FX3 to PC) */
 CyU3PDmaChannel ChannelToPC;
 
-//DMA channel for reading a memory location into a DMA consumer
+/*DMA channel for reading a memory location into a DMA consumer */
 CyU3PDmaChannel MemoryToSPI;
 
 /*
  * Buffer Definitions
  */
 
-//USB Data buffer
+/*USB Data buffer */
 uint8_t USBBuffer[4096] __attribute__ ((aligned (32)));
 
-//Bulk endpoint output buffer
+/*Bulk endpoint output buffer */
 uint8_t BulkBuffer[12288] __attribute__ ((aligned (32)));
 
 /*
  * Application Configuration Definitions
  */
 
-//Global variable to track the SPI configuration
+/*Global variable to track the SPI configuration */
 CyU3PSpiConfig_t spiConfig;
 
-//DMA buffer structure for output buffer
+/*DMA buffer structure for output buffer */
 CyU3PDmaBuffer_t ManualDMABuffer;
 
-//DMA buffer structure for SPI transmit
+/*DMA buffer structure for SPI transmit */
 CyU3PDmaBuffer_t SpiDmaBuffer;
 
-//Global to track the part type
+/*Global to track the part type */
 PartType DUTType;
 
 /*
  * Application constants
  */
 
-//Constant firmware ID string. Manually updated when building new firmware.
+/*Constant firmware ID string. Manually updated when building new firmware. */
 const uint8_t FirmwareID[32] __attribute__ ((aligned (32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '1', '.', '0', '.', '9', '-','P','U','B',' ', '\0' };
 
-//Constant error string used to write "ERROR" to output buffer
+/*Constant error string used to write "ERROR" to output buffer */
 const uint8_t ErrorString[16] __attribute__ ((aligned (16))) = { 'E', 'R', 'R', 'O', 'R', '\0'};
 
-//Constant FX3 unique serial number
+/*Constant FX3 unique serial number */
 char serial_number[] __attribute__ ((aligned (32))) = {
 	    '0',0x00,'0',0x00,'0',0x00,'0',0x00,
 	    '0',0x00,'0',0x00,'0',0x00,'0',0x00,
@@ -103,71 +103,71 @@ char serial_number[] __attribute__ ((aligned (32))) = {
  * Global application variables
  */
 
-//Track the USB connection speed
+/*Track the USB connection speed */
 uint16_t usbBufferSize = 0;
 
-//Track main application execution
+/*Track main application execution */
 CyBool_t appActive = CyFalse;
 
-//Signal RT thread to kill data capture early (True = kill thread signaled, False = allow execution)
+/*Signal RT thread to kill data capture early (True = kill thread signaled, False = allow execution) */
 static volatile CyBool_t killEarly = CyFalse;
 
-//Bit mask of the starting timer pin configuration
+/*Bit mask of the starting timer pin configuration */
 uint32_t timerPinConfig;
 
 /*
  * Global user configuration variables
  */
 
-// Track the number of bytes per real time frame
+/*Track the number of bytes per real time frame */
 uint32_t bytesPerFrame = 200;
 
-// Track the stall time in microseconds. This is the same as the FX3Api stall time setting
+/*Track the stall time in microseconds. This is the same as the FX3Api stall time setting */
 uint32_t stallTime;
 
-// Track the busy pin number
+/*Track the busy pin number */
 uint16_t busyPin = 4;
 
-//Track the data ready pin number
+/*Track the data ready pin number */
 uint16_t dataReadyPin = 3;
 
-// Track if data ready is active (True = active, False = inactive)
+/*Track if data ready is active (True = active, False = inactive) */
 CyBool_t DrActive = CyFalse;
 
-// Track data ready polarity (True = rising, False = falling)
+/*Track data ready polarity (True = rising, False = falling) */
 CyBool_t DrPolarity = CyTrue;
 
-// Track the pin exit setting for RT stream mode (True = enabled, False = disabled)
+/*Track the pin exit setting for RT stream mode (True = enabled, False = disabled) */
 CyBool_t pinExitEnableDisable = CyFalse;
 
-// Track the pin start setting for RT stream mode (True = enabled, False = disabled)
+/*Track the pin start setting for RT stream mode (True = enabled, False = disabled) */
 CyBool_t pinStartEnableDisable = CyFalse;
 
-//Track the number of real-time captures to record (0 = Infinite)
+/*Track the number of real-time captures to record (0 = Infinite) */
 uint32_t numRealTimeCaptures = 0;
 
-//Track the total size of generic stream transfer in 16-bit words
+/*Track the total size of generic stream transfer in 16-bit words */
 uint16_t transferWordLength = 0;
 
-//Track the total size of generic and burst stream transfers in bytes
+/*Track the total size of generic and burst stream transfers in bytes */
 uint32_t transferByteLength = 0;
 
-//Track the total size of a generic or burst stream rounded to a multiple of 16
+/*Track the total size of a generic or burst stream rounded to a multiple of 16 */
 uint16_t roundedByteTransferLength = 0;
 
-//Track the number of captures requested for the generic data stream
+/*Track the number of captures requested for the generic data stream */
 uint32_t numCaptures = 0;
 
-//Track the number of buffers requested for the generic data stream
+/*Track the number of buffers requested for the generic data stream */
 uint32_t numBuffers = 0;
 
-//Track the number of bytes to be read per buffer
+/*Track the number of bytes to be read per buffer */
 uint16_t bytesPerBuffer = 0;
 
-//Pointer to byte array of registers needing to be read by the generic data stream
+/*Pointer to byte array of registers needing to be read by the generic data stream */
 uint8_t *regList;
 
-//Number of bytes per USB packet in generic data stream mode
+/*Number of bytes per USB packet in generic data stream mode */
 uint16_t bytesPerUsbPacket = 0;
 
 /*
