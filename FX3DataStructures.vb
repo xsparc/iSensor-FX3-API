@@ -392,27 +392,74 @@ Public Class FX3ApiInfo
     Public BuildVersion As String
 
     'Remote URL for the .git folder in the source
-    Public GitURL As String
+    Private m_GitURL As String
 
     'Link to the last commit when the project was built
-    Public GitCommitURL As String
+    Private m_GitCommitURL As String
 
     'Current branch
-    Public GitBranch As String
+    Private m_GitBranch As String
 
     'Current commit sha1 hash
-    Public GitCommitSHA1 As String
+    Private m_GitCommitSHA1 As String
 
     Public Sub New()
         Name = "Error: Not Set"
         Description = "Error: Not Set"
         BuildDateTime = "Error: Not Set"
         BuildVersion = "Error: Not Set"
-        GitBranch = "Error: Not Set"
-        GitCommitSHA1 = "Error: Not Set"
-        GitCommitURL = "Error: Not Set"
-        GitURL = "Error: Not Set"
+        m_GitBranch = "Error: Not Set"
+        m_GitCommitSHA1 = "Error: Not Set"
+        m_GitCommitURL = "Error: Not Set"
+        m_GitURL = "Error: Not Set"
     End Sub
+
+    Public Property GitURL As String
+        Get
+            Return m_GitURL
+        End Get
+        Set(value As String)
+            'Strip newline generate by piping the git output to a file
+            value.Replace(Environment.NewLine, "")
+            m_GitURL = value
+        End Set
+    End Property
+
+    Public Property GitBranch As String
+        Get
+            Return m_GitBranch
+        End Get
+        Set(value As String)
+            'Strip newline generate by piping the git output to a file
+            value.Replace(Environment.NewLine, "")
+            m_GitBranch = value
+        End Set
+    End Property
+
+    Public Property GitCommitSHA1 As String
+        Get
+            Return m_GitCommitSHA1
+        End Get
+        Set(value As String)
+            'Strip newline generate by piping the git output to a file
+            value.Replace(Environment.NewLine, "")
+            m_GitCommitSHA1 = value
+        End Set
+    End Property
+
+    Public ReadOnly Property GitCommitURL As String
+        Get
+            Dim strippedURL As String
+            Try
+                strippedURL = m_GitURL
+                strippedURL = strippedURL.Replace(".git", "")
+                m_GitCommitURL = strippedURL + "/tree/" + m_GitCommitSHA1
+            Catch ex As Exception
+                m_GitCommitURL = "Error building link"
+            End Try
+            Return m_GitCommitURL
+        End Get
+    End Property
 
     Public Overrides Function ToString() As String
         Dim info As String
@@ -420,9 +467,9 @@ Public Class FX3ApiInfo
         info = info + "Description: " + Description + Environment.NewLine
         info = info + "Build Version: " + BuildVersion + Environment.NewLine
         info = info + "Build Date and Time: " + BuildDateTime + Environment.NewLine
-        info = info + "Base Git URL: " + GitURL
-        info = info + "Current Branch: " + GitBranch + Environment.NewLine
-        info = info + "Most Recent Commit Hash: " + GitCommitSHA1 + Environment.NewLine
+        info = info + "Base Git URL: " + m_GitURL
+        info = info + "Current Branch: " + m_GitBranch + Environment.NewLine
+        info = info + "Most Recent Commit Hash: " + m_GitCommitSHA1 + Environment.NewLine
         info = info + "Link to the commit: " + GitCommitURL
         Return info
     End Function
