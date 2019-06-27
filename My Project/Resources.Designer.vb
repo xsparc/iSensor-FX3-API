@@ -61,22 +61,12 @@ Namespace My.Resources
         End Property
         
         '''<summary>
-        '''  Looks up a localized string similar to Tue 06/25/2019 10:54:15.08 
+        '''  Looks up a localized string similar to Thu 06/27/2019 13:24:43.01 
         '''.
         '''</summary>
         Friend ReadOnly Property BuildDate() As String
             Get
                 Return ResourceManager.GetString("BuildDate", resourceCulture)
-            End Get
-        End Property
-        
-        '''<summary>
-        '''  Looks up a localized string similar to FX3Api 
-        '''.
-        '''</summary>
-        Friend ReadOnly Property BuildName() As String
-            Get
-                Return ResourceManager.GetString("BuildName", resourceCulture)
             End Get
         End Property
         
@@ -91,7 +81,7 @@ Namespace My.Resources
         End Property
         
         '''<summary>
-        '''  Looks up a localized string similar to 61109cd3a3b51d33b239df3e4d8b0b7aa8a50f07
+        '''  Looks up a localized string similar to eee943f2cf38653a06efbb679c7477744f99a6ed
         '''.
         '''</summary>
         Friend ReadOnly Property CurrentCommit() As String

@@ -121,9 +121,6 @@
   <data name="BuildDate" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\bin\BuildDate.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
-  <data name="BuildName" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\bin\BuildName.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
   <data name="CurrentBranch" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\bin\CurrentBranch.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>

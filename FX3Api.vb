@@ -8,6 +8,8 @@ Imports CyUSB
 Imports AdisApi
 Imports System.Threading
 Imports System.Collections.Concurrent
+Imports System.Reflection
+Imports Microsoft.VisualBasic.ApplicationServices
 
 ''' <summary>
 ''' Class for interfacing with the FX3 based eval platform. Implements IRegInterface and IPinFcns, in addition
@@ -750,18 +752,26 @@ Public Class FX3Connection
 
     'The functions in this region are not a part of the IDutInterface, and are specific to the FX3 board
 
-    Public ReadOnly Property GetFX3ApiInfo As String
+    Public ReadOnly Property GetFX3ApiInfo As FX3ApiInfo
         Get
-            Dim ApiInfo As String = ""
-            ApiInfo = ApiInfo + "Library: " + My.Resources.BuildName
+            Dim ApiInfo As New FX3ApiInfo
+            'Get the assembly info for where the fx3 connection lives
+            Dim FX3ApiDLL As Assembly = Assembly.GetAssembly(GetType(FX3Api.FX3Connection))
+            Dim DllInfo As New AssemblyInfo(FX3ApiDLL)
+            'Project name
+            ApiInfo.Name = DllInfo.AssemblyName
+            'Build version
+            ApiInfo.BuildVersion = DllInfo.Version.ToString()
+            'Project description
+            ApiInfo.Description = DllInfo.Description
             'Add compile time
-            ApiInfo = ApiInfo + "Build Date: " + My.Resources.BuildDate
+            ApiInfo.BuildDateTime = My.Resources.BuildDate
             'Add url
-            ApiInfo = ApiInfo + "Remote URL: " + My.Resources.CurrentURL
+            ApiInfo.GitURL = My.Resources.CurrentURL
             'Add git branch
-            ApiInfo = ApiInfo + "Current Branch: " + My.Resources.CurrentBranch
+            ApiInfo.GitBranch = My.Resources.CurrentBranch
             'commit sha1
-            ApiInfo = ApiInfo + "Last Commit SHA1: " + My.Resources.CurrentCommit
+            ApiInfo.GitCommitSHA1 = My.Resources.CurrentCommit
             Return ApiInfo
         End Get
     End Property
@@ -947,17 +957,12 @@ Public Class FX3Connection
     ''' <returns>The frame availability</returns>
     Public ReadOnly Property BufferAvailable As Boolean
         Get
-            Dim goodBuffer As Boolean = False
-            m_streamTimeoutTimer.Restart()
-            While (m_streamTimeoutTimer.ElapsedMilliseconds() < (1000 * StreamTimeoutSeconds)) And (Not goodBuffer)
-                If Not IsNothing(m_StreamData) Then
-                    If m_StreamData.Count > 0 Or m_StreamThreadRunning Then
-                        goodBuffer = True
-                    End If
-                End If
-            End While
-            m_streamTimeoutTimer.Reset()
-            Return goodBuffer
+            'Make sure buffer is initialized
+            If IsNothing(m_StreamData) Then
+                Return False
+            End If
+            'return if there is a value which can be read from the queue
+            Return (m_StreamData.Count > 0)
         End Get
     End Property
 
