@@ -3,7 +3,7 @@
 'Date:         7/31/2018     
 'Description:  Collection of helper data structures used in the FX3Connection 
 
-#Region "Helper Data Structures"
+#Region "FX3Board Class"
 
 ''' <summary>
 ''' This class contains information about the connected FX3 board
@@ -69,6 +69,10 @@ Public Class FX3Board
     End Sub
 
 End Class
+
+#End Region
+
+#Region "Enums"
 
 ''' <summary>
 ''' This enum lists all USB endpoints generated and used by the application firmware.
@@ -159,6 +163,61 @@ Public Enum USBCommands
     ADI_LED_BLINKING_ON = &HEF
 
 End Enum
+
+''' <summary>
+''' Enum for the possible chip select modes
+''' </summary>
+Public Enum SpiChipselectControl
+    'SSN Is controlled by API And Is Not at clock boundaries. 
+    SPI_SSN_CTRL_FW = 0
+    'SSN Is controlled by hardware And Is done In sync With clock.
+    'The SSN Is asserted at the beginning Of a transfer, And de-asserted
+    'at the End Of a transfer Or When no data Is available To transmit. 
+    SPI_SSN_CTRL_HW_END_OF_XFER
+    'SSN Is controlled by the hardware And Is done In sync With clock.
+    'The SSN Is asserted at the beginning Of transfer Of every word, And
+    'de-asserted at the End Of the transfer Of that word. 
+    SPI_SSN_CTRL_HW_EACH_WORD
+    'If CPHA Is 0, the SSN control Is per word; And If CPHA Is 1, Then the
+    'SSN control Is per transfer. 
+    SPI_SSN_CTRL_HW_CPHA_BASED
+    'SSN control Is done externally by the firmware application.
+    SPI_SSN_CTRL_NONE
+End Enum
+
+''' <summary>
+''' Enum for determining the default device settings to be initialized
+''' </summary>
+Public Enum DeviceType
+    'IMU device
+    IMU = 0
+    'ADcmXL device
+    ADcmXL
+End Enum
+
+''' <summary>
+''' Enum for the possible chip select lag/lead times, in SPI clock cycles
+''' </summary>
+Public Enum SpiLagLeadTime
+    SPI_SSN_LAG_LEAD_ZERO_CLK = 0       ' SSN Is in sync with SCK.
+    SPI_SSN_LAG_LEAD_HALF_CLK           ' SSN leads / lags SCK by a half clock cycle.
+    SPI_SSN_LAG_LEAD_ONE_CLK            ' SSN leads / lags SCK by one clock cycle.
+    SPI_SSN_LAG_LEAD_ONE_HALF_CLK       ' SSN leads / lags SCK by one And half clock cycles.
+End Enum
+
+''' <summary>
+''' Enum of the possible DUT types for the ADcmXLx021
+''' </summary>
+Public Enum DUTType
+    ADcmXL1021 = 0
+    ADcmXL2021
+    ADcmXL3021
+    IMU
+End Enum
+
+#End Region
+
+#Region "FX3SPIConfig Class"
 
 ''' <summary>
 ''' Class for all the programmable SPI configuration options on the FX3.
@@ -315,55 +374,59 @@ Public Class FX3SPIConfig
 
 End Class
 
-''' <summary>
-''' Enum for the possible chip select modes
-''' </summary>
-Public Enum SpiChipselectControl
-    'SSN Is controlled by API And Is Not at clock boundaries. 
-    SPI_SSN_CTRL_FW = 0
-    'SSN Is controlled by hardware And Is done In sync With clock.
-    'The SSN Is asserted at the beginning Of a transfer, And de-asserted
-    'at the End Of a transfer Or When no data Is available To transmit. 
-    SPI_SSN_CTRL_HW_END_OF_XFER
-    'SSN Is controlled by the hardware And Is done In sync With clock.
-    'The SSN Is asserted at the beginning Of transfer Of every word, And
-    'de-asserted at the End Of the transfer Of that word. 
-    SPI_SSN_CTRL_HW_EACH_WORD
-    'If CPHA Is 0, the SSN control Is per word; And If CPHA Is 1, Then the
-    'SSN control Is per transfer. 
-    SPI_SSN_CTRL_HW_CPHA_BASED
-    'SSN control Is done externally by the firmware application.
-    SPI_SSN_CTRL_NONE
-End Enum
+#End Region
 
-''' <summary>
-''' Enum for determining the default device settings to be initialized
-''' </summary>
-Public Enum DeviceType
-    'IMU device
-    IMU = 0
-    'ADcmXL device
-    ADcmXL
-End Enum
+#Region "FX3APIInfo Class"
 
-''' <summary>
-''' Enum for the possible chip select lag/lead times, in SPI clock cycles
-''' </summary>
-Public Enum SpiLagLeadTime
-    SPI_SSN_LAG_LEAD_ZERO_CLK = 0       ' SSN Is in sync with SCK.
-    SPI_SSN_LAG_LEAD_HALF_CLK           ' SSN leads / lags SCK by a half clock cycle.
-    SPI_SSN_LAG_LEAD_ONE_CLK            ' SSN leads / lags SCK by one clock cycle.
-    SPI_SSN_LAG_LEAD_ONE_HALF_CLK       ' SSN leads / lags SCK by one And half clock cycles.
-End Enum
+Public Class FX3ApiInfo
+    'Name of the project
+    Public Name As String
 
-''' <summary>
-''' Enum of the possible DUT types for the ADcmXLx021
-''' </summary>
-Public Enum DUTType
-    ADcmXL1021 = 0
-    ADcmXL2021
-    ADcmXL3021
-    IMU
-End Enum
+    'Description
+    Public Description As String
+
+    'Last build date
+    Public BuildDateTime As String
+
+    'Last build version
+    Public BuildVersion As String
+
+    'Remote URL for the .git folder in the source
+    Public GitURL As String
+
+    'Link to the last commit when the project was built
+    Public GitCommitURL As String
+
+    'Current branch
+    Public GitBranch As String
+
+    'Current commit sha1 hash
+    Public GitCommitSHA1 As String
+
+    Public Sub New()
+        Name = "Error: Not Set"
+        Description = "Error: Not Set"
+        BuildDateTime = "Error: Not Set"
+        BuildVersion = "Error: Not Set"
+        GitBranch = "Error: Not Set"
+        GitCommitSHA1 = "Error: Not Set"
+        GitCommitURL = "Error: Not Set"
+        GitURL = "Error: Not Set"
+    End Sub
+
+    Public Overrides Function ToString() As String
+        Dim info As String
+        info = "Project Name: " + Name + Environment.NewLine
+        info = info + "Description: " + Description + Environment.NewLine
+        info = info + "Build Version: " + BuildVersion + Environment.NewLine
+        info = info + "Build Date and Time: " + BuildDateTime + Environment.NewLine
+        info = info + "Base Git URL: " + GitURL
+        info = info + "Current Branch: " + GitBranch + Environment.NewLine
+        info = info + "Most Recent Commit Hash: " + GitCommitSHA1 + Environment.NewLine
+        info = info + "Link to the commit: " + GitCommitURL
+        Return info
+    End Function
+
+End Class
 
 #End Region
