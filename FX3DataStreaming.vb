@@ -253,6 +253,9 @@ Partial Class FX3Connection
             End If
         Next
 
+        'Reinitialize the data queue
+        m_StreamData = New ConcurrentQueue(Of UShort())
+
         'Configure the control endpoint
         ConfigureControlEndpoint(USBCommands.ADI_STREAM_GENERIC_DATA, True)
 

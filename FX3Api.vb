@@ -967,6 +967,12 @@ Public Class FX3Connection
     ''' </summary>
     ''' <returns>The frame, as a byte array</returns>
     Public Function GetBuffer() As UShort()
+
+        'Ensure that the queue has been initialized
+        If IsNothing(m_StreamData) Then
+            Return Nothing
+        End If
+
         'Return nothing if there is no data in the queue and the producer thread is idle
         If (m_StreamData.Count = 0) And (Not m_StreamThreadRunning) Then
             Return Nothing
@@ -978,7 +984,7 @@ Public Class FX3Connection
         m_streamTimeoutTimer.Restart()
 
         'Wait for a buffer to be avialable and dequeue
-        While (Not validData) And (m_streamTimeoutTimer.ElapsedMilliseconds < 1000)
+        While (Not validData) And (m_streamTimeoutTimer.ElapsedMilliseconds < m_StreamTimeout * 1000)
             validData = m_StreamData.TryDequeue(buffer)
         End While
         Return buffer
