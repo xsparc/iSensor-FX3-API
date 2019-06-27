@@ -91,6 +91,7 @@
   <ItemGroup>
     <Compile Include="FX3Api.vb" />
     <Compile Include="FX3Burst.vb" />
+    <Compile Include="FX3DataStreaming.vb" />
     <Compile Include="FX3DataStructures.vb" />
     <Compile Include="FX3Exceptions.vb" />
     <Compile Include="FX3IPinFcns.vb" />

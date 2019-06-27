@@ -8,10 +8,10 @@ Imports System.Runtime.InteropServices
 
 ' Review the values of the assembly attributes
 
-<Assembly: AssemblyTitle("FX3Interface")>
+<Assembly: AssemblyTitle("FX3Api")>
 <Assembly: AssemblyDescription("Interfacing Library for the Cypress FX3 Eval Platform")>
 <Assembly: AssemblyCompany("Analog Devices")>
-<Assembly: AssemblyProduct("FX3Interface")>
+<Assembly: AssemblyProduct("FX3Api")>
 <Assembly: AssemblyCopyright("Copyright ©  2019")>
 <Assembly: AssemblyTrademark("")> 
 
