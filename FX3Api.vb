@@ -53,6 +53,8 @@ Public Class FX3Connection
 
     'Private member variables
 
+    Private m_NewBoardHandler As EventWaitHandle
+
     'Data about the active FX3 board
     Private m_ActiveFX3Info As FX3Board
 
@@ -174,6 +176,9 @@ Public Class FX3Connection
 
         'Initialize default values for the interface and look for connected boards
         SetDefaultValues(m_sensorType)
+
+        'Set the event handler
+        m_NewBoardHandler = New EventWaitHandle(False, EventResetMode.AutoReset)
 
         'Start the bootloader programmer thread
         BootloaderQueue = New BlockingCollection(Of CyFX3Device)

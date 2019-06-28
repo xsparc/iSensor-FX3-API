@@ -7,6 +7,7 @@
 Imports CyUSB
 Imports System.IO
 Imports System.Threading
+Imports System.Windows.Threading
 
 Partial Class FX3Connection
 
@@ -20,7 +21,7 @@ Partial Class FX3Connection
     Public Sub Connect(ByVal FX3SerialNumber As String)
 
         Dim tempHandle As CyUSBDevice = Nothing
-        Dim timeoutTimer As New Stopwatch
+        Dim boardProgrammed As Boolean = False
 
         'Exit sub if we're already connected to a device
         If m_FX3Connected = True Then
@@ -54,20 +55,43 @@ Partial Class FX3Connection
             End If
         End If
 
-        RefreshDeviceList()
+        m_ActiveFX3SN = FX3SerialNumber
 
-        'Update the handle for the newly programmed board
+        Dim timeoutOccured As Boolean = False
+        'Create a new windows dispatcher frame
+        Dim originalFrame As DispatcherFrame = New DispatcherFrame()
+        'Create a new thread which waits for the event
+        Dim tempThread As Thread = New Thread(Sub()
+                                                  timeoutOccured = m_NewBoardHandler.WaitOne(TimeSpan.FromMilliseconds(Convert.ToDouble(ProgrammingTimeout)))
+                                                  originalFrame.Continue = False
+                                              End Sub)
+        tempThread.Start()
+        Dispatcher.PushFrame(originalFrame)
+
+        'Throw exception if no board connected within timeout period
+        If Not boardProgrammed Then
+            Throw New FX3ProgrammingException("ERROR: Timeout occured during the FX3 re-enumeration process")
+        End If
+
+        'Check that the board appropriately re-enumerates
+        boardProgrammed = False
+        m_ActiveFX3SN = Nothing
         For Each item As CyUSBDevice In m_usbList
-            'Look for the selected serial number, get its handle, and set it as the active device
-            If String.Equals(item.SerialNumber, FX3SerialNumber) Then
+            'Look for the device we just programmed running the ADI Application firmware
+            If String.Equals(item.FriendlyName, ApplicationName) And String.Equals(item.SerialNumber, FX3SerialNumber) Then
+                boardProgrammed = True
                 m_ActiveFX3 = CType(item, CyFX3Device)
                 m_ActiveFX3SN = FX3SerialNumber
                 'Set flag indicating that the FX3 successfully connected
                 m_FX3Connected = True
-                'exit the loop early
+                'leave loop early
                 Exit For
             End If
         Next
+
+        If Not boardProgrammed Then
+            Throw New FX3ProgrammingException("ERROR: No application firmware found with the correct serial number")
+        End If
 
         'Exit if we can't find the correct board
         If m_ActiveFX3SN Is Nothing Then
@@ -307,6 +331,11 @@ Partial Class FX3Connection
     ''' <param name="usbEvent">The event to handle</param>
     Private Sub CheckConnectEvent(ByVal usbEvent As USBEventArgs)
 
+        'Check if the board which reconnected is the one being programmed
+        If usbEvent.SerialNum = m_ActiveFX3SN Then
+            m_NewBoardHandler.Set()
+        End If
+
         'exit if the board wasn't disconnected
         If IsNothing(m_disconnectedFX3SN) Then
             Exit Sub
@@ -426,24 +455,6 @@ Partial Class FX3Connection
         'If the cypress driver level programming fails return false
         If Not flashStatus = FX3_FWDWNLOAD_ERROR_CODE.SUCCESS Then
             Throw New FX3ProgrammingException("ERROR: Application firmware download failed with code " + flashStatus.ToString())
-        End If
-
-        'Check that the board appropriately re-enumerates
-        timeoutTimer.Start()
-        While ((timeoutTimer.ElapsedMilliseconds < ProgrammingTimeout) And boardProgrammed = False)
-            Thread.Sleep(DeviceListDelay)
-            RefreshDeviceList()
-            For Each item As CyUSBDevice In m_usbList
-                'Look for the device we just programmed running the ADI Application firmware
-                If String.Equals(item.FriendlyName, ApplicationName) And String.Equals(item.SerialNumber, serialNumber) Then
-                    boardProgrammed = True
-                End If
-            Next
-        End While
-        timeoutTimer.Stop()
-
-        If Not boardProgrammed Then
-            Throw New FX3ProgrammingException("ERROR: Timeout occured during the FX3 re-enumeration process")
         End If
 
     End Sub
