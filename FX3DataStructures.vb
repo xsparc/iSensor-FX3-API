@@ -378,6 +378,10 @@ End Class
 
 #Region "FX3APIInfo Class"
 
+''' <summary>
+''' This class provides a collection of information about the FX3 API. All the fields are hardcoded into the DLL at compile time.
+''' To retrieve the FX3ApiInfo set during compile time, use the GetFX3ApiInfo call within FX3 connection.
+''' </summary>
 Public Class FX3ApiInfo
     'Name of the project
     Public Name As String

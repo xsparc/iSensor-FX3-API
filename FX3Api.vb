@@ -757,6 +757,12 @@ Public Class FX3Connection
 
     'The functions in this region are not a part of the IDutInterface, and are specific to the FX3 board
 
+    ''' <summary>
+    ''' This property returns a class containing some useful information about the current FX3 Dll. Some of the
+    ''' information is available as a attribute of the DLL, while others (build date/time and git revision) are
+    ''' generated at compile time using a brebuild batch file script.
+    ''' </summary>
+    ''' <returns></returns>
     Public ReadOnly Property GetFX3ApiInfo As FX3ApiInfo
         Get
             Dim ApiInfo As New FX3ApiInfo
