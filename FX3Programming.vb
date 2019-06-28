@@ -57,15 +57,18 @@ Partial Class FX3Connection
 
         m_ActiveFX3SN = FX3SerialNumber
 
-        Dim timeoutOccured As Boolean = False
         'Create a new windows dispatcher frame
         Dim originalFrame As DispatcherFrame = New DispatcherFrame()
         'Create a new thread which waits for the event
         Dim tempThread As Thread = New Thread(Sub()
-                                                  timeoutOccured = m_NewBoardHandler.WaitOne(TimeSpan.FromMilliseconds(Convert.ToDouble(ProgrammingTimeout)))
+                                                  'Wait until the board connected event is triggered
+                                                  boardProgrammed = m_NewBoardHandler.WaitOne(TimeSpan.FromMilliseconds(Convert.ToDouble(ProgrammingTimeout)))
+                                                  'Stops the execution of the connect function
                                                   originalFrame.Continue = False
                                               End Sub)
+
         tempThread.Start()
+        'Resume execution of the connect function
         Dispatcher.PushFrame(originalFrame)
 
         'Throw exception if no board connected within timeout period
