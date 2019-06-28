@@ -26,10 +26,10 @@ Public Class FX3Connection
     Const CypressBootloaderName As String = "Cypress FX3 USB BootLoader Device"
 
     'Friendly name for the ADI bootloader
-    Const ADIBootloaderName As String = "Cypress FX3 USB BulkloopExample Device"
+    Const ADIBootloaderName As String = "Analog Devices iSensor FX3 Bootloader"
 
     'Friendly name for the ADI Application Firmware
-    Const ApplicationName As String = "Cypress FX3 USB StreamerExample Device"
+    Const ApplicationName As String = "Analog Devices iSensor FX3 Demonstration Platform"
 
     'Timeout (in ms) for programming a board with the application firmware
     Const ProgrammingTimeout As Integer = 10000

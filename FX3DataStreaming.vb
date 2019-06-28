@@ -193,7 +193,7 @@ Partial Class FX3Connection
         Dim buf(3) As Byte
 
         'Configure the control endpoint
-        ConfigureControlEndpoint(USBCommands.ADI_STREAM_REALTIME, False)
+        ConfigureControlEndpoint(USBCommands.ADI_STREAM_GENERIC_DATA, False)
         m_ActiveFX3.ControlEndPt.Value = 0
         m_ActiveFX3.ControlEndPt.Index = 0
 
