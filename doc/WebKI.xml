@@ -39,6 +39,8 @@
   <HelpKINode Title="BootloaderTurnOffLED method" Url="html/d8ed82c3-e676-2b11-9f04-2d4f7f73c8b8.htm" />
   <HelpKINode Title="BootloaderTurnOnLED method" Url="html/5a7529d1-fb20-b1af-c740-b705d3c5af4e.htm" />
   <HelpKINode Title="BufferAvailable property" Url="html/e92c6a5d-4828-2487-991e-571f4dc99e61.htm" />
+  <HelpKINode Title="BuildDateTime field" Url="html/65e52223-6400-4b8d-112b-919f05b7609f.htm" />
+  <HelpKINode Title="BuildVersion field" Url="html/76a752c3-3b99-9d19-4c7e-8f592f608c21.htm" />
   <HelpKINode Title="burstMode property" Url="html/e23aac7a-b692-7a5e-5e70-927cc805648d.htm" />
   <HelpKINode Title="BusyFX3s property" Url="html/775a9e53-dceb-246f-f434-1d487470f894.htm" />
   <HelpKINode Title="ChipSelectControl field" Url="html/c1da2c80-a439-c1a0-a50b-50ad35dc506a.htm" />
@@ -61,6 +63,7 @@
   <HelpKINode Title="CrcResultIndex property" Url="html/599b773f-2fa3-0c37-a0f4-ac4b6ddb0dc8.htm" />
   <HelpKINode Title="DataReadyPin property" Url="html/7bedeb2a-d22c-5e87-621c-9c13a23aae7e.htm" />
   <HelpKINode Title="DataReadyPinFX3GPIO property" Url="html/e3994d9d-fc1d-f923-64f3-9ce6f5276269.htm" />
+  <HelpKINode Title="Description field" Url="html/6f172777-b7f7-0762-ea61-58bbb85a3f9c.htm" />
   <HelpKINode Title="DeviceType enumeration" Url="html/ff5bd0a4-5894-648c-a639-f210d1d45fd6.htm" />
   <HelpKINode Title="DIO1 property" Url="html/bcfc08bd-bff7-ed18-25c4-cbe6cec2b520.htm" />
   <HelpKINode Title="DIO2 property" Url="html/c26d9c4a-1b40-0d99-6147-850f68e42d46.htm" />
@@ -82,6 +85,7 @@
   <HelpKINode Title="FX3Api.DeviceType enumeration" Url="html/ff5bd0a4-5894-648c-a639-f210d1d45fd6.htm" />
   <HelpKINode Title="FX3Api.DUTType enumeration" Url="html/a664dc00-67b0-e1cf-2c27-cb6c9cf0cba5.htm" />
   <HelpKINode Title="FX3Api.EndpointAddresses enumeration" Url="html/3858bc40-e306-6b88-e2ec-956c3ad36fbe.htm" />
+  <HelpKINode Title="FX3Api.FX3ApiInfo class" Url="html/e73f1e96-55a3-c723-22a1-efd6582404a4.htm" />
   <HelpKINode Title="FX3Api.FX3BadStatusException class" Url="html/5dd375f1-50eb-1d7e-73a9-0a185ee41c0a.htm" />
   <HelpKINode Title="FX3Api.FX3Board class" Url="html/5565446a-4c70-4e5a-6591-52d3eca41856.htm" />
   <HelpKINode Title="FX3Api.FX3CommunicationException class" Url="html/dd5057dd-7816-3b3a-211a-096415fb4956.htm" />
@@ -96,6 +100,23 @@
   <HelpKINode Title="FX3Api.SpiChipselectControl enumeration" Url="html/9fbee395-4951-0907-af42-9fe9a28388a9.htm" />
   <HelpKINode Title="FX3Api.SpiLagLeadTime enumeration" Url="html/4f4a1f09-8752-eb16-d55b-5d0dbf56b772.htm" />
   <HelpKINode Title="FX3Api.USBCommands enumeration" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
+  <HelpKINode Title="FX3ApiInfo class">
+    <HelpKINode Title="FX3ApiInfo Class" Url="html/e73f1e96-55a3-c723-22a1-efd6582404a4.htm" />
+    <HelpKINode Title="constructor" Url="html/ff42d6f5-f1e1-2cb4-7819-5416beb08046.htm" />
+    <HelpKINode Title="fields" Url="html/1cfa5050-cf1c-961c-7336-b06b82a5fc28.htm" />
+    <HelpKINode Title="methods" Url="html/af3a3e8d-4cac-8329-ac87-b70ce0fc924d.htm" />
+    <HelpKINode Title="properties" Url="html/c20f9448-9e34-a822-df8f-5f8ea8c283a2.htm" />
+  </HelpKINode>
+  <HelpKINode Title="FX3ApiInfo.BuildDateTime field" Url="html/65e52223-6400-4b8d-112b-919f05b7609f.htm" />
+  <HelpKINode Title="FX3ApiInfo.BuildVersion field" Url="html/76a752c3-3b99-9d19-4c7e-8f592f608c21.htm" />
+  <HelpKINode Title="FX3ApiInfo.Description field" Url="html/6f172777-b7f7-0762-ea61-58bbb85a3f9c.htm" />
+  <HelpKINode Title="FX3ApiInfo.FX3ApiInfo constructor" Url="html/ff42d6f5-f1e1-2cb4-7819-5416beb08046.htm" />
+  <HelpKINode Title="FX3ApiInfo.GitBranch property" Url="html/f26ec043-0ac7-d293-acf9-8bf94e7d5b37.htm" />
+  <HelpKINode Title="FX3ApiInfo.GitCommitSHA1 property" Url="html/bfb4ec2d-4672-2746-cbb6-f5cfa1a4313f.htm" />
+  <HelpKINode Title="FX3ApiInfo.GitCommitURL property" Url="html/a4b8dfbc-0886-4512-c8d7-bb556e6d9651.htm" />
+  <HelpKINode Title="FX3ApiInfo.GitURL property" Url="html/a13eeff7-20a4-473b-68e6-19ef1aae81b0.htm" />
+  <HelpKINode Title="FX3ApiInfo.Name field" Url="html/92cf4648-7b40-1610-bcd7-873ee7aa736f.htm" />
+  <HelpKINode Title="FX3ApiInfo.ToString method" Url="html/8b1cd4ac-7e43-9b82-d924-52e115e2029b.htm" />
   <HelpKINode Title="FX3BadStatusException class">
     <HelpKINode Title="FX3BadStatusException Class" Url="html/5dd375f1-50eb-1d7e-73a9-0a185ee41c0a.htm" />
     <HelpKINode Title="constructor" Url="html/72e5aa12-3eb4-e987-07b0-7695712444ad.htm" />
@@ -178,6 +199,7 @@
   <HelpKINode Title="FX3Connection.GetBuffer method" Url="html/75e7752d-96ab-fd21-d7a0-7cdbb57c32aa.htm" />
   <HelpKINode Title="FX3Connection.GetBufferedStreamDataPacket method" Url="html/446de784-a2ef-34e7-894b-eef207deea21.htm" />
   <HelpKINode Title="FX3Connection.GetFirmwareVersion property" Url="html/a6d7d534-1e91-c21c-5573-8a4bbd2c1b80.htm" />
+  <HelpKINode Title="FX3Connection.GetFX3ApiInfo property" Url="html/a033c331-624a-1791-cf31-ab7e1f365ced.htm" />
   <HelpKINode Title="FX3Connection.GetNumBuffersRead property" Url="html/f840778c-5819-eca2-7cd2-c51ffa8488f8.htm" />
   <HelpKINode Title="FX3Connection.GetStreamDataPacketU16 method" Url="html/c6a66559-824f-4fbf-0fa6-8aa54f486d13.htm" />
   <HelpKINode Title="FX3Connection.GetTargetSerialNumber property" Url="html/cc91d8ae-630b-17e6-37c3-8892995359c5.htm" />
@@ -280,9 +302,14 @@
   <HelpKINode Title="GetBuffer method" Url="html/75e7752d-96ab-fd21-d7a0-7cdbb57c32aa.htm" />
   <HelpKINode Title="GetBufferedStreamDataPacket method" Url="html/446de784-a2ef-34e7-894b-eef207deea21.htm" />
   <HelpKINode Title="GetFirmwareVersion property" Url="html/a6d7d534-1e91-c21c-5573-8a4bbd2c1b80.htm" />
+  <HelpKINode Title="GetFX3ApiInfo property" Url="html/a033c331-624a-1791-cf31-ab7e1f365ced.htm" />
   <HelpKINode Title="GetNumBuffersRead property" Url="html/f840778c-5819-eca2-7cd2-c51ffa8488f8.htm" />
   <HelpKINode Title="GetStreamDataPacketU16 method" Url="html/c6a66559-824f-4fbf-0fa6-8aa54f486d13.htm" />
   <HelpKINode Title="GetTargetSerialNumber property" Url="html/cc91d8ae-630b-17e6-37c3-8892995359c5.htm" />
+  <HelpKINode Title="GitBranch property" Url="html/f26ec043-0ac7-d293-acf9-8bf94e7d5b37.htm" />
+  <HelpKINode Title="GitCommitSHA1 property" Url="html/bfb4ec2d-4672-2746-cbb6-f5cfa1a4313f.htm" />
+  <HelpKINode Title="GitCommitURL property" Url="html/a4b8dfbc-0886-4512-c8d7-bb556e6d9651.htm" />
+  <HelpKINode Title="GitURL property" Url="html/a13eeff7-20a4-473b-68e6-19ef1aae81b0.htm" />
   <HelpKINode Title="IMU enumeration member">
     <HelpKINode Title="DeviceType Enumeration" Url="html/ff5bd0a4-5894-648c-a639-f210d1d45fd6.htm" />
     <HelpKINode Title="DUTType Enumeration" Url="html/a664dc00-67b0-e1cf-2c27-cb6c9cf0cba5.htm" />
@@ -290,6 +317,7 @@
   <HelpKINode Title="Invert property" Url="html/4fcc6d29-cd04-50cc-c5d2-b71d3063e938.htm" />
   <HelpKINode Title="IsLSBFirst field" Url="html/89da7013-d887-6e84-3a09-fbfc42385b72.htm" />
   <HelpKINode Title="IsLSBFirst property" Url="html/f37c14dd-441b-f398-e41c-1f80b6033194.htm" />
+  <HelpKINode Title="Name field" Url="html/92cf4648-7b40-1610-bcd7-873ee7aa736f.htm" />
   <HelpKINode Title="NumFramesPurged property" Url="html/a9c441e2-05c5-4ede-a74f-2b657b158a9d.htm" />
   <HelpKINode Title="PartType property" Url="html/5f8f4499-b516-fb23-7581-b621192fae71.htm" />
   <HelpKINode Title="pinConfig property" Url="html/51879030-37ab-bee4-b093-bd08a857ba4f.htm" />
@@ -311,8 +339,8 @@
   <HelpKINode Title="Reset method" Url="html/f0bff5d7-785a-008d-08eb-9f7aaa2992b5.htm" />
   <HelpKINode Title="ResetAllFX3s method" Url="html/4c19ef3f-5883-86b8-38cc-ddcf1ec14044.htm" />
   <HelpKINode Title="ResetPin property" Url="html/323fa924-24da-f60d-2c4d-b0e63c274ee7.htm" />
-  <HelpKINode Title="SclkFrequency property" Url="html/6c81a4f6-5c6c-36a0-9c51-90450e3a156a.htm" />
   <HelpKINode Title="SCLKFrequency property" Url="html/705196d0-12a4-0bd3-2faa-f275f3ce5943.htm" />
+  <HelpKINode Title="SclkFrequency property" Url="html/6c81a4f6-5c6c-36a0-9c51-90450e3a156a.htm" />
   <HelpKINode Title="SensorType property" Url="html/9e341986-58e8-d7fe-7994-f5dc0f2913f7.htm" />
   <HelpKINode Title="SerialNumber property" Url="html/3f41ce39-2334-2b3b-5841-a7ba619ebe37.htm" />
   <HelpKINode Title="SetPin method" Url="html/7c878496-b143-52d3-657e-ac23ead892db.htm" />
@@ -345,6 +373,7 @@
   <HelpKINode Title="StreamTimeoutSeconds property" Url="html/6888ab0a-2da7-f276-76d9-b5d69e4ff964.htm" />
   <HelpKINode Title="TimerTickScaleFactor field" Url="html/d1bb2cf1-c63e-c161-fd9d-4ba5aead738c.htm" />
   <HelpKINode Title="TimerTickScaleFactor property" Url="html/f4d99a00-12bd-256d-c74b-743c2a3e3cfb.htm" />
+  <HelpKINode Title="ToString method" Url="html/8b1cd4ac-7e43-9b82-d924-52e115e2029b.htm" />
   <HelpKINode Title="TriggerReg property" Url="html/4aa26a12-7224-2dfd-42c2-f305f6845318.htm" />
   <HelpKINode Title="UnexpectedDisconnect event" Url="html/fc16a835-4d83-3e8b-3239-995c79ad8e5a.htm" />
   <HelpKINode Title="Uptime property" Url="html/8bac1b60-641b-4bf7-1deb-eb9a14b14543.htm" />

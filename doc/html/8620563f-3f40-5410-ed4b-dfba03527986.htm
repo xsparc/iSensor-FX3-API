@@ -102,6 +102,10 @@
  Checks the boot status of the FX3 board by sending a vendor request
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="a6d7d534-1e91-c21c-5573-8a4bbd2c1b80.htm">GetFirmwareVersion</a></td><td><div class="summary">
  Property which reads the firmware version from the FX3
+ </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="a033c331-624a-1791-cf31-ab7e1f365ced.htm">GetFX3ApiInfo</a></td><td><div class="summary">
+ This property returns a class containing some useful information about the current FX3 Dll. Some of the
+ information is available as a attribute of the DLL, while others (build date/time and git revision) are
+ generated at compile time using a brebuild batch file script.
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="f840778c-5819-eca2-7cd2-c51ffa8488f8.htm">GetNumBuffersRead</a></td><td><div class="summary">
  Readonly property to get the number of buffers read in from the DUT in buffered streaming mode
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="cc91d8ae-630b-17e6-37c3-8892995359c5.htm">GetTargetSerialNumber</a></td><td><div class="summary">
@@ -259,7 +263,8 @@
  </div></td></tr></table><a href="#PageHeader">Top</a></div><div class="collapsibleAreaRegion"><span class="collapsibleRegionTitle" onclick="SectionExpandCollapse('ID6RB')" onkeypress="SectionExpandCollapse_CheckKey('ID6RB', event)" tabindex="0"><img id="ID6RBToggle" class="collapseToggle" src="../icons/SectionExpanded.png" />Events</span></div><div id="ID6RBSection" class="collapsibleSection"><table class="members" id="eventList"><tr><th class="iconColumn">
 								 
 							</th><th>Name</th><th>Description</th></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubevent.gif" alt="Public event" title="Public event" /></td><td><a href="1eab635c-251d-ae8d-eee9-bfbfb2619199.htm">DisconnectFinished</a></td><td><div class="summary">
- This event is raised when the disconnect event for a board has finished, and it is reprogrammed with the ADI bootloader
+ This event is raised when the disconnect event for a board has finished, and it is reprogrammed with the ADI bootloader. This event only is triggered for boards
+ which were explicitly disconnected (boards which were physically reset will not trigger this event).
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubevent.gif" alt="Public event" title="Public event" /></td><td><a href="fc16a835-4d83-3e8b-3239-995c79ad8e5a.htm">UnexpectedDisconnect</a></td><td><div class="summary">
  This event is raised when the active board is disconnected unexpectedly (ie unplugged)
  </div></td></tr></table><a href="#PageHeader">Top</a></div><div class="collapsibleAreaRegion" id="seeAlsoSection"><span class="collapsibleRegionTitle" onclick="SectionExpandCollapse('ID7RB')" onkeypress="SectionExpandCollapse_CheckKey('ID7RB', event)" tabindex="0"><img id="ID7RBToggle" class="collapseToggle" src="../icons/SectionExpanded.png" />See Also</span></div><div id="ID7RBSection" class="collapsibleSection"><h4 class="subHeading">Reference</h4><div class="seeAlsoStyle"><a href="338939de-c7bb-3899-fea8-9b1a456a0a9c.htm">FX3Api Namespace</a></div></div></div></div><div id="pageFooter" class="pageFooter"> </div></body></html>
