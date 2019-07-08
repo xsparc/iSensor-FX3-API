@@ -28,6 +28,9 @@ Partial Class FX3Connection
             Exit Sub
         End If
 
+        'Ensure that the connect flag isn't erroniously set
+        m_NewBoardHandler.Reset()
+
         'Find the device handle using the selected serial number
         For Each item As CyFX3Device In m_usbList
             'Look for the selected serial number and get its handle
@@ -337,6 +340,13 @@ Partial Class FX3Connection
         'Check if the board which reconnected is the one being programmed
         If usbEvent.SerialNum = m_ActiveFX3SN Then
             m_NewBoardHandler.Set()
+            Exit Sub
+        End If
+
+        'Handle the case where the event args aren't properly generated (lower level driver issue)
+        If usbEvent.SerialNum = "" Then
+            m_NewBoardHandler.Set()
+            Exit Sub
         End If
 
         'exit if the board wasn't disconnected
@@ -724,6 +734,7 @@ Partial Class FX3Connection
         'Parse result
         Try
             firmwareID = System.Text.Encoding.UTF8.GetString(buf)
+            firmwareID = firmwareID.Substring(0, Math.Max(0, firmwareID.IndexOf(vbNullChar)))
         Catch ex As Exception
             'Throw the exception up
             Throw New FX3GeneralException("ERROR: Parsing firmware ID failed", ex)
