@@ -1430,9 +1430,6 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 		}
 		AdiWaitForTimerTicks(stallTime);
 
-
-		CyU3PThreadSleep(10000);
-
 		//Configure SYNC/RTS as an output and set high
 		CyU3PGpioSimpleConfig_t gpioConfig;
 		gpioConfig.outValue = CyTrue;
@@ -1921,7 +1918,7 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 	CyU3PDmaChannelConfig_t dmaConfig;
 	CyU3PMemSet ((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
 	dmaConfig.size 				= usbBufferSize;
-	dmaConfig.count 			= 4;
+	dmaConfig.count 			= 16;
 	dmaConfig.prodSckId 		= CY_U3P_CPU_SOCKET_PROD;
 	dmaConfig.consSckId 		= CY_U3P_UIB_SOCKET_CONS_1;
 	dmaConfig.dmaMode 			= CY_U3P_DMA_MODE_BYTE;
