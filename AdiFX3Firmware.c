@@ -1047,6 +1047,8 @@ CyU3PReturnStatus_t AdiSetPin(uint16_t pinNumber, CyBool_t polarity)
  */
 CyU3PReturnStatus_t AdiWaitForTimerTicks(uint32_t numTicks)
 {
+	/* TODO: Fix timer scheme*/
+	numTicks = numTicks *10;
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint32_t startTime, endTime, currentTime, initialRegValue;
 	CyBool_t timerRollover = CyFalse;
@@ -1290,6 +1292,9 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	//Get pin start setting
 	pinStartEnableDisable = (CyBool_t) USBBuffer[4];
 
+	//Flush streaming end point
+	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
+
 	/* Configure RTS channel DMA */
     CyU3PDmaChannelConfig_t dmaConfig;
     dmaConfig.size 				= usbBufferSize;
@@ -1314,9 +1319,6 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 
 	//Clear the DMA buffers
 	CyU3PDmaChannelReset(&StreamingChannel);
-
-	//Flush streaming end point
-	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
 
 	if(pinExitEnableDisable)
 	{
@@ -1428,6 +1430,9 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 		}
 		AdiWaitForTimerTicks(stallTime);
 
+
+		CyU3PThreadSleep(10000);
+
 		//Configure SYNC/RTS as an output and set high
 		CyU3PGpioSimpleConfig_t gpioConfig;
 		gpioConfig.outValue = CyTrue;
@@ -1477,9 +1482,9 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	AdiSpiResetFifo(CyTrue, CyTrue);
 
 	//Set the SPI config for streaming mode
-	spiConfig.ssnCtrl = CY_U3P_SPI_SSN_CTRL_HW_END_OF_XFER;
-	spiConfig.wordLen = 8;
-	CyU3PSpiSetConfig (&spiConfig, NULL);
+	//spiConfig.ssnCtrl = CY_U3P_SPI_SSN_CTRL_HW_END_OF_XFER;
+	//spiConfig.wordLen = 8;
+	//CyU3PSpiSetConfig (&spiConfig, NULL);
 
 	//Set infinite DMA transfer on streaming channel
 	CyU3PDmaChannelSetXfer(&StreamingChannel, 0);
@@ -1916,7 +1921,7 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 	CyU3PDmaChannelConfig_t dmaConfig;
 	CyU3PMemSet ((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
 	dmaConfig.size 				= usbBufferSize;
-	dmaConfig.count 			= 16;
+	dmaConfig.count 			= 4;
 	dmaConfig.prodSckId 		= CY_U3P_CPU_SOCKET_PROD;
 	dmaConfig.consSckId 		= CY_U3P_UIB_SOCKET_CONS_1;
 	dmaConfig.dmaMode 			= CY_U3P_DMA_MODE_BYTE;
@@ -2016,16 +2021,13 @@ CyU3PReturnStatus_t AdiGenericStreamFinished()
  * This function sets a flag to notify the streaming thread that the user requested to cancel streaming.
  * This function can be used to stop any stream operation.
  *
- * Returns: void
+ * Returns: The function status code
  *
  */
 CyU3PReturnStatus_t AdiStopAnyDataStream()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-	if (killEarly == CyFalse)
-	{
-		killEarly = CyTrue;
-	}
+	killEarly = CyTrue;
 	return status;
 }
 
@@ -2753,9 +2755,11 @@ void AdiDataStream_Entry(uint32_t input)
 		//Wait indefinitely for any flag to be set
 		if (CyU3PEventGet (&eventHandler, eventMask, CYU3P_EVENT_OR_CLEAR, &eventFlag, CYU3P_WAIT_FOREVER) == CY_U3P_SUCCESS)
 		{
+			//CyU3PDebugPrint (4, "Event Entry \r\n");
 			/* Generic register stream case */
 			if (eventFlag & ADI_GENERIC_STREAM_ENABLE)
 			{
+				//CyU3PDebugPrint (4, "Generic Stream Entry \r\n");
 				if (firstRun)
 				{
 					status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &genBuf_p, CYU3P_WAIT_FOREVER);
@@ -2789,13 +2793,21 @@ void AdiDataStream_Entry(uint32_t input)
 				//Read the registers in the register list into regList
 				for(regIndex = 0; regIndex < (bytesPerBuffer - 1); regIndex += 2)
 				{
+					//CyU3PDebugPrint (4, "Starting Register Number: %d\r\n", regIndex);
+
 					//Wait for the complex GPIO timer to reach the stall time
 					while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
+
+					//CyU3PDebugPrint (4, "Finished Timer While \r\n");
 
 					//Prepare, transmit, and receive SPI words
 					tempData[0] = regList[regIndex + 2];
 					tempData[1] = regList[regIndex + 3];
-					CyU3PSpiTransferWords(tempData, 2, tempPtr, 2);
+					status = CyU3PSpiTransferWords(tempData, 2, tempPtr, 2);
+					if (status != CY_U3P_SUCCESS)
+					{
+						CyU3PDebugPrint (4, "CyU3pSpiTransferWords failed, Error code = %d\r\n", status);
+					}
 
 					//Set the pin timer to 0
 					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
@@ -2809,6 +2821,7 @@ void AdiDataStream_Entry(uint32_t input)
 					//Check if a transmission is needed
 					if (byteCounter >= (bytesPerUsbPacket - 1))
 					{
+						//CyU3PDebugPrint (4, "Started Channel Commmit \r\n");
 						status = CyU3PDmaChannelCommitBuffer (&StreamingChannel, usbBufferSize, 0);
 						if (status != CY_U3P_SUCCESS)
 						{
@@ -2822,7 +2835,10 @@ void AdiDataStream_Entry(uint32_t input)
 						tempPtr = genBuf_p.buffer;
 						byteCounter = 0;
 					}
+
+					//CyU3PDebugPrint (4, "Finished Register Number: %d\r\n", regIndex);
 				}
+				//CyU3PDebugPrint (4, "Finished buffer read \r\n");
 
 				//Check to see if we've captured enough buffers or if we were asked to stop data capture early
 				if ((numBuffersRead >= (numBuffers - 1)) || killEarly)
@@ -2837,7 +2853,6 @@ void AdiDataStream_Entry(uint32_t input)
 						{
 							CyU3PDebugPrint (4, "CyU3PDmaChannelCommitBuffer in loop failed, Error code = %d\r\n", status);
 						}
-
 						byteCounter = 0;
 					}
 
@@ -2855,6 +2870,7 @@ void AdiDataStream_Entry(uint32_t input)
 					//Reset flag
 					CyU3PEventSet (&eventHandler, ADI_GENERIC_STREAM_ENABLE, CYU3P_EVENT_OR);
 				}
+				//CyU3PDebugPrint (4, "Generic Stream Exit \r\n");
 			}
 
 			/* Real-time (ADcmXL) stream case */
@@ -3012,6 +3028,7 @@ void AdiDataStream_Entry(uint32_t input)
 					CyU3PEventSet (&eventHandler, ADI_BURST_STREAM_ENABLE, CYU3P_EVENT_OR);
 				}
 			}
+			//CyU3PDebugPrint (4, "Event Exit \r\n");
 		}
         /* Allow other ready threads to run. */
         CyU3PThreadRelinquish ();

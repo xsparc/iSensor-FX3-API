@@ -31,8 +31,8 @@ unsigned char gbDevDesc[] =
     0xFF,                           /* Device Sub-class */
     0xFF,                           /* Device protocol */
     0x40,                           /* Maxpacket size for EP0 : 64 bytes */
-    0xB4,0x04,                      /* Vendor ID */
-    0xF0,0x00,                      /* Product ID */
+    0x56,0x04,                      /* Vendor ID */
+    0x02,0xEF,                      /* Product ID */
     0x00,0x00,                      /* Device release number */
     0x01,                           /* Manufacture string index */
     0x02,                           /* Product string index */
@@ -179,8 +179,8 @@ unsigned char gbSsDevDesc[] =
     0xFF,                           /* Device Sub-class */
     0xFF,                           /* Device protocol */
     0x09,                           /* Maxpacket size for EP0 : 2^9 */
-    0xB4,0x04,                      /* Vendor ID */
-    0xF0,0x00,                      /* Product ID */
+    0x56,0x04,                      /* Vendor ID */
+    0x02,0xEF,                      /* Product ID */
     0x00,0x00,                      /* Device release number */
     0x01,                           /* Manufacture string index */
     0x02,                           /* Product string index */
