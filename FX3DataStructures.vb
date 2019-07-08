@@ -28,6 +28,14 @@ Public Class FX3Board
     'Public interfaces
 
     ''' <summary>
+    ''' Override of the ToString function
+    ''' </summary>
+    ''' <returns></returns>
+    Public Overrides Function ToString() As String
+        Return "Firmware Version: " + FirmwareVersion + Environment.NewLine + "Serial Number: " + SerialNumber + Environment.NewLine + "Uptime: " + Uptime.ToString() + "ms"
+    End Function
+
+    ''' <summary>
     ''' Readonly property to get the current board uptime
     ''' </summary>
     ''' <returns>The board uptime, in ms, as a long</returns>
