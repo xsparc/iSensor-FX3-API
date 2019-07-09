@@ -53,7 +53,13 @@ Public Class FX3Connection
 
     'Private member variables
 
-    Private m_NewBoardHandler As EventWaitHandle
+    'Event wait handle for when a board is reconnected running the application firmware.
+    Private m_AppBoardHandle As EventWaitHandle
+
+    'Event wait handle for when a board is reconnected running the ADI bootloader.
+    Private m_BootloaderBoardHandle As EventWaitHandle
+
+    Private m_BoardConnecting As Boolean
 
     'Data about the active FX3 board
     Private m_ActiveFX3Info As FX3Board
@@ -136,6 +142,9 @@ Public Class FX3Connection
     'String to track the serial number of the last board which was disconnected
     Private m_disconnectedFX3SN As String
 
+    'Track the number of boards connected after a disconnect event
+    Private m_disconnectEvents As Integer
+
     'Events
 
     ''' <summary>
@@ -177,8 +186,9 @@ Public Class FX3Connection
         'Initialize default values for the interface and look for connected boards
         SetDefaultValues(m_sensorType)
 
-        'Set the event handler
-        m_NewBoardHandler = New EventWaitHandle(False, EventResetMode.AutoReset)
+        'Set the event handlers
+        m_AppBoardHandle = New EventWaitHandle(False, EventResetMode.AutoReset)
+        m_BootloaderBoardHandle = New EventWaitHandle(False, EventResetMode.AutoReset)
 
         'Start the bootloader programmer thread
         BootloaderQueue = New BlockingCollection(Of CyFX3Device)
@@ -222,6 +232,9 @@ Public Class FX3Connection
 
         'Set timer
         m_streamTimeoutTimer = New Stopwatch()
+
+        'Set the board connecting flag
+        m_BoardConnecting = False
 
     End Sub
 

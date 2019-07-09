@@ -28,9 +28,6 @@ Partial Class FX3Connection
             Exit Sub
         End If
 
-        'Ensure that the connect flag isn't erroniously set
-        m_NewBoardHandler.Reset()
-
         'Find the device handle using the selected serial number
         For Each item As CyFX3Device In m_usbList
             'Look for the selected serial number and get its handle
@@ -54,6 +51,7 @@ Partial Class FX3Connection
                 'Set flag indicating that the FX3 successfully connected
                 m_FX3Connected = True
             Else
+                m_BoardConnecting = True
                 ProgramAppFirmware(tempHandle)
             End If
         End If
@@ -65,11 +63,13 @@ Partial Class FX3Connection
         'Create a new thread which waits for the event
         Dim tempThread As Thread = New Thread(Sub()
                                                   'Wait until the board connected event is triggered
-                                                  boardProgrammed = m_NewBoardHandler.WaitOne(TimeSpan.FromMilliseconds(Convert.ToDouble(ProgrammingTimeout)))
+                                                  boardProgrammed = m_AppBoardHandle.WaitOne(TimeSpan.FromMilliseconds(Convert.ToDouble(ProgrammingTimeout)))
                                                   'Stops the execution of the connect function
                                                   originalFrame.Continue = False
                                               End Sub)
-
+        'Ensure that the connect flag isn't erroniously set already
+        m_AppBoardHandle.Reset()
+        'Start the thread
         tempThread.Start()
         'Resume execution of the connect function
         Dispatcher.PushFrame(originalFrame)
@@ -82,6 +82,7 @@ Partial Class FX3Connection
         'Check that the board appropriately re-enumerates
         boardProgrammed = False
         m_ActiveFX3SN = Nothing
+        RefreshDeviceList()
         For Each item As CyUSBDevice In m_usbList
             'Look for the device we just programmed running the ADI Application firmware
             If String.Equals(item.FriendlyName, ApplicationName) And String.Equals(item.SerialNumber, FX3SerialNumber) Then
@@ -136,6 +137,9 @@ Partial Class FX3Connection
         m_ActiveFX3Info = New FX3Board(FX3SerialNumber, DateTime.Now)
         m_ActiveFX3Info.SetFirmwareVersion(GetFirmwareID())
 
+        'Reset the board connecting flag
+        m_BoardConnecting = False
+
     End Sub
 
     ''' <summary>
@@ -154,6 +158,7 @@ Partial Class FX3Connection
 
         'Save the current active board serial number
         m_disconnectedFX3SN = m_ActiveFX3SN
+        m_disconnectEvents = 0
 
         'Reset the FX3 currently in use
         ResetFX3Firmware(m_ActiveFX3)
@@ -161,6 +166,61 @@ Partial Class FX3Connection
         SetDefaultValues(m_sensorType)
 
     End Sub
+
+    ''' <summary>
+    ''' This function is used to wait for an FX3 to be programmed with the ADI bootloader. In general, the programming model would go as follows,
+    ''' to connect and program the first board attached:
+    ''' 
+    ''' Dim myFX3 as FX3Connection = New FX3Connection(firmwarepath, bootloaderpath, devicetype)
+    ''' If Not myFX3.WaitForBoard(10) Then
+    '''     Msgbox("No boards found")
+    '''     Exit Sub
+    ''' End If
+    ''' myFX3.Connect(myFX3.AvailableFX3s(0))
+    ''' </summary>
+    ''' <param name="Timeout">The timeout to wait for a board to connect, in seconds</param>
+    ''' <returns>If there is a board available (false indicates timeout occured)</returns>
+    Public Function WaitForBoard(ByVal Timeout As Integer) As Boolean
+        Dim boardattached As Boolean = False
+
+        'Check the timeout
+        If Timeout < 0 Then
+            Throw New FX3ConfigurationException("ERROR: Invalid timeout of " + Timeout.ToString() + " seconds when waiting for bootloader")
+        End If
+
+        'Perform first list parse
+        If Not IsNothing(m_usbList) Then
+            For Each board As CyFX3Device In m_usbList
+                If board.FriendlyName = ADIBootloaderName Then
+                    Return True
+                End If
+            Next
+        Else
+            RefreshDeviceList()
+        End If
+
+        'Use event wait handle to wait for a board to be connected running the bootloader firmware
+
+        'Ensure that the connect flag isn't erroniously set
+        m_BootloaderBoardHandle.Reset()
+
+        'Create a new windows dispatcher frame
+        Dim originalFrame As DispatcherFrame = New DispatcherFrame()
+        'Create a new thread which waits for the event
+        Dim tempThread As Thread = New Thread(Sub()
+                                                  'Wait until the board connected event is triggered
+                                                  boardattached = m_BootloaderBoardHandle.WaitOne(TimeSpan.FromSeconds(Convert.ToDouble(Timeout)))
+                                                  'Stops the execution of the connect function
+                                                  originalFrame.Continue = False
+                                              End Sub)
+        'start the thread
+        tempThread.Start()
+        'Resume execution of the original
+        Dispatcher.PushFrame(originalFrame)
+
+        Return boardattached
+
+    End Function
 
     ''' <summary>
     ''' Property which returns the active FX3 board. Returns nothing if there is not a board connected.
@@ -338,15 +398,20 @@ Partial Class FX3Connection
     Private Sub CheckConnectEvent(ByVal usbEvent As USBEventArgs)
 
         'Check if the board which reconnected is the one being programmed
-        If usbEvent.SerialNum = m_ActiveFX3SN Then
-            m_NewBoardHandler.Set()
+        If usbEvent.SerialNum = m_ActiveFX3SN And Not IsNothing(m_ActiveFX3SN) Then
+            m_AppBoardHandle.Set()
             Exit Sub
         End If
 
         'Handle the case where the event args aren't properly generated (lower level driver issue)
-        If usbEvent.SerialNum = "" Then
-            m_NewBoardHandler.Set()
+        If usbEvent.SerialNum = "" And m_BoardConnecting Then
+            m_AppBoardHandle.Set()
             Exit Sub
+        End If
+
+        'Generate bootloader connected event flag
+        If usbEvent.FriendlyName = ADIBootloaderName Then
+            m_BootloaderBoardHandle.Set()
         End If
 
         'exit if the board wasn't disconnected
@@ -380,6 +445,25 @@ Partial Class FX3Connection
                 Exit Sub
             End If
         Next
+
+        'There is an issue with the ADI FX3 driver which causes the events to be raised without any data when there 
+        'are multiple boards connected to the system. This logic is designed to mitagate that effect.
+        If usbEvent.FriendlyName = "" Or usbEvent.SerialNum = "" And Not IsNothing(m_disconnectedFX3SN) Then
+            'The second event is the ADI bootloader being connected (Cypress bootloader -> ADI bootloader)
+            If m_disconnectEvents = 1 Then
+                'Raise event
+                RaiseEvent DisconnectFinished(m_disconnectedFX3SN, m_disconnectTimer.ElapsedMilliseconds())
+                'Reset the timer
+                m_disconnectTimer.Reset()
+                'Reset the disconnected serial number
+                m_disconnectedFX3SN = Nothing
+                'Set the event flag
+                m_BootloaderBoardHandle.Set()
+                'return
+                Exit Sub
+            End If
+            m_disconnectEvents = m_disconnectEvents + 1
+        End If
 
     End Sub
 
