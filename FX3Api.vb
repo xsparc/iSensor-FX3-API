@@ -986,7 +986,7 @@ Public Class FX3Connection
                 Return False
             End If
             'return if there is a value which can be read from the queue
-            Return (m_StreamData.Count > 0)
+            Return ((m_StreamData.Count > 0) Or m_StreamThreadRunning)
         End Get
     End Property
 
