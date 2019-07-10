@@ -739,11 +739,6 @@ Partial Class FX3Connection
         'Point the API to the target FX3
         FX3ControlEndPt = m_ActiveFX3.ControlEndPt
 
-        'Block control endpoint transfers while streaming (except cancel)
-        If m_StreamThreadRunning And Not (FX3ControlEndPt.ReqCode = USBCommands.ADI_STREAM_REALTIME) Then
-            Return False
-        End If
-
         'Perform transfer
         startTime.Start()
         validTransfer = FX3ControlEndPt.XferData(Buf, NumBytes)
