@@ -134,6 +134,7 @@
   <HelpKINode Title="FX3Board.FirmwareVersion property" Url="html/225dcc56-f369-8603-2410-5ebddd55ed57.htm" />
   <HelpKINode Title="FX3Board.FX3Board constructor" Url="html/769997b7-1a4f-08d1-64ec-3ebd734eeb85.htm" />
   <HelpKINode Title="FX3Board.SerialNumber property" Url="html/3f41ce39-2334-2b3b-5841-a7ba619ebe37.htm" />
+  <HelpKINode Title="FX3Board.ToString method" Url="html/b72f9634-88f6-a97f-7e7b-b03f2837d903.htm" />
   <HelpKINode Title="FX3Board.Uptime property" Url="html/8bac1b60-641b-4bf7-1deb-eb9a14b14543.htm" />
   <HelpKINode Title="FX3BoardAttached property" Url="html/7b540c3d-26b6-4eab-f435-56fbbcbfb586.htm" />
   <HelpKINode Title="FX3CodeRunningOnTarget method" Url="html/2ffc4023-b4c8-1c27-15c2-f34ecdcec13e.htm" />
@@ -242,6 +243,7 @@
   <HelpKINode Title="FX3Connection.TriggerReg property" Url="html/4aa26a12-7224-2dfd-42c2-f305f6845318.htm" />
   <HelpKINode Title="FX3Connection.UnexpectedDisconnect event" Url="html/fc16a835-4d83-3e8b-3239-995c79ad8e5a.htm" />
   <HelpKINode Title="FX3Connection.UnexpectedDisconnectEventHandler delegate" Url="html/534755e7-b798-0a28-046c-c2eb459477b7.htm" />
+  <HelpKINode Title="FX3Connection.WaitForBoard method" Url="html/4e574267-34de-9f80-0cc0-dddf0a93d40d.htm" />
   <HelpKINode Title="FX3Connection.WordCount property" Url="html/af129f70-ec8e-ba83-dba9-84003867000c.htm" />
   <HelpKINode Title="FX3Connection.WordLength property" Url="html/fd51c3f2-6254-8d71-64a0-8e63d51b3cb5.htm" />
   <HelpKINode Title="FX3Connection.WriteRegByte method" Url="html/7470aa78-1dd1-b34f-92bb-eb104bcc74b4.htm" />
@@ -339,8 +341,8 @@
   <HelpKINode Title="Reset method" Url="html/f0bff5d7-785a-008d-08eb-9f7aaa2992b5.htm" />
   <HelpKINode Title="ResetAllFX3s method" Url="html/4c19ef3f-5883-86b8-38cc-ddcf1ec14044.htm" />
   <HelpKINode Title="ResetPin property" Url="html/323fa924-24da-f60d-2c4d-b0e63c274ee7.htm" />
-  <HelpKINode Title="SCLKFrequency property" Url="html/705196d0-12a4-0bd3-2faa-f275f3ce5943.htm" />
   <HelpKINode Title="SclkFrequency property" Url="html/6c81a4f6-5c6c-36a0-9c51-90450e3a156a.htm" />
+  <HelpKINode Title="SCLKFrequency property" Url="html/705196d0-12a4-0bd3-2faa-f275f3ce5943.htm" />
   <HelpKINode Title="SensorType property" Url="html/9e341986-58e8-d7fe-7994-f5dc0f2913f7.htm" />
   <HelpKINode Title="SerialNumber property" Url="html/3f41ce39-2334-2b3b-5841-a7ba619ebe37.htm" />
   <HelpKINode Title="SetPin method" Url="html/7c878496-b143-52d3-657e-ac23ead892db.htm" />
@@ -373,11 +375,15 @@
   <HelpKINode Title="StreamTimeoutSeconds property" Url="html/6888ab0a-2da7-f276-76d9-b5d69e4ff964.htm" />
   <HelpKINode Title="TimerTickScaleFactor field" Url="html/d1bb2cf1-c63e-c161-fd9d-4ba5aead738c.htm" />
   <HelpKINode Title="TimerTickScaleFactor property" Url="html/f4d99a00-12bd-256d-c74b-743c2a3e3cfb.htm" />
-  <HelpKINode Title="ToString method" Url="html/8b1cd4ac-7e43-9b82-d924-52e115e2029b.htm" />
+  <HelpKINode Title="ToString method">
+    <HelpKINode Title="FX3ApiInfo.ToString Method " Url="html/8b1cd4ac-7e43-9b82-d924-52e115e2029b.htm" />
+    <HelpKINode Title="FX3Board.ToString Method " Url="html/b72f9634-88f6-a97f-7e7b-b03f2837d903.htm" />
+  </HelpKINode>
   <HelpKINode Title="TriggerReg property" Url="html/4aa26a12-7224-2dfd-42c2-f305f6845318.htm" />
   <HelpKINode Title="UnexpectedDisconnect event" Url="html/fc16a835-4d83-3e8b-3239-995c79ad8e5a.htm" />
   <HelpKINode Title="Uptime property" Url="html/8bac1b60-641b-4bf7-1deb-eb9a14b14543.htm" />
   <HelpKINode Title="USBCommands enumeration" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
+  <HelpKINode Title="WaitForBoard method" Url="html/4e574267-34de-9f80-0cc0-dddf0a93d40d.htm" />
   <HelpKINode Title="WordCount property" Url="html/af129f70-ec8e-ba83-dba9-84003867000c.htm" />
   <HelpKINode Title="WordLength field" Url="html/f7014575-856c-3a0a-e99d-0193b3739ed3.htm" />
   <HelpKINode Title="WordLength property" Url="html/fd51c3f2-6254-8d71-64a0-8e63d51b3cb5.htm" />

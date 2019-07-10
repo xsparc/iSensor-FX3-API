@@ -250,7 +250,17 @@
  This function stops real time streaming on the ADcmXLx021 (interface and FX3)
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubmethod.gif" alt="Public method" title="Public method" /></td><td><a href="47cb4928-2637-9c27-ed27-d149550fe939.htm">StopStream</a></td><td><div class="summary">
  Stops the currently running data stream, if any.
- </div></td></tr><tr data="public;inherited;notNetfw;"><td><img src="../icons/pubmethod.gif" alt="Public method" title="Public method" /></td><td><a href="http://msdn2.microsoft.com/en-us/library/7bxwbwt2" target="_blank">ToString</a></td><td><div class="summary">Returns a string that represents the current object.</div> (Inherited from <a href="http://msdn2.microsoft.com/en-us/library/e5kfa45b" target="_blank">Object</a>.)</td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubmethod.gif" alt="Public method" title="Public method" /></td><td><a href="90de83a6-7190-4e44-dea8-e60390a4cf91.htm">WriteRegByte(AddrDataPair)</a></td><td><div class="summary">
+ </div></td></tr><tr data="public;inherited;notNetfw;"><td><img src="../icons/pubmethod.gif" alt="Public method" title="Public method" /></td><td><a href="http://msdn2.microsoft.com/en-us/library/7bxwbwt2" target="_blank">ToString</a></td><td><div class="summary">Returns a string that represents the current object.</div> (Inherited from <a href="http://msdn2.microsoft.com/en-us/library/e5kfa45b" target="_blank">Object</a>.)</td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubmethod.gif" alt="Public method" title="Public method" /></td><td><a href="4e574267-34de-9f80-0cc0-dddf0a93d40d.htm">WaitForBoard</a></td><td><div class="summary">
+ This function is used to wait for an FX3 to be programmed with the ADI bootloader. In general, the programming model would go as follows,
+ to connect and program the first board attached:
+ 
+ Dim myFX3 as FX3Connection = New FX3Connection(firmwarepath, bootloaderpath, devicetype)
+ If Not myFX3.WaitForBoard(10) Then
+     Msgbox("No boards found")
+     Exit Sub
+ End If
+ myFX3.Connect(myFX3.AvailableFX3s(0))
+ </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubmethod.gif" alt="Public method" title="Public method" /></td><td><a href="90de83a6-7190-4e44-dea8-e60390a4cf91.htm">WriteRegByte(AddrDataPair)</a></td><td><div class="summary">
  This function writes a single register byte, given as an Address / Data pair
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubmethod.gif" alt="Public method" title="Public method" /></td><td><a href="8580e64a-9072-7d5e-ea51-213fd75408ee.htm">WriteRegByte(IEnumerable<span id="LST3A95868C_22"></span><script type="text/javascript">AddLanguageSpecificTextSet("LST3A95868C_22?cs=&lt;|vb=(Of |cpp=&lt;|fs=&lt;'|nu=(");</script>AddrDataPair<span id="LST3A95868C_23"></span><script type="text/javascript">AddLanguageSpecificTextSet("LST3A95868C_23?cs=&gt;|vb=)|cpp=&gt;|fs=&gt;|nu=)");</script>)</a></td><td><div class="summary">
  This function writes an enumerable list of data to the DUT as AddrDataPairs
