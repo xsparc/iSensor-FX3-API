@@ -1944,10 +1944,14 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 		return status;
 	}
 
+	//Enable timer interrupts
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= (~CY_U3P_LPP_GPIO_INTRMODE_MASK);
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_GPIO_INTR_TIMER_THRES << CY_U3P_LPP_GPIO_INTRMODE_POS;
+
 	//Set the timer pin threshold to correspond with the stall time
-	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold = (stallTime * 10) - 90;
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold = (stallTime * 10) - ADI_GENERIC_STALL_OFFSET;
 	//Set the timer pin period (useful for error case, timer register is manually reset)
-	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = (stallTime * 10) - 89;
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = (stallTime * 10) - ADI_GENERIC_STALL_OFFSET + 1;
 
 	//Enable generic data capture thread
 	status = CyU3PEventSet (&eventHandler, ADI_GENERIC_STREAM_ENABLE, CYU3P_EVENT_OR);
@@ -2830,15 +2834,6 @@ void AdiDataStream_Entry(uint32_t input)
 					while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
 
 					//Prepare, transmit, and receive SPI words
-					//tempData[0] = regList[regIndex + 2];
-					//tempData[1] = regList[regIndex + 3];
-					//status = CyU3PSpiTransferWords(tempData, 2, tempPtr, 2);
-					/*if (status != CY_U3P_SUCCESS)
-					{
-						CyU3PDebugPrint (4, "CyU3pSpiTransferWords failed, Error code = %d\r\n", status);
-					}*/
-
-					//Prepare, transmit, and receive SPI words
 					//TODO: Adjust SPI transactions to work with variable word lengths
 					tempData[0] = regList[regIndex + 2];
 					tempData[1] = regList[regIndex + 3];
@@ -2920,6 +2915,13 @@ void AdiDataStream_Entry(uint32_t input)
 
 					//Clear GPIO interrupts
 					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
+					//Clear timer interrupt
+					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
+					//update the threshold and period
+					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold = 0xFFFFFFFF;
+					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = 0xFFFFFFFF;
+					//Disable interrupts
+					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= ~(CY_U3P_LPP_GPIO_INTRMODE_MASK);
 					//Don't reset flag
 					CyU3PEventSet(&eventHandler, ADI_GENERIC_STREAMING_DONE, CYU3P_EVENT_OR);
 				}
@@ -3356,7 +3358,7 @@ void AdiAppStart (void)
 	gpioComplexConfig.driveLowEn = CyTrue;
 	gpioComplexConfig.driveHighEn = CyTrue;
 	gpioComplexConfig.pinMode = CY_U3P_GPIO_MODE_STATIC;
-	gpioComplexConfig.intrMode = CY_U3P_GPIO_INTR_TIMER_THRES;
+	gpioComplexConfig.intrMode = CY_U3P_GPIO_NO_INTR;
 	gpioComplexConfig.timerMode = CY_U3P_GPIO_TIMER_HIGH_FREQ;
 	gpioComplexConfig.timer = 0;
 	gpioComplexConfig.period = 0xFFFFFFFF;

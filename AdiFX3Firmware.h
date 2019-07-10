@@ -252,7 +252,9 @@ struct BoardConfig
 //Conversion factor from clock ticks to milliseconds on GPIO timer
 #define MS_TO_TICKS_MULT						(10000) //(Previously 953)
 
- //Minimum achievable stall time in microseconds (limited by the high-speed, complex GPIO)
+ //Offset to take away from the timer period for generic stream stall time. In 10MHz timer ticks
+#define ADI_GENERIC_STALL_OFFSET				(76)
+
 #define ADI_STALL_OFFSET						(14)
 
 
