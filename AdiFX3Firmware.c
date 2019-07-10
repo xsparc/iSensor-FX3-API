@@ -1946,6 +1946,8 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 
 	//Set the timer pin threshold to correspond with the stall time
 	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold = (stallTime * 10) - 90;
+	//Set the timer pin period (useful for error case, timer register is manually reset)
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = (stallTime * 10) - 89;
 
 	//Enable generic data capture thread
 	status = CyU3PEventSet (&eventHandler, ADI_GENERIC_STREAM_ENABLE, CYU3P_EVENT_OR);
@@ -2752,11 +2754,9 @@ void AdiDataStream_Entry(uint32_t input)
 		//Wait indefinitely for any flag to be set
 		if (CyU3PEventGet (&eventHandler, eventMask, CYU3P_EVENT_OR_CLEAR, &eventFlag, CYU3P_WAIT_FOREVER) == CY_U3P_SUCCESS)
 		{
-			//CyU3PDebugPrint (4, "Event Entry \r\n");
 			/* Generic register stream case */
 			if (eventFlag & ADI_GENERIC_STREAM_ENABLE)
 			{
-				//CyU3PDebugPrint (4, "Generic Stream Entry \r\n");
 				if (firstRun)
 				{
 					status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &genBuf_p, CYU3P_WAIT_FOREVER);
@@ -2790,12 +2790,8 @@ void AdiDataStream_Entry(uint32_t input)
 				//Read the registers in the register list into regList
 				for(regIndex = 0; regIndex < (bytesPerBuffer - 1); regIndex += 2)
 				{
-					//CyU3PDebugPrint (4, "Starting Register Number: %d\r\n", regIndex);
-
 					//Wait for the complex GPIO timer to reach the stall time
 					while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
-
-					//CyU3PDebugPrint (4, "Finished Timer While \r\n");
 
 					//Prepare, transmit, and receive SPI words
 					tempData[0] = regList[regIndex + 2];
@@ -2818,13 +2814,13 @@ void AdiDataStream_Entry(uint32_t input)
 					//Check if a transmission is needed
 					if (byteCounter >= (bytesPerUsbPacket - 1))
 					{
-						//CyU3PDebugPrint (4, "Started Channel Commmit \r\n");
 						status = CyU3PDmaChannelCommitBuffer (&StreamingChannel, usbBufferSize, 0);
 						if (status != CY_U3P_SUCCESS)
 						{
 							CyU3PDebugPrint (4, "CyU3PDmaChannelCommitBuffer in loop failed, Error code = %d\r\n", status);
 						}
-						status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &genBuf_p, CYU3P_WAIT_FOREVER);
+						//CyU3PDebugPrint (4, "Started Channel Commmit \r\n");
+						status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &genBuf_p, CYU3P_NO_WAIT);
 						if (status != CY_U3P_SUCCESS)
 						{
 							CyU3PDebugPrint (4, "CyU3PDmaChannelGetBuffer in generic capture failed, Error code = %d\r\n", status);
@@ -2832,11 +2828,7 @@ void AdiDataStream_Entry(uint32_t input)
 						tempPtr = genBuf_p.buffer;
 						byteCounter = 0;
 					}
-
-					//CyU3PDebugPrint (4, "Finished Register Number: %d\r\n", regIndex);
 				}
-				//CyU3PDebugPrint (4, "Finished buffer read \r\n");
-
 				//Check to see if we've captured enough buffers or if we were asked to stop data capture early
 				if ((numBuffersRead >= (numBuffers - 1)) || killEarly)
 				{
@@ -2864,10 +2856,13 @@ void AdiDataStream_Entry(uint32_t input)
 					numBuffersRead++;
 					//Wait for the complex GPIO timer to reach the stall time
 					while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
+					//Set the pin timer to 0
+					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+					//clear interrupt flag
+					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
 					//Reset flag
 					CyU3PEventSet (&eventHandler, ADI_GENERIC_STREAM_ENABLE, CYU3P_EVENT_OR);
 				}
-				//CyU3PDebugPrint (4, "Generic Stream Exit \r\n");
 			}
 
 			/* Real-time (ADcmXL) stream case */
