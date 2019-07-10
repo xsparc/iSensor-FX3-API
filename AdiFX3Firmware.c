@@ -2885,13 +2885,13 @@ void AdiDataStream_Entry(uint32_t input)
 						status = CyU3PDmaChannelCommitBuffer (&StreamingChannel, usbBufferSize, 0);
 						if (status != CY_U3P_SUCCESS)
 						{
-							CyU3PDebugPrint (4, "CyU3PDmaChannelCommitBuffer in loop failed, Error code = %d\r\n", status);
+							CyU3PDebugPrint (4, "CyU3PDmaChannelCommitBuffer in loop failed, Error code = 0x%x\r\n", status);
 						}
 						//CyU3PDebugPrint (4, "Started Channel Commmit \r\n");
 						status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &genBuf_p, CYU3P_NO_WAIT);
 						if (status != CY_U3P_SUCCESS)
 						{
-							CyU3PDebugPrint (4, "CyU3PDmaChannelGetBuffer in generic capture failed, Error code = %d\r\n", status);
+							CyU3PDebugPrint (4, "CyU3PDmaChannelGetBuffer in generic capture failed, Error code = 0x%x\r\n", status);
 						}
 						tempPtr = genBuf_p.buffer;
 						byteCounter = 0;
