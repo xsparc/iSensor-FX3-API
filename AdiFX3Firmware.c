@@ -2778,9 +2778,45 @@ void AdiDataStream_Entry(uint32_t input)
 					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
 				}
 				//Transmit first word without reading back
-				tempData[0] = regList[0];
-				tempData[1] = regList[1];
-				CyU3PSpiTransmitWords(tempData, 2);
+				tempData[0] = regList[regIndex + 2];
+				tempData[1] = regList[regIndex + 3];
+
+				AdiSpiResetFifo(CyTrue, CyTrue);
+
+				uint32_t i, temp, intrMask;
+
+			    intrMask = SPI->lpp_spi_intr_mask;
+			    SPI->lpp_spi_intr_mask = 0;
+				SPI->lpp_spi_config |= CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_RX_ENABLE;
+				SPI->lpp_spi_config |= CY_U3P_LPP_SPI_ENABLE;
+				for ( i = 0; i <= 2; i += 1)
+				{
+					SPI->lpp_spi_egress_data = tempData[i];
+				}
+				temp = CY_U3P_LPP_SPI_TX_SPACE;
+				if (i > 0)
+				{
+					temp |= CY_U3P_LPP_SPI_RX_DATA;
+				}
+				while ((SPI->lpp_spi_status & temp) != temp);
+				if (i > 0)
+				{
+					temp = SPI->lpp_spi_ingress_data;
+					if (i <= 2)
+					{
+						tempPtr[i - 1] = (uint8_t)(temp & 0xFF);
+					}
+				}
+				SPI->lpp_spi_config &= ~(CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_RX_ENABLE);
+				SPI->lpp_spi_intr |= CY_U3P_LPP_SPI_TX_DONE | CY_U3P_LPP_SPI_RX_DATA;
+				SPI->lpp_spi_intr_mask = intrMask;
+			    while ((SPI->lpp_spi_status & CY_U3P_LPP_SPI_BUSY) != 0);
+			    SPI->lpp_spi_config &= ~CY_U3P_LPP_SPI_ENABLE;
+
+				//Set the pin timer to 0
+				GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+				//clear interrupt flag
+				GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
 
 				//Set the pin timer to 0
 				GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
@@ -2794,13 +2830,50 @@ void AdiDataStream_Entry(uint32_t input)
 					while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
 
 					//Prepare, transmit, and receive SPI words
-					tempData[0] = regList[regIndex + 2];
-					tempData[1] = regList[regIndex + 3];
-					status = CyU3PSpiTransferWords(tempData, 2, tempPtr, 2);
-					if (status != CY_U3P_SUCCESS)
+					//tempData[0] = regList[regIndex + 2];
+					//tempData[1] = regList[regIndex + 3];
+					//status = CyU3PSpiTransferWords(tempData, 2, tempPtr, 2);
+					/*if (status != CY_U3P_SUCCESS)
 					{
 						CyU3PDebugPrint (4, "CyU3pSpiTransferWords failed, Error code = %d\r\n", status);
+					}*/
+
+					//Prepare, transmit, and receive SPI words
+					//TODO: Adjust SPI transactions to work with variable word lengths
+					tempData[0] = regList[regIndex + 2];
+					tempData[1] = regList[regIndex + 3];
+
+					AdiSpiResetFifo(CyTrue, CyTrue);
+
+					uint32_t i, temp, intrMask;
+
+				    intrMask = SPI->lpp_spi_intr_mask;
+				    SPI->lpp_spi_intr_mask = 0;
+					SPI->lpp_spi_config |= CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_RX_ENABLE;
+					SPI->lpp_spi_config |= CY_U3P_LPP_SPI_ENABLE;
+					for ( i = 0; i <= 2; i += 1)
+					{
+						SPI->lpp_spi_egress_data = tempData[i];
 					}
+					temp = CY_U3P_LPP_SPI_TX_SPACE;
+					if (i > 0)
+					{
+						temp |= CY_U3P_LPP_SPI_RX_DATA;
+					}
+					while ((SPI->lpp_spi_status & temp) != temp);
+					if (i > 0)
+					{
+						temp = SPI->lpp_spi_ingress_data;
+						if (i <= 2)
+						{
+							tempPtr[i - 1] = (uint8_t)(temp & 0xFF);
+						}
+					}
+					SPI->lpp_spi_config &= ~(CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_RX_ENABLE);
+					SPI->lpp_spi_intr |= CY_U3P_LPP_SPI_TX_DONE | CY_U3P_LPP_SPI_RX_DATA;
+					SPI->lpp_spi_intr_mask = intrMask;
+				    while ((SPI->lpp_spi_status & CY_U3P_LPP_SPI_BUSY) != 0);
+				    SPI->lpp_spi_config &= ~CY_U3P_LPP_SPI_ENABLE;
 
 					//Set the pin timer to 0
 					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
@@ -2856,10 +2929,6 @@ void AdiDataStream_Entry(uint32_t input)
 					numBuffersRead++;
 					//Wait for the complex GPIO timer to reach the stall time
 					while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
-					//Set the pin timer to 0
-					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
-					//clear interrupt flag
-					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
 					//Reset flag
 					CyU3PEventSet (&eventHandler, ADI_GENERIC_STREAM_ENABLE, CYU3P_EVENT_OR);
 				}
