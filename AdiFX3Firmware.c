@@ -429,6 +429,14 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 				status = AdiMeasureDR();
 				break;
 
+			//PWM configuration
+            case ADI_PWM_CMD:
+            	//Read config data into USBBuffer
+				CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+				//Run pulse drive function (index = 1 to enable, 0 to disable)
+				status = AdiConfigurePWM((CyBool_t) wIndex);
+            	break;
+
             default:
                 // This is unknown request
                 isHandled = CyFalse;
@@ -506,6 +514,97 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
     return isHandled;
 }
 
+CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+	uint16_t pinNumber;
+	uint32_t threshold, period;
+
+	//Get the pin number
+	pinNumber = USBBuffer[0];
+	pinNumber |= (USBBuffer[1] << 8);
+
+	if(EnablePWM)
+	{
+		//get the period
+		period = USBBuffer[2];
+		period |= (USBBuffer[3] << 8);
+		period |= (USBBuffer[4] << 16);
+		period |= (USBBuffer[5] << 24);
+
+		//get the threshold
+		threshold = USBBuffer[6];
+		threshold |= (USBBuffer[7] << 8);
+		threshold |= (USBBuffer[8] << 16);
+		threshold |= (USBBuffer[9] << 24);
+
+		CyU3PDebugPrint (4, "Setting up PWM with period %d, threshold %d, for pin %d\r\n", period, threshold, pinNumber);
+
+		//Override the selected pin to run as a complex GPIO
+		status = CyU3PDeviceGpioOverride(pinNumber, CyFalse);
+		if(status != CY_U3P_SUCCESS)
+		{
+			CyU3PDebugPrint (4, "Error! GPIO override for PWM mode failed, error code: 0x%s\r\n", status);
+			return status;
+		}
+
+		//configure the selected pin in PWM mode
+		CyU3PGpioComplexConfig_t gpioComplexConfig;
+		CyU3PMemSet ((uint8_t *)&gpioComplexConfig, 0, sizeof (gpioComplexConfig));
+		gpioComplexConfig.outValue = CyFalse;
+		gpioComplexConfig.inputEn = CyFalse;
+		gpioComplexConfig.driveLowEn = CyTrue;
+		gpioComplexConfig.driveHighEn = CyTrue;
+		gpioComplexConfig.pinMode = CY_U3P_GPIO_MODE_PWM;
+		gpioComplexConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+		gpioComplexConfig.timerMode = CY_U3P_GPIO_TIMER_HIGH_FREQ;
+		gpioComplexConfig.timer = 0;
+		gpioComplexConfig.period = period;
+		gpioComplexConfig.threshold = threshold;
+		status = CyU3PGpioSetComplexConfig(pinNumber, &gpioComplexConfig);
+	    if (status != CY_U3P_SUCCESS)
+	    {
+	    	CyU3PDebugPrint (4, "Error! GPIO config for PWM mode failed, error code: 0x%s\r\n", status);
+	    	return status;
+	    }
+	}
+	else
+	{
+		//want to reset the specified pin to simple state without output driven
+		status = CyU3PDeviceGpioOverride(pinNumber, CyTrue);
+		if(status != CY_U3P_SUCCESS)
+		{
+			CyU3PDebugPrint (4, "Error! GPIO override to exit PWM mode failed, error code: 0x%s\r\n", status);
+			return status;
+		}
+
+		//Disable the GPIO
+		status = CyU3PGpioDisable(pinNumber);
+		if(status != CY_U3P_SUCCESS)
+		{
+			CyU3PDebugPrint (4, "Error! Pin disable while exiting PWM mode failed, error code: 0x%s\r\n", status);
+			return status;
+		}
+
+		/* Set the GPIO configuration for each GPIO that was just overridden */
+		CyU3PGpioSimpleConfig_t gpioConfig;
+		CyU3PMemSet ((uint8_t *)&gpioConfig, 0, sizeof (gpioConfig));
+		gpioConfig.outValue = CyFalse;
+		gpioConfig.inputEn = CyTrue;
+		gpioConfig.driveLowEn = CyFalse;
+		gpioConfig.driveHighEn = CyFalse;
+		gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+
+		status = CyU3PGpioSetSimpleConfig(pinNumber, &gpioConfig);
+	    if (status != CY_U3P_SUCCESS)
+	    {
+	    	CyU3PDebugPrint (4, "Error! GPIO config to exit PWM mode failed, error code: 0x%s\r\n", status);
+	    	return status;
+	    }
+	}
+	return status;
+}
+
 /*
  * Function: AdiReadRegBytes(uint16_t addr)
  *
@@ -530,8 +629,7 @@ CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr)
 	/* Check that the transfer was successful and end function if failed */
 	if (status != CY_U3P_SUCCESS)
 	{
-        CyU3PDebugPrint (4, "Error! CyU3PSpiTransmitWords failed!.\r\n");
-        //AdiAppErrorHandler (status);
+        CyU3PDebugPrint (4, "Error! CyU3PSpiTransmitWords failed, error code: 0x%s\r\n", status);
 	}
 
 	/* Stall for user-specified time */
@@ -543,7 +641,6 @@ CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr)
 	if (status != CY_U3P_SUCCESS)
 	{
         CyU3PDebugPrint (4, "Error! CyU3PSpiReceiveWords failed!.\r\n");
-        //AdiAppErrorHandler (status);
 	}
 
 	/* Send status and data back via control endpoint */
@@ -2880,6 +2977,7 @@ void AdiDataStream_Entry(uint32_t input)
 
 					//Set the pin timer to 0
 					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+
 					//clear interrupt flag
 					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
 
@@ -2909,10 +3007,12 @@ void AdiDataStream_Entry(uint32_t input)
 				if ((numBuffersRead >= (numBuffers - 1)) || killEarly)
 				{
 					//Reset buffer counter
+					CyU3PDebugPrint (4, "bleh = %d\r\n", numBuffersRead);
 					numBuffersRead = 0;
 					firstRun = CyTrue;
 					if (byteCounter)
 					{
+
 						status = CyU3PDmaChannelCommitBuffer (&StreamingChannel, usbBufferSize, 0);
 						if (status != CY_U3P_SUCCESS)
 						{
@@ -3236,7 +3336,7 @@ void AdiAppStart (void)
 
 	/* Configure fast sample clock to use a GPIO as a high-resolution timer.
 	 * SYSCLK = 403.2 MHz. Effective clock speed for timer
-	 * is 403.2MHz / (13 * 31) = 1.000 MHz. GPIO sample clock = 201.6 MHz */
+	 * is 403.2MHz / (10 * 4) = 10.08 MHz. GPIO sample clock = 201.6 MHz */
 	CyU3PGpioClock_t gpioClock;
 	CyU3PMemSet ((uint8_t *)&gpioClock, 0, sizeof (gpioClock));
 	gpioClock.fastClkDiv = 10;

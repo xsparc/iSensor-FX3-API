@@ -78,6 +78,7 @@ CyU3PReturnStatus_t AdiPinRead(uint16_t pin);
 CyU3PReturnStatus_t AdiReadTimerValue();
 uint32_t AdiMStoTicks(uint32_t desiredStallTime);
 CyU3PReturnStatus_t AdiWaitForTimerTicks(uint32_t numTicks);
+CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM);
 
 //Peripheral read-write functions.
 CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data);
@@ -196,6 +197,9 @@ struct BoardConfig
 //Return data over a bulk endpoint before a bulk read/write operation
 #define ADI_BULK_REGISTER_TRANSFER				(0xF2)
 
+//Command to enable or disable a PWM signal
+#define ADI_PWM_CMD  							(0xC9)
+
 
 /*
  * Thread Parameter Definitions
@@ -222,9 +226,10 @@ struct BoardConfig
 #define ADI_PIN_DIO2							(0x3)	// Commonly BUSY on ADcmXL devices
 #define ADI_PIN_DIO3							(0x2)
 #define ADI_PIN_DIO4							(0x1)
-#define ADI_PIN_DIO5							(0x5)	// Misc pin(s) used for triggering from test equipment
-#define ADI_PIN_DIO6							(0x6)	// Misc pin
-#define ADI_PIN_DIO7							(0x7)	// Misc pin
+#define FX3_PIN_GPIO0							(0x5)	// Misc pin(s) used for triggering from test equipment
+#define FX3_PIN_GPIO1							(0x6)	// Misc pin
+#define FX3_PIN_GPIO2							(0x7)	// Misc pin
+#define FX3_PIN_GPIO3							(0x12)	// Misc pin (shared complex block with DIO1, typically a data ready pin)
 
 /* Complex GPIO assigned as a timer input */
 #define ADI_TIMER_PIN							(0x8)
