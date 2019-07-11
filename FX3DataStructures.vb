@@ -141,6 +141,9 @@ Public Enum USBCommands
     'Return the pulse frequency (data ready on a user-specified pin
     ADI_MEASURE_DR = &HC8
 
+    'Command to enable or disable a PWM signal
+    ADI_PWM_CMD = &HC9
+
     'Start/stop a real-time stream
     ADI_STREAM_REALTIME = &HD0
 
