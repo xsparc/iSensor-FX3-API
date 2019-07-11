@@ -1904,7 +1904,14 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 	}
 
 	//Find number of register "buffers" which fit in a USB buffer
-	bytesPerUsbPacket = ((usbBufferSize / bytesPerBuffer) * bytesPerBuffer);
+	if(bytesPerBuffer > usbBufferSize)
+	{
+		bytesPerUsbPacket = usbBufferSize;
+	}
+	else
+	{
+		bytesPerUsbPacket = ((usbBufferSize / bytesPerBuffer) * bytesPerBuffer);
+	}
 
 	/* Flush the streaming endpoint */
 	status = CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
@@ -2781,6 +2788,7 @@ void AdiDataStream_Entry(uint32_t input)
 					//Clear GPIO interrupt bit
 					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
 				}
+
 				//Transmit first word without reading back
 				tempData[0] = regList[regIndex + 2];
 				tempData[1] = regList[regIndex + 3];
@@ -2915,13 +2923,17 @@ void AdiDataStream_Entry(uint32_t input)
 
 					//Clear GPIO interrupts
 					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
+
 					//Clear timer interrupt
 					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
+
 					//update the threshold and period
 					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold = 0xFFFFFFFF;
 					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = 0xFFFFFFFF;
+
 					//Disable interrupts
 					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= ~(CY_U3P_LPP_GPIO_INTRMODE_MASK);
+
 					//Don't reset flag
 					CyU3PEventSet(&eventHandler, ADI_GENERIC_STREAMING_DONE, CYU3P_EVENT_OR);
 				}
@@ -2929,8 +2941,11 @@ void AdiDataStream_Entry(uint32_t input)
 				{
 					//Increment buffer counter
 					numBuffersRead++;
-					//Wait for the complex GPIO timer to reach the stall time
-					while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
+					//Wait for the complex GPIO timer to reach the stall time if no data ready
+					if(!DrActive)
+					{
+						while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
+					}
 					//Reset flag
 					CyU3PEventSet (&eventHandler, ADI_GENERIC_STREAM_ENABLE, CYU3P_EVENT_OR);
 				}
