@@ -35,32 +35,38 @@
 #include "cyu3utils.h"
 #include "cyu3gpio.h"
 #include "cyu3vic.h"
+#include "cyu3pib.h"
 #include <stdlib.h>
 #include <sys/unistd.h>
-
 
 //Lower level register access includes
 #include "gpio_regs.h"
 #include "spi_regs.h"
 #include "gctlaon_regs.h"
 
-
 /*
  * Function Declarations
  */
 //Initialization and configuration functions.
+void AdiDebugInit(void);
+void AdiAppInit(void);
+void AdiAppStart (void);
+void AdiAppStop (void);
+void AdiAppErrorHandler (CyU3PReturnStatus_t status);
 CyU3PReturnStatus_t AdiGetSpiSettings();
-CyU3PReturnStatus_t AdiSpiInit();
-void AdiDebugInit();
-void AdiSetDefaultSpiConfig();
 CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length);
-CyU3PReturnStatus_t AdiConfigureEndpoints();
-CyU3PReturnStatus_t AdiGPIOInit();
-CyU3PReturnStatus_t AdiDeviceInit();
-void AdiFatalErrorHandler(uint32_t ErrorType);
-CyBool_t AdiLPMRequestHandler(CyU3PUsbLinkPowerMode link_mode);
-CyU3PReturnStatus_t AdiCreateEventFlagGroup();
 CyU3PReturnStatus_t AdiSpiResetFifo(CyBool_t isTx, CyBool_t isRx);
+
+/* Event Handlers */
+CyBool_t AdiControlEndpointHandler(uint32_t setupdat0, uint32_t setupdat1);
+void AdiBulkEndpointHandler(CyU3PUsbEpEvtType evType,CyU3PUSBSpeed_t usbSpeed, uint8_t epNum);
+void AdiUSBEventHandler(CyU3PUsbEventType_t evtype, uint16_t evdata);
+CyBool_t AdiLPMRequestHandler(CyU3PUsbLinkPowerMode link_mode);
+void AdiGPIOEventHandler(uint8_t gpioId);
+
+/* Application entry points */
+void AppThread_Entry(uint32_t input);
+void AdiDataStream_Entry(uint32_t input);
 
 //Pin functions.
 CyU3PReturnStatus_t AdiPulseDrive();
@@ -71,8 +77,8 @@ CyU3PReturnStatus_t AdiWaitForPin(uint32_t pinNumber, CyU3PGpioIntrMode_t interr
 CyU3PReturnStatus_t AdiPinRead(uint16_t pin);
 CyU3PReturnStatus_t AdiReadTimerValue();
 uint32_t AdiMStoTicks(uint32_t desiredStallTime);
-void AdiWaitForTimerTicks(uint32_t numTicks);
-void AdiGPIOEventHandler(uint8_t gpioId);
+CyU3PReturnStatus_t AdiWaitForTimerTicks(uint32_t numTicks);
+CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM);
 
 //Peripheral read-write functions.
 CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data);
@@ -81,28 +87,21 @@ CyU3PReturnStatus_t AdiBulkByteTransfer(uint16_t numBytes, uint16_t bytesPerCapt
 CyU3PReturnStatus_t AdiWritePageReg(uint16_t pageNumber);
 CyU3PReturnStatus_t AdiReadSpiReg(uint16_t address, uint16_t page, uint16_t numBytes, uint8_t  *buffer);
 CyU3PReturnStatus_t AdiWriteSpiReg(uint16_t address, uint16_t page, uint16_t numBytes, uint8_t  *buffer);
-void AdiBulkEndpointHandler(CyU3PUsbEpEvtType evType,CyU3PUSBSpeed_t usbSpeed, uint8_t epNum);
-CyBool_t AdiControlEndpointHandler(uint32_t setupdat0, uint32_t setupdat1);
-void AdiUSBEventHandler(CyU3PUsbEventType_t evtype, uint16_t evdata);
-
-//Application entry points.
-void AppThread_Entry(uint32_t input);
-void AdiDataStream_Entry(uint32_t input);
 
 //Real-time data stream functions.
-CyU3PReturnStatus_t AdiRealTimeStart();
-CyU3PReturnStatus_t AdiRealTimeFinished();
+CyU3PReturnStatus_t AdiRealTimeStreamStart();
+CyU3PReturnStatus_t AdiRealTimeStreamFinished();
 
 //Generic data stream functions.
-CyU3PReturnStatus_t AdiGenericDataStreamStart();
-CyU3PReturnStatus_t AdiGenericDataStreamFinished();
+CyU3PReturnStatus_t AdiGenericStreamStart();
+CyU3PReturnStatus_t AdiGenericStreamFinished();
 
 //Burst stream functions.
 CyU3PReturnStatus_t AdiBurstStreamStart();
 CyU3PReturnStatus_t AdiBurstStreamFinished();
 
 //General stream functions.
-void AdiStopAnyDataStream();
+CyU3PReturnStatus_t AdiStopAnyDataStream();
 
 //Enum for part type (used in streaming modes)
 typedef enum PartTye
@@ -120,6 +119,14 @@ typedef enum Boolean
 	False = 0
 }Boolean;
 
+//Enum for the complex GPIO timers available
+typedef enum Timer
+{
+	ADITimer10MHz = 0,
+	ADITimer1MHz = 1,
+	ADITimer10KHz = 2
+}Timer;
+
 //Struct to store relevant board parameters
 struct BoardConfig
 {
@@ -133,8 +140,8 @@ struct BoardConfig
 //Return FX3 firmware ID (defined below)
 #define ADI_FIRMWARE_ID_CHECK					(0xB0)
 
-//Reset the FX3 firmware
-#define ADI_FIRMWARE_RESET						(0xB1)
+/* Hard-reset the FX3 firmware (return to bootloader mode) */
+#define ADI_HARD_RESET							(0xB1)
 
 //Set FX3 SPI configuration
 #define ADI_SET_SPI_CONFIG						(0xB2)
@@ -147,6 +154,9 @@ struct BoardConfig
 
 //Return the FX3 unique serial number
 #define ADI_SERIAL_NUMBER_CHECK					(0xB5)
+
+/* Soft-reset the FX3 firmware (don't return to bootloader mode) */
+#define ADI_WARM_RESET							(0xB6)
 
 //Start/stop a generic data stream
 #define ADI_STREAM_GENERIC_DATA					(0xC0)
@@ -187,6 +197,9 @@ struct BoardConfig
 //Return data over a bulk endpoint before a bulk read/write operation
 #define ADI_BULK_REGISTER_TRANSFER				(0xF2)
 
+//Command to enable or disable a PWM signal
+#define ADI_PWM_CMD  							(0xC9)
+
 
 /*
  * Thread Parameter Definitions
@@ -213,12 +226,14 @@ struct BoardConfig
 #define ADI_PIN_DIO2							(0x3)	// Commonly BUSY on ADcmXL devices
 #define ADI_PIN_DIO3							(0x2)
 #define ADI_PIN_DIO4							(0x1)
-#define ADI_PIN_DIO5							(0x5)	// Misc pin(s) used for triggering from test equipment
-#define ADI_PIN_DIO6							(0x6)	// Misc pin
-#define ADI_PIN_DIO7							(0x7)	// Misc pin
+#define FX3_PIN_GPIO0							(0x5)	// Misc pin(s) used for triggering from test equipment
+#define FX3_PIN_GPIO1							(0x6)	// Misc pin
+#define FX3_PIN_GPIO2							(0x7)	// Misc pin
+#define FX3_PIN_GPIO3							(0x12)	// Misc pin (shared complex block with DIO1, typically a data ready pin)
 
 /* Complex GPIO assigned as a timer input */
 #define ADI_TIMER_PIN							(0x8)
+#define ADI_TIMER_PIN_INDEX						(0x0) //ADI_TIMER_PIN % 8
 
 /*
  * Endpoint Related Defines
@@ -240,9 +255,11 @@ struct BoardConfig
  * Clock defines
  */
 //Conversion factor from clock ticks to milliseconds on GPIO timer
-#define MS_TO_TICKS_MULT						(1000) //(Previously 953)
+#define MS_TO_TICKS_MULT						(10000) //(Previously 953)
 
- //Minimum achievable stall time in microseconds (limited by the high-speed, complex GPIO)
+ //Offset to take away from the timer period for generic stream stall time. In 10MHz timer ticks
+#define ADI_GENERIC_STALL_OFFSET				(76)
+
 #define ADI_STALL_OFFSET						(14)
 
 
@@ -300,9 +317,9 @@ struct BoardConfig
 #define ADI_RT_STREAMING_START					(1 << 0)
 #define ADI_RT_STREAMING_DONE					(1 << 1)
 #define ADI_RT_STREAMING_STOP					(1 << 2)
-#define ADI_DATA_STREAMING_START				(1 << 3)
-#define ADI_DATA_STREAMING_STOP					(1 << 4)
-#define ADI_DATA_STREAMING_DONE					(1 << 5)
+#define ADI_GENERIC_STREAMING_START				(1 << 3)
+#define ADI_GENERIC_STREAMING_STOP				(1 << 4)
+#define ADI_GENERIC_STREAMING_DONE				(1 << 5)
 #define ADI_GENERIC_STREAM_ENABLE				(1 << 6)
 #define ADI_REAL_TIME_STREAM_ENABLE				(1 << 7)
 #define ADI_KILL_THREAD_EARLY					(1 << 8)	//Currently unused.
@@ -310,7 +327,6 @@ struct BoardConfig
 #define ADI_BURST_STREAMING_STOP				(1 << 10)
 #define ADI_BURST_STREAMING_DONE				(1 << 11)
 #define ADI_BURST_STREAM_ENABLE					(1 << 12)
-
 
 /*
  * ADI GPIO Event Handler Definitions

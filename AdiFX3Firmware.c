@@ -22,74 +22,72 @@
 /*
  * Thread and Thread Management Definitions
  */
-//Thread for real time streaming function
+
+/*Thread for real time streaming function */
 CyU3PThread streamingThread;
 
-//Thread for generic data capture function
-CyU3PThread dataCaptureThread;
-
-//Thread for the main application
+/*Thread for the main application */
 CyU3PThread appThread;
 
-//ADI event structure
+/*ADI event structure */
 CyU3PEvent eventHandler;
 
-//ADI GPIO event structure
+/*ADI GPIO event structure */
 CyU3PEvent gpioHandler;
-
 
 /*
  * DMA Channel Definitions
  */
-//DMA channel for real time streaming (SPI to USB BULK-IN 0x81)
+
+/*DMA channel for real time streaming (SPI to USB BULK-IN 0x81) */
 CyU3PDmaChannel StreamingChannel;
 
-//DMA channel for BULK-OUT endpoint 0x1 (PC to FX3)
+/*DMA channel for BULK-OUT endpoint 0x1 (PC to FX3) */
 CyU3PDmaChannel ChannelFromPC;
 
-//DMA channel for BULK-IN endpoint 0x82 (FX3 to PC)
+/*DMA channel for BULK-IN endpoint 0x82 (FX3 to PC) */
 CyU3PDmaChannel ChannelToPC;
 
-//DMA channel for reading a memory location into a DMA consumer
+/*DMA channel for reading a memory location into a DMA consumer */
 CyU3PDmaChannel MemoryToSPI;
-
 
 /*
  * Buffer Definitions
  */
-//USB Data buffer
+
+/*USB Data buffer */
 uint8_t USBBuffer[4096] __attribute__ ((aligned (32)));
 
-//Bulk endpoint output buffer
+/*Bulk endpoint output buffer */
 uint8_t BulkBuffer[12288] __attribute__ ((aligned (32)));
-
 
 /*
  * Application Configuration Definitions
  */
-//Global variable to track the SPI configuration
+
+/*Global variable to track the SPI configuration */
 CyU3PSpiConfig_t spiConfig;
 
-//DMA buffer structure for output buffer
+/*DMA buffer structure for output buffer */
 CyU3PDmaBuffer_t ManualDMABuffer;
 
-//DMA buffer structure for SPI transmit
+/*DMA buffer structure for SPI transmit */
 CyU3PDmaBuffer_t SpiDmaBuffer;
 
-//Global to track the part type
+/*Global to track the part type */
 PartType DUTType;
-
 
 /*
  * Application constants
  */
-//Constant firmware ID string. Manually updated when building new firmware.
-const uint8_t FirmwareID[32] __attribute__ ((aligned (32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '1', '.', '0', '.', '5', '-','P','U','B',' ', '\0' };
 
-//Constant error string used to write "ERROR" to output buffer
+/*Constant firmware ID string. Manually updated when building new firmware. */
+const uint8_t FirmwareID[32] __attribute__ ((aligned (32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '1', '.', '0', '.', '9', '-','P','U','B',' ', '\0' };
+
+/*Constant error string used to write "ERROR" to output buffer */
 const uint8_t ErrorString[16] __attribute__ ((aligned (16))) = { 'E', 'R', 'R', 'O', 'R', '\0'};
 
-//Constant FX3 unique serial number
+/*Constant FX3 unique serial number */
 char serial_number[] __attribute__ ((aligned (32))) = {
 	    '0',0x00,'0',0x00,'0',0x00,'0',0x00,
 	    '0',0x00,'0',0x00,'0',0x00,'0',0x00,
@@ -100,66 +98,77 @@ char serial_number[] __attribute__ ((aligned (32))) = {
 /*
  * Runtime Global Variables
  */
-//Track the number of errors which have occurred during FX3 boot process
-uint32_t errorCount = 0;
 
-//Flag to track main application execution (True = active, False = inactive)
+/*
+ * Global application variables
+ */
+
+/*Track the USB connection speed */
+uint16_t usbBufferSize = 0;
+
+/*Track main application execution */
 CyBool_t appActive = CyFalse;
 
-//Track the number of real-time captures to record (0 = Infinite)
-uint32_t numRealTimeCaptures = 0;
+/*Signal RT thread to kill data capture early (True = kill thread signaled, False = allow execution) */
+static volatile CyBool_t killEarly = CyFalse;
 
-//Track the number of bytes per real time frame
+/*Bit mask of the starting timer pin configuration */
+uint32_t timerPinConfig;
+
+/*
+ * Global user configuration variables
+ */
+
+/*Track the number of bytes per real time frame */
 uint32_t bytesPerFrame = 200;
 
-//Track the stall time in ticks
+/*Track the stall time in microseconds. This is the same as the FX3Api stall time setting */
 uint32_t stallTime;
 
-//Track the busy pin number
+/*Track the busy pin number */
 uint16_t busyPin = 4;
 
-//Track the data ready pin number
+/*Track the data ready pin number */
 uint16_t dataReadyPin = 3;
 
-//Track if data ready is active (True = active, False = inactive)
+/*Track if data ready is active (True = active, False = inactive) */
 CyBool_t DrActive = CyFalse;
 
-//Track data ready polarity (True = rising, False = falling)
+/*Track data ready polarity (True = rising, False = falling) */
 CyBool_t DrPolarity = CyTrue;
 
-//Track the pin exit setting for RT stream mode (True = enabled, False = disabled)
+/*Track the pin exit setting for RT stream mode (True = enabled, False = disabled) */
 CyBool_t pinExitEnableDisable = CyFalse;
 
-//Track the pin start setting for RT stream mode (True = enabled, False = disabled)
+/*Track the pin start setting for RT stream mode (True = enabled, False = disabled) */
 CyBool_t pinStartEnableDisable = CyFalse;
 
-//Signal RT thread to kill data capture early (True = kill thread signaled, False = allow execution)
-CyBool_t killEarly = CyFalse;
+/*Track the number of real-time captures to record (0 = Infinite) */
+uint32_t numRealTimeCaptures = 0;
 
-//Track the total size of generic stream transfer in 16-bit words
+/*Track the total size of generic stream transfer in 16-bit words */
 uint16_t transferWordLength = 0;
 
-//Track the total size of generic and burst stream transfers in 8-bit bytes
+/*Track the total size of generic and burst stream transfers in bytes */
 uint32_t transferByteLength = 0;
 
-//Track the total size of a generic or burst stream rounded to a multiple of 16
+/*Track the total size of a generic or burst stream rounded to a multiple of 16 */
 uint16_t roundedByteTransferLength = 0;
 
-//Track the number of captures requested for the generic data stream
+/*Track the number of captures requested for the generic data stream */
 uint32_t numCaptures = 0;
 
-//Track the number of buffers requested for the generic data stream
+/*Track the number of buffers requested for the generic data stream */
 uint32_t numBuffers = 0;
 
-//Track the number of bytes to be read per buffer
+/*Track the number of bytes to be read per buffer */
 uint16_t bytesPerBuffer = 0;
 
-//Pointer to byte array of registers needing to be read by the generic data stream
+/*Pointer to byte array of registers needing to be read by the generic data stream */
 uint8_t *regList;
 
-//Pointer to byte buffer used for burst transfers
-uint8_t *regBuffer;
-
+/*Number of bytes per USB packet in generic data stream mode */
+uint16_t bytesPerUsbPacket = 0;
 
 /*
  * Function: AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
@@ -185,7 +194,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
     CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
     uint16_t *bytesRead = 0;
 
-    //Parse the control request data from the packets received
+    /* Decode the fields from the setup request. */
     bReqType = (setupdat0 & CY_U3P_USB_REQUEST_TYPE_MASK);
     bType    = (bReqType & CY_U3P_USB_TYPE_MASK);
     bTarget  = (bReqType & CY_U3P_USB_TARGET_MASK);
@@ -194,7 +203,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
     wIndex   = ((setupdat1 & CY_U3P_USB_INDEX_MASK)   >> CY_U3P_USB_INDEX_POS);
     wLength   = ((setupdat1 & CY_U3P_USB_LENGTH_MASK)   >> CY_U3P_USB_LENGTH_POS);
 
-    //Handle vendor requests
+    /* Handle vendor requests */
     if (bType == CY_U3P_USB_VENDOR_RQT)
     {
         isHandled = CyTrue;
@@ -207,21 +216,21 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
         	case ADI_BULK_REGISTER_TRANSFER:
         		CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
         		status = AdiBulkByteTransfer(wIndex, wValue);
-        		break;
-
-        	//Read bytes for IRegInterface
-        	case ADI_READ_BYTES:
-        		status = AdiReadRegBytes(wIndex);
-        		break;
-
-        	//Write single byte for IRegInterface
-        	case ADI_WRITE_BYTE:
-        		status = AdiWriteRegByte(wIndex, wValue & 0xFF);
         		USBBuffer[0] = status & 0xFF;
         		USBBuffer[1] = (status & 0xFF00) >> 8;
         		USBBuffer[2] = (status & 0xFF0000) >> 16;
         		USBBuffer[3] = (status & 0xFF000000) >> 24;
-        		CyU3PUsbSendEP0Data (wLength, USBBuffer);
+        		CyU3PUsbSendEP0Data (4, USBBuffer);
+        		break;
+
+        	//Read single word for IRegInterface
+        	case ADI_READ_BYTES:
+        		AdiReadRegBytes(wIndex);
+        		break;
+
+        	//Write single byte for IRegInterface
+        	case ADI_WRITE_BYTE:
+        		AdiWriteRegByte(wIndex, wValue & 0xFF);
         		break;
 
         	//Pulse drive for a specified amount of time
@@ -282,23 +291,34 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	}
                 break;
 
-            //Firmware Reset
-            case ADI_FIRMWARE_RESET:
+            /* Hard-reset the FX3 firmware (return to bootloader mode) */
+            case ADI_HARD_RESET:
+
             	CyU3PUsbAckSetup();
             	CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
             	CyU3PThreadSleep(500);
             	CyU3PConnectState(CyFalse, CyTrue);
+            	AdiAppStop ();
+            	CyU3PPibDeInit ();
+            	CyU3PThreadSleep(500);
+				CyU3PDeviceReset(CyFalse);
+				CyU3PThreadSleep(500);
 
-            	/*
-            	CyU3PUartDeInit();
-            	CyU3PGpioDeInit();
-            	CyU3PSpiDeInit();
+            	break;
+
+            /* Soft-reset the FX3 firmware (restart the ADI application firmware) */
+            case ADI_WARM_RESET:
+
+            	CyU3PUsbAckSetup();
+            	CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+            	CyU3PThreadSleep(500);
+            	CyU3PConnectState(CyFalse, CyTrue);
+            	AdiAppStop ();
             	CyU3PPibDeInit ();
             	CyU3PThreadSleep(500);
             	CyU3PDeviceReset(CyTrue);
             	CyU3PThreadSleep(500);
-            	*/
-            	CyU3PDeviceReset(CyFalse);
+
             	break;
 
             //Set the SPI config
@@ -368,12 +388,16 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             case ADI_STREAM_GENERIC_DATA:
             	if (wIndex)
             	{
-            		status = CyU3PEventSet(&eventHandler, ADI_DATA_STREAMING_START, CYU3P_EVENT_OR);
-            		transferWordLength = wLength;
+            		status = CyU3PEventSet(&eventHandler, ADI_GENERIC_STREAMING_START, CYU3P_EVENT_OR);
+					if (status != CY_U3P_SUCCESS)
+					{
+						CyU3PDebugPrint (4, "Setting generic stream enable flag failed, Error code = %d\r\n", status);
+					}
+            		transferByteLength = wLength;
             	}
             	else
             	{
-            		status = CyU3PEventSet(&eventHandler, ADI_DATA_STREAMING_STOP, CYU3P_EVENT_OR);
+            		status = CyU3PEventSet(&eventHandler, ADI_GENERIC_STREAMING_STOP, CYU3P_EVENT_OR);
             	}
             	if (status != CY_U3P_SUCCESS)
             	{
@@ -405,6 +429,14 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 				status = AdiMeasureDR();
 				break;
 
+			//PWM configuration
+            case ADI_PWM_CMD:
+            	//Read config data into USBBuffer
+				CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+				//Run pulse drive function (index = 1 to enable, 0 to disable)
+				status = AdiConfigurePWM((CyBool_t) wIndex);
+            	break;
+
             default:
                 // This is unknown request
                 isHandled = CyFalse;
@@ -433,6 +465,46 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             }
         }
 
+        /* TODO: Implement the CLEAR_FEATURE request to clean up the ADI application.
+         *
+         * CLEAR_FEATURE request for endpoint is always passed to the setup callback
+         * regardless of the enumeration model used. When a clear feature is received,
+         * the previous transfer has to be flushed and cleaned up. This is done at the
+         * protocol level. Since this is just a loopback operation, there is no higher
+         * level protocol. So flush the EP memory and reset the DMA channel associated
+         * with it. If there are more than one EP associated with the channel reset both
+         * the EPs. The endpoint stall and toggle / sequence number is also expected to be
+         * reset. Return CyFalse to make the library clear the stall and reset the endpoint
+         * toggle. Or invoke the CyU3PUsbStall (ep, CyFalse, CyTrue) and return CyTrue.
+         * Here we are clearing the stall.
+        if ((bTarget == CY_U3P_USB_TARGET_ENDPT) && (bRequest == CY_U3P_USB_SC_CLEAR_FEATURE)
+                && (wValue == CY_U3P_USBX_FS_EP_HALT))
+        {
+            if ((wIndex == CY_FX_EP_PRODUCER) || (wIndex == CY_FX_EP_CONSUMER))
+            {
+                if (glIsApplnActive)
+                {
+                    CyU3PUsbSetEpNak (CY_FX_EP_PRODUCER, CyTrue);
+                    CyU3PUsbSetEpNak (CY_FX_EP_CONSUMER, CyTrue);
+                    CyU3PBusyWait (125);
+
+                    CyU3PDmaChannelReset (&glChHandleBulkLp);
+                    CyU3PUsbFlushEp (CY_FX_EP_PRODUCER);
+                    CyU3PUsbFlushEp (CY_FX_EP_CONSUMER);
+                    CyU3PUsbResetEp (CY_FX_EP_PRODUCER);
+                    CyU3PUsbResetEp (CY_FX_EP_CONSUMER);
+                    CyU3PDmaChannelSetXfer (&glChHandleBulkLp, CY_FX_BULKLP_DMA_TX_SIZE);
+                    CyU3PUsbStall (wIndex, CyFalse, CyTrue);
+
+                    CyU3PUsbSetEpNak (CY_FX_EP_PRODUCER, CyFalse);
+                    CyU3PUsbSetEpNak (CY_FX_EP_CONSUMER, CyFalse);
+
+                    CyU3PUsbAckSetup ();
+                    isHandled = CyTrue;
+                }
+            }
+        } */
+
         //If there was an error return false to stall the request
         if (status != CY_U3P_SUCCESS)
         {
@@ -442,45 +514,143 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
     return isHandled;
 }
 
+CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+	uint16_t pinNumber;
+	uint32_t threshold, period;
+
+	//Get the pin number
+	pinNumber = USBBuffer[0];
+	pinNumber |= (USBBuffer[1] << 8);
+
+	if(EnablePWM)
+	{
+		//get the period
+		period = USBBuffer[2];
+		period |= (USBBuffer[3] << 8);
+		period |= (USBBuffer[4] << 16);
+		period |= (USBBuffer[5] << 24);
+
+		//get the threshold
+		threshold = USBBuffer[6];
+		threshold |= (USBBuffer[7] << 8);
+		threshold |= (USBBuffer[8] << 16);
+		threshold |= (USBBuffer[9] << 24);
+
+		CyU3PDebugPrint (4, "Setting up PWM with period %d, threshold %d, for pin %d\r\n", period, threshold, pinNumber);
+
+		//Override the selected pin to run as a complex GPIO
+		status = CyU3PDeviceGpioOverride(pinNumber, CyFalse);
+		if(status != CY_U3P_SUCCESS)
+		{
+			CyU3PDebugPrint (4, "Error! GPIO override for PWM mode failed, error code: 0x%s\r\n", status);
+			return status;
+		}
+
+		//configure the selected pin in PWM mode
+		CyU3PGpioComplexConfig_t gpioComplexConfig;
+		CyU3PMemSet ((uint8_t *)&gpioComplexConfig, 0, sizeof (gpioComplexConfig));
+		gpioComplexConfig.outValue = CyFalse;
+		gpioComplexConfig.inputEn = CyFalse;
+		gpioComplexConfig.driveLowEn = CyTrue;
+		gpioComplexConfig.driveHighEn = CyTrue;
+		gpioComplexConfig.pinMode = CY_U3P_GPIO_MODE_PWM;
+		gpioComplexConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+		gpioComplexConfig.timerMode = CY_U3P_GPIO_TIMER_HIGH_FREQ;
+		gpioComplexConfig.timer = 0;
+		gpioComplexConfig.period = period;
+		gpioComplexConfig.threshold = threshold;
+		status = CyU3PGpioSetComplexConfig(pinNumber, &gpioComplexConfig);
+	    if (status != CY_U3P_SUCCESS)
+	    {
+	    	CyU3PDebugPrint (4, "Error! GPIO config for PWM mode failed, error code: 0x%s\r\n", status);
+	    	return status;
+	    }
+	}
+	else
+	{
+		//want to reset the specified pin to simple state without output driven
+		status = CyU3PDeviceGpioOverride(pinNumber, CyTrue);
+		if(status != CY_U3P_SUCCESS)
+		{
+			CyU3PDebugPrint (4, "Error! GPIO override to exit PWM mode failed, error code: 0x%s\r\n", status);
+			return status;
+		}
+
+		//Disable the GPIO
+		status = CyU3PGpioDisable(pinNumber);
+		if(status != CY_U3P_SUCCESS)
+		{
+			CyU3PDebugPrint (4, "Error! Pin disable while exiting PWM mode failed, error code: 0x%s\r\n", status);
+			return status;
+		}
+
+		/* Set the GPIO configuration for each GPIO that was just overridden */
+		CyU3PGpioSimpleConfig_t gpioConfig;
+		CyU3PMemSet ((uint8_t *)&gpioConfig, 0, sizeof (gpioConfig));
+		gpioConfig.outValue = CyFalse;
+		gpioConfig.inputEn = CyTrue;
+		gpioConfig.driveLowEn = CyFalse;
+		gpioConfig.driveHighEn = CyFalse;
+		gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+
+		status = CyU3PGpioSetSimpleConfig(pinNumber, &gpioConfig);
+	    if (status != CY_U3P_SUCCESS)
+	    {
+	    	CyU3PDebugPrint (4, "Error! GPIO config to exit PWM mode failed, error code: 0x%s\r\n", status);
+	    	return status;
+	    }
+	}
+	return status;
+}
 
 /*
  * Function: AdiReadRegBytes(uint16_t addr)
  *
- * This function reads a single word over SPI
+ * This function reads a single word over SPI. Note that reads are not "full duplex"
+ * and will require a discrete read to set the address to be read from.
  *
  * addr: The address to send to the DUT in the first SPI transaction
  *
- * Returns: The status of the SPI register read operation
+ * Returns: status
  */
 CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint8_t tempBuffer[2];
 
-	//Set the address
+	/* Set the address to read from */
 	tempBuffer[0] = (0x7F) & addr;
-	//Set the second byte to 0's
+	/* Set the second byte to 0's */
 	tempBuffer[1] = 0;
-	//Send SPI Read command
+	/* Send SPI Read command */
 	status = CyU3PSpiTransmitWords(tempBuffer, 2);
-	//Check that the transfer was successful, end function if failed
+	/* Check that the transfer was successful and end function if failed */
 	if (status != CY_U3P_SUCCESS)
 	{
-		return status;
+        CyU3PDebugPrint (4, "Error! CyU3PSpiTransmitWords failed, error code: 0x%s\r\n", status);
 	}
 
-	//Stall
+	/* Stall for user-specified time */
 	AdiWaitForTimerTicks(stallTime);
 
-	//Receive the data in the next frame
+	/* Receive the data requested */
 	status = CyU3PSpiReceiveWords(tempBuffer, 2);
+	/* Check that the transfer was successful and end function if failed */
 	if (status != CY_U3P_SUCCESS)
 	{
-		return status;
+        CyU3PDebugPrint (4, "Error! CyU3PSpiReceiveWords failed!.\r\n");
 	}
 
-	//Send data back via control endpoint
-	status = CyU3PUsbSendEP0Data(2, tempBuffer);
+	/* Send status and data back via control endpoint */
+	USBBuffer[0] = status & 0xFF;
+	USBBuffer[1] = (status & 0xFF00) >> 8;
+	USBBuffer[2] = (status & 0xFF0000) >> 16;
+	USBBuffer[3] = (status & 0xFF000000) >> 24;
+	USBBuffer[4] = tempBuffer[0];
+	USBBuffer[5] = tempBuffer[1];
+	CyU3PUsbSendEP0Data (6, USBBuffer);
 
 	return status;
 }
@@ -494,15 +664,28 @@ CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr)
  *
  * data: The byte of data to write to the address
  *
- * Returns: The success of the SPI write operation
+ * Returns: status
  */
 CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-	uint8_t buffer[2];
-	buffer[0] = 0x80 | addr;
-	buffer[1] = data;
-	status = CyU3PSpiTransmitWords(buffer, 2);
+	uint8_t tempBuffer[2];
+	tempBuffer[0] = 0x80 | addr;
+	tempBuffer[1] = data;
+	status = CyU3PSpiTransmitWords (tempBuffer, 2);
+	/* Check that the transfer was successful and end function if failed */
+	if (status != CY_U3P_SUCCESS)
+	{
+        CyU3PDebugPrint (4, "Error! CyU3PSpiTransmitWords failed!.\r\n");
+        //AdiAppErrorHandler (status);
+	}
+	/* Send write status over the control endpoint */
+	USBBuffer[0] = status & 0xFF;
+	USBBuffer[1] = (status & 0xFF00) >> 8;
+	USBBuffer[2] = (status & 0xFF0000) >> 16;
+	USBBuffer[3] = (status & 0xFF000000) >> 24;
+	CyU3PUsbSendEP0Data (4, USBBuffer);
+
 	return status;
 }
 
@@ -957,10 +1140,13 @@ CyU3PReturnStatus_t AdiSetPin(uint16_t pinNumber, CyBool_t polarity)
  *
  * numTicks: The number of timer ticks to wait for.
  *
- * Returns: void
+ * Returns: status
  */
-void AdiWaitForTimerTicks(uint32_t numTicks)
+CyU3PReturnStatus_t AdiWaitForTimerTicks(uint32_t numTicks)
 {
+	/* TODO: Fix timer scheme*/
+	numTicks = numTicks *10;
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint32_t startTime, endTime, currentTime, initialRegValue;
 	CyBool_t timerRollover = CyFalse;
 	uint8_t pinIndex;
@@ -968,7 +1154,8 @@ void AdiWaitForTimerTicks(uint32_t numTicks)
 	//Return if the stall offset is below the measurable threshold
 	if(numTicks < ADI_STALL_OFFSET)
 	{
-		return;
+		status = CY_U3P_ERROR_BAD_ARGUMENT;
+		return status;
 	}
 	//Get the pin index
 	pinIndex = ADI_TIMER_PIN % 8;
@@ -1018,10 +1205,12 @@ void AdiWaitForTimerTicks(uint32_t numTicks)
 			//Return if timer elapsed
 			if(currentTime > endTime)
 			{
-				return;
+				status = CY_U3P_ERROR_BAD_ARGUMENT;
+				return status;
 			}
 		}
 	}
+	return status;
 }
 
 /*
@@ -1160,7 +1349,7 @@ CyU3PReturnStatus_t AdiReadTimerValue()
 }
 
 /*
- * Function: AdiRealTimeStart()
+ * Function: AdiRealTimeStreamStart()
  *
  * This function kicks off a real-time stream by configuring interrupts, SPI, and end points.
  * It also optionally toggles the SYNC/RTS pin if requested. At the end of the function, the
@@ -1168,7 +1357,7 @@ CyU3PReturnStatus_t AdiReadTimerValue()
  *
  * Returns: The status of starting a real-time stream.
  */
-CyU3PReturnStatus_t AdiRealTimeStart()
+CyU3PReturnStatus_t AdiRealTimeStreamStart()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint16_t bytesRead;
@@ -1200,11 +1389,33 @@ CyU3PReturnStatus_t AdiRealTimeStart()
 	//Get pin start setting
 	pinStartEnableDisable = (CyBool_t) USBBuffer[4];
 
-	//Clear the DMA buffers
-	CyU3PDmaChannelReset(&StreamingChannel);
-
 	//Flush streaming end point
 	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
+
+	/* Configure RTS channel DMA */
+    CyU3PDmaChannelConfig_t dmaConfig;
+    dmaConfig.size 				= usbBufferSize;
+    dmaConfig.count 			= 256;
+    dmaConfig.prodSckId 		= CY_U3P_LPP_SOCKET_SPI_PROD;
+    dmaConfig.consSckId 		= CY_U3P_UIB_SOCKET_CONS_1;
+    dmaConfig.dmaMode 			= CY_U3P_DMA_MODE_BYTE;
+    dmaConfig.prodHeader    	= 0;
+    dmaConfig.prodFooter    	= 0;
+    dmaConfig.consHeader    	= 0;
+    dmaConfig.notification  	= 0;
+    dmaConfig.cb            	= NULL;
+    dmaConfig.prodAvailCount	= 0;
+
+    /* Configure DMA for RealTimeStreamingChannel */
+    status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_AUTO, &dmaConfig);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Configuring the RTS DMA failed, Error Code = %d\n", status);
+		return status;
+	}
+
+	//Clear the DMA buffers
+	CyU3PDmaChannelReset(&StreamingChannel);
 
 	if(pinExitEnableDisable)
 	{
@@ -1365,9 +1576,9 @@ CyU3PReturnStatus_t AdiRealTimeStart()
 	AdiSpiResetFifo(CyTrue, CyTrue);
 
 	//Set the SPI config for streaming mode
-	spiConfig.ssnCtrl = CY_U3P_SPI_SSN_CTRL_HW_END_OF_XFER;
-	spiConfig.wordLen = 8;
-	CyU3PSpiSetConfig (&spiConfig, NULL);
+	//spiConfig.ssnCtrl = CY_U3P_SPI_SSN_CTRL_HW_END_OF_XFER;
+	//spiConfig.wordLen = 8;
+	//CyU3PSpiSetConfig (&spiConfig, NULL);
 
 	//Set infinite DMA transfer on streaming channel
 	CyU3PDmaChannelSetXfer(&StreamingChannel, 0);
@@ -1381,7 +1592,7 @@ CyU3PReturnStatus_t AdiRealTimeStart()
 
 
 /*
- * Function: AdiRealTimeFinished()
+ * Function: AdiRealTimeStreamFinished()
  *
  * This function cleans up after a real-time stream by resetting the SPI port, triggering the SYNC/RTS pin (if asked to do so),
  * and notifying the host that the cancel operation was successful.
@@ -1389,7 +1600,7 @@ CyU3PReturnStatus_t AdiRealTimeStart()
  * Returns: The status of the cancel operation.
  *
  */
-CyU3PReturnStatus_t AdiRealTimeFinished()
+CyU3PReturnStatus_t AdiRealTimeStreamFinished()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
@@ -1424,6 +1635,14 @@ CyU3PReturnStatus_t AdiRealTimeFinished()
 	//Reset the SPI controller
 	SPI->lpp_spi_config &= ~(CY_U3P_LPP_SPI_RX_ENABLE | CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_DMA_MODE | CY_U3P_LPP_SPI_ENABLE);
 	while ((SPI->lpp_spi_config & CY_U3P_LPP_SPI_ENABLE) != 0);
+
+    /* Tear down the RT streaming channel */
+    status = CyU3PDmaChannelDestroy(&StreamingChannel);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Tearing down the RTS DMA failed, Error Code = %d\n", status);
+		return status;
+	}
 
 	//Flush streaming end point
 	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
@@ -1467,13 +1686,13 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint16_t bytesRead;
 
-	//Disable VBUS ISR
+	/* Disable VBUS ISR */
 	CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
 
-	//Disable GPIO interrupt before attaching interrupt to pin
+	/* Disable GPIO interrupt before attaching interrupt to pin */
 	CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
 
-	//Make sure the global data ready pin is configured as an input and attach the correct pin interrupt
+	/* Make sure the global data ready pin is configured as an input and attach the interrupt to the correct edge */
 	CyU3PGpioSimpleConfig_t gpioConfig;
 	gpioConfig.outValue = CyTrue;
 	gpioConfig.inputEn = CyTrue;
@@ -1491,104 +1710,144 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	if(status != CY_U3P_SUCCESS)
 	{
 		CyU3PDebugPrint (4, "Setting burst stream pin interrupt failed!, error code = %d\r\n", status);
+		AdiAppErrorHandler(status);
 	}
 
-	//Get number of frames to capture from control endpoint
+	/* Get the number of buffers, trigger word, and transfer length from the control endpoint */
 	CyU3PUsbGetEP0Data(8, USBBuffer, &bytesRead);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Failed to get EP0 data!, error code = %d\r\n", status);
+		AdiAppErrorHandler(status);
+	}
 	numBuffers = USBBuffer[0];
 	numBuffers += (USBBuffer[1] << 8);
 	numBuffers += (USBBuffer[2] << 16);
 	numBuffers += (USBBuffer[3] << 24);
 
-	//Get number of words per burst transfer (minus the trigger word)
+	/* Get number of words to capture per transfer (minus the trigger word) */
 	transferWordLength = USBBuffer[6];
 	transferWordLength += (USBBuffer[7] << 8);
 
-	//Calculate number of bytes to transfer from words to transfer
+	/* Calculate the total number of bytes to transfer and add the trigger word */
+	/* We're going to overwrite the first two bytes with the trigger word, so make the burst length 2 bytes larger */
 	transferByteLength = (transferWordLength * 2) + 2;
 
-	//Set regList memory to correct length minus trigger word. We're going to overwrite the first
-	//two bytes with the trigger word, so make the burst length 2 bytes wider.
-	regBuffer = CyU3PDmaBufferAlloc(sizeof(uint8_t) * transferByteLength);
+	/* Set regList memory to correct length plus trigger word */
+	regList = CyU3PDmaBufferAlloc(sizeof(uint8_t) * transferByteLength);
 
-	//Clear (zero) contents of regList memory. Burst transfers are DNC, so we're sending zeros.
-	CyU3PMemSet(regBuffer, 0, sizeof(uint8_t) * transferByteLength);
+	/* Clear (zero) contents of regList memory. Burst transfers are DNC, so we're sending zeros */
+	CyU3PMemSet(regList, 0, sizeof(uint8_t) * transferByteLength);
 
-	//Append burst trigger word to the first two bytes of regList
-	regBuffer[0] = USBBuffer[4];
-	regBuffer[1] = USBBuffer[5];
+	/* Append burst trigger word to the first two bytes of regList */
+	regList[0] = USBBuffer[4];
+	regList[1] = USBBuffer[5];
 
-	//Calculate the required memory block to be a multiple of 16
+	/* Calculate the required memory block (in bytes) to be a multiple of 16 */
 	uint16_t remainder = transferByteLength % 16;
 	if (remainder == 0)
 	{
-		roundedByteTransferLength = transferWordLength;
+		roundedByteTransferLength = transferByteLength;
 	}
 	else
 	{
 		roundedByteTransferLength = transferByteLength + 16 - remainder;
 	}
 
-	/* Debugging print statements
-	 * CyU3PDebugPrint (4, "burstTriggerUpper:  %d\r\n", regBuffer[0]);
-	 * CyU3PDebugPrint (4, "burstTriggerLower:  %d\r\n", regBuffer[1]);
-	 * CyU3PDebugPrint (4, "roundedTransferLength:  %d\r\n", roundedByteTransferLength);
-	 * CyU3PDebugPrint (4, "transferByteLength:  %d\r\n", transferByteLength);
-	 * CyU3PDebugPrint (4, "transferWordLength:  %d\r\n", transferWordLength);
-	 * CyU3PDebugPrint (4, "numBuffers:  %d\r\n", numBuffers);
-	 */
+	 /*Debugging print statements
+	 CyU3PDebugPrint (4, "burstTriggerUpper:  %d\r\n", regList[0]);
+	 CyU3PDebugPrint (4, "burstTriggerLower:  %d\r\n", regList[1]);
+	 CyU3PDebugPrint (4, "roundedTransferLength:  %d\r\n", roundedByteTransferLength);
+	 CyU3PDebugPrint (4, "transferByteLength:  %d\r\n", transferByteLength);
+	 CyU3PDebugPrint (4, "transferWordLength:  %d\r\n", transferWordLength);
+	 CyU3PDebugPrint (4, "numBuffers:  %d\r\n", numBuffers); */
 
-	//Configure SPI TX DMA (CPU memory to SPI for burst mode)
-	//Transfer length must equal length of message to be sent
-	//Count not required since the DMA will be run in override mode
+	/* Configure the Burst DMA Streaming Channel (SPI to PC) for Auto DMA */
 	CyU3PDmaChannelConfig_t dmaConfig;
-    dmaConfig.size = roundedByteTransferLength;
-    dmaConfig.count = 0;
-    dmaConfig.prodAvailCount = 0;
-    dmaConfig.dmaMode = CY_U3P_DMA_MODE_BYTE;
-    dmaConfig.prodHeader     = 0;
-    dmaConfig.prodFooter     = 0;
-    dmaConfig.consHeader     = 0;
-    dmaConfig.notification   = 0;
-    dmaConfig.cb             = NULL;
-    dmaConfig.prodSckId = CY_U3P_CPU_SOCKET_PROD;
-    dmaConfig.consSckId = CY_U3P_LPP_SOCKET_SPI_CONS;
+	CyU3PMemSet ((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
+	dmaConfig.size 				= usbBufferSize;
+	dmaConfig.count 			= 256;
+	dmaConfig.prodSckId 		= CY_U3P_LPP_SOCKET_SPI_PROD;
+	dmaConfig.consSckId 		= CY_U3P_UIB_SOCKET_CONS_1;
+	dmaConfig.dmaMode 			= CY_U3P_DMA_MODE_BYTE;
+	dmaConfig.prodHeader    	= 0;
+	dmaConfig.prodFooter    	= 0;
+	dmaConfig.consHeader    	= 0;
+	dmaConfig.notification  	= 0;
+	dmaConfig.cb            	= NULL;
+	dmaConfig.prodAvailCount	= 0;
+
+	status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_AUTO, &dmaConfig);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Configuring the Burst Stream DMA failed, Error Code = %d\n", status);
+		AdiAppErrorHandler(status);
+	}
+
+	/* Configure SPI TX DMA (CPU memory to SPI for burst mode)
+	 * Transfer length must equal length of message to be sent
+	 * Count not required since the DMA will be run in override mode */
+	CyU3PMemSet ((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
+    dmaConfig.size 				= roundedByteTransferLength;
+    dmaConfig.count 			= 0;
+    dmaConfig.prodSckId 		= CY_U3P_CPU_SOCKET_PROD;
+    dmaConfig.consSckId 		= CY_U3P_LPP_SOCKET_SPI_CONS;
+    dmaConfig.dmaMode 			= CY_U3P_DMA_MODE_BYTE;
+    dmaConfig.prodHeader     	= 0;
+    dmaConfig.prodFooter     	= 0;
+    dmaConfig.consHeader     	= 0;
+    dmaConfig.notification   	= 0;
+    dmaConfig.cb             	= NULL;
+    dmaConfig.prodAvailCount 	= 0;
 
     status = CyU3PDmaChannelCreate(&MemoryToSPI, CY_U3P_DMA_TYPE_MANUAL_OUT, &dmaConfig);
 	if(status != CY_U3P_SUCCESS)
 	{
 		CyU3PDebugPrint (4, "Configuring the SPI TX DMA failed, Error Code = %d\r\n", status);
-		return status;
+		AdiAppErrorHandler(status);
 	}
 
-	//Clear the DMA buffers
-	CyU3PDmaChannelReset(&StreamingChannel);
+	/* Flush the streaming endpoint */
+	status = CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Flushing the ADI_STREAMING_ENDPOINT failed, Error Code = %d\r\n", status);
+		AdiAppErrorHandler(status);
+	}
 
-	//Flush streaming end point
-	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
-
-	//Manually reset SPI Rx/Tx FIFO
+	/* Manually reset the SPI Rx/Tx FIFO */
 	AdiSpiResetFifo(CyTrue, CyTrue);
 
-	//Set the SPI config for streaming mode
+	/* Set the SPI config for streaming mode */
 	spiConfig.ssnCtrl = CY_U3P_SPI_SSN_CTRL_HW_END_OF_XFER;
 	spiConfig.wordLen = 8;
-	CyU3PSpiSetConfig(&spiConfig, NULL);
+	status = CyU3PSpiSetConfig(&spiConfig, NULL);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Setting SPI config for burst stream mode failed, Error Code = %d\n", status);
+		AdiAppErrorHandler(status);
+	}
 
-	//Set infinite DMA transfer on streaming channel
-	CyU3PDmaChannelSetXfer(&StreamingChannel, 0);
-
-	//Configure SpiDmaBuffer
-	SpiDmaBuffer.buffer = regBuffer;
+	/* Configure SpiDmaBuffer and feed it regList*/
+	CyU3PMemSet ((uint8_t *)&SpiDmaBuffer, 0, sizeof(SpiDmaBuffer));
+	SpiDmaBuffer.count = transferByteLength;
+	SpiDmaBuffer.size = roundedByteTransferLength;
+	SpiDmaBuffer.buffer = regList;
 	SpiDmaBuffer.status = 0;
 
-	//Set the burst stream flag to notify the streaming thread
+	/* Enable an infinite DMA transfer on the streaming channel */
+	status = CyU3PDmaChannelSetXfer(&StreamingChannel, 0);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Setting CyU3PDmaChannelSetXfer failed, Error Code = %d\n", status);
+		AdiAppErrorHandler(status);
+	}
+
+	/* Set the burst stream flag to notify the streaming thread it should take over */
 	CyU3PEventSet (&eventHandler, ADI_BURST_STREAM_ENABLE, CYU3P_EVENT_OR);
 
 	return status;
-
 }
-
 
 /*
  * Function: AdiBurstStreamFinished()
@@ -1603,11 +1862,11 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
-	//Reset the SPI controller
+	/* Reset the SPI controller */
 	SPI->lpp_spi_config &= ~(CY_U3P_LPP_SPI_RX_ENABLE | CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_DMA_MODE | CY_U3P_LPP_SPI_ENABLE);
 	while ((SPI->lpp_spi_config & CY_U3P_LPP_SPI_ENABLE) != 0);
 
-	//Remove the interrupt from the global data ready pin
+	/* Remove the interrupt from the global data ready pin */
 	CyU3PGpioSimpleConfig_t gpioConfig;
 	gpioConfig.outValue = CyTrue;
 	gpioConfig.inputEn = CyTrue;
@@ -1615,13 +1874,9 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 	gpioConfig.driveHighEn = CyFalse;
 	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
 
-	//Write GPIO config
 	CyU3PGpioSetSimpleConfig(dataReadyPin, &gpioConfig);
 
-	//Flush streaming end point
-	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
-
-	//Destroy MemoryToSpi DMA channel
+	/* Destroy MemoryToSpi DMA channel */
     status = CyU3PDmaChannelDestroy(&MemoryToSPI);
 	if(status != CY_U3P_SUCCESS)
 	{
@@ -1629,24 +1884,35 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 		return status;
 	}
 
-	//Re-enable relevant ISRs
+    /* Destroy the burst DMA channel (and recover a LOT of memory) */
+    status = CyU3PDmaChannelDestroy(&StreamingChannel);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Tearing down the Streaming DMA channel failed, Error Code = %d\n", status);
+		return status;
+	}
+
+	/* Flush the streaming end point */
+	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
+
+	/* Clear all interrupt flags */
+	CyU3PVicClearInt();
+
+	/* Re-enable relevant ISRs */
 	CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
 	CyU3PVicEnableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
 
-	//Clear all interrupt flags
-	CyU3PVicClearInt();
-
-	//Additional clean-up after a user requests an early cancellation
+	/* Additional clean-up after a user requests an early cancellation */
 	if(killEarly)
 	{
-		//Send status back over control endpoint to end USB transaction and signal cancel was completed successfully
+		/* Send status back over control endpoint to end USB transaction and signal cancel was completed successfully */
 		USBBuffer[0] = status & 0xFF;
 		USBBuffer[1] = (status & 0xFF00) >> 8;
 		USBBuffer[2] = (status & 0xFF0000) >> 16;
 		USBBuffer[3] = (status & 0xFF000000) >> 24;
 		CyU3PUsbSendEP0Data (4, USBBuffer);
 
-		//Reset killEarly flag in case the user wants to capture data again
+		/* Reset killEarly flag in case the user wants to capture data again */
 		killEarly = CyFalse;
 	}
 
@@ -1655,7 +1921,7 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 
 
 /*
- * Function: AdiGenericDataStreamStart()
+ * Function: AdiGenericStreamStart()
  *
  * This function kicks off a generic data stream by configuring interrupts, SPI, and end points.
  * At the end of the function, the ADI_GENERIC_STREAM_ENABLE flag is set such that the
@@ -1663,15 +1929,25 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
  *
  * Returns: The status of starting a generic stream.
  */
-CyU3PReturnStatus_t AdiGenericDataStreamStart()
+CyU3PReturnStatus_t AdiGenericStreamStart()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint16_t bytesRead;
 
-	//Disable GPIO interrupt before attaching interrupt to pin
+	/* Get the data from the control endpoint */
+	status = CyU3PUsbGetEP0Data(transferByteLength, USBBuffer, &bytesRead);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Failed to read configuration data from control endpoint!, error code = %d\r\n", status);
+	}
+
+	/* Disable VBUS ISR */
+	CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
+
+	/* Disable GPIO interrupt before attaching interrupt to pin */
 	CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
 
-	//Make sure the data ready pin is configured as an input and attach the correct pin interrupt
+	/* Make sure the data ready pin is configured as an input and attach the correct pin interrupt */
 	CyU3PGpioSimpleConfig_t gpioConfig;
 	gpioConfig.outValue = CyTrue;
 	gpioConfig.inputEn = CyTrue;
@@ -1686,62 +1962,100 @@ CyU3PReturnStatus_t AdiGenericDataStreamStart()
 		gpioConfig.intrMode = CY_U3P_GPIO_INTR_NEG_EDGE;
 	}
 
-	CyU3PGpioSetSimpleConfig(dataReadyPin, &gpioConfig);
+	status = CyU3PGpioSetSimpleConfig(dataReadyPin, &gpioConfig);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Setting burst stream pin interrupt failed!, error code = %d\r\n", status);
+	}
 
-	//Get the data from the control endpoint transaction
-	CyU3PUsbGetEP0Data(transferWordLength, USBBuffer, &bytesRead);
-
-	//Get the number of buffers (number of times to read each set of registers)
+	/* Get the number of buffers (number of times to read each set of registers) */
 	numBuffers = USBBuffer[0];
 	numBuffers += (USBBuffer[1] << 8);
 	numBuffers += (USBBuffer[2] << 16);
 	numBuffers += (USBBuffer[3] << 24);
 
-	//Get the number of captures of the address list (number of times to capture the list of registers)
+	/* Get the number of captures of the address list (number of times to capture the list of registers per buffer) */
 	numCaptures = USBBuffer[4];
 	numCaptures += (USBBuffer[5] << 8);
 	numCaptures += (USBBuffer[6] << 16);
 	numCaptures += (USBBuffer[7] << 24);
 
-	//Set regList memory to correct length (extra location is used to sanitize final SPI transaction)
-	regList = CyU3PMemAlloc(sizeof(uint8_t) * (transferWordLength - 7));
+	/* Calculate the number of bytes per buffer */
+	/* Number of times to read each set of registers * (number of registers - control registers) */
+	bytesPerBuffer = numCaptures * (transferByteLength - 8);
 
-	//Clear contents of regList memory
-	CyU3PMemSet(regList, 0, sizeof(uint8_t) * (transferWordLength - 7));
+	/* Set regList memory ((transferByteLength - (number of config bytes) * numCaptures) + trigger word) */
+	regList = CyU3PMemAlloc(sizeof(uint8_t) * (((transferByteLength - 8) * numCaptures) + 2));
 
-	//Write values to regList
-	for(uint16_t i = 8; i < transferWordLength; i++)
+	/* Clear (zero) contents of regList memory */
+	CyU3PMemSet(regList, 0, sizeof(uint8_t) * (((transferByteLength - 8) * numCaptures) + 2));
+
+	/* Write register list values to regList */
+	uint16_t i, j;
+	for (i = 0; i < numCaptures; i++)
 	{
-		regList[i - 8] = USBBuffer[i];
+		for(j = 0; j < (transferByteLength - 8); j++)
+		{
+			regList[(i * (transferByteLength - 8)) + j] = USBBuffer[j + 8];
+		}
 	}
 
-	//Calculate the number of bytes per buffer
-	// (2 bytes per word [register] * number of times to read each set of registers * number of registers)
-	bytesPerBuffer = 2 * numCaptures * (transferWordLength - 8);
+	//Find number of register "buffers" which fit in a USB buffer
+	if(bytesPerBuffer > usbBufferSize)
+	{
+		bytesPerUsbPacket = usbBufferSize;
+	}
+	else
+	{
+		bytesPerUsbPacket = ((usbBufferSize / bytesPerBuffer) * bytesPerBuffer);
+	}
 
-	//Disable interrupts before activating the streaming thread. Commented interrupts are *not* disabled.
-	CyU3PVicDisableInt(CY_U3P_VIC_SWI_VECTOR);                      /**< 1: Software interrupt. */
-	//CyU3PVicDisableInt(CY_U3P_VIC_DEBUG_RX_VECTOR);                 /**< 2: Unused debug vector. */
-	//CyU3PVicDisableInt(CY_U3P_VIC_DEBUG_TX_VECTOR);                 /**< 3: Unused debug vector. */
-	//CyU3PVicDisableInt(CY_U3P_VIC_WDT_VECTOR);                      /**< 4: Watchdog timer interrupt. */
-	CyU3PVicDisableInt(CY_U3P_VIC_BIAS_CORRECT_VECTOR);             /**< 5: Timer for PVT Bias correction. */
-	CyU3PVicDisableInt(CY_U3P_VIC_PIB_DMA_VECTOR);                  /**< 6: GPIF (PIB) DMA interrupt. */
-	CyU3PVicDisableInt(CY_U3P_VIC_PIB_CORE_VECTOR);                 /**< 7: GPIF (PIB) Core interrupt. */
-	//CyU3PVicDisableInt(CY_U3P_VIC_UIB_DMA_VECTOR);                  /**< 8: USB DMA interrupt. */
-	//CyU3PVicDisableInt(CY_U3P_VIC_UIB_CORE_VECTOR);                 /**< 9: USB core interrupt. */
-	//CyU3PVicDisableInt(CY_U3P_VIC_UIB_CONTROL_VECTOR);              /**< 10: Unused interrupt vector. */
-	//CyU3PVicDisableInt(CY_U3P_VIC_SIB_DMA_VECTOR);                  /**< 11: Storage port DMA interrupt (FX3S only). */
-	//CyU3PVicDisableInt(CY_U3P_VIC_SIB0_CORE_VECTOR);                /**< 12: Storage port 0 core interrupt (FX3S only). */
-	//CyU3PVicDisableInt(CY_U3P_VIC_SIB1_CORE_VECTOR);               /**< 13: Storage port 1 core interrupt (FX3S only). */
-	//CyU3PVicDisableInt(CY_U3P_VIC_RESERVED_15_VECTOR);              /**< 14: Unused interrupt vector. */
-	CyU3PVicDisableInt(CY_U3P_VIC_I2C_CORE_VECTOR);                 /**< 15: I2C block interrupt. */
-	CyU3PVicDisableInt(CY_U3P_VIC_I2S_CORE_VECTOR);                 /**< 16: I2S block interrupt. */
-	//CyU3PVicDisableInt(CY_U3P_VIC_SPI_CORE_VECTOR);                 /**< 17: SPI block interrupt. */
-	CyU3PVicDisableInt(CY_U3P_VIC_UART_CORE_VECTOR);                /**< 18: UART block interrupt. */
-	CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);                /**< 19: GPIO block interrupt. */
-	//CyU3PVicDisableInt(CY_U3P_VIC_LPP_DMA_VECTOR);                  /**< 20: Serial peripheral (I2C, I2S, SPI and UART) DMA interrupt. */
-	CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);                 /**< 21: VBus detect interrupt. */
-    //CyU3PVicDisableInt(CY_U3P_VIC_NUM_VECTORS);                     /**< Number of valid FX3 interrupt vectors. */
+	/* Flush the streaming endpoint */
+	status = CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Flushing the ADI_STREAMING_ENDPOINT failed, Error Code = %d\r\n", status);
+		AdiAppErrorHandler(status);
+	}
+
+	/* Configure the StreamingChannel DMA (SPI to PC) */
+	CyU3PDmaChannelConfig_t dmaConfig;
+	CyU3PMemSet ((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
+	dmaConfig.size 				= usbBufferSize;
+	dmaConfig.count 			= 16;
+	dmaConfig.prodSckId 		= CY_U3P_CPU_SOCKET_PROD;
+	dmaConfig.consSckId 		= CY_U3P_UIB_SOCKET_CONS_1;
+	dmaConfig.dmaMode 			= CY_U3P_DMA_MODE_BYTE;
+	dmaConfig.prodHeader    	= 0;
+	dmaConfig.prodFooter    	= 0;
+	dmaConfig.consHeader    	= 0;
+	dmaConfig.notification  	= 0;
+	dmaConfig.cb            	= NULL;
+	dmaConfig.prodAvailCount	= 0;
+
+	status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_MANUAL_OUT, &dmaConfig);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Configuring the StreamingChannel DMA for generic stream failed, Error Code = %d\n", status);
+		AdiAppErrorHandler(status);
+	}
+
+	/* Set DMA transfer mode */
+	status = CyU3PDmaChannelSetXfer(&StreamingChannel, 0);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "CyU3PDmaChannelSetXfer failed, Error Code = %d\n", status);
+		return status;
+	}
+
+	//Enable timer interrupts
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= (~CY_U3P_LPP_GPIO_INTRMODE_MASK);
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_GPIO_INTR_TIMER_THRES << CY_U3P_LPP_GPIO_INTRMODE_POS;
+
+	//Set the timer pin threshold to correspond with the stall time
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold = (stallTime * 10) - ADI_GENERIC_STALL_OFFSET;
+	//Set the timer pin period (useful for error case, timer register is manually reset)
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = (stallTime * 10) - ADI_GENERIC_STALL_OFFSET + 1;
 
 	//Enable generic data capture thread
 	status = CyU3PEventSet (&eventHandler, ADI_GENERIC_STREAM_ENABLE, CYU3P_EVENT_OR);
@@ -1750,20 +2064,19 @@ CyU3PReturnStatus_t AdiGenericDataStreamStart()
 
 }
 
-
 /*
- * Function: AdiGenericDataStreamFinished()
+ * Function: AdiGenericStreamFinished()
  *
  * This function cleans up after a generic stream and notifies the host that the cancel operation was successful if requested.
  *
  * Returns: The status of the cancel operation.
  *
  */
-CyU3PReturnStatus_t AdiGenericDataStreamFinished()
+CyU3PReturnStatus_t AdiGenericStreamFinished()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
-	//Remove the interrupt from the global data ready pin
+	/* Remove the interrupt from the global data ready pin */
 	CyU3PGpioSimpleConfig_t gpioConfig;
 	gpioConfig.outValue = CyTrue;
 	gpioConfig.inputEn = CyTrue;
@@ -1773,47 +2086,39 @@ CyU3PReturnStatus_t AdiGenericDataStreamFinished()
 
 	CyU3PGpioSetSimpleConfig(dataReadyPin, &gpioConfig);
 
-	//Clear all interrupt flags
+    /* Destroy the StreamingChannel channel (and recover a LOT of memory) */
+    status = CyU3PDmaChannelDestroy(&StreamingChannel);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Tearing down the Streaming DMA channel failed, Error Code = %d\n", status);
+	}
+
+	/* Flush the streaming end point */
+	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
+
+	/* Clear all interrupt flags */
 	CyU3PVicClearInt();
 
-	//Re-enable ISRs that were previously disabled
-    CyU3PVicEnableInt(CY_U3P_VIC_SWI_VECTOR);                      /**< 1: Software interrupt. */
-    //CyU3PVicEnableInt(CY_U3P_VIC_DEBUG_RX_VECTOR);                 /**< 2: Unused debug vector. */
-    //CyU3PVicEnableInt(CY_U3P_VIC_DEBUG_TX_VECTOR);                 /**< 3: Unused debug vector. */
-    //CyU3PVicEnableInt(CY_U3P_VIC_WDT_VECTOR);                      /**< 4: Watchdog timer interrupt. */
-    CyU3PVicEnableInt(CY_U3P_VIC_BIAS_CORRECT_VECTOR);             /**< 5: Timer for PVT Bias correction. */
-    CyU3PVicEnableInt(CY_U3P_VIC_PIB_DMA_VECTOR);                  /**< 6: GPIF (PIB) DMA interrupt. */
-    CyU3PVicEnableInt(CY_U3P_VIC_PIB_CORE_VECTOR);                 /**< 7: GPIF (PIB) Core interrupt. */
-    //CyU3PVicEnableInt(CY_U3P_VIC_UIB_DMA_VECTOR);                  /**< 8: USB DMA interrupt. */
-    //CyU3PVicEnableInt(CY_U3P_VIC_UIB_CORE_VECTOR);                 /**< 9: USB core interrupt. */
-    //CyU3PVicEnableInt(CY_U3P_VIC_UIB_CONTROL_VECTOR);              /**< 10: Unused interrupt vector. */
-    //CyU3PVicEnableInt(CY_U3P_VIC_SIB_DMA_VECTOR);                  /**< 11: Storage port DMA interrupt (FX3S only). */
-    //CyU3PVicEnableInt(CY_U3P_VIC_SIB0_CORE_VECTOR);                /**< 12: Storage port 0 core interrupt (FX3S only). */
-    //CyU3PVicEnableInt(CY_U3P_VIC_SIB1_CORE_VECTOR);               /**< 13: Storage port 1 core interrupt (FX3S only). */
-    //CyU3PVicEnableInt(CY_U3P_VIC_RESERVED_15_VECTOR);              /**< 14: Unused interrupt vector. */
-    CyU3PVicEnableInt(CY_U3P_VIC_I2C_CORE_VECTOR);                 /**< 15: I2C block interrupt. */
-    CyU3PVicEnableInt(CY_U3P_VIC_I2S_CORE_VECTOR);                 /**< 16: I2S block interrupt. */
-    //CyU3PVicEnableInt(CY_U3P_VIC_SPI_CORE_VECTOR);                 /**< 17: SPI block interrupt. */
-    CyU3PVicEnableInt(CY_U3P_VIC_UART_CORE_VECTOR);                /**< 18: UART block interrupt. */
-    CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);                /**< 19: GPIO block interrupt. */
-    //CyU3PVicEnableInt(CY_U3P_VIC_LPP_DMA_VECTOR);                  /**< 20: Serial peripheral (I2C, I2S, SPI and UART) DMA interrupt. */
-    CyU3PVicEnableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);                 /**< 21: VBus detect interrupt. */
+	/* Re-enable relevant ISRs */
+	CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
+	CyU3PVicEnableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
 
-    //Additional clean-up if a user requests an early cancellation
+	/* Additional clean-up after a user requests an early cancellation */
 	if(killEarly)
 	{
-		//Send status back over control endpoint to end USB transaction and signal cancel was completed successfully
+		/* Send status back over control endpoint to end USB transaction and signal cancel was completed successfully */
 		USBBuffer[0] = status & 0xFF;
 		USBBuffer[1] = (status & 0xFF00) >> 8;
 		USBBuffer[2] = (status & 0xFF0000) >> 16;
 		USBBuffer[3] = (status & 0xFF000000) >> 24;
 		CyU3PUsbSendEP0Data (4, USBBuffer);
 
-		//Reset killEarly flag in case the user wants to capture data again
+		/* Reset killEarly flag in case the user wants to capture data again */
 		killEarly = CyFalse;
 	}
 
 	return status;
+
 }
 
 
@@ -1823,12 +2128,14 @@ CyU3PReturnStatus_t AdiGenericDataStreamFinished()
  * This function sets a flag to notify the streaming thread that the user requested to cancel streaming.
  * This function can be used to stop any stream operation.
  *
- * Returns: void
+ * Returns: The function status code
  *
  */
-void AdiStopAnyDataStream()
+CyU3PReturnStatus_t AdiStopAnyDataStream()
 {
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	killEarly = CyTrue;
+	return status;
 }
 
 
@@ -2139,36 +2446,6 @@ CyU3PReturnStatus_t AdiMeasureDR()
 }
 
 /*
- * Function: AdiSpiInit()
- *
- * This function initializes the SPI controller
- *
- * Returns: The success of the SPI initialization operation
- */
-CyU3PReturnStatus_t AdiSpiInit()
-{
-    CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-
-    /* Start the SPI module and configure the master. */
-    status = CyU3PSpiInit();
-    if (status == CY_U3P_ERROR_ALREADY_STARTED)
-    {
-    	CyU3PSpiDeInit();
-    	CyU3PSpiInit();
-    	CyU3PDebugPrint (4, "SPI was already initialized! Re-initializing..., error code = %d\r\n", status);
-    }
-
-    status = CyU3PSpiSetConfig (&spiConfig, NULL);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Initializing SPI failed!, error code = %d\r\n", status);
-	}
-
-    return status;
-}
-
-
-/*
  * FunctionL AdiSpiResetFifo(CyBool_t isTx, CyBool_t isRx)
  *
  * This function resets the SPI FIFO and disables the SPI block after completion.
@@ -2221,43 +2498,6 @@ CyU3PReturnStatus_t AdiSpiResetFifo(CyBool_t isTx, CyBool_t isRx)
 	SPI->lpp_spi_intr_mask = intrMask;
 
 	return CY_U3P_SUCCESS;
-}
-
-/*
- * Function: AdiSetDefaultSpiConfig()
- *
- * This function resets the global SPI config to its default parameters
- *
- * Returns: void
- */
-void AdiSetDefaultSpiConfig()
-{
-    //Set the stall time in ticks (each tick = 1us)
-    stallTime = 25;
-
-    //Set the DUT type
-    DUTType = ADcmXL3021;
-
-    //Set the data ready pin
-    dataReadyPin = ADI_PIN_DIO2;
-
-    //Set the DrActive
-    DrActive = CyTrue;
-
-    //Set the DrPolarity
-    DrPolarity = CyTrue;
-
-    // Configure the global SPI parameters
-    CyU3PMemSet ((uint8_t *)&spiConfig, 0, sizeof(spiConfig));
-    spiConfig.isLsbFirst = CyFalse;
-    spiConfig.cpol       = CyTrue;
-    spiConfig.ssnPol     = CyFalse;
-    spiConfig.cpha       = CyTrue;
-    spiConfig.leadTime   = CY_U3P_SPI_SSN_LAG_LEAD_ONE_CLK;
-    spiConfig.lagTime    = CY_U3P_SPI_SSN_LAG_LEAD_ONE_CLK;
-    spiConfig.ssnCtrl    = CY_U3P_SPI_SSN_CTRL_HW_END_OF_XFER;
-    spiConfig.clock      = 2000000;
-    spiConfig.wordLen    = 8;
 }
 
 /*
@@ -2458,192 +2698,7 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 	return isHandled;
 }
 
-/*
- * Function: AdiDebugInit()
- *
- * This function initializes the UART controller to send debug messages
- *
- * Returns: Void
- */
-void AdiDebugInit()
-{
-    CyU3PUartConfig_t uartConfig;
 
-    /* Initialize the UART for printing debug messages */
-    CyU3PUartInit();
-
-    /* Set UART configuration */
-    CyU3PMemSet ((uint8_t *)&uartConfig, 0, sizeof (uartConfig));
-    uartConfig.baudRate = CY_U3P_UART_BAUDRATE_115200;
-    uartConfig.stopBit = CY_U3P_UART_ONE_STOP_BIT;
-    uartConfig.parity = CY_U3P_UART_NO_PARITY;
-    uartConfig.txEnable = CyTrue;
-    uartConfig.rxEnable = CyFalse;
-    uartConfig.flowCtrl = CyFalse;
-    uartConfig.isDma = CyTrue;
-
-    CyU3PUartSetConfig (&uartConfig, NULL);
-
-    /* Set the UART transfer to a really large value. */
-    CyU3PUartTxSetBlockXfer (0xFFFFFFFF);
-
-    /* Initialize the debug module. */
-    CyU3PDebugInit (CY_U3P_LPP_SOCKET_UART_CONS, 8);
-
-    /* Turn off the preamble to the debug messages. */
-    CyU3PDebugPreamble(CyFalse);
-
-    /* Send a success command over the debug port. */
-    CyU3PDebugPrint (4, "\r\n");
-    CyU3PDebugPrint (4, "Debugger successfully initialized!\r\n");
-    CyU3PDebugPrint (4, "\r\n");
-
-}
-
-/*
- * Function: ADICreateEventFlagGroup()
- *
- * This function creates generic event groups to keep track of the state of the RT and DR threads
- *
- *	eventHandler:
- *	BIT	  DESCRIPTION
- *	 0    Real-time start/stop. 1 = start / 0 = stop
- *	 1	  Streaming? 1 = yes / 0 = no
- *	 2    Pin Exit? 1 = enabled / 0 = disabled
-*	 3    Data stream start/stop. 1 = start / 0 = stop
- *	 .
- *	 .
- *
- *	 gpioHandler:
- *	 BIT  DESCRIPTION
- *	 0	  Signal that a gpio event has occurred
- *
- * Returns: The success of the event creation operation
- */
-CyU3PReturnStatus_t AdiCreateEventFlagGroup()
-{
-	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-	//Create stream event handler
-	status = CyU3PEventCreate(&eventHandler);
-	if(status != CY_U3P_SUCCESS)
-	{
-		return status;
-	}
-
-	//Create gpio event handler
-	status = CyU3PEventCreate(&gpioHandler);
-	if(status != CY_U3P_SUCCESS)
-		{
-			return status;
-		}
-
-	return status;
-}
-
-/*
- * Function: AdiConfigureBulkEndpoint()
- *
- * This function configures Bulk-In endpoint 1 (FX3 to PC). It also sets up a DMA channel
- * to connect the SPI producer with the USB consumer, allowing automatic DMA transfer in
- * real time streaming mode.
- *
- * Returns: The success of the endpoint configuration operation
- */
-CyU3PReturnStatus_t AdiConfigureEndpoints()
-{
-	CyU3PEpConfig_t bulkCfg;
-	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-
-	//Clear the config
-	CyU3PMemSet ((uint8_t *)&bulkCfg, 0, sizeof (bulkCfg));
-
-	//Set bulk endpoint parameters
-	bulkCfg.enable = CyTrue;
-	bulkCfg.epType = CY_U3P_USB_EP_BULK;
-	bulkCfg.burstLen = 1;
-	bulkCfg.pcktSize = 512;
-	bulkCfg.streams = 0;
-
-	//Set endpoint config for real time streaming endpoint
-	status = CyU3PSetEpConfig(ADI_STREAMING_ENDPOINT, &bulkCfg);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Setting RTS endpoint failed, Error Code = %d\n", status);
-		return status;
-	}
-
-	//Set endpoint config for the PC to FX3 direction
-	status = CyU3PSetEpConfig(ADI_FROM_PC_ENDPOINT, &bulkCfg);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Setting PC to FX3 endpoint failed, Error Code = %d\n", status);
-		return status;
-	}
-
-	//Set endpoint config for the FX3 to PC direction
-	status = CyU3PSetEpConfig(ADI_TO_PC_ENDPOINT, &bulkCfg);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Setting FX3 to PC endpoint failed, Error Code = %d\n", status);
-		return status;
-	}
-
-	//Flush endpoint memory
-	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
-	CyU3PUsbFlushEp(ADI_FROM_PC_ENDPOINT);
-	CyU3PUsbFlushEp(ADI_TO_PC_ENDPOINT);
-
-	//Configure DMA for real time streaming channel
-	//Force DMA packet size to match USB High Speed (512 bytes)
-    CyU3PDmaChannelConfig_t dmaConfig;
-    dmaConfig.size = 512;
-    dmaConfig.count = 256;
-    dmaConfig.prodSckId = CY_U3P_LPP_SOCKET_SPI_PROD;
-    dmaConfig.consSckId = CY_U3P_UIB_SOCKET_CONS_1;
-    dmaConfig.dmaMode = CY_U3P_DMA_MODE_BYTE;
-
-    //Disable DMA callbacks
-    dmaConfig.prodHeader     = 0;
-    dmaConfig.prodFooter     = 0;
-    dmaConfig.consHeader     = 0;
-    dmaConfig.notification   = 0;
-    dmaConfig.cb             = NULL;
-    dmaConfig.prodAvailCount = 0;
-
-    //Configure DMA for RealTimeStreamingChannel
-    status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_AUTO, &dmaConfig);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Configuring the RTS DMA failed, Error Code = %d\n", status);
-		return status;
-	}
-
-    //Configure DMA for ChannelFromPC
-    dmaConfig.count = 0;
-    dmaConfig.prodSckId = CY_U3P_UIB_SOCKET_PROD_1;
-    dmaConfig.consSckId = CY_U3P_CPU_SOCKET_CONS;
-
-    status = CyU3PDmaChannelCreate(&ChannelFromPC, CY_U3P_DMA_TYPE_MANUAL_IN, &dmaConfig);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Configuring the ChannelFromPC DMA failed, Error Code = %d\n", status);
-		return status;
-	}
-
-    //Configure DMA for ChannelToPC
-    dmaConfig.count = 0;
-    dmaConfig.prodSckId = CY_U3P_CPU_SOCKET_PROD;
-    dmaConfig.consSckId = CY_U3P_UIB_SOCKET_CONS_2;
-
-    status = CyU3PDmaChannelCreate(&ChannelToPC, CY_U3P_DMA_TYPE_MANUAL_OUT, &dmaConfig);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Configuring the ChannelToPC DMA failed, Error Code = %d\n", status);
-		return status;
-	}
-
-	return status;
-}
 
 /*
  * Function: AdiBulkEndpointHandler(CyU3PUsbEpEvtType evType,CyU3PUSBSpeed_t usbSpeed, uint8_t epNum)
@@ -2665,7 +2720,8 @@ void AdiBulkEndpointHandler(CyU3PUsbEpEvtType evType, CyU3PUSBSpeed_t usbSpeed, 
 /*
  * Function: AdiUSBEventHandler (CyU3PUsbEventType_t evtype, uint16_t evdata)
  *
- * This is a callback function to handle generic USB events
+ * This is a callback function to handle generic USB events. It calls start/stop
+ * functions to manage the ADI application.
  *
  * evtype: The type of the event being handled
  *
@@ -2677,25 +2733,25 @@ void AdiUSBEventHandler (CyU3PUsbEventType_t evtype, uint16_t evdata)
 {
     switch (evtype)
     {
-        case CY_U3P_USB_EVENT_CONNECT:
-        	CyU3PDebugPrint (8, "CY_U3P_USB_EVENT_CONNECT detected\r\n");
-			break;
-
         case CY_U3P_USB_EVENT_SETCONF:
-        	CyU3PDebugPrint (8, "CY_U3P_USB_EVENT_SETCONF detected\r\n");
-			/* Enable the application */
-        	appActive = CyTrue;
         	/* Disable the low power entry to optimize USB throughput */
         	CyU3PUsbLPMDisable();
+        	/* Stop the application before re-starting. */
+        	if (appActive)
+        	{
+        		AdiAppStop ();
+        	}
+			/* Start the application */
+        	AdiAppStart ();
             break;
 
         case CY_U3P_USB_EVENT_RESET:
-        	CyU3PDebugPrint (8, "CY_U3P_USB_EVENT_RESET detected\r\n");
-        	break;
-
         case CY_U3P_USB_EVENT_DISCONNECT:
-        	appActive = CyFalse;
-			CyU3PDebugPrint (8, "CY_U3P_USB_EVENT_DISCONNECT detected\r\n");
+        	/* Stop the application */
+        	if (appActive)
+        	{
+        		AdiAppStop ();
+        	}
             break;
 
         default:
@@ -2716,163 +2772,6 @@ void AdiUSBEventHandler (CyU3PUsbEventType_t evtype, uint16_t evdata)
 CyBool_t AdiLPMRequestHandler(CyU3PUsbLinkPowerMode link_mode)
 {
     return CyTrue;
-}
-
-/*
- * Function: AdiGPIOInit()
- *
- * This function initializes the GPIO pins used on the FX3 board, and configures the GPIO clock source.
- *
- * Returns: The status of the GPIO initialization operation
- */
-CyU3PReturnStatus_t AdiGPIOInit()
-{
-	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-
-	//Configure the clock source and set up ISR
-	//System clock should be 403.2MHz
-	CyU3PGpioClock_t gpioClock;
-	gpioClock.fastClkDiv = 13;
-	gpioClock.slowClkDiv = 31;
-	//Effective clock speed for timer is 403.2MHz / (13 * 31) = 1.000MHz
-	gpioClock.simpleDiv = CY_U3P_GPIO_SIMPLE_DIV_BY_2;
-	//Simple clock (for GPIO pins) is 201.6MHz
-	gpioClock.clkSrc = CY_U3P_SYS_CLK;
-	gpioClock.halfDiv = 0;
-	//Set GPIO configuration and attach the GPIO event handler
-	status = CyU3PGpioInit(&gpioClock, AdiGPIOEventHandler);
-	if (status != CY_U3P_SUCCESS)
-	{
-		return status;
-	}
-
-	//Override all pins used by ADI to act as GPIO
-	status = CyU3PDeviceGpioOverride (ADI_PIN_DIO1, CyTrue);
-	if (status != CY_U3P_SUCCESS)
-	{
-		return status;
-	}
-
-	status = CyU3PDeviceGpioOverride (ADI_PIN_DIO2, CyTrue);
-	if (status != CY_U3P_SUCCESS)
-	{
-		return status;
-	}
-
-	status = CyU3PDeviceGpioOverride (ADI_PIN_DIO3, CyTrue);
-	if (status != CY_U3P_SUCCESS)
-	{
-		return status;
-	}
-
-	status = CyU3PDeviceGpioOverride (ADI_PIN_DIO4, CyTrue);
-	if (status != CY_U3P_SUCCESS)
-	{
-		return status;
-	}
-
-	status = CyU3PDeviceGpioOverride (ADI_PIN_DIO5, CyTrue);
-	if (status != CY_U3P_SUCCESS)
-	{
-		return status;
-	}
-
-	status = CyU3PDeviceGpioOverride (ADI_PIN_DIO6, CyTrue);
-	if (status != CY_U3P_SUCCESS)
-	{
-		return status;
-	}
-
-	status = CyU3PDeviceGpioOverride (ADI_PIN_DIO7, CyTrue);
-	if (status != CY_U3P_SUCCESS)
-	{
-		return status;
-	}
-
-	status = CyU3PDeviceGpioOverride (ADI_PIN_RESET, CyTrue);
-	if (status != CY_U3P_SUCCESS)
-	{
-		return status;
-	}
-
-	status = CyU3PDeviceGpioOverride(ADI_TIMER_PIN, CyFalse);
-	if (status != CY_U3P_SUCCESS)
-	{
-		return status;
-	}
-
-	//Set the GPIO config for each pin DIO pin
-	CyU3PGpioSimpleConfig_t gpioConfig;
-
-	gpioConfig.outValue = CyFalse;
-	gpioConfig.inputEn = CyTrue;
-	gpioConfig.driveLowEn = CyFalse;
-	gpioConfig.driveHighEn = CyFalse;
-	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
-
-	status = CyU3PGpioSetSimpleConfig(ADI_PIN_DIO1, &gpioConfig);
-	if (status != CY_U3P_SUCCESS)
-	{
-		return status;
-	}
-
-	status = CyU3PGpioSetSimpleConfig(ADI_PIN_DIO2, &gpioConfig);
-	if (status != CY_U3P_SUCCESS)
-	{
-		return status;
-	}
-
-	status = CyU3PGpioSetSimpleConfig(ADI_PIN_DIO3, &gpioConfig);
-	if (status != CY_U3P_SUCCESS)
-	{
-		return status;
-	}
-
-	status = CyU3PGpioSetSimpleConfig(ADI_PIN_DIO4, &gpioConfig);
-	if (status != CY_U3P_SUCCESS)
-	{
-		return status;
-	}
-
-	status = CyU3PGpioSetSimpleConfig(ADI_PIN_DIO5, &gpioConfig);
-	if (status != CY_U3P_SUCCESS)
-	{
-		return status;
-	}
-
-	status = CyU3PGpioSetSimpleConfig(ADI_PIN_DIO6, &gpioConfig);
-	if (status != CY_U3P_SUCCESS)
-	{
-		return status;
-	}
-
-	status = CyU3PGpioSetSimpleConfig(ADI_PIN_DIO7, &gpioConfig);
-	if (status != CY_U3P_SUCCESS)
-	{
-		return status;
-	}
-
-	status = CyU3PGpioSetSimpleConfig(ADI_PIN_RESET, &gpioConfig);
-	if (status != CY_U3P_SUCCESS)
-	{
-		return status;
-	}
-
-	//Configure timer using complex GPIO
-	CyU3PGpioComplexConfig_t gpioComplexConfig;
-	gpioComplexConfig.outValue = CyFalse;
-	gpioComplexConfig.inputEn = CyFalse;
-	gpioComplexConfig.driveLowEn = CyTrue;
-	gpioComplexConfig.driveHighEn = CyTrue;
-	gpioComplexConfig.pinMode = CY_U3P_GPIO_MODE_STATIC;
-	gpioComplexConfig.intrMode = CY_U3P_GPIO_NO_INTR;
-	gpioComplexConfig.timerMode = CY_U3P_GPIO_TIMER_LOW_FREQ;
-	gpioComplexConfig.timer = 0;
-	gpioComplexConfig.period = 0xffffffff;
-	gpioComplexConfig.threshold = 0xffffffff;
-	status = CyU3PGpioSetComplexConfig(ADI_TIMER_PIN, &gpioComplexConfig);
-
-	return status;
 }
 
 /*
@@ -2927,213 +2826,6 @@ void AdiGPIOEventHandler(uint8_t gpioId)
     }
 }
 
-/*
- * Function: AdiDeviceInit()
- *
- * This function initializes all hardware peripherals used for the ADI application
- * and configures the USB interface.
- *
- * Returns: The status of the configuration operation.
- */
-CyU3PReturnStatus_t AdiDeviceInit()
-{
-    CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-
-    //Get USB serial number from FX3 die id
-    static uint32_t *EFUSE_DIE_ID = ((uint32_t *)0xE0055010);
-    static const char hex_digit[16] = "0123456789ABCDEF";
-    uint32_t die_id[2];
-
-	//Write FX3 die ID to USB serial number descriptor and a global variable
-	CyU3PReadDeviceRegisters(EFUSE_DIE_ID, 2, die_id);
-	for (int i = 0; i < 2; i++)
-	{
-		//Access via the USB descriptor
-		CyFxUSBSerialNumDesc[i*16+ 2] = hex_digit[(die_id[1-i] >> 28) & 0xF];
-		CyFxUSBSerialNumDesc[i*16+ 4] = hex_digit[(die_id[1-i] >> 24) & 0xF];
-		CyFxUSBSerialNumDesc[i*16+ 6] = hex_digit[(die_id[1-i] >> 20) & 0xF];
-		CyFxUSBSerialNumDesc[i*16+ 8] = hex_digit[(die_id[1-i] >> 16) & 0xF];
-		CyFxUSBSerialNumDesc[i*16+10] = hex_digit[(die_id[1-i] >> 12) & 0xF];
-		CyFxUSBSerialNumDesc[i*16+12] = hex_digit[(die_id[1-i] >>  8) & 0xF];
-		CyFxUSBSerialNumDesc[i*16+14] = hex_digit[(die_id[1-i] >>  4) & 0xF];
-		CyFxUSBSerialNumDesc[i*16+16] = hex_digit[(die_id[1-i] >>  0) & 0xF];
-
-		//Access via a vendor command
-		serial_number[i*16+ 0] = hex_digit[(die_id[1-i] >> 28) & 0xF];
-		serial_number[i*16+ 2] = hex_digit[(die_id[1-i] >> 24) & 0xF];
-		serial_number[i*16+ 4] = hex_digit[(die_id[1-i] >> 20) & 0xF];
-		serial_number[i*16+ 6] = hex_digit[(die_id[1-i] >> 16) & 0xF];
-		serial_number[i*16+ 8] = hex_digit[(die_id[1-i] >> 12) & 0xF];
-		serial_number[i*16+10] = hex_digit[(die_id[1-i] >>  8) & 0xF];
-		serial_number[i*16+12] = hex_digit[(die_id[1-i] >>  4) & 0xF];
-		serial_number[i*16+14] = hex_digit[(die_id[1-i] >>  0) & 0xF];
-
-	}
-
-    //Initialize USB
-    status = CyU3PUsbStart();
-    if (status != CY_U3P_SUCCESS)
-    {
-    	CyU3PDebugPrint (4, "CyU3PUsbStart failed to Start, Error code = %d\r\n", status);
-        return status;
-    }
-    else
-    {
-    	CyU3PDebugPrint (4, "USB OK\r\n");
-    }
-
-    /* The fast enumeration is the easiest way to setup a USB connection,
-     * where all enumeration phase is handled by the library. Only the
-     * class / vendor requests need to be handled by the application. */
-    CyU3PUsbRegisterSetupCallback(AdiControlEndpointHandler, CyTrue);
-
-    //Setup the callback to handle the USB events
-    CyU3PUsbRegisterEventCallback(AdiUSBEventHandler);
-
-    // Register a callback to handle LPM requests from the USB 3.0 host
-    CyU3PUsbRegisterLPMRequestCallback(AdiLPMRequestHandler);
-
-    //Setup the callback to handle bulk endpoint events
-    CyU3PUsbRegisterEpEvtCallback(AdiBulkEndpointHandler, 1, 1, 0);
-
-
-    /* Set the USB Enumeration descriptors */
-
-    /* Super speed device descriptor. */
-    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_DEVICE_DESCR, 0, (uint8_t *)CyFxUSB30DeviceDscr);
-    if (status != CY_U3P_SUCCESS)
-    {
-        CyU3PDebugPrint (4, "USB set device descriptor failed, Error code = %d\r\n", status);
-        return status;
-    }
-
-    /* Full speed configuration descriptor */
-    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_FS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBFSConfigDscr);
-    if (status != CY_U3P_SUCCESS)
-    {
-        CyU3PDebugPrint (4, "USB Set Configuration Descriptor failed, Error Code = %d\r\n", status);
-        return status;
-    }
-
-    /* Super speed configuration descriptor */
-    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBSSConfigDscr);
-    if (status != CY_U3P_SUCCESS)
-    {
-        CyU3PDebugPrint (4, "USB set configuration descriptor failed, Error code = %d\r\n", status);
-        return status;
-    }
-
-    /* BOS descriptor */
-    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_BOS_DESCR, 0, (uint8_t *)CyFxUSBBOSDscr);
-    if (status != CY_U3P_SUCCESS)
-    {
-        CyU3PDebugPrint (4, "USB set configuration descriptor failed, Error code = %d\r\n", status);
-        return status;
-    }
-
-    /* High speed device descriptor. */
-    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_HS_DEVICE_DESCR, 0, (uint8_t *)CyFxUSB20DeviceDscr);
-    if (status != CY_U3P_SUCCESS)
-    {
-        CyU3PDebugPrint (4, "USB set device descriptor failed, Error code = %d\r\n", status);
-        return status;
-    }
-
-    /* Device qualifier descriptor */
-    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_DEVQUAL_DESCR, 0, (uint8_t *)CyFxUSBDeviceQualDscr);
-    if (status != CY_U3P_SUCCESS)
-    {
-        CyU3PDebugPrint (4, "USB set device qualifier descriptor failed, Error code = %d\r\n", status);
-        return status;
-    }
-
-    /* High speed configuration descriptor */
-    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_HS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBHSConfigDscr);
-    if (status != CY_U3P_SUCCESS)
-    {
-        CyU3PDebugPrint (4, "USB Set Other Speed Descriptor failed, Error Code = %d\r\n", status);
-        return status;
-    }
-
-    /* String descriptor 0 */
-    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 0, (uint8_t *)CyFxUSBStringLangIDDscr);
-    if (status != CY_U3P_SUCCESS)
-    {
-        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = %d\r\n", status);
-        return status;
-    }
-
-    /* String descriptor 1 */
-    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 1, (uint8_t *)CyFxUSBManufactureDscr);
-    if (status != CY_U3P_SUCCESS)
-    {
-        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = %d\r\n", status);
-        return status;
-    }
-
-    /* String descriptor 2 */
-    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 2, (uint8_t *)CyFxUSBProductDscr);
-    if (status != CY_U3P_SUCCESS)
-    {
-        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = %d\r\n", status);
-        return status;
-    }
-
-    /* Serial number descriptor */
-    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 3, (uint8_t *)CyFxUSBSerialNumDesc);
-    if (status != CY_U3P_SUCCESS)
-    {
-      CyU3PDebugPrint (4, "USB set serial number descriptor failed, Error code = %d\r\n", status);
-      return status;
-    }
-
-
-
-    /* Connect the USB Pins with high speed operation enabled (for greater compatibility) */
-    status = CyU3PConnectState (CyTrue, CyFalse);
-    if (status != CY_U3P_SUCCESS)
-    {
-        CyU3PDebugPrint (4, "USB Connect failed, Error code = %d\r\n", status);
-        return status;
-    }
-
-    //Setup the bulk endpoint
-    status = AdiConfigureEndpoints();
-    if (status != CY_U3P_SUCCESS)
-    {
-    	CyU3PDebugPrint (4, "Configuring endpoints failed, Error code = %d\r\n", status);
-        return status;
-    }
-
-    //Initialize the SPI interface
-    AdiSetDefaultSpiConfig();
-    status = AdiSpiInit();
-    if (status != CY_U3P_SUCCESS)
-    {
-    	CyU3PDebugPrint (4, "SPI initialization failed, Error code = %d\r\n", status);
-        return status;
-    }
-    else
-    {
-    	CyU3PDebugPrint (4, "SPI OK\r\n");
-    }
-
-    //Explicitly disable watchdog timer by putting it in mode 3
-    GCTLAON->watchdog_cs |= CY_U3P_GCTL_MODE0_MASK;
-
-    //Set up global event flags
-    status = AdiCreateEventFlagGroup();
-    if (status != CY_U3P_SUCCESS)
-    {
-    	CyU3PDebugPrint (4, "Setting up global event flags failed, Error code = %d\r\n", status);
-        return status;
-    }
-
-    CyU3PDebugPrint (8, "AdiDeviceInit complete!\r\n");
-
-    return status;
-}
-
 
 /*
  * Function: AdiDataStream_Entry(uint32_t input)
@@ -3150,17 +2842,20 @@ void AdiDataStream_Entry(uint32_t input)
 {
 	uint32_t eventMask = ADI_GENERIC_STREAM_ENABLE|ADI_REAL_TIME_STREAM_ENABLE|ADI_BURST_STREAM_ENABLE;
 	uint8_t tempData[2];
-	uint8_t *bufPntr;
 	uint32_t numBuffersRead = 0;
 	uint32_t eventFlag;
 
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint32_t numFramesCaptured;
-	CyBool_t interruptTriggered = CyFalse;
+	CyBool_t interruptTriggered;
 
-	//Delay timer definitions
-	uint32_t counter = 0;
-	uint32_t stopCount = 0;
+	uint16_t regIndex;
+
+	/* Generic stream local variables */
+	CyU3PDmaBuffer_t genBuf_p;
+	uint32_t byteCounter = 0;
+	uint8_t *tempPtr;
+	CyBool_t firstRun = CyTrue;
 
 	for (;;)
 	{
@@ -3170,78 +2865,189 @@ void AdiDataStream_Entry(uint32_t input)
 			/* Generic register stream case */
 			if (eventFlag & ADI_GENERIC_STREAM_ENABLE)
 			{
-				//Set the BulkBuffer pointer
-				bufPntr = BulkBuffer;
-				//Loop to read data
-				for (uint32_t numCapturesRead = 0; numCapturesRead < numCaptures; numCapturesRead++)
+				if (firstRun)
 				{
-					//Wait for DR if enabled
-					if (DrActive)
+					status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &genBuf_p, CYU3P_WAIT_FOREVER);
+					if (status != CY_U3P_SUCCESS)
 					{
-						//Clear GPIO interrupts
-						GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
-						interruptTriggered = CyFalse;
-						while(!interruptTriggered)
+						CyU3PDebugPrint (4, "CyU3PDmaChannelGetBuffer in generic capture failed, Error code = %d\r\n", status);
+					}
+					tempPtr = genBuf_p.buffer;
+					firstRun = CyFalse;
+				}
+				//Wait for DR if enabled
+				if (DrActive)
+				{
+					//Clear GPIO interrupts
+					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
+					//Loop until interrupt is triggered
+					while(!(GPIO->lpp_gpio_intr0 & (1 << dataReadyPin)));
+					//Clear GPIO interrupt bit
+					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
+				}
+
+				//Transmit first word without reading back
+				tempData[0] = regList[regIndex + 2];
+				tempData[1] = regList[regIndex + 3];
+
+				AdiSpiResetFifo(CyTrue, CyTrue);
+
+				uint32_t i, temp, intrMask;
+
+			    intrMask = SPI->lpp_spi_intr_mask;
+			    SPI->lpp_spi_intr_mask = 0;
+				SPI->lpp_spi_config |= CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_RX_ENABLE;
+				SPI->lpp_spi_config |= CY_U3P_LPP_SPI_ENABLE;
+				for ( i = 0; i <= 2; i += 1)
+				{
+					SPI->lpp_spi_egress_data = tempData[i];
+				}
+				temp = CY_U3P_LPP_SPI_TX_SPACE;
+				if (i > 0)
+				{
+					temp |= CY_U3P_LPP_SPI_RX_DATA;
+				}
+				while ((SPI->lpp_spi_status & temp) != temp);
+				if (i > 0)
+				{
+					temp = SPI->lpp_spi_ingress_data;
+					if (i <= 2)
+					{
+						tempPtr[i - 1] = (uint8_t)(temp & 0xFF);
+					}
+				}
+				SPI->lpp_spi_config &= ~(CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_RX_ENABLE);
+				SPI->lpp_spi_intr |= CY_U3P_LPP_SPI_TX_DONE | CY_U3P_LPP_SPI_RX_DATA;
+				SPI->lpp_spi_intr_mask = intrMask;
+			    while ((SPI->lpp_spi_status & CY_U3P_LPP_SPI_BUSY) != 0);
+			    SPI->lpp_spi_config &= ~CY_U3P_LPP_SPI_ENABLE;
+
+				//Set the pin timer to 0
+				GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+				//clear interrupt flag
+				GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
+
+				//Set the pin timer to 0
+				GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+				//clear interrupt flag
+				GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
+
+				//Read the registers in the register list into regList
+				for(regIndex = 0; regIndex < (bytesPerBuffer - 1); regIndex += 2)
+				{
+					//Wait for the complex GPIO timer to reach the stall time
+					while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
+
+					//Prepare, transmit, and receive SPI words
+					//TODO: Adjust SPI transactions to work with variable word lengths
+					tempData[0] = regList[regIndex + 2];
+					tempData[1] = regList[regIndex + 3];
+
+					AdiSpiResetFifo(CyTrue, CyTrue);
+
+					uint32_t i, temp, intrMask;
+
+				    intrMask = SPI->lpp_spi_intr_mask;
+				    SPI->lpp_spi_intr_mask = 0;
+					SPI->lpp_spi_config |= CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_RX_ENABLE;
+					SPI->lpp_spi_config |= CY_U3P_LPP_SPI_ENABLE;
+					for ( i = 0; i <= 2; i += 1)
+					{
+						SPI->lpp_spi_egress_data = tempData[i];
+					}
+					temp = CY_U3P_LPP_SPI_TX_SPACE;
+					if (i > 0)
+					{
+						temp |= CY_U3P_LPP_SPI_RX_DATA;
+					}
+					while ((SPI->lpp_spi_status & temp) != temp);
+					if (i > 0)
+					{
+						temp = SPI->lpp_spi_ingress_data;
+						if (i <= 2)
 						{
-							interruptTriggered = ((CyBool_t)(GPIO->lpp_gpio_intr0 & (1 << dataReadyPin)));
+							tempPtr[i - 1] = (uint8_t)(temp & 0xFF);
 						}
 					}
+					SPI->lpp_spi_config &= ~(CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_RX_ENABLE);
+					SPI->lpp_spi_intr |= CY_U3P_LPP_SPI_TX_DONE | CY_U3P_LPP_SPI_RX_DATA;
+					SPI->lpp_spi_intr_mask = intrMask;
+				    while ((SPI->lpp_spi_status & CY_U3P_LPP_SPI_BUSY) != 0);
+				    SPI->lpp_spi_config &= ~CY_U3P_LPP_SPI_ENABLE;
 
-					//Transmit first word without reading back
-					tempData[0] = (0x7F) & regList[0];
-					tempData[1] = 0;
-					CyU3PSpiTransmitWords(tempData, 2);
+					//Set the pin timer to 0
+					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
 
-					//Read the registers in the register list into BulkBuffer
-					for(uint16_t regIndex = 0; regIndex < (transferWordLength - 8); regIndex++)
+					//clear interrupt flag
+					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
+
+					//Update counters
+					tempPtr += 2;
+					byteCounter += 2;
+
+					//Check if a transmission is needed
+					if (byteCounter >= (bytesPerUsbPacket - 1))
 					{
-						/* Ugly delay counter based on the core system clock.
-						 * This was the most efficient way to add a quick delay between words.
-						 * Note that 12us is the smallest delay supported when streaming using this mode. */
-						if (stallTime > 12)
+						status = CyU3PDmaChannelCommitBuffer (&StreamingChannel, usbBufferSize, 0);
+						if (status != CY_U3P_SUCCESS)
 						{
-							stopCount = stallTime * 10;
-							while(counter < stopCount)
-							{
-								counter++;
-							}
-							counter = 0;
+							CyU3PDebugPrint (4, "CyU3PDmaChannelCommitBuffer in loop failed, Error code = 0x%x\r\n", status);
 						}
-
-						//Prepare, transmit, and receive SPI words
-						tempData[0] = (0x7F) & regList[regIndex + 1];
-						tempData[1] = 0;
-						CyU3PSpiTransferWords(tempData, 2, bufPntr, 2);
-						bufPntr += 2;
+						//CyU3PDebugPrint (4, "Started Channel Commmit \r\n");
+						status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &genBuf_p, CYU3P_NO_WAIT);
+						if (status != CY_U3P_SUCCESS)
+						{
+							CyU3PDebugPrint (4, "CyU3PDmaChannelGetBuffer in generic capture failed, Error code = 0x%x\r\n", status);
+						}
+						tempPtr = genBuf_p.buffer;
+						byteCounter = 0;
 					}
-
-					//Transmit the buffered data to the PC
-					ManualDMABuffer.buffer = BulkBuffer;
-					ManualDMABuffer.size = sizeof(BulkBuffer);
-					ManualDMABuffer.count = bytesPerBuffer;
-					CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
-
-					//Check to see if we've captured enough buffers of we were asked to stop data capture early
-					if ((numBuffersRead >= (numBuffers - 1)) || killEarly)
+				}
+				//Check to see if we've captured enough buffers or if we were asked to stop data capture early
+				if ((numBuffersRead >= (numBuffers - 1)) || killEarly)
+				{
+					//Reset buffer counter
+					CyU3PDebugPrint (4, "bleh = %d\r\n", numBuffersRead);
+					numBuffersRead = 0;
+					firstRun = CyTrue;
+					if (byteCounter)
 					{
-						//Reset buffer counter
-						numBuffersRead = 0;
-						//Reset buffer index
-						bufPntr = 0;
-						//Clear GPIO interrupts
-						GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
-						//Don't reset flag
-						CyU3PEventSet(&eventHandler, ADI_DATA_STREAMING_DONE, CYU3P_EVENT_OR);
+
+						status = CyU3PDmaChannelCommitBuffer (&StreamingChannel, usbBufferSize, 0);
+						if (status != CY_U3P_SUCCESS)
+						{
+							CyU3PDebugPrint (4, "CyU3PDmaChannelCommitBuffer in loop failed, Error code = %d\r\n", status);
+						}
+						byteCounter = 0;
 					}
-					else
+
+					//Clear GPIO interrupts
+					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
+
+					//Clear timer interrupt
+					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
+
+					//update the threshold and period
+					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold = 0xFFFFFFFF;
+					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = 0xFFFFFFFF;
+
+					//Disable interrupts
+					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= ~(CY_U3P_LPP_GPIO_INTRMODE_MASK);
+
+					//Don't reset flag
+					CyU3PEventSet(&eventHandler, ADI_GENERIC_STREAMING_DONE, CYU3P_EVENT_OR);
+				}
+				else
+				{
+					//Increment buffer counter
+					numBuffersRead++;
+					//Wait for the complex GPIO timer to reach the stall time if no data ready
+					if(!DrActive)
 					{
-						//Increment buffer counter
-						numBuffersRead++;
-						//Reset buffer index
-						bufPntr = 0;
-						//Reset flag
-						CyU3PEventSet (&eventHandler, ADI_GENERIC_STREAM_ENABLE, CYU3P_EVENT_OR);
+						while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
 					}
+					//Reset flag
+					CyU3PEventSet (&eventHandler, ADI_GENERIC_STREAM_ENABLE, CYU3P_EVENT_OR);
 				}
 			}
 
@@ -3312,23 +3118,20 @@ void AdiDataStream_Entry(uint32_t input)
 			/* Burst stream case */
 			if (eventFlag & ADI_BURST_STREAM_ENABLE)
 			{
-				//Configure MemoryToSPI DMA
-				SpiDmaBuffer.count = transferByteLength;
-				SpiDmaBuffer.size = roundedByteTransferLength;
-
-				//Set up DMA to read registers from CPU memory
+				/* Set up DMA to read registers from CPU memory */
 				status = CyU3PDmaChannelSetupSendBuffer(&MemoryToSPI, &SpiDmaBuffer);
 				if(status != CY_U3P_SUCCESS)
 				{
 					CyU3PDebugPrint (4, "Setting up the MemoryToSpi buffer channel failed!, error code = %d\r\n", status);
+					AdiAppErrorHandler(status);
 				}
 
-				//Wait for DR if enabled
+				/* Wait for DR if enabled */
 				if (DrActive)
 				{
-					//Clear GPIO interrupts
+					/* Clear GPIO interrupts */
 					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
-					//Loop until interrupt is triggered
+					/* Loop until interrupt is triggered */
 					interruptTriggered = CyFalse;
 					while(!interruptTriggered)
 					{
@@ -3336,17 +3139,17 @@ void AdiDataStream_Entry(uint32_t input)
 					}
 				}
 
-				//Set the config for DMA mode with RX and TX enabled
+				/* Set the config for DMA mode with RX and TX enabled */
 				SPI->lpp_spi_config |= CY_U3P_LPP_SPI_DMA_MODE;
 
-				//Set the Tx/Rx count
+				/* Set the Tx/Rx count */
 				SPI->lpp_spi_tx_byte_count = transferByteLength;
 				SPI->lpp_spi_rx_byte_count = transferByteLength;
 
-				//Enable Rx and Tx as required
+				/* Enable SPI Rx and Tx */
 				SPI->lpp_spi_config |= (CY_U3P_LPP_SPI_RX_ENABLE | CY_U3P_LPP_SPI_TX_ENABLE);
 
-				//Enable the SPI block
+				/* Enable the SPI block */
 				SPI->lpp_spi_config |= CY_U3P_LPP_SPI_ENABLE;
 
 				/*
@@ -3361,49 +3164,696 @@ void AdiDataStream_Entry(uint32_t input)
 				}
 				*/
 
-				//Wait for transfer to finish
+				/* Wait for SPI transfer to finish */
 				status = CyU3PSpiWaitForBlockXfer(CyTrue);
 				if(status != CY_U3P_SUCCESS)
 				{
 					CyU3PDebugPrint (4, "Waiting for the block xfer to finish failed!, error code = %d\r\n", status);
+					AdiAppErrorHandler(status);
 				}
 
-				//Check that we haven't captured the desired number of frames or were asked to kill the thread early
+				/* Check that we haven't captured the desired number of frames or that we were asked to kill the thread early */
 				if((numBuffersRead >= (numBuffers - 1)) || killEarly)
 				{
-					//Disable SPI DMA transfer
+					/* Disable the SPI DMA transfer */
 					status = CyU3PSpiDisableBlockXfer(CyTrue, CyTrue);
 					if(status != CY_U3P_SUCCESS)
 					{
 						CyU3PDebugPrint (4, "Disabling block transfer failed!, error code = %d\r\n", status);
+						AdiAppErrorHandler(status);
 					}
-					//Send whatever is in the buffer over to the PC
+
+					/* Send whatever is in the buffer over to the PC */
 					status = CyU3PDmaChannelSetWrapUp(&StreamingChannel);
 					if(status != CY_U3P_SUCCESS)
 					{
 						CyU3PDebugPrint (4, "Wrapping up the streaming DMA channel failed!, error code = %d\r\n", status);
+						AdiAppErrorHandler(status);
 					}
-					//Clear GPIO interrupts
+
+					/* Clear GPIO interrupts */
 					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
-					//Reset frame counter
+					/* Reset frame counter */
 					numBuffersRead = 0;
-					//Set ADI event flags
+					/* Set ADI event flags */
 					CyU3PEventSet(&eventHandler, ADI_BURST_STREAMING_DONE, CYU3P_EVENT_OR);
 				}
 				else
 				{
-					//increment the frame counter
+					/* Increment the frame counter */
 					numBuffersRead++;
-					//Reset real-time data capture thread flag
+					/* Reset the real-time data capture thread flag */
 					CyU3PEventSet (&eventHandler, ADI_BURST_STREAM_ENABLE, CYU3P_EVENT_OR);
 				}
 			}
+			//CyU3PDebugPrint (4, "Event Exit \r\n");
 		}
         /* Allow other ready threads to run. */
         CyU3PThreadRelinquish ();
 	}
 }
 
+/*
+ * Function: AdiDebugInit()
+ *
+ * This function initializes the UART controller to send debug messages.
+ * The debug prints are routed to the UART and can be seen using a UART console
+ * running at 115200 baud rate.
+ *
+ * Returns: Void
+ */
+void AdiDebugInit(void)
+{
+    CyU3PUartConfig_t uartConfig;
+    CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+
+    /* Initialize the UART for printing debug messages */
+    status = CyU3PUartInit();
+    if (status != CY_U3P_SUCCESS)
+    {
+        /* Error handling */
+        AdiAppErrorHandler(status);
+    }
+
+    /* Set UART configuration */
+    CyU3PMemSet ((uint8_t *)&uartConfig, 0, sizeof (uartConfig));
+    uartConfig.baudRate = CY_U3P_UART_BAUDRATE_115200;
+    uartConfig.stopBit = CY_U3P_UART_ONE_STOP_BIT;
+    uartConfig.parity = CY_U3P_UART_NO_PARITY;
+    uartConfig.txEnable = CyTrue;
+    uartConfig.rxEnable = CyFalse;
+    uartConfig.flowCtrl = CyFalse;
+    uartConfig.isDma = CyTrue;
+
+    /* Set the UART configuration */
+    status = CyU3PUartSetConfig (&uartConfig, NULL);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+    /* Set the UART transfer to a really large value. */
+    status = CyU3PUartTxSetBlockXfer (0xFFFFFFFF);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+    /* Initialize the debug module. */
+    status = CyU3PDebugInit (CY_U3P_LPP_SOCKET_UART_CONS, 8);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+    /* Turn off the preamble to the debug messages. */
+    CyU3PDebugPreamble(CyFalse);
+
+    /* Send a success command over the newly-created debug port. */
+    CyU3PDebugPrint (4, "\r\n");
+    CyU3PDebugPrint (4, "Debugger successfully initialized!\r\n");
+    CyU3PDebugPrint (4, "\r\n");
+}
+
+/*
+ * Function: AdiAppErrorHandler(CyU3PReturnStatus_t status)
+ *
+ * This function handles errors generated by the ADI application.
+ *
+ * Returns: void
+ */
+void AdiAppErrorHandler (CyU3PReturnStatus_t status)
+{
+    /* Application failed with the error code status */
+
+    /* TODO: Add custom debug or recovery actions here */
+
+	/* Loop Indefinitely */
+	for (;;)
+	{
+		/* Thread sleep : 100 ms */
+		CyU3PThreadSleep(100);
+	}
+}
+
+/*
+ * Function: AdiAppStart (void)
+ *
+ * This function sets up the necessary resources to start the ADI application.
+ *
+ * Returns: void
+ */
+void AdiAppStart (void)
+{
+	CyU3PUSBSpeed_t usbSpeed = CyU3PUsbGetSpeed();
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+
+    /* Based on the Bus Speed configure the endpoint packet size */
+    switch (usbSpeed)
+    {
+        case CY_U3P_FULL_SPEED:
+        	usbBufferSize = 64;
+            CyU3PDebugPrint (4, "Connected at USB 1.0 speed.\r\n");
+            break;
+
+        case CY_U3P_HIGH_SPEED:
+        	usbBufferSize = 512;
+            CyU3PDebugPrint (4, "Connected at USB 2.0 speed.\r\n");
+            break;
+
+        case  CY_U3P_SUPER_SPEED:
+        	usbBufferSize = 1024;
+            CyU3PDebugPrint (4, "Connected at USB 3.0 speed.\r\n");
+            break;
+
+        default:
+            CyU3PDebugPrint (4, "Error! Invalid USB speed.\r\n");
+            AdiAppErrorHandler (CY_U3P_ERROR_FAILURE);
+            break;
+    }
+
+    /* Configure GPIO for ADI application */
+
+	/* Configure fast sample clock to use a GPIO as a high-resolution timer.
+	 * SYSCLK = 403.2 MHz. Effective clock speed for timer
+	 * is 403.2MHz / (10 * 4) = 10.08 MHz. GPIO sample clock = 201.6 MHz */
+	CyU3PGpioClock_t gpioClock;
+	CyU3PMemSet ((uint8_t *)&gpioClock, 0, sizeof (gpioClock));
+	gpioClock.fastClkDiv = 10;
+	gpioClock.slowClkDiv = 0;
+	gpioClock.simpleDiv = CY_U3P_GPIO_SIMPLE_DIV_BY_2;
+	gpioClock.clkSrc = CY_U3P_SYS_CLK_BY_4;
+	gpioClock.halfDiv = 0;
+
+	/* Set GPIO configuration and attach GPIO event handler */
+	status = CyU3PGpioInit(&gpioClock, AdiGPIOEventHandler);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	/* Override all pins used by ADI to act as GPIO.
+	 * Configuration relies on io matrix configuration in main(). */
+	status = CyU3PDeviceGpioOverride (ADI_PIN_DIO1, CyTrue);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	status = CyU3PDeviceGpioOverride (ADI_PIN_DIO2, CyTrue);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	status = CyU3PDeviceGpioOverride (ADI_PIN_DIO3, CyTrue);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	status = CyU3PDeviceGpioOverride (ADI_PIN_DIO4, CyTrue);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	status = CyU3PDeviceGpioOverride (ADI_PIN_DIO5, CyTrue);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	status = CyU3PDeviceGpioOverride (ADI_PIN_DIO6, CyTrue);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	status = CyU3PDeviceGpioOverride (ADI_PIN_DIO7, CyTrue);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	status = CyU3PDeviceGpioOverride (ADI_PIN_RESET, CyTrue);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	status = CyU3PDeviceGpioOverride(ADI_TIMER_PIN, CyFalse);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	/* Set the GPIO configuration for each GPIO that was just overridden */
+	CyU3PGpioSimpleConfig_t gpioConfig;
+	CyU3PMemSet ((uint8_t *)&gpioConfig, 0, sizeof (gpioConfig));
+	gpioConfig.outValue = CyFalse;
+	gpioConfig.inputEn = CyTrue;
+	gpioConfig.driveLowEn = CyFalse;
+	gpioConfig.driveHighEn = CyFalse;
+	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+
+	status = CyU3PGpioSetSimpleConfig(ADI_PIN_DIO1, &gpioConfig);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	status = CyU3PGpioSetSimpleConfig(ADI_PIN_DIO2, &gpioConfig);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	status = CyU3PGpioSetSimpleConfig(ADI_PIN_DIO3, &gpioConfig);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	status = CyU3PGpioSetSimpleConfig(ADI_PIN_DIO4, &gpioConfig);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	status = CyU3PGpioSetSimpleConfig(ADI_PIN_DIO5, &gpioConfig);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	status = CyU3PGpioSetSimpleConfig(ADI_PIN_DIO6, &gpioConfig);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	status = CyU3PGpioSetSimpleConfig(ADI_PIN_DIO7, &gpioConfig);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	status = CyU3PGpioSetSimpleConfig(ADI_PIN_RESET, &gpioConfig);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	/* Configure high-speed, high-resolution timer using a complex GPIO */
+	CyU3PGpioComplexConfig_t gpioComplexConfig;
+	CyU3PMemSet ((uint8_t *)&gpioComplexConfig, 0, sizeof (gpioComplexConfig));
+	gpioComplexConfig.outValue = CyFalse;
+	gpioComplexConfig.inputEn = CyFalse;
+	gpioComplexConfig.driveLowEn = CyTrue;
+	gpioComplexConfig.driveHighEn = CyTrue;
+	gpioComplexConfig.pinMode = CY_U3P_GPIO_MODE_STATIC;
+	gpioComplexConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+	gpioComplexConfig.timerMode = CY_U3P_GPIO_TIMER_HIGH_FREQ;
+	gpioComplexConfig.timer = 0;
+	gpioComplexConfig.period = 0xFFFFFFFF;
+	gpioComplexConfig.threshold = 0xFFFFFFFF;
+	status = CyU3PGpioSetComplexConfig(ADI_TIMER_PIN, &gpioComplexConfig);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+    //Save bitmask of the timer pin config
+	timerPinConfig = (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & ~CY_U3P_LPP_GPIO_INTR);
+
+    /* Configure the SPI controller */
+
+    /* Set the stall time in ticks (each tick = 1us) */
+    stallTime = 25;
+
+    /* Set the DUT type */
+    DUTType = ADcmXL3021;
+
+    /* Set the data ready pin */
+    dataReadyPin = ADI_PIN_DIO2;
+
+    /* Enable the use of a data ready pin */
+    DrActive = CyTrue;
+
+    /* Set the data ready polarity */
+    DrPolarity = CyTrue;
+
+    /* Configure default global SPI parameters */
+    CyU3PMemSet ((uint8_t *)&spiConfig, 0, sizeof(spiConfig));
+    spiConfig.isLsbFirst = CyFalse;
+    spiConfig.cpol       = CyTrue;
+    spiConfig.ssnPol     = CyFalse;
+    spiConfig.cpha       = CyTrue;
+    spiConfig.leadTime   = CY_U3P_SPI_SSN_LAG_LEAD_ONE_CLK;
+    spiConfig.lagTime    = CY_U3P_SPI_SSN_LAG_LEAD_ONE_CLK;
+    spiConfig.ssnCtrl    = CY_U3P_SPI_SSN_CTRL_HW_END_OF_XFER;
+    spiConfig.clock      = 2000000;
+    spiConfig.wordLen    = 8;
+
+    /* Start the SPI module and configure the FX3 as a master.
+     * As with the GPIO configuration, SPI also relies on the io matrix to be correct. */
+    status = CyU3PSpiInit();
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+    status = CyU3PSpiSetConfig (&spiConfig, NULL);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+    /* Configure global, user event flags */
+
+	/* Create the stream/general use event handler */
+	status = CyU3PEventCreate(&eventHandler);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	/* Create GPIO event handler */
+	status = CyU3PEventCreate(&gpioHandler);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+    /* Configure bulk endpoints */
+
+	CyU3PEpConfig_t epConfig;
+	CyU3PMemSet ((uint8_t *)&epConfig, 0, sizeof (epConfig));
+
+	/* Set bulk endpoint parameters */
+	epConfig.enable = CyTrue;
+	epConfig.epType = CY_U3P_USB_EP_BULK;
+	epConfig.burstLen = 1;
+	epConfig.pcktSize = usbBufferSize;
+	epConfig.streams = 0;
+
+	/* Set endpoint config for RTS endpoint */
+	status = CyU3PSetEpConfig(ADI_STREAMING_ENDPOINT, &epConfig);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	CyU3PDebugPrint (4, "Setting RTS/Streaming endpoint failed, Error Code = %d\n", status);
+    	AdiAppErrorHandler(status);
+    }
+
+	/* Set endpoint config for the PC to FX3 endpoint */
+	status = CyU3PSetEpConfig(ADI_FROM_PC_ENDPOINT, &epConfig);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	CyU3PDebugPrint (4, "Setting PC to FX3 endpoint failed, Error Code = %d\n", status);
+    	AdiAppErrorHandler(status);
+    }
+
+	/* Set endpoint config for the FX3 to PC endpoint */
+	status = CyU3PSetEpConfig(ADI_TO_PC_ENDPOINT, &epConfig);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	CyU3PDebugPrint (4, "Setting FX3 to PC endpoint failed, Error Code = %d\n", status);
+    	AdiAppErrorHandler(status);
+    }
+
+	/* Flush endpoint memory */
+	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
+	CyU3PUsbFlushEp(ADI_FROM_PC_ENDPOINT);
+	CyU3PUsbFlushEp(ADI_TO_PC_ENDPOINT);
+
+	/* Configure DMAs */
+
+    CyU3PDmaChannelConfig_t dmaConfig;
+    dmaConfig.size 				= usbBufferSize;
+    dmaConfig.count 			= 0;
+    dmaConfig.dmaMode 			= CY_U3P_DMA_MODE_BYTE;
+    dmaConfig.prodHeader     	= 0;
+    dmaConfig.prodFooter     	= 0;
+    dmaConfig.consHeader     	= 0;
+    dmaConfig.notification   	= 0;
+    dmaConfig.cb             	= NULL;
+    dmaConfig.prodAvailCount 	= 0;
+
+    /* Configure DMA for ChannelFromPC */
+    dmaConfig.prodSckId = CY_U3P_UIB_SOCKET_PROD_1;
+    dmaConfig.consSckId = CY_U3P_CPU_SOCKET_CONS;
+
+    status = CyU3PDmaChannelCreate(&ChannelFromPC, CY_U3P_DMA_TYPE_MANUAL_IN, &dmaConfig);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	CyU3PDebugPrint (4, "Configuring the ChannelFromPC DMA failed, Error Code = %d\n", status);
+    	AdiAppErrorHandler(status);
+    }
+
+    /* Configure DMA for ChannelToPC */
+    dmaConfig.prodSckId = CY_U3P_CPU_SOCKET_PROD;
+    dmaConfig.consSckId = CY_U3P_UIB_SOCKET_CONS_2;
+
+    status = CyU3PDmaChannelCreate(&ChannelToPC, CY_U3P_DMA_TYPE_MANUAL_OUT, &dmaConfig);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	CyU3PDebugPrint (4, "Configuring the ChannelToPC DMA failed, Error Code = %d\n", status);
+    	AdiAppErrorHandler(status);
+    }
+
+    appActive = CyTrue;
+
+    CyU3PDebugPrint (8, "AdiAppStart completed successfully!\r\n");
+}
+
+/*
+ * Function: AdiAppStop (void)
+ *
+ * This function cleans up the resources used by the ADI application
+ * and prepares them for the next run.
+ *
+ * Returns: void
+ */
+void AdiAppStop(void)
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+
+	/* Signal that the app thread has been stopped */
+	appActive = CyFalse;
+
+	/* Clean up UART (debug) */
+	CyU3PUartDeInit ();
+
+	/* Clean up GPIO */
+	CyU3PGpioDeInit();
+
+	/* Clean up SPI */
+	CyU3PSpiDeInit();
+
+	/* Clean up event handlers */
+	CyU3PEventDestroy(&eventHandler);
+	CyU3PEventDestroy(&gpioHandler);
+
+	/* Flush endpoint memory */
+	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
+	CyU3PUsbFlushEp(ADI_FROM_PC_ENDPOINT);
+	CyU3PUsbFlushEp(ADI_TO_PC_ENDPOINT);
+
+	/* Clean up DMAs */
+	CyU3PDmaChannelDestroy(&ChannelFromPC);
+	CyU3PDmaChannelDestroy(&ChannelToPC);
+
+	/* Disable endpoints */
+	CyU3PEpConfig_t epConfig;
+	CyU3PMemSet ((uint8_t *)&epConfig, 0, sizeof (epConfig));
+	epConfig.enable = CyFalse;
+
+	/* Write configuration to each endpoint */
+
+	/* Set endpoint config for RTS endpoint */
+	status = CyU3PSetEpConfig(ADI_STREAMING_ENDPOINT, &epConfig);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	/* Set endpoint config for the PC to FX3 endpoint */
+	status = CyU3PSetEpConfig(ADI_FROM_PC_ENDPOINT, &epConfig);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	/* Set endpoint config for the FX3 to PC endpoint */
+	status = CyU3PSetEpConfig(ADI_TO_PC_ENDPOINT, &epConfig);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+}
+
+/* Function: AdiAppInit()
+ *
+ * This function initializes the USB module and attaches core event handlers.
+ *
+ * Returns: void
+ */
+void AdiAppInit (void)
+{
+    CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+
+    /* Get USB serial number from FX3 die id */
+    static uint32_t *EFUSE_DIE_ID = ((uint32_t *)0xE0055010);
+    static const char hex_digit[16] = "0123456789ABCDEF";
+    uint32_t die_id[2];
+
+	/* Write FX3 die ID to USB serial number descriptor and a global variable */
+	CyU3PReadDeviceRegisters(EFUSE_DIE_ID, 2, die_id);
+	for (int i = 0; i < 2; i++)
+	{
+		//Access via the USB descriptor
+		CyFxUSBSerialNumDesc[i*16+ 2] = hex_digit[(die_id[1-i] >> 28) & 0xF];
+		CyFxUSBSerialNumDesc[i*16+ 4] = hex_digit[(die_id[1-i] >> 24) & 0xF];
+		CyFxUSBSerialNumDesc[i*16+ 6] = hex_digit[(die_id[1-i] >> 20) & 0xF];
+		CyFxUSBSerialNumDesc[i*16+ 8] = hex_digit[(die_id[1-i] >> 16) & 0xF];
+		CyFxUSBSerialNumDesc[i*16+10] = hex_digit[(die_id[1-i] >> 12) & 0xF];
+		CyFxUSBSerialNumDesc[i*16+12] = hex_digit[(die_id[1-i] >>  8) & 0xF];
+		CyFxUSBSerialNumDesc[i*16+14] = hex_digit[(die_id[1-i] >>  4) & 0xF];
+		CyFxUSBSerialNumDesc[i*16+16] = hex_digit[(die_id[1-i] >>  0) & 0xF];
+
+		//Access via a vendor command
+		serial_number[i*16+ 0] = hex_digit[(die_id[1-i] >> 28) & 0xF];
+		serial_number[i*16+ 2] = hex_digit[(die_id[1-i] >> 24) & 0xF];
+		serial_number[i*16+ 4] = hex_digit[(die_id[1-i] >> 20) & 0xF];
+		serial_number[i*16+ 6] = hex_digit[(die_id[1-i] >> 16) & 0xF];
+		serial_number[i*16+ 8] = hex_digit[(die_id[1-i] >> 12) & 0xF];
+		serial_number[i*16+10] = hex_digit[(die_id[1-i] >>  8) & 0xF];
+		serial_number[i*16+12] = hex_digit[(die_id[1-i] >>  4) & 0xF];
+		serial_number[i*16+14] = hex_digit[(die_id[1-i] >>  0) & 0xF];
+	}
+
+	/* Start the USB functionality. */
+    status = CyU3PUsbStart();
+    if (status != CY_U3P_SUCCESS)
+    {
+    	CyU3PDebugPrint (4, "CyU3PUsbStart failed to Start, Error code = %d\r\n", status);
+        AdiAppErrorHandler(status);
+    }
+    else
+    {
+    	CyU3PDebugPrint (4, "USB OK\r\n");
+    }
+
+    /* The fast enumeration is the easiest way to setup a USB connection,
+     * where all enumeration phase is handled by the library. Only the
+     * class / vendor requests need to be handled by the application. */
+    CyU3PUsbRegisterSetupCallback(AdiControlEndpointHandler, CyTrue);
+
+    /* Setup the callback to handle the USB events */
+    CyU3PUsbRegisterEventCallback(AdiUSBEventHandler);
+
+    /* Register a callback to handle LPM requests from the USB host */
+    CyU3PUsbRegisterLPMRequestCallback(AdiLPMRequestHandler);
+
+    /* Set the USB Enumeration descriptors */
+
+    /* Super speed device descriptor. */
+    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_DEVICE_DESCR, 0, (uint8_t *)CyFxUSB30DeviceDscr);
+    if (status != CY_U3P_SUCCESS)
+    {
+        CyU3PDebugPrint (4, "USB set device descriptor failed, Error code = %d\r\n", status);
+        AdiAppErrorHandler(status);
+    }
+
+    /* Full speed configuration descriptor */
+    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_FS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBFSConfigDscr);
+    if (status != CY_U3P_SUCCESS)
+    {
+        CyU3PDebugPrint (4, "USB Set Configuration Descriptor failed, Error Code = %d\r\n", status);
+        AdiAppErrorHandler(status);
+    }
+
+    /* Super speed configuration descriptor */
+    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBSSConfigDscr);
+    if (status != CY_U3P_SUCCESS)
+    {
+        CyU3PDebugPrint (4, "USB set configuration descriptor failed, Error code = %d\r\n", status);
+        AdiAppErrorHandler(status);
+    }
+
+    /* BOS descriptor */
+    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_BOS_DESCR, 0, (uint8_t *)CyFxUSBBOSDscr);
+    if (status != CY_U3P_SUCCESS)
+    {
+        CyU3PDebugPrint (4, "USB set configuration descriptor failed, Error code = %d\r\n", status);
+        AdiAppErrorHandler(status);
+    }
+
+    /* High speed device descriptor. */
+    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_HS_DEVICE_DESCR, 0, (uint8_t *)CyFxUSB20DeviceDscr);
+    if (status != CY_U3P_SUCCESS)
+    {
+        CyU3PDebugPrint (4, "USB set device descriptor failed, Error code = %d\r\n", status);
+        AdiAppErrorHandler(status);
+    }
+
+    /* Device qualifier descriptor */
+    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_DEVQUAL_DESCR, 0, (uint8_t *)CyFxUSBDeviceQualDscr);
+    if (status != CY_U3P_SUCCESS)
+    {
+        CyU3PDebugPrint (4, "USB set device qualifier descriptor failed, Error code = %d\r\n", status);
+        AdiAppErrorHandler(status);
+    }
+
+    /* High speed configuration descriptor */
+    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_HS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBHSConfigDscr);
+    if (status != CY_U3P_SUCCESS)
+    {
+        CyU3PDebugPrint (4, "USB Set Other Speed Descriptor failed, Error Code = %d\r\n", status);
+        AdiAppErrorHandler(status);
+    }
+
+    /* String descriptor 0 */
+    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 0, (uint8_t *)CyFxUSBStringLangIDDscr);
+    if (status != CY_U3P_SUCCESS)
+    {
+        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = %d\r\n", status);
+        AdiAppErrorHandler(status);
+    }
+
+    /* String descriptor 1 */
+    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 1, (uint8_t *)CyFxUSBManufactureDscr);
+    if (status != CY_U3P_SUCCESS)
+    {
+        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = %d\r\n", status);
+        AdiAppErrorHandler(status);
+    }
+
+    /* String descriptor 2 */
+    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 2, (uint8_t *)CyFxUSBProductDscr);
+    if (status != CY_U3P_SUCCESS)
+    {
+        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = %d\r\n", status);
+        AdiAppErrorHandler(status);
+    }
+
+    /* Serial number descriptor */
+    status = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 3, (uint8_t *)CyFxUSBSerialNumDesc);
+    if (status != CY_U3P_SUCCESS)
+    {
+      CyU3PDebugPrint (4, "USB set serial number descriptor failed, Error code = %d\r\n", status);
+      AdiAppErrorHandler(status);
+    }
+
+    /* Connect the USB Pins with high speed operation enabled (USB 2.0 for better compatibility) */
+    status = CyU3PConnectState (CyTrue, CyFalse);
+    if (status != CY_U3P_SUCCESS)
+    {
+        CyU3PDebugPrint (4, "USB Connect failed, Error code = %d\r\n", status);
+        AdiAppErrorHandler(status);
+    }
+}
 
 /*
  * Function AppThread_Entry(uint32_t input)
@@ -3415,47 +3865,25 @@ void AdiDataStream_Entry(uint32_t input)
  *
  * Returns: void
  */
-void AppThread_Entry(uint32_t input)
+void AppThread_Entry (uint32_t input)
 {
-    CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
     uint32_t eventMask =
     		ADI_RT_STREAMING_DONE|
     		ADI_RT_STREAMING_START|
     		ADI_RT_STREAMING_STOP|
-    		ADI_DATA_STREAMING_DONE|
-    		ADI_DATA_STREAMING_START|
-    		ADI_DATA_STREAMING_STOP|
+    		ADI_GENERIC_STREAMING_DONE|
+    		ADI_GENERIC_STREAMING_START|
+    		ADI_GENERIC_STREAMING_STOP|
     		ADI_BURST_STREAMING_DONE|
     		ADI_BURST_STREAMING_START|
     		ADI_BURST_STREAMING_STOP;
     uint32_t eventFlag;
 
     /* Initialize UART debugging */
-    AdiDebugInit();
+    AdiDebugInit ();
 
-    //Enable and configure GPIO
-    status = AdiGPIOInit();
-    if (status != CY_U3P_SUCCESS)
-    {
-    	CyU3PDebugPrint (4, "GPIO initialization failed, error code = %d\n", status);
-    	AdiFatalErrorHandler(ERROR_PIN_INIT);
-    }
-    else
-    {
-    	CyU3PDebugPrint (4, "GPIO OK\r\n");
-    }
-
-    //Initialize the ADI-specific configuration
-    status = AdiDeviceInit();
-    if (status != CY_U3P_SUCCESS)
-    {
-    	CyU3PDebugPrint (4, "ADI-specific initialization failed, error code = %d\n", status);
-    	AdiFatalErrorHandler(ERROR_GENERAL_INIT);
-    }
-    else
-    {
-    	CyU3PDebugPrint (4, "ADI HW Config OK\r\n");
-    }
+    /* Initialize the ADI application */
+    AdiAppInit ();
 
     for (;;)
     {
@@ -3465,7 +3893,7 @@ void AppThread_Entry(uint32_t input)
 			//Handle real-time stream commands
 			if (eventFlag & ADI_RT_STREAMING_START)
 			{
-				AdiRealTimeStart();
+				AdiRealTimeStreamStart();
 				CyU3PDebugPrint (4, "Real time stream started.\r\n");
 			}
 			if (eventFlag & ADI_RT_STREAMING_STOP)
@@ -3475,24 +3903,24 @@ void AppThread_Entry(uint32_t input)
 			}
 			if (eventFlag & ADI_RT_STREAMING_DONE)
 			{
-				AdiRealTimeFinished();
+				AdiRealTimeStreamFinished();
 				CyU3PDebugPrint (4, "Real time stream finished.\r\n");
 			}
 
 			//Handle generic data stream commands
-			if (eventFlag & ADI_DATA_STREAMING_START)
+			if (eventFlag & ADI_GENERIC_STREAMING_START)
 			{
-				AdiGenericDataStreamStart();
+				AdiGenericStreamStart();
 				CyU3PDebugPrint (4, "Generic data stream started.\r\n");
 			}
-			if (eventFlag & ADI_DATA_STREAMING_STOP)
+			if (eventFlag & ADI_GENERIC_STREAMING_STOP)
 			{
 				AdiStopAnyDataStream();
 				CyU3PDebugPrint (4, "Stop generic stream command detected.\r\n");
 			}
-			if (eventFlag & ADI_DATA_STREAMING_DONE)
+			if (eventFlag & ADI_GENERIC_STREAMING_DONE)
 			{
-				AdiGenericDataStreamFinished();
+				AdiGenericStreamFinished();
 				CyU3PDebugPrint (4, "Generic data stream finished.\r\n");
 			}
 
@@ -3522,18 +3950,20 @@ void AppThread_Entry(uint32_t input)
 /*
  * Function CyFxApplicationDefine(void)
  *
- * This function is automatically called by the RTOS kernel after booting.
- * It must define all the threads used in the application.
+ * This function is automatically called by the RTOS kernel after booting and
+ * creates all the threads used in the application.
  *
  * Returns: void
  */
-void CyFxApplicationDefine(void)
+void CyFxApplicationDefine (void)
 {
     void *ptr = NULL;
     uint32_t retThrdCreate = CY_U3P_SUCCESS;
 
-    //Create application (main) thread
+    /* Create application (main) thread */
     ptr = CyU3PMemAlloc (APPTHREAD_STACK);
+
+    /* Create the thread for the application */
     retThrdCreate = CyU3PThreadCreate (&appThread, /* Thread structure. */
             "21:AppThread",                        /* Thread ID and name. */
             AppThread_Entry,                       /* Thread entry function. */
@@ -3548,15 +3978,17 @@ void CyFxApplicationDefine(void)
             CYU3P_AUTO_START                       /* Start the thread immediately. */
             );
 
-    //Check if creating thread succeeded
+    /* Check if creating thread succeeded */
     if (retThrdCreate != CY_U3P_SUCCESS)
     {
-    	//If thread creation fails try to handle error
-    	AdiFatalErrorHandler(ERROR_THREAD_START);
+    	/* Thread creation failed. Fatal error. Cannot continue. */
+    	while(1);
     }
 
-    //Create thread for streaming data
+    /* Create the thread for streaming data */
     ptr = CyU3PMemAlloc (STREAMINGTHREAD_STACK);
+
+    /* Create the streaming thread */
     retThrdCreate = CyU3PThreadCreate (&streamingThread, 	/* Thread structure. */
             "22:StreamingThread",                 			/* Thread ID and name. */
             AdiDataStream_Entry,              				/* Thread entry function. */
@@ -3571,68 +4003,12 @@ void CyFxApplicationDefine(void)
             CYU3P_AUTO_START                      			/* Start the thread immediately. */
             );
 
-    //Check if creating thread succeeded
+    /* Check if creating thread succeeded */
     if (retThrdCreate != CY_U3P_SUCCESS)
     {
-    	//If thread creation fails try to handle error
-    	AdiFatalErrorHandler(ERROR_THREAD_START);
+    	/* Thread creation failed. Fatal error. Cannot continue. */
+    	while(1);
     }
-}
-
-/*
- * Function: AdiFatalErrorHandler()
- *
- * Handles configuration errors during boot time by resetting the FX3 so it can be reprogrammed.
- *
- * Returns: void
- */
-void AdiFatalErrorHandler(uint32_t ErrorType)
-{
-	//Reset the part if more than two errors have occurred
-	if(errorCount > 2)
-	{
-		ErrorType = ERROR_OTHER;
-	}
-
-	//Perform different operations depending on the error type
-	switch(ErrorType)
-	{
-	case ERROR_GENERAL_INIT:
-		//Power cycle the device
-		CyU3PDeviceReset(CyFalse);
-		break;
-
-	case ERROR_CACHE_CONTROL:
-		//Power cycle the device
-		CyU3PDeviceReset(CyFalse);
-		break;
-
-	case ERROR_PIN_INIT:
-		//Retry the pin initialization function
-		AdiGPIOInit();
-		break;
-
-	case ERROR_GPIO_MATRIX:
-		//Power cycle the device
-		CyU3PDeviceReset(CyFalse);
-		break;
-
-	case ERROR_THREAD_START:
-		//Stop both application threads, and restart
-		CyU3PThreadDestroy(&appThread);
-		CyU3PThreadDestroy(&streamingThread);
-		CyU3PThreadDestroy(&dataCaptureThread);
-		CyFxApplicationDefine();
-		break;
-
-	case ERROR_OTHER:
-	default:
-		//Power cycle the device
-		CyU3PDeviceReset(CyFalse);
-		break;
-	}
-	//Increment the error counter
-	errorCount++;
 }
 
 /*
@@ -3647,11 +4023,9 @@ int main (void)
 {
     CyU3PIoMatrixConfig_t io_cfg;
     CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-
     CyU3PSysClockConfig_t sysclk_cfg;
 
-    //Initialize the device
-
+    /* Configure system clocks */
     sysclk_cfg.setSysClk400 = CyTrue;
     sysclk_cfg.useStandbyClk = CyFalse;
     sysclk_cfg.clkSrc = CY_U3P_SYS_CLK;
@@ -3659,16 +4033,17 @@ int main (void)
     sysclk_cfg.dmaClkDiv = 2;
     sysclk_cfg.mmioClkDiv = 2;
 
+    /* Initialize the device */
     status = CyU3PDeviceInit (&sysclk_cfg);
-
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiFatalErrorHandler(ERROR_GENERAL_INIT);
+        goto handle_fatal_error;
     }
+    /* Initialize the caches. Enable both Instruction and Data Caches. */
     status = CyU3PDeviceCacheControl (CyTrue, CyTrue, CyTrue);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiFatalErrorHandler(ERROR_CACHE_CONTROL);
+        goto handle_fatal_error;
     }
 
     /* Configure the io matrix to implement SPI and enable UART
@@ -3690,13 +4065,18 @@ int main (void)
     status = CyU3PDeviceConfigureIOMatrix (&io_cfg);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiFatalErrorHandler(ERROR_GPIO_MATRIX);
+        goto handle_fatal_error;
     }
 
-    //Start the RTOS kernel
+    /* This is a non returnable call for initializing the RTOS kernel */
     CyU3PKernelEntry();
 
-    //Return 0 to make the compiler happy
+    /* Dummy return to make the compiler happy */
     return 0;
+
+handle_fatal_error:
+
+	/* Cannot recover from this error. */
+	while (1);
 
 }

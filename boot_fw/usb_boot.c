@@ -530,7 +530,7 @@ myVendorCmdHandler (
             CyFx3BootUsbConnect (CyFalse, CyTrue);
 
             /* Change GPIO state while switching control to main firmware. */
-            CyFx3BootGpioSetValue (50, CyTrue);
+            CyFx3BootGpioSetValue (APP_SCLK_GPIO, CyTrue);
 
             /* Transfer to Program Entry */    
             CyFx3BootJumpToProgramEntry (address);
@@ -593,7 +593,7 @@ myVendorCmdHandler (
     }
 
     /* Vendor command 0xB1 handling */
-    if (bReq == 0xB1)
+    if (bReq == ADI_HARD_RESET)
     {
     	CyFx3BootUsbAckSetup ();
     	status = CyFx3BootUsbDmaXferData (0x00, (uint32_t)gEP0.pData, gEP0.wLen, CY_FX3_BOOT_WAIT_FOREVER);
@@ -604,7 +604,7 @@ myVendorCmdHandler (
     }
 
     /* Vendor command 0xEC handling - Turn on LED */
-    if (bReq == 0xEC)
+    if (bReq == ADI_LED_ON)
     {
     	CyFx3BootUsbAckSetup ();
     	status = CyFx3BootUsbDmaXferData (0x00, (uint32_t)gEP0.pData, gEP0.wLen, CY_FX3_BOOT_WAIT_FOREVER);
@@ -614,7 +614,7 @@ myVendorCmdHandler (
     }
 
     /* Vendor command 0xED handling - Turn off LED */
-    if (bReq == 0xED)
+    if (bReq == ADI_LED_OFF)
     {
     	CyFx3BootUsbAckSetup ();
     	status = CyFx3BootUsbDmaXferData (0x00, (uint32_t)gEP0.pData, gEP0.wLen, CY_FX3_BOOT_WAIT_FOREVER);
@@ -624,7 +624,7 @@ myVendorCmdHandler (
     }
 
     /* Vendor command 0xEE handling - Turn off LED blinking */
-    if (bReq == 0xEE)
+    if (bReq == ADI_LED_BLINKING_OFF)
     {
     	CyFx3BootUsbAckSetup ();
     	status = CyFx3BootUsbDmaXferData (0x00, (uint32_t)gEP0.pData, gEP0.wLen, CY_FX3_BOOT_WAIT_FOREVER);
@@ -634,7 +634,7 @@ myVendorCmdHandler (
     }
 
     /* Vendor command 0xEF handling - Turn on LED blinking */
-    if (bReq == 0xEF)
+    if (bReq == ADI_LED_BLINKING_ON)
     {
     	CyFx3BootUsbAckSetup ();
     	status = CyFx3BootUsbDmaXferData (0x00, (uint32_t)gEP0.pData, gEP0.wLen, CY_FX3_BOOT_WAIT_FOREVER);

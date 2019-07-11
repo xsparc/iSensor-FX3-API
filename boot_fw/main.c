@@ -24,9 +24,7 @@
 #include "cyfx3device.h"
 #include "cyfx3utils.h"
 #include "cyfx3gpio.h"
-
-/* Define LED GPIO */
-#define APP_LED_GPIO    (54)
+#include "main.h"
 
 uint16_t mode = 0;
 
@@ -34,8 +32,6 @@ uint16_t mode = 0;
 extern void
 myUsbBoot (
         void);
-extern uint8_t glCheckForDisconnect;
-extern uint8_t glInCompliance;
 
 /****************************************************************************
  * main:
@@ -67,6 +63,12 @@ main (
     }
 
     CyFx3BootGpioInit ();
+
+    /* Set SCLK pull up */
+    CyFx3BootGpioSetIoMode (APP_SCLK_GPIO, CY_FX3_GPIO_IO_MODE_WPU);
+
+    /* Set CS pull up */
+    CyFx3BootGpioSetIoMode (APP_LED_GPIO, CY_FX3_GPIO_IO_MODE_WPU);
 
     /* Configure the GPIO for driving the LED. */
     gpioConf.inputEn     = CyFalse;

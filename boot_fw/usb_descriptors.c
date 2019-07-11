@@ -31,8 +31,8 @@ unsigned char gbDevDesc[] =
     0xFF,                           /* Device Sub-class */
     0xFF,                           /* Device protocol */
     0x40,                           /* Maxpacket size for EP0 : 64 bytes */
-    0xB4,0x04,                      /* Vendor ID */
-    0xF0,0x00,                      /* Product ID */
+    0x56,0x04,                      /* Vendor ID */
+    0x02,0xEF,                      /* Product ID */
     0x00,0x00,                      /* Device release number */
     0x01,                           /* Manufacture string index */
     0x02,                           /* Product string index */
@@ -57,7 +57,7 @@ unsigned char gbCfgDesc[] =
 {
     0x09,                           /* Descriptor Size */
     0x02,                           /* Configuration Descriptor Type */
-    0x20,0x00,                      /* Length of this descriptor and all sub descriptors */
+    0x12,0x00,                      /* Length of this descriptor and all sub descriptors */
     0x01,                           /* Number of interfaces */
     0x01,                           /* Configuration number */
     0x00,                           /* COnfiguration string index */
@@ -69,29 +69,11 @@ unsigned char gbCfgDesc[] =
     0x04,                           /* Interface Descriptor type */
     0x00,                           /* Interface number */
     0x00,                           /* Alternate setting number */
-    0x02,                           /* Number of end points */
+    0x00,                           /* Number of end points */
     0xFF,                           /* Interface class */
     0x00,                           /* Interface sub class */
     0x00,                           /* Interface protocol code */
     0x00,                           /* Interface descriptor string index */
-
-    /* Endpoint Descriptor for Producer EP */
-    0x07,                           /* Descriptor size */
-    0x05,                           /* Endpoint Descriptor Type */
-    0x01,                           /* Endpoint address and description */
-    0x02,                           /* Bulk End point Type */
-    0x00,                           /* Max packet size = 512 bytes */
-    0x02,
-    0x00,                           /* Servicing interval for data transfers : NA for Bulk */
-
-    /* Endpoint Descriptor for Consumer EP */
-    0x07,                           /* Descriptor size */
-    0x05,                           /* Endpoint Descriptor Type */
-    0x81,                           /* Endpoint address and description */
-    0x02,                           /* Bulk End point Type */
-    0x00,                           /* Max packet size = 512 bytes */
-    0x02,
-    0x00                            /* Servicing interval for data transfers : NA for Bulk */
 };
 
 unsigned char gbLangIDDesc[] =
@@ -168,10 +150,10 @@ unsigned char gbSsConfigDesc[] =
     /* Configuration Descriptor Type */
     0x09,                           /* Descriptor Size */
     0x02,                           /* Configuration Descriptor Type */
-    0x2C,0x00,                      /* Length of this descriptor and all sub descriptors */
+    0x12,0x00,                      /* Length of this descriptor and all sub descriptors */
     0x01,                           /* Number of interfaces */
     0x01,                           /* Configuration number */
-    0x00,                           /* COnfiguration string index */
+    0x00,                           /* Configuration string index */
     0x80,                           /* Config characteristics - D6: Self power; D5: Remote Wakeup */
     0x32,                           /* Max power consumption of device (in 8mA unit) : 400mA */
 
@@ -185,36 +167,6 @@ unsigned char gbSsConfigDesc[] =
     0x00,                           /* Interface sub class */
     0x00,                           /* Interface protocol code */
     0x00,                           /* Interface descriptor string index */
-
-    /* Endpoint Descriptor for Producer EP */
-    0x07,                           /* Descriptor size */
-    0x05,                           /* Endpoint Descriptor Type */
-    0x01,                           /* Endpoint address and description */
-    0x02,                           /* Bulk End point Type */
-    0x00,0x04,                      /* Max packet size = 1024 bytes */
-    0x00,                           /* Servicing interval for data transfers : NA for Bulk */
-
-    /* Super Speed Endpoint Companion Descriptor for Producer EP */
-    0x06,                           /* Descriptor size */
-    0x30,                           /* SS Endpoint Companion Descriptor Type */
-    0x00,                           /* Max no. of packets in a Burst : 0: Burst 1 packet at a time */
-    0x00,                           /* Max streams for Bulk EP = 0 (No streams)*/
-    0x00,0x00,                      /* Service interval for the EP : NA for Bulk */
-
-    /* Endpoint Descriptor for Consumer EP */
-    0x07,                           /* Descriptor size */
-    0x05,                           /* Endpoint Descriptor Type */
-    0x81,                           /* Endpoint address and description */
-    0x02,                           /* Bulk End point Type */
-    0x00,0x04,                      /* Max packet size = 1024 bytes */
-    0x00,                           /* Servicing interval for data transfers : NA for Bulk */
-
-    /* Super Speed Endpoint Companion Descriptor for Consumer EP */
-    0x06,                           /* Descriptor size */
-    0x30,                           /* SS Endpoint Companion Descriptor Type */
-    0x00,                           /* Max no. of packets in a Burst : 0: Burst 1 packet at a time */
-    0x00,                           /* Max streams for Bulk EP = 0 (No streams)*/
-    0x00,0x00                       /* Service interval for the EP : NA for Bulk */
 };
 
 /* Standard Device Descriptor for USB 3.0 */
@@ -227,8 +179,8 @@ unsigned char gbSsDevDesc[] =
     0xFF,                           /* Device Sub-class */
     0xFF,                           /* Device protocol */
     0x09,                           /* Maxpacket size for EP0 : 2^9 */
-    0xB4,0x04,                      /* Vendor ID */
-    0xF0,0x00,                      /* Product ID */
+    0x56,0x04,                      /* Vendor ID */
+    0x02,0xEF,                      /* Product ID */
     0x00,0x00,                      /* Device release number */
     0x01,                           /* Manufacture string index */
     0x02,                           /* Product string index */
@@ -242,7 +194,7 @@ unsigned char gbFsConfigDesc[] =
     /* Configuration Descriptor Type */
     0x09,                           /* Descriptor Size */
     0x02,                           /* Configuration Descriptor Type */
-    0x20,0x00,                      /* Length of this descriptor and all sub descriptors */
+    0x12,0x00,                      /* Length of this descriptor and all sub descriptors */
     0x01,                           /* Number of interfaces */
     0x01,                           /* Configuration number */
     0x00,                           /* COnfiguration string index */
@@ -259,21 +211,5 @@ unsigned char gbFsConfigDesc[] =
     0x00,                           /* Interface sub class */
     0x00,                           /* Interface protocol code */
     0x00,                           /* Interface descriptor string index */
-
-    /* Endpoint Descriptor for Producer EP */
-    0x07,                           /* Descriptor size */
-    0x05,                           /* Endpoint Descriptor Type */
-    0x01,                           /* Endpoint address and description */
-    0x02,                           /* Bulk End point Type */
-    0x40,0x00,                      /* Max packet size = 64 bytes */
-    0x00,                           /* Servicing interval for data transfers : NA for Bulk */
-
-    /* Endpoint Descriptor for Consumer EP */
-    0x07,                           /* Descriptor size */
-    0x05,                           /* Endpoint Descriptor Type */
-    0x81,                           /* Endpoint address and description */
-    0x02,                           /* Bulk End point Type */
-    0x40,0x00,                      /* Max packet size = 64 bytes */
-    0x00                            /* Servicing interval for data transfers : NA for Bulk */
 };
 
