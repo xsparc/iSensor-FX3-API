@@ -222,8 +222,26 @@ Partial Class FX3Connection
         Dim buf As New List(Of Byte)
         Dim BytesPerBuffer As Integer
 
-        'Number of bytes per buffer
+        'Validate number of buffers
+        If IsNothing(numBuffers) Or numBuffers < 1 Then
+            Throw New FX3ConfigurationException("ERROR: Invalid number of buffers for a generic register stream: " + numBuffers.ToString())
+        End If
+
+        'Validate address list
+        If IsNothing(addr) Or addr.Count = 0 Then
+            Throw New FX3ConfigurationException("ERROR: Invalid address list for generic stream")
+        End If
+
+        'Validate number of captures
+        If IsNothing(numCaptures) Or numCaptures < 1 Then
+            Throw New FX3ConfigurationException("ERROR: Invalid number of captures for a generic register stream: " + numBuffers.ToString())
+        End If
+
+        'Validate buffer size
         BytesPerBuffer = (addr.Count() * numCaptures) * 2
+        If BytesPerBuffer > MaxBufferSize Then
+            Throw New FX3ConfigurationException("ERROR: Generic stream capture size too large- " + BytesPerBuffer.ToString() + " bytes per buffer exceeds maximum size of " + MaxBufferSize.ToString() + " bytes.")
+        End If
 
         'Reset frame counter
         m_FramesRead = 0
@@ -327,8 +345,8 @@ Partial Class FX3Connection
                         Interlocked.Increment(m_FramesRead)
                         bufferBuilder.Clear()
                         numBuffersRead = numBuffersRead + 1
-                        'Exit for loop if total integer number of buffers for the USB packet have been read
-                        If (transferSize - bufIndex) < BytesPerBuffer Then
+                        'Exit for loop if total integer number of buffers for the USB packet have been read (ignore for case where its more than one packet per buffer)
+                        If (transferSize - bufIndex) < BytesPerBuffer And Not (BytesPerBuffer > transferSize) Then
                             Exit For
                         End If
                         'Exit while loop if the total number of buffers has been read

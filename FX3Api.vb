@@ -23,19 +23,22 @@ Public Class FX3Connection
     'Constant definitions
 
     'Friendly Name for the Cypress bootloader
-    Const CypressBootloaderName As String = "Cypress FX3 USB BootLoader Device"
+    Private Const CypressBootloaderName As String = "Cypress FX3 USB BootLoader Device"
 
     'Friendly name for the ADI bootloader
-    Const ADIBootloaderName As String = "Analog Devices iSensor FX3 Bootloader"
+    Private Const ADIBootloaderName As String = "Analog Devices iSensor FX3 Bootloader"
 
     'Friendly name for the ADI Application Firmware
-    Const ApplicationName As String = "Analog Devices iSensor FX3 Demonstration Platform"
+    Private Const ApplicationName As String = "Analog Devices iSensor FX3 Demonstration Platform"
 
     'Timeout (in ms) for programming a board with the application firmware
-    Const ProgrammingTimeout As Integer = 10000
+    Private Const ProgrammingTimeout As Integer = 10000
 
     'Delay (in ms) in polling the cypress USB driver for new devices connected
-    Const DeviceListDelay As Integer = 200
+    Private Const DeviceListDelay As Integer = 200
+
+    'Max buffer size for a buffered stream (in bytes)
+    Private Const MaxBufferSize As Integer = 1600
 
     'Cypress driver objects
 
