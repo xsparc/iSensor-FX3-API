@@ -1,4 +1,9 @@
-﻿Imports RegMapClasses
+﻿'File           FX3Burst.vb
+'Author:        Alex Nolan (alex.nolan@analog.com), Juan Chong (juan.chong@analog.com)
+'Date:          6/20/2019
+'Description:   Implementation for all burst mode streaming functions in the FX3Connection class.
+
+Imports RegMapClasses
 
 Partial Class FX3Connection
 

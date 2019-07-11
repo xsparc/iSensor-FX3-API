@@ -39,7 +39,7 @@ Namespace My.Resources
         Friend ReadOnly Property ResourceManager() As Global.System.Resources.ResourceManager
             Get
                 If Object.ReferenceEquals(resourceMan, Nothing) Then
-                    Dim temp As Global.System.Resources.ResourceManager = New Global.System.Resources.ResourceManager("FX3Interface.Resources", GetType(Resources).Assembly)
+                    Dim temp As Global.System.Resources.ResourceManager = New Global.System.Resources.ResourceManager("FX3Api.Resources", GetType(Resources).Assembly)
                     resourceMan = temp
                 End If
                 Return resourceMan
@@ -58,6 +58,46 @@ Namespace My.Resources
             Set
                 resourceCulture = value
             End Set
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to Thu 06/27/2019 13:24:43.01 
+        '''.
+        '''</summary>
+        Friend ReadOnly Property BuildDate() As String
+            Get
+                Return ResourceManager.GetString("BuildDate", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to generic_stream
+        '''.
+        '''</summary>
+        Friend ReadOnly Property CurrentBranch() As String
+            Get
+                Return ResourceManager.GetString("CurrentBranch", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to eee943f2cf38653a06efbb679c7477744f99a6ed
+        '''.
+        '''</summary>
+        Friend ReadOnly Property CurrentCommit() As String
+            Get
+                Return ResourceManager.GetString("CurrentCommit", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized string similar to https://github.com/juchong/iSensor-FX3-Interface.git
+        '''.
+        '''</summary>
+        Friend ReadOnly Property CurrentURL() As String
+            Get
+                Return ResourceManager.GetString("CurrentURL", resourceCulture)
+            End Get
         End Property
     End Module
 End Namespace

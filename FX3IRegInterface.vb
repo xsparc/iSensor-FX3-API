@@ -1,4 +1,5 @@
-﻿'Author:        Alex Nolan
+﻿'File:          FX3IRegInterface.vb
+'Author:        Alex Nolan (alex.nolan@analog.com), Juan Chong (juan.chong@analog.com)
 'Date:          8/1/2018
 'Description:   Extension of the FX3Connection class. Has all the functions needed to 
 '               implement the IRegInterface interface defined in the AdisApi.
@@ -10,31 +11,73 @@ Partial Class FX3Connection
 
 #Region "IRegInterface Implementation"
 
+    ''' <summary>
+    ''' This function is not currently implemented. Calling it will throw a NotImplementedException.
+    ''' </summary>
+    ''' <param name="addr"></param>
+    ''' <param name="numCaptures"></param>
     Public Sub StartStream(addr As IEnumerable(Of UInteger), numCaptures As UInteger) Implements IRegInterface.StartStream
         Throw New NotImplementedException()
     End Sub
 
+    ''' <summary>
+    ''' This function is not currently implemented. Calling it will throw a NotImplementedException.
+    ''' </summary>
+    ''' <returns></returns>
     Public Function GetStreamDataPacketU16() As UShort() Implements IRegInterface.GetStreamDataPacketU16
         Throw New NotImplementedException()
     End Function
 
+    ''' <summary>
+    ''' This function is not currently implemented. Calling it will throw a NotImplementedException.
+    ''' </summary>
+    ''' <param name="addrData"></param>
+    ''' <param name="numCaptures"></param>
+    ''' <param name="numBuffers"></param>
+    ''' <returns></returns>
     Public Function ReadRegArrayStream(addrData As IEnumerable(Of AddrDataPair), numCaptures As UInteger, numBuffers As UInteger) As UShort() Implements IRegInterface.ReadRegArrayStream
         Throw New NotImplementedException()
     End Function
 
+    ''' <summary>
+    ''' This function is not currently implemented. Calling it will throw a NotImplementedException.
+    ''' </summary>
+    ''' <param name="addr"></param>
+    ''' <param name="data"></param>
     Public Sub WriteRegWord(addr As UInteger, data As UInteger) Implements IRegInterface.WriteRegWord
         Throw New NotImplementedException()
     End Sub
 
+    ''' <summary>
+    ''' This function is not currently implemented. Calling it will throw a NotImplementedException.
+    ''' </summary>
     Public Sub Start() Implements IRegInterface.Start
         Throw New NotImplementedException()
     End Sub
 
     ''' <summary>
+    ''' If the data ready is used for register reads
+    ''' </summary>
+    ''' <returns>The current data ready usage setting</returns>
+    Public Property DrActive As Boolean Implements AdisApi.IRegInterface.DrActive
+        Get
+            Return m_FX3_FX3SPIConfig.DrActive
+        End Get
+        Set(value As Boolean)
+            m_FX3_FX3SPIConfig.DrActive = value
+            If m_FX3Connected Then
+                m_ActiveFX3.ControlEndPt.Index = 12
+                m_ActiveFX3.ControlEndPt.Value = m_FX3_FX3SPIConfig.DrActive
+                ConfigureSPI()
+            End If
+        End Set
+    End Property
+
+    ''' <summary>
     ''' Switches burstMode on and off. Set burstMode to the number of burst read registers. 
     ''' </summary>
     ''' <returns>The number of burst read registers.</returns>
-    Public Property burstMode() As UShort Implements IRegInterface.burstMode
+    Public Property burstMode() As UShort Implements IRegInterface.BurstMode
         Get
             Return m_burstMode
         End Get
@@ -44,20 +87,20 @@ Partial Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Sets the timeout for the Bulk Endpoint used in real time streaming modes
+    ''' Sets the timeout for the Bulk Endpoint used in real time streaming modes.
     ''' </summary>
     ''' <returns>The timeout time, in seconds</returns>
     Public Property StreamTimeoutSeconds As Integer Implements IRegInterface.StreamTimeoutSeconds
         Get
             'Initialize if not set
             If IsNothing(m_StreamTimeout) Then
-                m_StreamTimeout = 5
+                m_StreamTimeout = 3
             End If
             Return m_StreamTimeout
         End Get
         Set(value As Integer)
             If value < 1 Then
-                Throw New Exception("ERROR: Minimum stream timeout of 1 second")
+                Throw New FX3ConfigurationException("ERROR: Stream timeout invalid")
             End If
             m_StreamTimeout = value
         End Set
@@ -76,16 +119,34 @@ Partial Class FX3Connection
     End Sub
 
     ''' <summary>
-    ''' Starts a buffered stream operation. For ADcmXLx021 products, StartRealTimeStreaming is used. For other products, StartGenericStream
-    ''' is used, and the stream parameters are determined by addr and numcaptures. This function blocks until the stream is complete, or the
-    ''' streaming operation is cancelled using the BackgroundWorker.
+    ''' Starts a buffered stream operation. The registers listed in addr are read numCaptures times per register buffer. This process is repeated numBuffers times. 
     ''' </summary>
-    ''' <param name="addr">The list of register addresses to read from, when PartType is not ADcmXLx021</param>
+    ''' <param name="addr">List of register addresses to read</param>
+    ''' <param name="numCaptures">Number of times to read the register list per buffer.</param>
+    ''' <param name="numBuffers">Number of total register buffers to read.</param>
+    ''' <param name="timeoutSeconds">Stream timeout, in seconds</param>
+    ''' <param name="worker">Background worker to handle progress updates</param>
+    Public Sub StartBufferedStream(addr As IEnumerable(Of UInteger), numCaptures As UInteger, numBuffers As UInteger, timeoutSeconds As Integer, worker As BackgroundWorker) Implements IRegInterface.StartBufferedStream
+
+        'Insert "Nothing" to make StartBufferedStream() happy
+        Dim addrDataList As New List(Of AddrDataPair)
+        For Each item In addr
+            addrDataList.Add(New AddrDataPair(item, Nothing))
+        Next
+
+        StartBufferedStream(addrDataList, numCaptures, numBuffers, timeoutSeconds, worker)
+
+    End Sub
+
+    ''' <summary>
+    ''' Starts a buffered stream operation. This is usually called from the TextFileStreamManager. DUTType must be set before executing. 
+    ''' </summary>
+    ''' <param name="addrData">The list of register addresses to read from, when PartType is not ADcmXLx021</param>
     ''' <param name="numCaptures">The number of reads to perform on each register listed in addr</param>
     ''' <param name="numBuffers">The total number of buffers to read. One buffer is either a frame or a set of register reads</param>
     ''' <param name="timeoutSeconds">The bulk endpoint timeout time</param>
     ''' <param name="worker">A Background worker object which can be used by a GUI to track the current stream status and send cancellation requests</param>
-    Public Sub StartBufferedStream(addr As IEnumerable(Of UInteger), numCaptures As UInteger, numBuffers As UInteger, timeoutSeconds As Integer, worker As BackgroundWorker) Implements IRegInterface.StartBufferedStream
+    Public Sub StartBufferedStream(ByVal addrData As IEnumerable(Of AddrDataPair), ByVal numCaptures As UInteger, ByVal numBuffers As UInteger, ByVal timeoutSeconds As Integer, ByVal worker As BackgroundWorker) Implements IRegInterface.StartBufferedStream
 
         'Check the worker status
         Dim reportProgress As Boolean = Not IsNothing(worker)
@@ -97,6 +158,13 @@ Partial Class FX3Connection
             supportsCancellation = supportsCancellation And worker.WorkerSupportsCancellation
         End If
 
+        'Set the write bit for each address that has data (likely a page write)
+        For Each item In addrData
+            If Not item.data Is Nothing Then
+                item.addr = item.addr Or &H80
+            End If
+        Next
+
         'Track the progress in the current buffered stream
         Dim progress, oldProgress As Integer
 
@@ -105,7 +173,7 @@ Partial Class FX3Connection
 
         'Throw exception if the number of buffers (reads) is invalid
         If numBuffers < 1 Then
-            Throw New Exception("ERROR: numBuffers must be at least one")
+            Throw New FX3ConfigurationException("ERROR: numBuffers must be at least one")
         End If
 
         'Initialize progress counters
@@ -121,7 +189,7 @@ Partial Class FX3Connection
         Else
             If burstMode = 0 Then
                 'Generic stream manager implementation for IMU, etc
-                StartGenericStream(addr, numCaptures, numBuffers)
+                StartGenericStream(addrData, numCaptures, numBuffers)
             Else
                 'Burst stream manager implementation
                 StartBurstStream(numBuffers)
@@ -129,7 +197,7 @@ Partial Class FX3Connection
         End If
 
         'While loop for worker events
-        While (GetNumBuffersRead < numBuffers) And StreamThreadRunning
+        While (GetNumBuffersRead < numBuffers) And m_StreamThreadRunning
             'Check for cancellations
             If supportsCancellation Then
                 If worker.CancellationPending Then
@@ -146,21 +214,19 @@ Partial Class FX3Connection
                     oldProgress = progress
                 End If
             End If
+            'Sleep so as to not rail the processor
+            Threading.Thread.Sleep(10)
         End While
-
-        If reportProgress Then
-            worker.ReportProgress(100)
-        End If
 
     End Sub
 
     ''' <summary>
-    ''' Stops the currently running stream, if any
+    ''' Stops the currently running data stream, if any.
     ''' </summary>
     Public Sub StopStream() Implements IRegInterface.StopStream
 
         'If the DUT is set to ADcmXLx021 and it is streaming then stop
-        If StreamThreadRunning Then
+        If m_StreamThreadRunning Then
             If PartType = DUTType.ADcmXL1021 Or PartType = DUTType.ADcmXL2021 Or PartType = DUTType.ADcmXL3021 Then
                 StopRealTimeStreaming()
             Else
@@ -171,7 +237,7 @@ Partial Class FX3Connection
                     StopBurstStream()
                 End If
             End If
-            End If
+        End If
 
     End Sub
 
@@ -182,12 +248,12 @@ Partial Class FX3Connection
     Public Function GetBufferedStreamDataPacket() As UShort() Implements IRegInterface.GetBufferedStreamDataPacket
 
         'Wait for the frame (or buffer in case of IMU) and then return it
-        Return GetBuffer
+        Return GetBuffer()
 
     End Function
 
     ''' <summary>
-    ''' This 
+    ''' This function reads a set of registers using a streaming endpoint from the FX3.
     ''' </summary>
     ''' <param name="addr"></param>
     ''' <param name="numCaptures"></param>
@@ -213,6 +279,7 @@ Partial Class FX3Connection
     ''' <param name="addrData">The AddrDataPair to be written</param>
     Public Sub WriteRegByte(addrData As AddrDataPair) Implements IRegInterface.WriteRegByte
 
+        'Make a call to the hardware level WriteRegByte function with the given data
         WriteRegByte(addrData.addr, addrData.data)
 
     End Sub
@@ -223,6 +290,7 @@ Partial Class FX3Connection
     ''' <param name="addrData">The list of AddrDataPair to be written to DUT</param>
     Public Sub WriteRegByte(addrData As IEnumerable(Of AddrDataPair)) Implements IRegInterface.WriteRegByte
 
+        'Iterate through the IEnumerable list, performing writes as needed
         For Each value In addrData
             WriteRegByte(value.addr, value.data)
         Next
@@ -236,42 +304,40 @@ Partial Class FX3Connection
     ''' <param name="data">The byte of data to write</param>
     Public Sub WriteRegByte(addr As UInteger, data As UInteger) Implements IRegInterface.WriteRegByte
 
+        'Transfer buffer
+        Dim buf(3) As Byte
+
+        'status message
+        Dim status As UInt32
+
         'Configure control endpoint for a single byte register write
-        If Not ConfigureControlEndpoint(&HF1, False) Then
-            Throw New Exception("ERROR: Control endpoint configuration failed")
-        End If
+        ConfigureControlEndpoint(USBCommands.ADI_WRITE_BYTE, False)
         FX3ControlEndPt.Value = data And &HFFFF
         FX3ControlEndPt.Index = addr And &HFFFF
 
         'Transfer data
-        Dim buf(3) As Byte
         If Not XferControlData(buf, 4, 2000) Then
-            Throw New Exception("ERROR: WriteRegByte timed out - Check board connection")
+            Throw New FX3CommunicationException("ERROR: WriteRegByte timed out - Check board connection")
         End If
 
         'Read back the operation status from the return buffer
-        Dim status, shiftedValue As UInteger
-        status = buf(0)
-        shiftedValue = buf(1)
-        shiftedValue = shiftedValue << 8
-        status = status + shiftedValue
-        shiftedValue = buf(2)
-        shiftedValue = shiftedValue << 16
-        status = status + shiftedValue
-        shiftedValue = buf(3)
-        shiftedValue = shiftedValue << 24
-        status = status + shiftedValue
-
+        status = BitConverter.ToUInt32(buf, 0)
         If Not status = 0 Then
-            m_status = "ERROR: Bad write command - " + status.ToString("X4")
-            Throw New Exception("ERROR: Bad write command - " + status.ToString("X4"))
+            Throw New FX3BadStatusException("ERROR: Bad write command - " + status.ToString("X4"))
         End If
 
     End Sub
 
+    ''' <summary>
+    ''' Overload of WriteRegByte which allows for multiple registers to be specified to write to, as an IEnumerable list of register addresses.
+    ''' </summary>
+    ''' <param name="addr">The list of register addresses to write to.</param>
+    ''' <param name="data">The data to write to each register in the address list.</param>
     Public Sub WriteRegByte(addr As IEnumerable(Of UInteger), data As IEnumerable(Of UInteger)) Implements IRegInterface.WriteRegByte
 
+        'Index in the IEnumerable register list
         Dim index As Integer = 0
+
         'For each address / data pair, call writeRegByte
         While index < addr.Count And index < data.Count
             WriteRegByte(addr(index), data(index))
@@ -321,8 +387,8 @@ Partial Class FX3Connection
 
             'Build bulk transfer buffer for when DR is enabled
             If DrActive Then
-                While (bufIndex <= (bufSize - BytesPerBulkRead)) And (addrIndex < addr.Count)
-                    For i As Integer = 0 To BytesPerBulkRead / 2
+                While (bufIndex <= (bufSize - m_BytesPerBulkRead)) And (addrIndex < addr.Count)
+                    For i As Integer = 0 To m_BytesPerBulkRead / 2
                         buf(bufIndex) = addr(addrIndex)
                         buf(bufIndex + 1) = 0
                         bufIndex = bufIndex + 2
@@ -340,26 +406,30 @@ Partial Class FX3Connection
             End If
 
             'Send control transfer
-            ConfigureControlEndpoint(&HF2, True)
+            ConfigureControlEndpoint(USBCommands.ADI_BULK_REGISTER_TRANSFER, True)
             'Set the index equal to the number of bytes to read
             FX3ControlEndPt.Index = bufIndex
             'Set the value to the number of bytes per data ready
             If DrActive Then
-                FX3ControlEndPt.Value = BytesPerBulkRead
+                FX3ControlEndPt.Value = m_BytesPerBulkRead
             Else
                 FX3ControlEndPt.Value = 0
             End If
             If Not XferControlData(buf, 4, 2000) Then
-                Throw New Exception("ERROR: Control Endpoint transfer timed out")
+                Throw New FX3CommunicationException("ERROR: Control Endpoint transfer timed out")
             End If
 
             'Send bulk transfer
             tempBufSize = bufIndex
-            DataOutEndPt.XferData(buf, tempBufSize)
+            If Not DataOutEndPt.XferData(buf, tempBufSize) Then
+                Throw New FX3CommunicationException("ERROR: Bulk endpoint data transfer out failed")
+            End If
 
             'Receieve data back
             tempBufSize = bufIndex
-            DataInEndPt.XferData(buf, tempBufSize)
+            If Not DataInEndPt.XferData(buf, tempBufSize) Then
+                Throw New FX3CommunicationException("ERROR: Bulk endpoint data transfer in failed")
+            End If
 
             'Build the return array
             For i As Integer = 0 To bufIndex - 2 Step 2
@@ -425,9 +495,9 @@ Partial Class FX3Connection
 
         'Set the bytes per data ready
         If DrActive Then
-            BytesPerBulkRead = addr.Count * 2
+            m_BytesPerBulkRead = addr.Count * 2
         Else
-            BytesPerBulkRead = 0
+            m_BytesPerBulkRead = 0
         End If
 
         'Build address list
@@ -450,10 +520,9 @@ Partial Class FX3Connection
     ''' <returns>Returns the value read in over SPI as a short</returns>
     Public Function ReadRegByte(addr As UInteger) As UShort Implements IRegInterface.ReadRegByte
 
-        'Return upper byte if even address, lower if odd
-
         Dim value As UShort = ReadRegWord(addr)
 
+        'Return upper byte if even address, lower if odd
         If addr Mod 2 = 0 Then
             'Even case
             Return value And &HFF
@@ -471,9 +540,17 @@ Partial Class FX3Connection
     ''' <returns>The 16 bit register value, as a UShort</returns>
     Public Function ReadRegWord(addr As UInteger) As UShort Implements IRegInterface.ReadRegWord
 
-        Dim buf(1) As Byte
+        'Transfer buffer
+        Dim buf(5) As Byte
+
+        'Status word
+        Dim status As UInt32
+
+        'Variables to parse value from the buffer
+        Dim returnValue, shiftValue As UShort
+
         'Configure the control endpoint for a single register read
-        ConfigureControlEndpoint(&HF0, False)
+        ConfigureControlEndpoint(USBCommands.ADI_READ_BYTES, False)
 
         'Set the value to 0
         FX3ControlEndPt.Value = 0
@@ -482,15 +559,21 @@ Partial Class FX3Connection
         FX3ControlEndPt.Index = addr
 
         'Transfer the data
-        If Not XferControlData(buf, 2, 2000) Then
-            Throw New Exception("ERROR: FX3 is not responding to transfer request")
+        If Not XferControlData(buf, 6, 2000) Then
+            Throw New FX3CommunicationException("ERROR: FX3 is not responding to transfer request")
         End If
 
         'Calculate reg value
-        Dim returnValue, shiftValue As UShort
-        shiftValue = buf(0)
+        shiftValue = buf(4)
         shiftValue = shiftValue << 8
-        returnValue = shiftValue + buf(1)
+        returnValue = shiftValue + buf(5)
+
+        'Read back the operation status from the return buffer
+        status = BitConverter.ToUInt32(buf, 0)
+
+        If Not status = 0 Then
+            Throw New FX3BadStatusException("ERROR: Bad read command - " + status.ToString("X4"))
+        End If
 
         Return returnValue
 
