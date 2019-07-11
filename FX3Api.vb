@@ -781,6 +781,8 @@ Public Class FX3Connection
     ''' <param name="Pin">The pin to configure as a PWM signal.</param>
     Public Sub StartPWM(ByVal Frequency As Double, ByVal DutyCycle As Double, ByVal Pin As IPinObject)
 
+        'Check that the timer complex GPIO isnt being used
+
         'Validate frequency
         If Frequency < 0.1 Or Frequency > 1000000 Then
             Throw New FX3ConfigurationException("ERROR: Invalid PWM frequency: " + Frequency.ToString() + "Hz")
@@ -789,6 +791,11 @@ Public Class FX3Connection
         'Validate duty cycle
         If DutyCycle < 0 Or DutyCycle > 1 Then
             Throw New FX3ConfigurationException("ERROR: Invalid duty cycle: " + DutyCycle.ToString() + "%")
+        End If
+
+        'Validate that the complex GPIO 0 block is not being used. This block drives the timer subsystem and is unavailable for use as a PWM.
+        If (Pin.pinConfig Mod 8) = 0 Then
+            Throw New FX3ConfigurationException("ERROR: The selected " + Pin.ToString() + " pin cannot be used as a PWM")
         End If
 
         'Calculate the needed period and threshold value for the given setting
