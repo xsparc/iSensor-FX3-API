@@ -208,7 +208,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
     {
         isHandled = CyTrue;
 
-        CyU3PDebugPrint (4, "Vendor request = %d\r\n", bRequest);
+        CyU3PDebugPrint (4, "Vendor request = 0x%x\r\n", bRequest);
 
         switch (bRequest)
         {
@@ -437,6 +437,12 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 				status = AdiConfigurePWM((CyBool_t) wIndex);
             	break;
 
+            case ADI_TRANSFER_BYTES:
+            	//Call the transfer bytes function
+            	//upper 2 write bytes are passed in wIndex, lower are passed in wValue
+            	status = AdiTransferBytes(wIndex << 16 | wValue);
+            	break;
+
             default:
                 // This is unknown request
                 isHandled = CyFalse;
@@ -514,6 +520,16 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
     return isHandled;
 }
 
+/*
+ * Function: AdiConfigurePWM(CyBool_t EnablePWM)
+ *
+ * This function configures the FX3 PWM options. The pin number, threshold value,
+ * and period are provided in the USBBuffer, and are calculated in the FX3Api.
+ *
+ * enablePWM: If the PWM should be enabled or disabled.
+ *
+ * Returns: status
+ */
 CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -602,6 +618,49 @@ CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 	    	return status;
 	    }
 	}
+	return status;
+}
+
+/*
+ * Function: AdiTransferBytes(uint32_t writeData)
+ *
+ * This function performs a bi-directional SPI transfer, on up to 4 bytes of data.
+ * The status code and data read back are returned on the control endpoint.
+ *
+ * writeData: The TX data to transmit to the slave device.
+ *
+ * Returns: status
+ */
+CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData)
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+	uint8_t writeBuffer[4];
+	uint8_t readBuffer[4];
+	uint32_t transferSize;
+
+	//populate the writebuffer
+	writeBuffer[0] = writeData & 0xFF;
+	writeBuffer[1] = (writeData & 0xFF00) >> 8;
+	writeBuffer[2] = (writeData & 0xFF0000) >> 16;
+	writeBuffer[3] = (writeData & 0xFF000000) >> 24;
+
+	//Calculate number of bytes to transfer
+	transferSize = spiConfig.wordLen / 8;
+
+	//perform SPI transfer
+	status = CyU3PSpiTransferWords(writeBuffer, transferSize, readBuffer, transferSize);
+
+	/* Send status and data back via control endpoint */
+	USBBuffer[0] = status & 0xFF;
+	USBBuffer[1] = (status & 0xFF00) >> 8;
+	USBBuffer[2] = (status & 0xFF0000) >> 16;
+	USBBuffer[3] = (status & 0xFF000000) >> 24;
+	USBBuffer[4] = readBuffer[0];
+	USBBuffer[5] = readBuffer[1];
+	USBBuffer[6] = readBuffer[2];
+	USBBuffer[7] = readBuffer[3];
+	CyU3PUsbSendEP0Data (8, USBBuffer);
+
 	return status;
 }
 
@@ -2022,7 +2081,7 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 	CyU3PDmaChannelConfig_t dmaConfig;
 	CyU3PMemSet ((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
 	dmaConfig.size 				= usbBufferSize;
-	dmaConfig.count 			= 16;
+	dmaConfig.count 			= 4;
 	dmaConfig.prodSckId 		= CY_U3P_CPU_SOCKET_PROD;
 	dmaConfig.consSckId 		= CY_U3P_UIB_SOCKET_CONS_1;
 	dmaConfig.dmaMode 			= CY_U3P_DMA_MODE_BYTE;
@@ -2862,6 +2921,9 @@ void AdiDataStream_Entry(uint32_t input)
 	uint8_t *tempPtr;
 	CyBool_t firstRun = CyTrue;
 
+	//SPI variables
+	uint32_t i, temp, intrMask;
+
 	for (;;)
 	{
 		//Wait indefinitely for any flag to be set
@@ -2892,45 +2954,9 @@ void AdiDataStream_Entry(uint32_t input)
 				}
 
 				//Transmit first word without reading back
-				tempData[0] = regList[regIndex + 2];
-				tempData[1] = regList[regIndex + 3];
-
-				AdiSpiResetFifo(CyTrue, CyTrue);
-
-				uint32_t i, temp, intrMask;
-
-			    intrMask = SPI->lpp_spi_intr_mask;
-			    SPI->lpp_spi_intr_mask = 0;
-				SPI->lpp_spi_config |= CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_RX_ENABLE;
-				SPI->lpp_spi_config |= CY_U3P_LPP_SPI_ENABLE;
-				for ( i = 0; i <= 2; i += 1)
-				{
-					SPI->lpp_spi_egress_data = tempData[i];
-				}
-				temp = CY_U3P_LPP_SPI_TX_SPACE;
-				if (i > 0)
-				{
-					temp |= CY_U3P_LPP_SPI_RX_DATA;
-				}
-				while ((SPI->lpp_spi_status & temp) != temp);
-				if (i > 0)
-				{
-					temp = SPI->lpp_spi_ingress_data;
-					if (i <= 2)
-					{
-						tempPtr[i - 1] = (uint8_t)(temp & 0xFF);
-					}
-				}
-				SPI->lpp_spi_config &= ~(CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_RX_ENABLE);
-				SPI->lpp_spi_intr |= CY_U3P_LPP_SPI_TX_DONE | CY_U3P_LPP_SPI_RX_DATA;
-				SPI->lpp_spi_intr_mask = intrMask;
-			    while ((SPI->lpp_spi_status & CY_U3P_LPP_SPI_BUSY) != 0);
-			    SPI->lpp_spi_config &= ~CY_U3P_LPP_SPI_ENABLE;
-
-				//Set the pin timer to 0
-				GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
-				//clear interrupt flag
-				GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
+				tempData[0] = regList[0];
+				tempData[1] = regList[1];
+				CyU3PSpiTransmitWords(tempData, 2);
 
 				//Set the pin timer to 0
 				GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
@@ -2948,9 +2974,11 @@ void AdiDataStream_Entry(uint32_t input)
 					tempData[0] = regList[regIndex + 2];
 					tempData[1] = regList[regIndex + 3];
 
-					AdiSpiResetFifo(CyTrue, CyTrue);
+					status = CyU3PSpiTransferWords(tempData, 2, tempPtr, 2);
 
-					uint32_t i, temp, intrMask;
+					/*
+
+					AdiSpiResetFifo(CyTrue, CyTrue);
 
 				    intrMask = SPI->lpp_spi_intr_mask;
 				    SPI->lpp_spi_intr_mask = 0;
@@ -2960,25 +2988,18 @@ void AdiDataStream_Entry(uint32_t input)
 					{
 						SPI->lpp_spi_egress_data = tempData[i];
 					}
-					temp = CY_U3P_LPP_SPI_TX_SPACE;
-					if (i > 0)
-					{
-						temp |= CY_U3P_LPP_SPI_RX_DATA;
-					}
+					temp = CY_U3P_LPP_SPI_TX_SPACE | CY_U3P_LPP_SPI_RX_DATA;
 					while ((SPI->lpp_spi_status & temp) != temp);
-					if (i > 0)
-					{
-						temp = SPI->lpp_spi_ingress_data;
-						if (i <= 2)
-						{
-							tempPtr[i - 1] = (uint8_t)(temp & 0xFF);
-						}
-					}
+					temp = SPI->lpp_spi_ingress_data;
+					tempPtr[0] = (uint8_t)(temp & 0xFF);
+
 					SPI->lpp_spi_config &= ~(CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_RX_ENABLE);
 					SPI->lpp_spi_intr |= CY_U3P_LPP_SPI_TX_DONE | CY_U3P_LPP_SPI_RX_DATA;
 					SPI->lpp_spi_intr_mask = intrMask;
 				    while ((SPI->lpp_spi_status & CY_U3P_LPP_SPI_BUSY) != 0);
 				    SPI->lpp_spi_config &= ~CY_U3P_LPP_SPI_ENABLE;
+
+				    */
 
 					//Set the pin timer to 0
 					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
@@ -2998,8 +3019,8 @@ void AdiDataStream_Entry(uint32_t input)
 						{
 							CyU3PDebugPrint (4, "CyU3PDmaChannelCommitBuffer in loop failed, Error code = 0x%x\r\n", status);
 						}
-						//CyU3PDebugPrint (4, "Started Channel Commmit \r\n");
-						status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &genBuf_p, CYU3P_NO_WAIT);
+
+						status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &genBuf_p, CYU3P_WAIT_FOREVER);
 						if (status != CY_U3P_SUCCESS)
 						{
 							CyU3PDebugPrint (4, "CyU3PDmaChannelGetBuffer in generic capture failed, Error code = 0x%x\r\n", status);
@@ -3012,12 +3033,11 @@ void AdiDataStream_Entry(uint32_t input)
 				if ((numBuffersRead >= (numBuffers - 1)) || killEarly)
 				{
 					//Reset buffer counter
-					CyU3PDebugPrint (4, "bleh = %d\r\n", numBuffersRead);
+					CyU3PDebugPrint (4, "Finished reading %d buffers\r\n", numBuffersRead);
 					numBuffersRead = 0;
 					firstRun = CyTrue;
 					if (byteCounter)
 					{
-
 						status = CyU3PDmaChannelCommitBuffer (&StreamingChannel, usbBufferSize, 0);
 						if (status != CY_U3P_SUCCESS)
 						{

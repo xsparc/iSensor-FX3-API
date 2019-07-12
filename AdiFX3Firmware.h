@@ -81,6 +81,7 @@ CyU3PReturnStatus_t AdiWaitForTimerTicks(uint32_t numTicks);
 CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM);
 
 //Peripheral read-write functions.
+CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData);
 CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data);
 CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr);
 CyU3PReturnStatus_t AdiBulkByteTransfer(uint16_t numBytes, uint16_t bytesPerCapture);
@@ -197,6 +198,9 @@ struct BoardConfig
 //Return data over a bulk endpoint before a bulk read/write operation
 #define ADI_BULK_REGISTER_TRANSFER				(0xF2)
 
+//Used to transfer bytes without any intervention/protocol management
+#define ADI_TRANSFER_BYTES						(0xCA)
+
 //Command to enable or disable a PWM signal
 #define ADI_PWM_CMD  							(0xC9)
 
@@ -258,7 +262,8 @@ struct BoardConfig
 #define MS_TO_TICKS_MULT						(10000) //(Previously 953)
 
  //Offset to take away from the timer period for generic stream stall time. In 10MHz timer ticks
-#define ADI_GENERIC_STALL_OFFSET				(76)
+//#define ADI_GENERIC_STALL_OFFSET				(76)
+#define ADI_GENERIC_STALL_OFFSET				(90)
 
 #define ADI_STALL_OFFSET						(14)
 
