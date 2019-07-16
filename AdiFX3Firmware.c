@@ -208,7 +208,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
     {
         isHandled = CyTrue;
 
-        CyU3PDebugPrint (4, "Vendor request = 0x%x\r\n", bRequest);
+        //CyU3PDebugPrint (4, "Vendor request = 0x%x\r\n", bRequest);
 
         switch (bRequest)
         {
