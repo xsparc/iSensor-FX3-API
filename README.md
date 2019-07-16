@@ -8,6 +8,10 @@ The FX3 firmware is entirely event-driven and communicates with the PC using a v
 
 Using both the FX3 firmware and the FX3 API enables you to acquire sensor data quickly while giving the freedom to add custom features to your interface software. 
 
+## API Documentation
+
+Full documentation for the public FX3 API can be found [here](https://juchong.github.io/iSensor-FX3-API/). 
+
 ## Hardware Requirements
 
 The firmware is designed to be built and run on a Cypress SuperSpeed Explorer Kit (CYUSB3KIT-003). A breakout board designed to convert the Explorer Kit's pins to a standard, 16-pin, 2mm connector used on most iSensor evaluation should be available soon. A schematic showing how to connect iSensor products to the Explorer Kit can be found in the Documentation folder of the iSensor FX3 firmware repository [here](https://github.com/juchong/iSensor-FX3-Firmware/tree/master/Documentation). 
