@@ -10,13 +10,14 @@ Imports System.Threading
 Imports System.Collections.Concurrent
 Imports System.Reflection
 Imports Microsoft.VisualBasic.ApplicationServices
+Imports System.ComponentModel
 
 ''' <summary>
 ''' Class for interfacing with the FX3 based eval platform. Implements IRegInterface and IPinFcns, in addition
 ''' to a superset of extra FX3 specific interfacing functions.
 ''' </summary>
 Public Class FX3Connection
-    Implements IRegInterface, IPinFcns
+    Implements IRegInterface, IPinFcns, ISpi32Interface
 
 #Region "Interface Variable Declaration"
 
@@ -77,7 +78,7 @@ Public Class FX3Connection
     Private m_FX3Connected As Boolean
 
     'SPI config struct for tracking the current FX3 configuration
-    Private m_FX3_FX3SPIConfig As FX3SPIConfig
+    Private m_FX3SPIConfig As FX3SPIConfig
 
     'CyUSB object for the active FX3 board
     Private m_ActiveFX3 As CyUSB.CyFX3Device = Nothing
@@ -212,9 +213,9 @@ Public Class FX3Connection
 
         'Set the default SPI config
         If SensorType = DeviceType.IMU Then
-            m_FX3_FX3SPIConfig = New FX3SPIConfig(FX3Api.DeviceType.IMU)
+            m_FX3SPIConfig = New FX3SPIConfig(FX3Api.DeviceType.IMU)
         Else
-            m_FX3_FX3SPIConfig = New FX3SPIConfig(FX3Api.DeviceType.ADcmXL)
+            m_FX3SPIConfig = New FX3SPIConfig(FX3Api.DeviceType.ADcmXL)
         End If
 
         'Set the board connection
@@ -256,17 +257,17 @@ Public Class FX3Connection
     ''' <returns>The current SPI clock frequency, in MHZ. Valid values are in the range 1 to 40,000,000</returns>
     Public Property SclkFrequency As Int32
         Get
-            Return m_FX3_FX3SPIConfig.ClockFrequency
+            Return m_FX3SPIConfig.ClockFrequency
         End Get
         Set(value As Int32)
             'Throw an exception if the value is out of the range of frequencies supported by the board
             If IsNothing(value) Or value > 40000000 Or value < 1 Then
                 Throw New FX3ConfigurationException("ERROR: Invalid Sclk Frequency entered. Must be in the range (1-40000000)")
             End If
-            m_FX3_FX3SPIConfig.ClockFrequency = value
+            m_FX3SPIConfig.ClockFrequency = value
             If m_FX3Connected Then
                 m_ActiveFX3.ControlEndPt.Index = 0
-                ConfigureSPI(m_FX3_FX3SPIConfig.ClockFrequency)
+                ConfigureSPI(m_FX3SPIConfig.ClockFrequency)
             End If
         End Set
     End Property
@@ -283,13 +284,13 @@ Public Class FX3Connection
     ''' <returns>The current polarity setting</returns>
     Public Property Cpol As Boolean
         Get
-            Return m_FX3_FX3SPIConfig.Cpol
+            Return m_FX3SPIConfig.Cpol
         End Get
         Set(value As Boolean)
-            m_FX3_FX3SPIConfig.Cpol = value
+            m_FX3SPIConfig.Cpol = value
             If m_FX3Connected Then
                 m_ActiveFX3.ControlEndPt.Index = 1
-                m_ActiveFX3.ControlEndPt.Value = m_FX3_FX3SPIConfig.Cpol
+                m_ActiveFX3.ControlEndPt.Value = m_FX3SPIConfig.Cpol
                 ConfigureSPI()
             End If
         End Set
@@ -306,13 +307,13 @@ Public Class FX3Connection
     ''' <returns>The current chip select phase setting</returns>
     Public Property Cpha As Boolean
         Get
-            Return m_FX3_FX3SPIConfig.Cpha
+            Return m_FX3SPIConfig.Cpha
         End Get
         Set(value As Boolean)
-            m_FX3_FX3SPIConfig.Cpha = value
+            m_FX3SPIConfig.Cpha = value
             If m_FX3Connected Then
                 m_ActiveFX3.ControlEndPt.Index = 2
-                m_ActiveFX3.ControlEndPt.Value = m_FX3_FX3SPIConfig.Cpha
+                m_ActiveFX3.ControlEndPt.Value = m_FX3SPIConfig.Cpha
                 ConfigureSPI()
             End If
         End Set
@@ -329,13 +330,13 @@ Public Class FX3Connection
     ''' <returns>The current chip select polarity</returns>
     Public Property ChipSelectPolarity As Boolean
         Get
-            Return m_FX3_FX3SPIConfig.ChipSelectPolarity
+            Return m_FX3SPIConfig.ChipSelectPolarity
         End Get
         Set(value As Boolean)
-            m_FX3_FX3SPIConfig.ChipSelectPolarity = value
+            m_FX3SPIConfig.ChipSelectPolarity = value
             If m_FX3Connected Then
                 m_ActiveFX3.ControlEndPt.Index = 3
-                m_ActiveFX3.ControlEndPt.Value = m_FX3_FX3SPIConfig.ChipSelectPolarity
+                m_ActiveFX3.ControlEndPt.Value = m_FX3SPIConfig.ChipSelectPolarity
                 ConfigureSPI()
             End If
         End Set
@@ -352,13 +353,13 @@ Public Class FX3Connection
     ''' <returns>The current chip select control mode</returns>
     Public Property ChipSelectControl As SpiChipselectControl
         Get
-            Return m_FX3_FX3SPIConfig.ChipSelectControl
+            Return m_FX3SPIConfig.ChipSelectControl
         End Get
         Set(value As SpiChipselectControl)
-            m_FX3_FX3SPIConfig.ChipSelectControl = value
+            m_FX3SPIConfig.ChipSelectControl = value
             If m_FX3Connected Then
                 m_ActiveFX3.ControlEndPt.Index = 4
-                m_ActiveFX3.ControlEndPt.Value = m_FX3_FX3SPIConfig.ChipSelectControl
+                m_ActiveFX3.ControlEndPt.Value = m_FX3SPIConfig.ChipSelectControl
                 ConfigureSPI()
             End If
         End Set
@@ -375,13 +376,13 @@ Public Class FX3Connection
     ''' <returns>The current chip select lead time setting</returns>
     Public Property ChipSelectLeadTime As SpiLagLeadTime
         Get
-            Return m_FX3_FX3SPIConfig.ChipSelectLeadTime
+            Return m_FX3SPIConfig.ChipSelectLeadTime
         End Get
         Set(value As SpiLagLeadTime)
-            m_FX3_FX3SPIConfig.ChipSelectLeadTime = value
+            m_FX3SPIConfig.ChipSelectLeadTime = value
             If m_FX3Connected Then
                 m_ActiveFX3.ControlEndPt.Index = 5
-                m_ActiveFX3.ControlEndPt.Value = m_FX3_FX3SPIConfig.ChipSelectLeadTime
+                m_ActiveFX3.ControlEndPt.Value = m_FX3SPIConfig.ChipSelectLeadTime
                 ConfigureSPI()
             End If
         End Set
@@ -398,13 +399,13 @@ Public Class FX3Connection
     ''' <returns>The current chip select lag time setting</returns>
     Public Property ChipSelectLagTime As SpiLagLeadTime
         Get
-            Return m_FX3_FX3SPIConfig.ChipSelectLagTime
+            Return m_FX3SPIConfig.ChipSelectLagTime
         End Get
         Set(value As SpiLagLeadTime)
-            m_FX3_FX3SPIConfig.ChipSelectLagTime = value
+            m_FX3SPIConfig.ChipSelectLagTime = value
             If m_FX3Connected Then
                 m_ActiveFX3.ControlEndPt.Index = 6
-                m_ActiveFX3.ControlEndPt.Value = m_FX3_FX3SPIConfig.ChipSelectLagTime
+                m_ActiveFX3.ControlEndPt.Value = m_FX3SPIConfig.ChipSelectLagTime
                 ConfigureSPI()
             End If
         End Set
@@ -421,13 +422,13 @@ Public Class FX3Connection
     ''' <returns>The current LSB First setting, as a boolean</returns>
     Public Property IsLSBFirst As Boolean
         Get
-            Return m_FX3_FX3SPIConfig.IsLSBFirst
+            Return m_FX3SPIConfig.IsLSBFirst
         End Get
         Set(value As Boolean)
-            m_FX3_FX3SPIConfig.IsLSBFirst = value
+            m_FX3SPIConfig.IsLSBFirst = value
             If m_FX3Connected Then
                 m_ActiveFX3.ControlEndPt.Index = 7
-                m_ActiveFX3.ControlEndPt.Value = m_FX3_FX3SPIConfig.IsLSBFirst
+                m_ActiveFX3.ControlEndPt.Value = m_FX3SPIConfig.IsLSBFirst
                 ConfigureSPI()
             End If
         End Set
@@ -444,16 +445,16 @@ Public Class FX3Connection
     ''' <returns>The current word length</returns>
     Public Property WordLength As Byte
         Get
-            Return m_FX3_FX3SPIConfig.WordLength
+            Return m_FX3SPIConfig.WordLength
         End Get
         Set(value As Byte)
             If Not (value Mod 8 = 0) Then
                 Throw New FX3ConfigurationException("ERROR: Word length must by a multiple of 8 bits")
             End If
-            m_FX3_FX3SPIConfig.WordLength = value
+            m_FX3SPIConfig.WordLength = value
             If m_FX3Connected Then
                 m_ActiveFX3.ControlEndPt.Index = 8
-                m_ActiveFX3.ControlEndPt.Value = m_FX3_FX3SPIConfig.WordLength
+                m_ActiveFX3.ControlEndPt.Value = m_FX3SPIConfig.WordLength
                 ConfigureSPI()
             End If
         End Set
@@ -470,14 +471,14 @@ Public Class FX3Connection
     ''' <returns>The current stall time, in microseconds</returns>
     Public Property StallTime As UInt16
         Get
-            Return m_FX3_FX3SPIConfig.StallTime
+            Return m_FX3SPIConfig.StallTime
         End Get
         Set(value As UInt16)
-            m_FX3_FX3SPIConfig.StallTime = value
+            m_FX3SPIConfig.StallTime = value
             If m_FX3Connected Then
                 m_ActiveFX3.ControlEndPt.Index = 9
                 'Send the stall time in microseconds to the FX3 board
-                m_ActiveFX3.ControlEndPt.Value = m_FX3_FX3SPIConfig.StallTime
+                m_ActiveFX3.ControlEndPt.Value = m_FX3SPIConfig.StallTime
                 ConfigureSPI()
             End If
         End Set
@@ -494,13 +495,13 @@ Public Class FX3Connection
     ''' <returns>Returns the DUTType. Defaults to 3 axis</returns>
     Public Property PartType As DUTType
         Get
-            Return m_FX3_FX3SPIConfig.DUTType
+            Return m_FX3SPIConfig.DUTType
         End Get
         Set(value As DUTType)
-            m_FX3_FX3SPIConfig.DUTType = value
+            m_FX3SPIConfig.DUTType = value
             If m_FX3Connected Then
                 m_ActiveFX3.ControlEndPt.Index = 10
-                m_ActiveFX3.ControlEndPt.Value = m_FX3_FX3SPIConfig.DUTType
+                m_ActiveFX3.ControlEndPt.Value = m_FX3SPIConfig.DUTType
                 ConfigureSPI()
             End If
         End Set
@@ -512,13 +513,13 @@ Public Class FX3Connection
     ''' <returns>The data ready polarity, as a boolean (True - low to high, False - high to low)</returns>
     Public Property DrPolarity As Boolean
         Get
-            Return m_FX3_FX3SPIConfig.DrPolarity
+            Return m_FX3SPIConfig.DrPolarity
         End Get
         Set(value As Boolean)
-            m_FX3_FX3SPIConfig.DrPolarity = value
+            m_FX3SPIConfig.DrPolarity = value
             If m_FX3Connected Then
                 m_ActiveFX3.ControlEndPt.Index = 11
-                m_ActiveFX3.ControlEndPt.Value = m_FX3_FX3SPIConfig.DrPolarity
+                m_ActiveFX3.ControlEndPt.Value = m_FX3SPIConfig.DrPolarity
                 ConfigureSPI()
             End If
         End Set
@@ -530,17 +531,17 @@ Public Class FX3Connection
     ''' <returns>The IPinObject of the pin currently configured as the data ready</returns>
     Public Property ReadyPin As IPinObject
         Get
-            Return m_FX3_FX3SPIConfig.DataReadyPin
+            Return m_FX3SPIConfig.DataReadyPin
         End Get
         Set(value As IPinObject)
             'throw an exception if the pin object is not an FX3PinObject
             If Not IsFX3Pin(value) Then
                 Throw New FX3ConfigurationException("ERROR: FX3 Connection must take an FX3 pin object")
             End If
-            m_FX3_FX3SPIConfig.DataReadyPin = value
+            m_FX3SPIConfig.DataReadyPin = value
             If m_FX3Connected Then
                 m_ActiveFX3.ControlEndPt.Index = 13
-                m_ActiveFX3.ControlEndPt.Value = m_FX3_FX3SPIConfig.DataReadyPinFX3GPIO
+                m_ActiveFX3.ControlEndPt.Value = m_FX3SPIConfig.DataReadyPinFX3GPIO
                 ConfigureSPI()
             End If
         End Set
@@ -552,7 +553,7 @@ Public Class FX3Connection
     ''' <returns></returns>
     Public ReadOnly Property TimerTickScaleFactor As UInteger
         Get
-            Return m_FX3_FX3SPIConfig.TimerTickScaleFactor
+            Return m_FX3SPIConfig.TimerTickScaleFactor
         End Get
     End Property
 
@@ -673,60 +674,60 @@ Public Class FX3Connection
         Dim boardConfig As FX3SPIConfig = GetBoardSpiParameters()
 
         'Updating each of the properties invokes their setter, which writes the values to the FX3
-        If Not boardConfig.ClockFrequency = m_FX3_FX3SPIConfig.ClockFrequency Then
-            SclkFrequency = m_FX3_FX3SPIConfig.ClockFrequency
+        If Not boardConfig.ClockFrequency = m_FX3SPIConfig.ClockFrequency Then
+            SclkFrequency = m_FX3SPIConfig.ClockFrequency
         End If
 
-        If Not boardConfig.Cpha = m_FX3_FX3SPIConfig.Cpha Then
-            Cpha = m_FX3_FX3SPIConfig.Cpha
+        If Not boardConfig.Cpha = m_FX3SPIConfig.Cpha Then
+            Cpha = m_FX3SPIConfig.Cpha
         End If
 
-        If Not boardConfig.Cpol = m_FX3_FX3SPIConfig.Cpol Then
-            Cpol = m_FX3_FX3SPIConfig.Cpol
+        If Not boardConfig.Cpol = m_FX3SPIConfig.Cpol Then
+            Cpol = m_FX3SPIConfig.Cpol
         End If
 
-        If Not boardConfig.StallTime = m_FX3_FX3SPIConfig.StallTime Then
-            StallTime = m_FX3_FX3SPIConfig.StallTime
+        If Not boardConfig.StallTime = m_FX3SPIConfig.StallTime Then
+            StallTime = m_FX3SPIConfig.StallTime
         End If
 
-        If Not boardConfig.ChipSelectLagTime = m_FX3_FX3SPIConfig.ChipSelectLagTime Then
-            ChipSelectLagTime = m_FX3_FX3SPIConfig.ChipSelectLagTime
+        If Not boardConfig.ChipSelectLagTime = m_FX3SPIConfig.ChipSelectLagTime Then
+            ChipSelectLagTime = m_FX3SPIConfig.ChipSelectLagTime
         End If
 
-        If Not boardConfig.ChipSelectLeadTime = m_FX3_FX3SPIConfig.ChipSelectLeadTime Then
-            ChipSelectLeadTime = m_FX3_FX3SPIConfig.ChipSelectLeadTime
+        If Not boardConfig.ChipSelectLeadTime = m_FX3SPIConfig.ChipSelectLeadTime Then
+            ChipSelectLeadTime = m_FX3SPIConfig.ChipSelectLeadTime
         End If
 
-        If Not boardConfig.ChipSelectControl = m_FX3_FX3SPIConfig.ChipSelectControl Then
-            ChipSelectControl = m_FX3_FX3SPIConfig.ChipSelectControl
+        If Not boardConfig.ChipSelectControl = m_FX3SPIConfig.ChipSelectControl Then
+            ChipSelectControl = m_FX3SPIConfig.ChipSelectControl
         End If
 
-        If Not boardConfig.ChipSelectPolarity = m_FX3_FX3SPIConfig.ChipSelectPolarity Then
-            ChipSelectPolarity = m_FX3_FX3SPIConfig.ChipSelectPolarity
+        If Not boardConfig.ChipSelectPolarity = m_FX3SPIConfig.ChipSelectPolarity Then
+            ChipSelectPolarity = m_FX3SPIConfig.ChipSelectPolarity
         End If
 
-        If Not boardConfig.DUTType = m_FX3_FX3SPIConfig.DUTType Then
-            PartType = m_FX3_FX3SPIConfig.DUTType
+        If Not boardConfig.DUTType = m_FX3SPIConfig.DUTType Then
+            PartType = m_FX3SPIConfig.DUTType
         End If
 
-        If Not boardConfig.IsLSBFirst = m_FX3_FX3SPIConfig.IsLSBFirst Then
-            IsLSBFirst = m_FX3_FX3SPIConfig.IsLSBFirst
+        If Not boardConfig.IsLSBFirst = m_FX3SPIConfig.IsLSBFirst Then
+            IsLSBFirst = m_FX3SPIConfig.IsLSBFirst
         End If
 
-        If Not boardConfig.WordLength = m_FX3_FX3SPIConfig.WordLength Then
-            WordLength = m_FX3_FX3SPIConfig.WordLength
+        If Not boardConfig.WordLength = m_FX3SPIConfig.WordLength Then
+            WordLength = m_FX3SPIConfig.WordLength
         End If
 
-        If Not boardConfig.DataReadyPinFX3GPIO = m_FX3_FX3SPIConfig.DataReadyPinFX3GPIO Then
-            ReadyPin = m_FX3_FX3SPIConfig.DataReadyPin
+        If Not boardConfig.DataReadyPinFX3GPIO = m_FX3SPIConfig.DataReadyPinFX3GPIO Then
+            ReadyPin = m_FX3SPIConfig.DataReadyPin
         End If
 
-        If Not boardConfig.DrActive = m_FX3_FX3SPIConfig.DrActive Then
-            DrActive = m_FX3_FX3SPIConfig.DrActive
+        If Not boardConfig.DrActive = m_FX3SPIConfig.DrActive Then
+            DrActive = m_FX3SPIConfig.DrActive
         End If
 
-        If Not boardConfig.DrPolarity = m_FX3_FX3SPIConfig.DrPolarity Then
-            DrPolarity = m_FX3_FX3SPIConfig.DrPolarity
+        If Not boardConfig.DrPolarity = m_FX3SPIConfig.DrPolarity Then
+            DrPolarity = m_FX3SPIConfig.DrPolarity
         End If
 
     End Sub
@@ -772,91 +773,6 @@ Public Class FX3Connection
 #Region "FX3 Other Functions"
 
     'The functions in this region are not a part of the IDutInterface, and are specific to the FX3 board
-
-    ''' <summary>
-    ''' This function configures the selected pin to drive a pulse width modulated output.
-    ''' </summary>
-    ''' <param name="Frequency">The desired PWM frequency, in Hz. Valid values are in the range of 0.1Hz (0.1) - 1MHz (1000000.0)</param>
-    ''' <param name="DutyCycle">The PWM duty cycle. Valid values are in the range 0.0 - 1.0. To achieve a "clock" signal set the duty cycle to 0.5</param>
-    ''' <param name="Pin">The pin to configure as a PWM signal.</param>
-    Public Sub StartPWM(ByVal Frequency As Double, ByVal DutyCycle As Double, ByVal Pin As IPinObject)
-
-        'Check that the timer complex GPIO isnt being used
-
-        'Validate frequency
-        If Frequency < 0.1 Or Frequency > 1000000 Then
-            Throw New FX3ConfigurationException("ERROR: Invalid PWM frequency: " + Frequency.ToString() + "Hz")
-        End If
-
-        'Validate duty cycle
-        If DutyCycle < 0 Or DutyCycle > 1 Then
-            Throw New FX3ConfigurationException("ERROR: Invalid duty cycle: " + DutyCycle.ToString() + "%")
-        End If
-
-        'Validate that the complex GPIO 0 block is not being used. This block drives the timer subsystem and is unavailable for use as a PWM.
-        If (Pin.pinConfig Mod 8) = 0 Then
-            Throw New FX3ConfigurationException("ERROR: The selected " + Pin.ToString() + " pin cannot be used as a PWM")
-        End If
-
-        'Calculate the needed period and threshold value for the given setting
-        Dim period, threshold As UInt32
-
-        'The base clock is 10.08MHz (403.2MHz / 40)
-        Dim baseClock As Double = 10080000
-
-        period = Convert.ToUInt32(baseClock / Frequency) - 1
-        threshold = Convert.ToUInt32((baseClock / Frequency) * DutyCycle)
-        'Decrement threshold, but clamp at 0
-        If Not threshold = 0 Then
-            threshold = threshold - 1
-        End If
-
-        'Create transfer buffer
-        Dim buf(9) As Byte
-
-        'Place PWM settings in the buffer
-        buf(0) = Pin.pinConfig And &HFF
-        buf(1) = 0
-        buf(2) = period And &HFF
-        buf(3) = (period And &HFF00) >> 8
-        buf(4) = (period And &HFF0000) >> 16
-        buf(5) = (period And &HFF000000) >> 24
-        buf(6) = threshold And &HFF
-        buf(7) = (threshold And &HFF00) >> 8
-        buf(8) = (threshold And &HFF0000) >> 16
-        buf(9) = (threshold And &HFF000000) >> 24
-
-        ConfigureControlEndpoint(USBCommands.ADI_PWM_CMD, True)
-        FX3ControlEndPt.Index = 1
-
-        If Not XferControlData(buf, 10, 2000) Then
-            Throw New FX3CommunicationException("ERROR: Control endpoint transfer timed out while setting up a PWM signal")
-        End If
-
-    End Sub
-
-    ''' <summary>
-    ''' This function call disables the PWM output from the FX3 and returns the pin to a tristated mode.
-    ''' </summary>
-    Public Sub StopPWM(ByVal Pin As IPinObject)
-
-        'Create buffer
-        Dim buf(1) As Byte
-
-        'Place pin settings in the buffer
-        buf(0) = Pin.pinConfig And &HFF
-        buf(1) = 0
-
-        'Configure control endpoint
-        ConfigureControlEndpoint(USBCommands.ADI_PWM_CMD, True)
-        FX3ControlEndPt.Index = 0
-
-        'Send stop command
-        If Not XferControlData(buf, 2, 2000) Then
-            Throw New FX3CommunicationException("ERROR: Control endpoint transfer timed out while stopping a PWM signal")
-        End If
-
-    End Sub
 
     ''' <summary>
     ''' This property returns a class containing some useful information about the current FX3 Dll. Some of the
@@ -1118,6 +1034,24 @@ Public Class FX3Connection
         End Get
     End Property
 
+    Public Property DrPin As IPinObject Implements ISpi32Interface.DrPin
+        Get
+            Throw New NotImplementedException()
+        End Get
+        Set(value As IPinObject)
+            Throw New NotImplementedException()
+        End Set
+    End Property
+
+    Private Property ISpi32Interface_DrPolarity As Boolean Implements ISpi32Interface.DrPolarity
+        Get
+            Throw New NotImplementedException()
+        End Get
+        Set(value As Boolean)
+            Throw New NotImplementedException()
+        End Set
+    End Property
+
     ''' <summary>
     ''' This function determines if the pin object being passed is an FX3 version of the IPinObject (as opposed to a blackfin pin for the SDP).
     ''' </summary>
@@ -1229,10 +1163,6 @@ Public Class FX3Connection
         Dim expectedCRC = calcCCITT16(CRCData.ToArray)
         Return (expectedCRC = DUTCRC)
     End Function
-
-    Protected Overrides Sub Finalize()
-        MyBase.Finalize()
-    End Sub
 
 #End Region
 

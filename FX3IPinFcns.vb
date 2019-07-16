@@ -8,7 +8,7 @@ Imports AdisApi
 
 Partial Class FX3Connection
 
-#Region "Pin Functions Implementation"
+#Region "IPinFunctions Implementation"
 
     ''' <summary>
     ''' This function drives a pin to the specified level for a given time interval in ms
@@ -311,6 +311,96 @@ Partial Class FX3Connection
         'If the status is not success throw an exception
         If Not status = 0 Then
             Throw New FX3BadStatusException("ERROR: Pin set failed, status - " + status.ToString("X4"))
+        End If
+
+    End Sub
+
+#End Region
+
+#Region "Other Pin Functions"
+
+    ''' <summary>
+    ''' This function configures the selected pin to drive a pulse width modulated output.
+    ''' </summary>
+    ''' <param name="Frequency">The desired PWM frequency, in Hz. Valid values are in the range of 0.1Hz (0.1) - 1MHz (1000000.0)</param>
+    ''' <param name="DutyCycle">The PWM duty cycle. Valid values are in the range 0.0 - 1.0. To achieve a "clock" signal set the duty cycle to 0.5</param>
+    ''' <param name="Pin">The pin to configure as a PWM signal.</param>
+    Public Sub StartPWM(ByVal Frequency As Double, ByVal DutyCycle As Double, ByVal Pin As IPinObject)
+
+        'Check that the timer complex GPIO isnt being used
+
+        'Validate frequency
+        If Frequency < 0.1 Or Frequency > 1000000 Then
+            Throw New FX3ConfigurationException("ERROR: Invalid PWM frequency: " + Frequency.ToString() + "Hz")
+        End If
+
+        'Validate duty cycle
+        If DutyCycle < 0 Or DutyCycle > 1 Then
+            Throw New FX3ConfigurationException("ERROR: Invalid duty cycle: " + DutyCycle.ToString() + "%")
+        End If
+
+        'Validate that the complex GPIO 0 block is not being used. This block drives the timer subsystem and is unavailable for use as a PWM.
+        If (Pin.pinConfig Mod 8) = 0 Then
+            Throw New FX3ConfigurationException("ERROR: The selected " + Pin.ToString() + " pin cannot be used as a PWM")
+        End If
+
+        'Calculate the needed period and threshold value for the given setting
+        Dim period, threshold As UInt32
+
+        'The base clock is 10.08MHz (403.2MHz / 40)
+        Dim baseClock As Double = 10080000
+
+        period = Convert.ToUInt32(baseClock / Frequency) - 1
+        threshold = Convert.ToUInt32((baseClock / Frequency) * DutyCycle)
+        'Decrement threshold, but clamp at 0
+        If Not threshold = 0 Then
+            threshold = threshold - 1
+        End If
+
+        'Create transfer buffer
+        Dim buf(9) As Byte
+
+        'Place PWM settings in the buffer
+        buf(0) = Pin.pinConfig And &HFF
+        buf(1) = 0
+        buf(2) = period And &HFF
+        buf(3) = (period And &HFF00) >> 8
+        buf(4) = (period And &HFF0000) >> 16
+        buf(5) = (period And &HFF000000) >> 24
+        buf(6) = threshold And &HFF
+        buf(7) = (threshold And &HFF00) >> 8
+        buf(8) = (threshold And &HFF0000) >> 16
+        buf(9) = (threshold And &HFF000000) >> 24
+
+        ConfigureControlEndpoint(USBCommands.ADI_PWM_CMD, True)
+        FX3ControlEndPt.Index = 1
+
+        'Transfer control data
+        If Not XferControlData(buf, 10, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer timed out while setting up a PWM signal")
+        End If
+
+    End Sub
+
+    ''' <summary>
+    ''' This function call disables the PWM output from the FX3 and returns the pin to a tristated mode.
+    ''' </summary>
+    Public Sub StopPWM(ByVal Pin As IPinObject)
+
+        'Create buffer
+        Dim buf(1) As Byte
+
+        'Place pin settings in the buffer
+        buf(0) = Pin.pinConfig And &HFF
+        buf(1) = 0
+
+        'Configure control endpoint
+        ConfigureControlEndpoint(USBCommands.ADI_PWM_CMD, True)
+        FX3ControlEndPt.Index = 0
+
+        'Send stop command
+        If Not XferControlData(buf, 2, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer timed out while stopping a PWM signal")
         End If
 
     End Sub

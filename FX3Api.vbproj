@@ -49,24 +49,20 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="adisApi, Version=1.2.0.999, Culture=neutral, processorArchitecture=x86">
+    <Reference Include="adisApi, Version=1.2.0.999, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\AdisInterface\src\app\bin\Debug\adisApi.dll</HintPath>
-    </Reference>
-    <Reference Include="adisInterface, Version=1.1.0.1, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\AdisInterface\src\app\bin\Debug\adisInterface.dll</HintPath>
+      <HintPath>..\AdisApi\resources\adisApi.dll</HintPath>
     </Reference>
     <Reference Include="CyUSB">
       <HintPath>Resources\CyUSB.dll</HintPath>
     </Reference>
     <Reference Include="RegMapClasses, Version=1.1.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\AdisInterface\src\app\bin\Debug\RegMapClasses.dll</HintPath>
+      <HintPath>..\AdisInterface\resources\RegMapClasses.dll</HintPath>
     </Reference>
     <Reference Include="sdpApi1, Version=2.1.969.16, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\AdisInterface\src\app\bin\Debug\sdpApi1.dll</HintPath>
+      <HintPath>..\AdisApi\resources\sdpApi1.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -100,6 +96,7 @@
     <Compile Include="FX3IRegInterface.vb" />
     <Compile Include="FX3PinObject.vb" />
     <Compile Include="FX3Programming.vb" />
+    <Compile Include="FX3Spi32.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
