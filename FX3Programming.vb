@@ -43,6 +43,9 @@ Partial Class FX3Connection
             Throw New FX3ProgrammingException("ERROR: Could not find the board selected to connect to. Was it removed?")
         End If
 
+        'Set the board connecting flag to false
+        m_BoardConnecting = False
+
         'Program the FX3 board with the application firmware
         'Check the active FX3 firmware and compare against the requested serial number
         If String.Equals(tempHandle.SerialNumber, FX3SerialNumber) Then
@@ -58,26 +61,33 @@ Partial Class FX3Connection
 
         m_ActiveFX3SN = FX3SerialNumber
 
-        'Create a new windows dispatcher frame
-        Dim originalFrame As DispatcherFrame = New DispatcherFrame()
-        'Create a new thread which waits for the event
-        Dim tempThread As Thread = New Thread(Sub()
-                                                  'Wait until the board connected event is triggered
-                                                  boardProgrammed = m_AppBoardHandle.WaitOne(TimeSpan.FromMilliseconds(Convert.ToDouble(ProgrammingTimeout)))
-                                                  'Stops the execution of the connect function
-                                                  originalFrame.Continue = False
-                                              End Sub)
-        'Ensure that the connect flag isn't erroniously set already
-        m_AppBoardHandle.Reset()
-        'Start the thread
-        tempThread.Start()
-        'Resume execution of the connect function
-        Dispatcher.PushFrame(originalFrame)
+        'Wait for board to reconnect if it is being reprogrammed
+        If m_BoardConnecting Then
+            'Create a new windows dispatcher frame
+            Dim originalFrame As DispatcherFrame = New DispatcherFrame()
+            'Create a new thread which waits for the event
+            Dim tempThread As Thread = New Thread(Sub()
+                                                      'Wait until the board connected event is triggered
+                                                      boardProgrammed = m_AppBoardHandle.WaitOne(TimeSpan.FromMilliseconds(Convert.ToDouble(ProgrammingTimeout)))
+                                                      'Stops the execution of the connect function
+                                                      originalFrame.Continue = False
+                                                  End Sub)
+            'Ensure that the connect flag isn't erroniously set already
+            m_AppBoardHandle.Reset()
+            'Start the thread
+            tempThread.Start()
+            'Resume execution of the connect function
+            Dispatcher.PushFrame(originalFrame)
 
-        'Throw exception if no board connected within timeout period
-        If Not boardProgrammed Then
-            Throw New FX3ProgrammingException("ERROR: Timeout occured during the FX3 re-enumeration process")
+            'Throw exception if no board connected within timeout period
+            If Not boardProgrammed Then
+                m_BoardConnecting = False
+                Throw New FX3ProgrammingException("ERROR: Timeout occured during the FX3 re-enumeration process")
+            End If
         End If
+
+        'Reset the board connecting flag
+        m_BoardConnecting = False
 
         'Check that the board appropriately re-enumerates
         boardProgrammed = False
@@ -96,6 +106,7 @@ Partial Class FX3Connection
             End If
         Next
 
+        'Throw exception if the board isnt found on the device list
         If Not boardProgrammed Then
             Throw New FX3ProgrammingException("ERROR: No application firmware found with the correct serial number")
         End If
@@ -136,9 +147,6 @@ Partial Class FX3Connection
         'Set the board info
         m_ActiveFX3Info = New FX3Board(FX3SerialNumber, DateTime.Now)
         m_ActiveFX3Info.SetFirmwareVersion(GetFirmwareID())
-
-        'Reset the board connecting flag
-        m_BoardConnecting = False
 
     End Sub
 
