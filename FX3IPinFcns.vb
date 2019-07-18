@@ -767,7 +767,7 @@ Partial Class FX3Connection
     ''' and should be used for other general purpose interfacing.
     ''' </summary>
     ''' <returns>Returns the GPIO pin, as an IPinObject</returns>
-    Public ReadOnly Property FX3_GPIO0 As IPinObject
+    Public ReadOnly Property FX3_GPIO1 As IPinObject
         Get
             Return New FX3PinObject(5)
         End Get
@@ -778,7 +778,7 @@ Partial Class FX3Connection
     ''' and should be used for other general purpose interfacing.
     ''' </summary>
     ''' <returns>Returns the GPIO pin, as an IPinObject</returns>
-    Public ReadOnly Property FX3_GPIO1 As IPinObject
+    Public ReadOnly Property FX3_GPIO2 As IPinObject
         Get
             Return New FX3PinObject(6)
         End Get
@@ -789,7 +789,7 @@ Partial Class FX3Connection
     ''' and should be used for other general purpose interfacing.
     ''' </summary>
     ''' <returns>Returns the GPIO pin, as an IPinObject</returns>
-    Public ReadOnly Property FX3_GPIO2 As IPinObject
+    Public ReadOnly Property FX3_GPIO3 As IPinObject
         Get
             Return New FX3PinObject(7)
         End Get
@@ -801,7 +801,7 @@ Partial Class FX3Connection
     ''' as a clock source, via the StartPWM function, then this pin cannot be used as a clock source.
     ''' </summary>
     ''' <returns>Returns the GPIO pin, as an IPinObject</returns>
-    Public ReadOnly Property FX3_GPIO3 As IPinObject
+    Public ReadOnly Property FX3_GPIO4 As IPinObject
         Get
             Return New FX3PinObject(12)
         End Get
