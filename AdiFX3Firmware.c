@@ -523,9 +523,10 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint16_t *bytesRead = 0;
-	uint16_t busyPin;
+	uint16_t busyPin, triggerPin;
 	CyBool_t pinValue, exitCondition, SpiTriggerMode, validPin, busyPolarity;
-	uint32_t currentTime, lastTime, timeout, rollOverCount;
+	uint32_t currentTime, lastTime, timeout, rollOverCount, driveTime;
+	CyU3PGpioSimpleConfig_t gpioConfig;
 
 	//Read config data into USBBuffer
 	CyU3PUsbGetEP0Data(transferLength, USBBuffer, bytesRead);
@@ -551,7 +552,6 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 	if(status != CY_U3P_SUCCESS)
 	{
 		//If initial pin read fails try and configure as input
-		CyU3PGpioSimpleConfig_t gpioConfig;
 		gpioConfig.outValue = CyFalse;
 		gpioConfig.inputEn = CyTrue;
 		gpioConfig.driveLowEn = CyFalse;
@@ -601,11 +601,52 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 		}
 		else
 		{
-			//TODO: Pin implementation for IMU
+			//Pin drive implementation
+			CyBool_t triggerPolarity;
+
+			//parse parameters from USB Buffer
+			triggerPin = USBBuffer[8];
+			triggerPin = triggerPin + (USBBuffer[9] << 8);
+
+			triggerPolarity = USBBuffer[10];
+
+			driveTime = USBBuffer[11];
+			driveTime = driveTime + (USBBuffer[12] << 8);
+			driveTime = driveTime + (USBBuffer[13] << 16);
+			driveTime = driveTime + (USBBuffer[14] << 24);
+
+			//convert drive time (ms) to ticks
+			driveTime = driveTime * MS_TO_TICKS_MULT;
+
+			//Reset the pin timer register to 0
+			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+			//Disable interrupts on the timer pin
+			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= ~(CY_U3P_LPP_GPIO_INTRMODE_MASK);
+			//Set the pin timer period to 0xFFFFFFFF;
+			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = 0xFFFFFFFF;
+
+			//Configure the pin to act as an output and drive
+			gpioConfig.outValue = triggerPolarity;
+			gpioConfig.inputEn = CyFalse;
+			gpioConfig.driveLowEn = CyTrue;
+			gpioConfig.driveHighEn = CyTrue;
+			gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+			status = CyU3PGpioSetSimpleConfig(triggerPin, &gpioConfig);
 		}
 
 		//Wait until the busy pin reaches the selected polarity
 		while(((GPIO->lpp_gpio_simple[busyPin] & CY_U3P_LPP_GPIO_IN_VALUE) >> 1) != busyPolarity);
+
+		//In pin mode subtract the wait time from the total drive time
+		if(!SpiTriggerMode)
+		{
+			//Set the pin config for sample now mode
+			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (timerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
+			//wait for sample to finish
+			while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
+			//read timer value
+			driveTime = driveTime - GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
+		}
 
 		//Reset the pin timer register to 0
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
@@ -651,9 +692,26 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 			{
 				exitCondition = (pinValue != busyPolarity);
 			}
+
+			//Check if the pin drive can stop
+			if(!SpiTriggerMode)
+			{
+				if(currentTime > driveTime)
+				{
+					//tristate the pin
+					gpioConfig.outValue = CyFalse;
+					gpioConfig.inputEn = CyTrue;
+					gpioConfig.driveLowEn = CyFalse;
+					gpioConfig.driveHighEn = CyFalse;
+					gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+					status = CyU3PGpioSetSimpleConfig(triggerPin, &gpioConfig);
+				}
+				//Set trigger mode to true to prevent this loop from hitting again
+				SpiTriggerMode = CyTrue;
+			}
 		}
 
-		//add 2us to current time
+		//add 2us to current time (fudge factor, calibrated using DSLogic Pro)
 		if(currentTime < (0xFFFFFFFF - 20))
 		{
 			currentTime = currentTime + 20;
