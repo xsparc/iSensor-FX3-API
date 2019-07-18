@@ -25,6 +25,11 @@ Partial Class FX3Connection
         Dim intPeriod As UInteger = Convert.ToUInt32(pperiod)
         Dim status, shiftedValue As UInteger
 
+        'Validate that the pin isn't acting as a PWM pin
+        If isPWMPin(pin) Then
+            Throw New FX3ConfigurationException("ERROR: The selected pin is currently configured to drive a PWM signal. Please call StopPWM(pin) before interfacing with the pin further")
+        End If
+
         'Set the GPIO pin number (only 1 byte in FX3PinObject)
         buf(0) = pin.pinConfig And &HFF
         buf(1) = 0
@@ -83,16 +88,22 @@ Partial Class FX3Connection
         'Any values set over that amount will have no timeout (blocks forever until level is detected)
 
         'Declare variables needed for transfer
-        Dim buf(10) As Byte
-        Dim waitTime As UInteger
-        Dim conversionFactor, shiftedConversionFactor As UInteger
-        Dim shiftedValue As UInteger
-        Dim totalTime As Double
+        Dim buf(15) As Byte
+        Dim totalTime As Long
         Dim transferStatus As Boolean
         Dim timeoutTimer As New Stopwatch
         Dim convertedTime As Double
+        Dim status, currentTime, rollOverCount, conversionFactor As UInteger
+        Dim totalTicks, rollOverCountULong As ULong
+        Dim delayOverflow As Boolean
+        Dim delayScaled As UInteger
 
-        'Set the total time
+        'Validate that the pin isn't acting as a PWM pin
+        If isPWMPin(pin) Then
+            Throw New FX3ConfigurationException("ERROR: The selected pin is currently configured to drive a PWM signal. Please call StopPWM(pin) before interfacing with the pin further")
+        End If
+
+        'Set the total time for the operation
         totalTime = delayInMs + timeoutInMs
 
         'Set the pin
@@ -102,18 +113,23 @@ Partial Class FX3Connection
         'Set the polarity
         buf(2) = polarity
 
-        'set the delay to 0 if it is greater than what can be stored in an int
-        If delayInMs > UInt32.MaxValue / 1000 Then
-            delayInMs = 0
+        'Sleep on PC side if delay is too large (approx. 7 minutes)
+        delayOverflow = False
+        delayScaled = delayInMs
+        If delayInMs > (UInt32.MaxValue / 10000) Then
+            delayOverflow = True
+            Threading.Thread.Sleep(delayInMs)
+            delayScaled = 0
+            totalTime = timeoutInMs
         End If
 
-        buf(3) = delayInMs And &HFF
-        buf(4) = (delayInMs And &HFF00) >> 8
-        buf(5) = (delayInMs And &HFF0000) >> 16
-        buf(6) = (delayInMs And &HFF000000) >> 24
+        buf(3) = delayScaled And &HFF
+        buf(4) = (delayScaled And &HFF00) >> 8
+        buf(5) = (delayScaled And &HFF0000) >> 16
+        buf(6) = (delayScaled And &HFF000000) >> 24
 
-        'set the timeout to 0 if its greater than the allowable timer value
-        If timeoutInMs > UInt32.MaxValue / 1000 Then
+        'set the timeout to 0 (no timeout in firmware side) if timeout + delay is greater than a single period 
+        If (timeoutInMs + delayInMs) > (UInt32.MaxValue / 10000) Then
             timeoutInMs = 0
         End If
 
@@ -134,52 +150,49 @@ Partial Class FX3Connection
         'Start bulk transfer
         transferStatus = False
         If totalTime = 0 Then
-            transferStatus = DataInEndPt.XferData(buf, 8)
+            transferStatus = DataInEndPt.XferData(buf, 16)
         Else
             While ((Not transferStatus) And (timeoutTimer.ElapsedMilliseconds() < totalTime))
-                transferStatus = DataInEndPt.XferData(buf, 8)
+                transferStatus = DataInEndPt.XferData(buf, 16)
             End While
         End If
 
         'stop stopwatch
         timeoutTimer.Stop()
 
-        'Read the time value from the buffer
-        waitTime = buf(0)
-        shiftedValue = buf(1)
-        shiftedValue = shiftedValue << 8
-        waitTime = waitTime + shiftedValue
-        shiftedValue = buf(2)
-        shiftedValue = shiftedValue << 16
-        waitTime = waitTime + shiftedValue
-        shiftedValue = buf(3)
-        shiftedValue = shiftedValue << 24
-        waitTime = waitTime + shiftedValue
-
-        'Read the scale factor (MS to ticks)
-        conversionFactor = buf(4)
-        shiftedConversionFactor = buf(5)
-        shiftedConversionFactor = shiftedConversionFactor << 8
-        conversionFactor = conversionFactor + shiftedConversionFactor
-        shiftedConversionFactor = buf(6)
-        shiftedConversionFactor = shiftedConversionFactor << 16
-        conversionFactor = conversionFactor + shiftedConversionFactor
-        shiftedConversionFactor = buf(7)
-        shiftedConversionFactor = shiftedConversionFactor << 24
-        conversionFactor = conversionFactor + shiftedConversionFactor
-
         'If the transfer failed return the timeout value
         If Not transferStatus Then
-            Return timeoutTimer.ElapsedMilliseconds()
+            If delayOverflow Then
+                'The delay was inserted as a sleep on the PC side
+                Return Convert.ToDouble(timeoutTimer.ElapsedMilliseconds() + delayInMs)
+            Else
+                Return Convert.ToDouble(timeoutTimer.ElapsedMilliseconds())
+            End If
+
         End If
 
-        'If operation failed on FX3 throw an exception
-        If waitTime = &HFFFFFFFF Then
-            Throw New FX3CommunicationException("ERROR: Pin read on FX3 failed")
+        'Read status from the buffer and throw exception for bad status
+        status = BitConverter.ToUInt32(buf, 0)
+        If Not status = 0 Then
+            Throw New FX3BadStatusException("ERROR: Failed to configure PulseWait pin as input, error code: " + status.ToString("X4"))
         End If
+
+        'Read current time
+        currentTime = BitConverter.ToUInt32(buf, 4)
+
+        'Read roll over counter
+        rollOverCount = BitConverter.ToUInt32(buf, 8)
+        rollOverCountULong = CULng(rollOverCount)
+
+        'Read conversion factor
+        conversionFactor = BitConverter.ToUInt32(buf, 12)
+
+        'Calculate the total time, in timer ticks
+        totalTicks = rollOverCountULong * UInt32.MaxValue
+        totalTicks += currentTime
 
         'Scale the time waited to MS
-        convertedTime = Convert.ToDouble(waitTime)
+        convertedTime = Convert.ToDouble(totalTicks)
         convertedTime = Math.Round(convertedTime / conversionFactor, 3)
 
         'Return the actual time waited
@@ -196,6 +209,11 @@ Partial Class FX3Connection
 
         Dim buf(4) As Byte
         Dim status, shiftedValue As UInteger
+
+        'Validate that the pin isn't acting as a PWM pin
+        If isPWMPin(pin) Then
+            Throw New FX3ConfigurationException("ERROR: The selected pin is currently configured to drive a PWM signal. Please call StopPWM(pin) before interfacing with the pin further")
+        End If
 
         'Configure control endpoint for pin read
         ConfigureControlEndpoint(USBCommands.ADI_READ_PIN, False)
@@ -281,6 +299,11 @@ Partial Class FX3Connection
         Dim buf(3) As Byte
         Dim status, shiftedValue As UInteger
 
+        'Validate that the pin isn't acting as a PWM pin
+        If isPWMPin(pin) Then
+            Throw New FX3ConfigurationException("ERROR: The selected pin is currently configured to drive a PWM signal. Please call StopPWM(pin) before interfacing with the pin further")
+        End If
+
         'Valid pin values are 1 and 0
         If Not value = 0 Then
             value = 1
@@ -319,6 +342,221 @@ Partial Class FX3Connection
 
 #Region "Other Pin Functions"
 
+    Public Function MeasureBusyPulse(TriggerPin As IPinObject, TriggerDriveTime As UInteger, TriggerDrivePolarity As UInteger, BusyPin As IPinObject, BusyPolarity As UInteger, Timeout As UInteger) As Double
+        'Declare variables needed for transfer
+        Dim buf(15) As Byte
+        Dim transferStatus As Boolean
+        Dim timeoutTimer As New Stopwatch
+        Dim convertedTime As Double
+        Dim status, currentTime, rollOverCount, conversionFactor As UInteger
+        Dim totalTicks, rollOverCountULong As ULong
+        Dim FX3Timeout As UInteger
+
+        'Validate that the pin isn't acting as a PWM pin
+        If isPWMPin(BusyPin) Then
+            Throw New FX3ConfigurationException("ERROR: The selected pin is currently configured to drive a PWM signal. Please call StopPWM(pin) before interfacing with the pin further")
+        End If
+
+        'Validate that the trigger drive time isn't too long (less than one timer period)
+        If TriggerDriveTime > (UInt32.MaxValue / 10000) Then
+            Throw New FX3ConfigurationException("ERROR: Invalid trigger pin drive time of " + TriggerDriveTime.ToString() + "ms. Max allowed is " + (UInt32.MaxValue / 10000).ToString() + "ms")
+        End If
+
+        'Buffer will contain the following, in order:
+        'BusyPin(2), BusyPinPolarity(1), Timeout(4), TriggerMode(1), TriggerPin(2), TriggerDrivePolarity(1), TriggerDriveTime(4) ---> Total of 15 bytes
+
+        'Set the pin
+        buf(0) = BusyPin.pinConfig And &HFF
+        buf(1) = (BusyPin.pinConfig And &HFF00) >> 8
+
+        'Set the polarity
+        buf(2) = BusyPolarity
+
+        'If the timeout is too large (greater than one timer period) set to 0 -> no timeout on firmware
+        FX3Timeout = Timeout
+        If Timeout > (UInt32.MaxValue / 10000) Then
+            FX3Timeout = 0
+        End If
+
+        'Load timeout into the buffer
+        buf(3) = FX3Timeout And &HFF
+        buf(4) = (FX3Timeout And &HFF00) >> 8
+        buf(5) = (FX3Timeout And &HFF0000) >> 16
+        buf(6) = (FX3Timeout And &HFF000000) >> 24
+
+        'Put mode in buffer (1 for trigger on SPI word, 10for trigger on pin drive)
+        buf(7) = 0
+
+        'Put trigger pin in buffer
+        buf(8) = TriggerPin.pinConfig And &HFF
+        buf(9) = (TriggerPin.pinConfig And &HFF00) >> 8
+
+        'Put trigger drive polarity in buffer
+        buf(10) = TriggerDrivePolarity
+
+        'Put trigger drive time (in MS) in buffer
+
+        'Start stopwatch
+        timeoutTimer.Start()
+
+        'Send a vendor command to start a pulse wait operation (returns immediatly)
+        ConfigureControlEndpoint(USBCommands.ADI_PULSE_WAIT, True)
+        If Not XferControlData(buf, 15, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control Endpoint transfer timed out")
+        End If
+
+        'Start bulk transfer
+        transferStatus = False
+        If Timeout = 0 Then
+            transferStatus = DataInEndPt.XferData(buf, 16)
+        Else
+            While ((Not transferStatus) And (timeoutTimer.ElapsedMilliseconds() < Timeout))
+                transferStatus = DataInEndPt.XferData(buf, 16)
+            End While
+        End If
+
+        'stop stopwatch
+        timeoutTimer.Stop()
+
+        'If the transfer failed return the timeout value
+        If Not transferStatus Then
+            Return Convert.ToDouble(timeoutTimer.ElapsedMilliseconds())
+        End If
+
+        'Read status from the buffer and throw exception for bad status
+        status = BitConverter.ToUInt32(buf, 0)
+        If Not status = 0 Then
+            Throw New FX3BadStatusException("ERROR: Failed to configure pin as input, error code: " + status.ToString("X4"))
+        End If
+
+        'Read current time
+        currentTime = BitConverter.ToUInt32(buf, 4)
+
+        'Read roll over counter
+        rollOverCount = BitConverter.ToUInt32(buf, 8)
+        rollOverCountULong = CULng(rollOverCount)
+
+        'Read conversion factor
+        conversionFactor = BitConverter.ToUInt32(buf, 12)
+
+        'Calculate the total time, in timer ticks
+        totalTicks = rollOverCountULong * UInt32.MaxValue
+        totalTicks += currentTime
+
+        'Scale the time waited to MS
+        convertedTime = Convert.ToDouble(totalTicks)
+        convertedTime = Math.Round(convertedTime / conversionFactor, 3)
+
+        'Return the actual time waited
+        Return convertedTime
+    End Function
+
+    Public Function MeasureBusyPulse(TriggerRegAddr As UShort, TriggerRegValue As UShort, BusyPin As IPinObject, BusyPolarity As UInteger, Timeout As UInteger) As Double
+        'Declare variables needed for transfer
+        Dim buf(15) As Byte
+        Dim transferStatus As Boolean
+        Dim timeoutTimer As New Stopwatch
+        Dim convertedTime As Double
+        Dim status, currentTime, rollOverCount, conversionFactor As UInteger
+        Dim totalTicks, rollOverCountULong As ULong
+        Dim FX3Timeout As UInteger
+
+        'Validate that the pin isn't acting as a PWM pin
+        If isPWMPin(BusyPin) Then
+            Throw New FX3ConfigurationException("ERROR: The selected pin is currently configured to drive a PWM signal. Please call StopPWM(pin) before interfacing with the pin further")
+        End If
+
+        'Buffer will contain the following, in order:
+        'BusyPin(2), BusyPinPolarity(1), Timeout(4), TriggerMode(1), SPI Trigger Addr(2), SPI Trigger Value(2), Zeros (3) ---> Total of 15 bytes
+
+        'Set the pin
+        buf(0) = BusyPin.pinConfig And &HFF
+        buf(1) = (BusyPin.pinConfig And &HFF00) >> 8
+
+        'Set the polarity
+        If Not BusyPolarity = 0 Then
+            BusyPolarity = 1
+        End If
+        buf(2) = BusyPolarity
+
+        'If the timeout is too large (greater than one timer period) set to 0 -> no timeout on firmware
+        FX3Timeout = Timeout
+        If Timeout > (UInt32.MaxValue / 10000) Then
+            FX3Timeout = 0
+        End If
+
+        'Load timeout into the buffer
+        buf(3) = FX3Timeout And &HFF
+        buf(4) = (FX3Timeout And &HFF00) >> 8
+        buf(5) = (FX3Timeout And &HFF0000) >> 16
+        buf(6) = (FX3Timeout And &HFF000000) >> 24
+
+        'Put mode in buffer (1 for trigger on SPI word, 0 for trigger on pin drive)
+        buf(7) = 1
+
+        'Put SPI command word in buffer
+        buf(8) = TriggerRegAddr And &HFF
+        buf(9) = (TriggerRegAddr And &HFF00) >> 8
+
+        buf(10) = TriggerRegValue And &HFF
+        buf(11) = (TriggerRegValue And &HFF00) >> 8
+
+        'Start stopwatch
+        timeoutTimer.Start()
+
+        'Send a vendor command to start a pulse wait operation (returns immediatly)
+        ConfigureControlEndpoint(USBCommands.ADI_BUSY_MEASURE, True)
+        If Not XferControlData(buf, 15, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control Endpoint transfer timed out")
+        End If
+
+        'Start bulk transfer
+        transferStatus = False
+        If Timeout = 0 Then
+            transferStatus = DataInEndPt.XferData(buf, 16)
+        Else
+            While ((Not transferStatus) And (timeoutTimer.ElapsedMilliseconds() < Timeout))
+                transferStatus = DataInEndPt.XferData(buf, 16)
+            End While
+        End If
+
+        'stop stopwatch
+        timeoutTimer.Stop()
+
+        'If the transfer failed return the timeout value
+        If Not transferStatus Then
+            Return Convert.ToDouble(timeoutTimer.ElapsedMilliseconds())
+        End If
+
+        'Read status from the buffer and throw exception for bad status
+        status = BitConverter.ToUInt32(buf, 0)
+        If Not status = 0 Then
+            Throw New FX3BadStatusException("ERROR: Failed to configure pin as input, error code: " + status.ToString("X4"))
+        End If
+
+        'Read current time
+        currentTime = BitConverter.ToUInt32(buf, 4)
+
+        'Read roll over counter
+        rollOverCount = BitConverter.ToUInt32(buf, 8)
+        rollOverCountULong = CULng(rollOverCount)
+
+        'Read conversion factor
+        conversionFactor = BitConverter.ToUInt32(buf, 12)
+
+        'Calculate the total time, in timer ticks
+        totalTicks = rollOverCountULong * UInt32.MaxValue
+        totalTicks += currentTime
+
+        'Scale the time waited to MS
+        convertedTime = Convert.ToDouble(totalTicks)
+        convertedTime = Math.Round(convertedTime / conversionFactor, 3)
+
+        'Return the actual time waited
+        Return convertedTime
+
+    End Function
+
     ''' <summary>
     ''' This function configures the selected pin to drive a pulse width modulated output.
     ''' </summary>
@@ -327,7 +565,18 @@ Partial Class FX3Connection
     ''' <param name="Pin">The pin to configure as a PWM signal.</param>
     Public Sub StartPWM(ByVal Frequency As Double, ByVal DutyCycle As Double, ByVal Pin As IPinObject)
 
+        'Check that pin is an fx3pin
+        If Not IsFX3Pin(Pin) Then
+            Throw New FX3GeneralException("ERROR: All pin objects used with the FX3 Api must be of type FX3PinObject")
+        End If
+
         'Check that the timer complex GPIO isnt being used
+        Dim pinTimerBlock As Integer = Pin.pinConfig Mod 8
+        For Each PWMPin In m_PwmPinList
+            If Not (PWMPin.pinConfig = Pin.pinConfig) And (pinTimerBlock = PWMPin.pinConfig Mod 8) Then
+                Throw New FX3ConfigurationException("ERROR: The PWM hardware for the pin selected is currently being used by pin number " + PWMPin.pinConfig.ToString())
+            End If
+        Next
 
         'Validate frequency
         If Frequency < 0.1 Or Frequency > 1000000 Then
@@ -336,11 +585,11 @@ Partial Class FX3Connection
 
         'Validate duty cycle
         If DutyCycle < 0 Or DutyCycle > 1 Then
-            Throw New FX3ConfigurationException("ERROR: Invalid duty cycle: " + DutyCycle.ToString() + "%")
+            Throw New FX3ConfigurationException("ERROR: Invalid duty cycle: " + (100 * DutyCycle).ToString() + "%")
         End If
 
         'Validate that the complex GPIO 0 block is not being used. This block drives the timer subsystem and is unavailable for use as a PWM.
-        If (Pin.pinConfig Mod 8) = 0 Then
+        If pinTimerBlock = 0 Then
             Throw New FX3ConfigurationException("ERROR: The selected " + Pin.ToString() + " pin cannot be used as a PWM")
         End If
 
@@ -380,12 +629,20 @@ Partial Class FX3Connection
             Throw New FX3CommunicationException("ERROR: Control endpoint transfer timed out while setting up a PWM signal")
         End If
 
+        'Add the selected pin to the list of active PWM pins
+        m_PwmPinList.Add(Pin)
+
     End Sub
 
     ''' <summary>
     ''' This function call disables the PWM output from the FX3 and returns the pin to a tristated mode.
     ''' </summary>
     Public Sub StopPWM(ByVal Pin As IPinObject)
+
+        'Exit if the pin isnt acting as a PWM
+        If Not isPWMPin(Pin) Then
+            Exit Sub
+        End If
 
         'Create buffer
         Dim buf(1) As Byte
@@ -403,7 +660,53 @@ Partial Class FX3Connection
             Throw New FX3CommunicationException("ERROR: Control endpoint transfer timed out while stopping a PWM signal")
         End If
 
+        'Remove pin from the PWM pin list
+        For Each PWMPin In m_PwmPinList
+            If PWMPin.pinConfig = Pin.pinConfig Then
+                m_PwmPinList.Remove(PWMPin)
+                Exit For
+            End If
+        Next
+
     End Sub
+
+    ''' <summary>
+    ''' This function checks to see if the selected pin has already been configured to act as a PWM output pin.
+    ''' </summary>
+    ''' <param name="Pin">The pin to check. Must be an FX3PinObject pin</param>
+    ''' <returns>True if the pin is configured as a PWM pin, false otherwise</returns>
+    Public Function isPWMPin(ByVal Pin As IPinObject) As Boolean
+
+        'Check that its an FX3 pin
+        If Not IsFX3Pin(Pin) Then
+            Return False
+        End If
+
+        'Check that the pin is in PWM mode
+        Dim pinFound As Boolean = False
+        For Each activePWMPin In m_PwmPinList
+            If Pin.pinConfig = activePWMPin.pinConfig Then
+                pinFound = True
+                Exit For
+            End If
+        Next
+        Return pinFound
+    End Function
+
+    ''' <summary>
+    ''' This function determines if the pin object being passed is an FX3 version of the IPinObject (as opposed to a blackfin pin for the SDP).
+    ''' </summary>
+    ''' <param name="Pin">The pin to check</param>
+    ''' <returns>True if Pin is an FX3 pin, false if not</returns>
+    Private Function IsFX3Pin(ByVal Pin As IPinObject) As Boolean
+        Dim validPin As Boolean = False
+        'Check the tostring overload and type
+        If Pin.ToString().Substring(0, 3) = "FX3" And (Pin.GetType() = GetType(FX3PinObject)) Then
+            validPin = True
+        End If
+        Return validPin
+
+    End Function
 
 #End Region
 

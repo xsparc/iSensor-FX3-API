@@ -135,6 +135,9 @@ Public Enum USBCommands
     'Wait for a user-specified pin to reach a user-specified level (with timeout)
     ADI_PULSE_WAIT = &HC6
 
+    'Command to trigger an event on the DUT and measure a subsequent pulse
+    ADI_BUSY_MEASURE = &HCB
+
     'Drive a user-specified GPIO
     ADI_SET_PIN = &HC7
 

@@ -149,6 +149,12 @@ Public Class FX3Connection
     'Track the number of boards connected after a disconnect event
     Private m_disconnectEvents As Integer
 
+    'Track which pins are operating as a PWM pin
+    Private m_PwmPinList As List(Of IPinObject)
+
+    'Track which pin is being used for data ready
+    Private m_DrPin As IPinObject
+
     'Events
 
     ''' <summary>
@@ -239,6 +245,12 @@ Public Class FX3Connection
 
         'Set the board connecting flag
         m_BoardConnecting = False
+
+        'Set the PWM pin list
+        m_PwmPinList = New List(Of IPinObject)
+
+        'Set default DR pin to DIO1
+        m_DrPin = DIO1
 
     End Sub
 
@@ -1033,39 +1045,6 @@ Public Class FX3Connection
             Return Interlocked.Read(m_FramesRead)
         End Get
     End Property
-
-    Public Property DrPin As IPinObject Implements ISpi32Interface.DrPin
-        Get
-            Throw New NotImplementedException()
-        End Get
-        Set(value As IPinObject)
-            Throw New NotImplementedException()
-        End Set
-    End Property
-
-    Private Property ISpi32Interface_DrPolarity As Boolean Implements ISpi32Interface.DrPolarity
-        Get
-            Throw New NotImplementedException()
-        End Get
-        Set(value As Boolean)
-            Throw New NotImplementedException()
-        End Set
-    End Property
-
-    ''' <summary>
-    ''' This function determines if the pin object being passed is an FX3 version of the IPinObject (as opposed to a blackfin pin for the SDP).
-    ''' </summary>
-    ''' <param name="Pin">The pin to check</param>
-    ''' <returns>True if Pin is an FX3 pin, false if not</returns>
-    Private Function IsFX3Pin(ByVal Pin As IPinObject) As Boolean
-        Dim validPin As Boolean = False
-        'Check the tostring overload and type
-        If Pin.ToString().Substring(0, 3) = "FX3" And (Pin.GetType() = GetType(FX3PinObject)) Then
-            validPin = True
-        End If
-        Return validPin
-
-    End Function
 
 #End Region
 

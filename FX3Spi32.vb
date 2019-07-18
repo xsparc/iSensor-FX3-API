@@ -132,4 +132,26 @@ Partial Class FX3Connection
         End Set
     End Property
 
+    Public Property DrPin As IPinObject Implements ISpi32Interface.DrPin
+        Get
+            Return m_DrPin
+        End Get
+        Set(value As IPinObject)
+            If Not IsFX3Pin(value) Then
+                Throw New FX3ConfigurationException("ERROR: All pins used with the FX3 Api must be of type FX3PinObject")
+            Else
+                m_DrPin = value
+            End If
+        End Set
+    End Property
+
+    Private Property ISpi32Interface_DrPolarity As Boolean Implements ISpi32Interface.DrPolarity
+        Get
+            Throw New NotImplementedException()
+        End Get
+        Set(value As Boolean)
+            Throw New NotImplementedException()
+        End Set
+    End Property
+
 End Class
