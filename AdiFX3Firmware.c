@@ -3027,10 +3027,6 @@ void AdiGPIOEventHandler(uint8_t gpioId)
 				CyU3PEventSet(&gpioHandler, ADI_PIN_DIO4, CYU3P_EVENT_OR);
 				break;
 
-    		case FX3_PIN_GPIO0:
-				CyU3PEventSet(&gpioHandler, FX3_PIN_GPIO0, CYU3P_EVENT_OR);
-				break;
-
     		case FX3_PIN_GPIO1:
 				CyU3PEventSet(&gpioHandler, FX3_PIN_GPIO1, CYU3P_EVENT_OR);
 				break;
@@ -3041,6 +3037,10 @@ void AdiGPIOEventHandler(uint8_t gpioId)
 
     		case FX3_PIN_GPIO3:
 				CyU3PEventSet(&gpioHandler, FX3_PIN_GPIO3, CYU3P_EVENT_OR);
+				break;
+
+    		case FX3_PIN_GPIO4:
+				CyU3PEventSet(&gpioHandler, FX3_PIN_GPIO4, CYU3P_EVENT_OR);
 				break;
 
     		default:
@@ -3562,12 +3562,6 @@ void AdiAppStart (void)
     	AdiAppErrorHandler(status);
     }
 
-	status = CyU3PDeviceGpioOverride (FX3_PIN_GPIO0, CyTrue);
-    if (status != CY_U3P_SUCCESS)
-    {
-    	AdiAppErrorHandler(status);
-    }
-
 	status = CyU3PDeviceGpioOverride (FX3_PIN_GPIO1, CyTrue);
     if (status != CY_U3P_SUCCESS)
     {
@@ -3581,6 +3575,12 @@ void AdiAppStart (void)
     }
 
 	status = CyU3PDeviceGpioOverride (FX3_PIN_GPIO3, CyTrue);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	status = CyU3PDeviceGpioOverride (FX3_PIN_GPIO4, CyTrue);
     if (status != CY_U3P_SUCCESS)
     {
     	AdiAppErrorHandler(status);
@@ -3631,12 +3631,6 @@ void AdiAppStart (void)
     	AdiAppErrorHandler(status);
     }
 
-	status = CyU3PGpioSetSimpleConfig(FX3_PIN_GPIO0, &gpioConfig);
-    if (status != CY_U3P_SUCCESS)
-    {
-    	AdiAppErrorHandler(status);
-    }
-
 	status = CyU3PGpioSetSimpleConfig(FX3_PIN_GPIO1, &gpioConfig);
     if (status != CY_U3P_SUCCESS)
     {
@@ -3650,6 +3644,12 @@ void AdiAppStart (void)
     }
 
 	status = CyU3PGpioSetSimpleConfig(FX3_PIN_GPIO3, &gpioConfig);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiAppErrorHandler(status);
+    }
+
+	status = CyU3PGpioSetSimpleConfig(FX3_PIN_GPIO4, &gpioConfig);
     if (status != CY_U3P_SUCCESS)
     {
     	AdiAppErrorHandler(status);

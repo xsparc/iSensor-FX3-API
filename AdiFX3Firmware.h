@@ -234,10 +234,10 @@ struct BoardConfig
 #define ADI_PIN_DIO2							(0x3)	// Commonly BUSY on ADcmXL devices
 #define ADI_PIN_DIO3							(0x2)
 #define ADI_PIN_DIO4							(0x1)
-#define FX3_PIN_GPIO0							(0x5)	// Misc pin(s) used for triggering from test equipment
-#define FX3_PIN_GPIO1							(0x6)	// Misc pin
-#define FX3_PIN_GPIO2							(0x7)	// Misc pin
-#define FX3_PIN_GPIO3							(0x12)	// Misc pin (shared complex block with DIO1, typically a data ready pin)
+#define FX3_PIN_GPIO1							(0x5)	// Misc pin(s) used for triggering from test equipment
+#define FX3_PIN_GPIO2							(0x6)	// Misc pin
+#define FX3_PIN_GPIO3							(0x7)	// Misc pin
+#define FX3_PIN_GPIO4							(0x12)	// Misc pin (shared complex block with DIO1, typically a data ready pin)
 
 /* Complex GPIO assigned as a timer input */
 #define ADI_TIMER_PIN							(0x8)
