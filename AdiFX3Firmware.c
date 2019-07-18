@@ -3080,9 +3080,6 @@ void AdiDataStream_Entry(uint32_t input)
 	uint8_t *tempPtr;
 	CyBool_t firstRun = CyTrue;
 
-	//SPI variables
-	uint32_t i, temp, intrMask;
-
 	for (;;)
 	{
 		//Wait indefinitely for any flag to be set
@@ -3685,7 +3682,7 @@ void AdiAppStart (void)
 
     /* Configure the SPI controller */
 
-    /* Set the stall time in ticks (each tick = 1us) */
+    /* Set the stall time in microseconds */
     stallTime = 25;
 
     /* Set the DUT type */
