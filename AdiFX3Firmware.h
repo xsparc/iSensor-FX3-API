@@ -70,7 +70,7 @@ void AdiDataStream_Entry(uint32_t input);
 
 //Pin functions.
 CyU3PReturnStatus_t AdiPulseDrive();
-CyU3PReturnStatus_t AdiPulseWait();
+CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength);
 CyU3PReturnStatus_t AdiSetPin(uint16_t pinNumber, CyBool_t polarity);
 CyU3PReturnStatus_t AdiMeasureDR();
 CyU3PReturnStatus_t AdiWaitForPin(uint32_t pinNumber, CyU3PGpioIntrMode_t interruptSetting, uint32_t timeoutTicks);
@@ -79,6 +79,7 @@ CyU3PReturnStatus_t AdiReadTimerValue();
 uint32_t AdiMStoTicks(uint32_t desiredStallTime);
 CyU3PReturnStatus_t AdiWaitForTimerTicks(uint32_t numTicks);
 CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM);
+CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength);
 
 //Peripheral read-write functions.
 CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData);
@@ -204,6 +205,9 @@ struct BoardConfig
 //Command to enable or disable a PWM signal
 #define ADI_PWM_CMD  							(0xC9)
 
+//Command to trigger an event on the DUT and measure a subsequent pulse
+#define ADI_BUSY_MEASURE						(0xCB)
+
 
 /*
  * Thread Parameter Definitions
@@ -259,7 +263,7 @@ struct BoardConfig
  * Clock defines
  */
 //Conversion factor from clock ticks to milliseconds on GPIO timer
-#define MS_TO_TICKS_MULT						(10000) //(Previously 953)
+#define MS_TO_TICKS_MULT						(10078) //(Previously 953)
 
  //Offset to take away from the timer period for generic stream stall time. In 10MHz timer ticks
 //#define ADI_GENERIC_STALL_OFFSET				(76)
