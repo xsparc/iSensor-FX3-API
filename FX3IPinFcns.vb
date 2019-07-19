@@ -395,12 +395,16 @@ Partial Class FX3Connection
         buf(10) = TriggerDrivePolarity
 
         'Put trigger drive time (in MS) in buffer
+        buf(11) = TriggerDriveTime And &HFF
+        buf(12) = (TriggerDriveTime And &HFF00) >> 8
+        buf(13) = (TriggerDriveTime And &HFF0000) >> 16
+        buf(14) = (TriggerDriveTime And &HFF000000) >> 24
 
         'Start stopwatch
         timeoutTimer.Start()
 
         'Send a vendor command to start a pulse wait operation (returns immediatly)
-        ConfigureControlEndpoint(USBCommands.ADI_PULSE_WAIT, True)
+        ConfigureControlEndpoint(USBCommands.ADI_BUSY_MEASURE, True)
         If Not XferControlData(buf, 15, 2000) Then
             Throw New FX3CommunicationException("ERROR: Control Endpoint transfer timed out")
         End If
@@ -604,6 +608,11 @@ Partial Class FX3Connection
         'Decrement threshold, but clamp at 0
         If Not threshold = 0 Then
             threshold = threshold - 1
+        End If
+
+        'If the threshold is 0 throw an exception, this particular setting is not achievable by the board (min 1)
+        If threshold < 1 Then
+            Throw New FX3ConfigurationException("ERROR: The selected PWM setting (Freq: " + Frequency.ToString() + "Hz, Duty Cycle: " + (DutyCycle * 100).ToString() + "%) is not achievable using a 10MHz clock")
         End If
 
         'Create transfer buffer
