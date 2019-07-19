@@ -524,7 +524,7 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint16_t *bytesRead = 0;
 	uint16_t busyPin, triggerPin;
-	CyBool_t pinValue, exitCondition, SpiTriggerMode, validPin, busyPolarity;
+	CyBool_t pinValue, exitCondition, SpiTriggerMode, validPin, busyPolarity, triggerPolarity;
 	uint32_t currentTime, lastTime, timeout, rollOverCount, driveTime;
 	CyU3PGpioSimpleConfig_t gpioConfig;
 
@@ -569,6 +569,9 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 		}
 	}
 
+	//Set default for trigger pin to invalid value
+	triggerPin = 0xFFFF;
+
 	//Only perform pulse wait if the pin is able to act as an input
 	if(validPin)
 	{
@@ -601,9 +604,6 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 		}
 		else
 		{
-			//Pin drive implementation
-			CyBool_t triggerPolarity;
-
 			//parse parameters from USB Buffer
 			triggerPin = USBBuffer[8];
 			triggerPin = triggerPin + (USBBuffer[9] << 8);
@@ -617,6 +617,21 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 
 			//convert drive time (ms) to ticks
 			driveTime = driveTime * MS_TO_TICKS_MULT;
+
+			//want to configure the trigger pin to act as an output
+			status = CyU3PDeviceGpioOverride(triggerPin, CyTrue);
+			if(status != CY_U3P_SUCCESS)
+			{
+				CyU3PDebugPrint (4, "Error! GPIO override to exit PWM mode failed, error code: 0x%x\r\n", status);
+				return status;
+			}
+
+			//Disable the GPIO
+			status = CyU3PGpioDisable(triggerPin);
+			if(status != CY_U3P_SUCCESS)
+			{
+				CyU3PDebugPrint (4, "Error! Pin disable while exiting PWM mode failed, error code: 0x%x\r\n", status);
+			}
 
 			//Reset the pin timer register to 0
 			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
@@ -632,6 +647,10 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 			gpioConfig.driveHighEn = CyTrue;
 			gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
 			status = CyU3PGpioSetSimpleConfig(triggerPin, &gpioConfig);
+		    if (status != CY_U3P_SUCCESS)
+		    {
+		    	CyU3PDebugPrint (4, "Error! GPIO config to exit PWM mode failed, error code: 0x%x\r\n", status);
+		    }
 		}
 
 		//Wait until the busy pin reaches the selected polarity
@@ -698,13 +717,8 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 			{
 				if(currentTime > driveTime)
 				{
-					//tristate the pin
-					gpioConfig.outValue = CyFalse;
-					gpioConfig.inputEn = CyTrue;
-					gpioConfig.driveLowEn = CyFalse;
-					gpioConfig.driveHighEn = CyFalse;
-					gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
-					status = CyU3PGpioSetSimpleConfig(triggerPin, &gpioConfig);
+					//drive the opposite polarity
+					CyU3PGpioSimpleSetValue(triggerPin, ~triggerPolarity);
 				}
 				//Set trigger mode to true to prevent this loop from hitting again
 				SpiTriggerMode = CyTrue;
@@ -726,6 +740,18 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 	{
 		//Case where pin could not be configured as input
 		currentTime = 0xFFFFFFFF;
+	}
+
+	//Reset trigger pin to input if needed
+	if(triggerPin != 0xFFFF)
+	{
+		CyU3PGpioDisable(triggerPin);
+		gpioConfig.outValue = CyFalse;
+		gpioConfig.inputEn = CyTrue;
+		gpioConfig.driveLowEn = CyFalse;
+		gpioConfig.driveHighEn = CyFalse;
+		gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+		status = CyU3PGpioSetSimpleConfig(triggerPin, &gpioConfig);
 	}
 
 	//Return pulse wait data over ChannelToPC
