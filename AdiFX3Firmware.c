@@ -17,6 +17,8 @@
  ## ===========================
  */
 
+
+
 #include "AdiFX3Firmware.h"
 
 /*
@@ -1266,7 +1268,7 @@ CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength)
 	uint16_t pin;
     uint16_t *bytesRead = 0;
 	CyBool_t polarity, validPin, pinValue, exitCondition;
-	uint32_t currentTime, lastTime, delay, timeout, rollOverCount;
+	uint32_t currentTime, lastTime, delay, timeoutTicks, timeoutRollover, rollOverCount;
 
 	//Disable interrupts on the timer pin
 	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= ~(CY_U3P_LPP_GPIO_INTRMODE_MASK);
@@ -1286,14 +1288,17 @@ CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength)
 	delay = delay + (USBBuffer[4] << 8);
 	delay = delay + (USBBuffer[5] << 16);
 	delay = delay + (USBBuffer[6] << 24);
-	timeout = USBBuffer[7];
-	timeout = timeout + (USBBuffer[8] << 8);
-	timeout = timeout + (USBBuffer[9] << 16);
-	timeout = timeout + (USBBuffer[10] << 24);
+	timeoutTicks = USBBuffer[7];
+	timeoutTicks = timeoutTicks + (USBBuffer[8] << 8);
+	timeoutTicks = timeoutTicks + (USBBuffer[9] << 16);
+	timeoutTicks = timeoutTicks + (USBBuffer[10] << 24);
+	timeoutRollover = USBBuffer[11];
+	timeoutRollover = timeoutRollover + (USBBuffer[12] << 8);
+	timeoutRollover = timeoutRollover + (USBBuffer[13] << 16);
+	timeoutRollover = timeoutRollover + (USBBuffer[14] << 24);
 
 	//Convert ms to timer ticks
 	delay = delay * MS_TO_TICKS_MULT;
-	timeout = timeout * MS_TO_TICKS_MULT;
 
 	//Check that input pin specified is configured as input
 	status = CyU3PGpioSimpleGetValue(pin, &pinValue);
@@ -1362,15 +1367,9 @@ CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength)
 			//Read the pin value
 			pinValue = ((GPIO->lpp_gpio_simple[pin] & CY_U3P_LPP_GPIO_IN_VALUE) >> 1);
 
-			//update the exit condition
-			if(timeout)
-			{
-				exitCondition = ((pinValue == polarity) || (currentTime >= timeout));
-			}
-			else
-			{
-				exitCondition = (pinValue == polarity);
-			}
+			//update the exit condition (will always have valid timeout)
+			//exits when pin reaches the desired polarity or timer reaches timeout
+			exitCondition = ((pinValue == polarity) || ((currentTime >= timeoutTicks) && (rollOverCount >= timeoutRollover)));
 		}
 
 	}
@@ -1393,14 +1392,10 @@ CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength)
 	BulkBuffer[9] = (rollOverCount & 0xFF00) >> 8;
 	BulkBuffer[10] = (rollOverCount & 0xFF0000) >> 16;
 	BulkBuffer[11] = (rollOverCount & 0xFF000000) >> 24;
-	BulkBuffer[12] = MS_TO_TICKS_MULT & 0xFF;
-	BulkBuffer[13] = (MS_TO_TICKS_MULT & 0xFF00) >> 8;
-	BulkBuffer[14] = (MS_TO_TICKS_MULT & 0xFF0000) >> 16;
-	BulkBuffer[15] = (MS_TO_TICKS_MULT & 0xFF000000) >> 24;
 
 	ManualDMABuffer.buffer = BulkBuffer;
 	ManualDMABuffer.size = sizeof(BulkBuffer);
-	ManualDMABuffer.count = 16;
+	ManualDMABuffer.count = 12;
 
 	//Send the data to PC
 	CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
