@@ -1447,10 +1447,14 @@ CyU3PReturnStatus_t AdiSleepForMicroSeconds(uint32_t numMicroSeconds)
 	//reset the timer register first to reduce overhead
 	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
 
-	//Check if the sleep is too short (under measurable threshold) and return if needed
-	if(numMicroSeconds < ADI_MIN_TIME_MICROSEC)
+	//Offset the timer value
+	if(numMicroSeconds > ADI_MICROSECONDS_SLEEP_OFFSET)
 	{
-		return CY_U3P_ERROR_BAD_ARGUMENT;
+		numMicroSeconds = numMicroSeconds - ADI_MICROSECONDS_SLEEP_OFFSET;
+	}
+	else
+	{
+		return status;
 	}
 
 	//Check if sleep is too long (would overflow on multiply) and return if needed

@@ -262,7 +262,7 @@ struct BoardConfig
 #define ADI_GENERIC_STALL_OFFSET				(90)
 
 //Minimum time
-#define ADI_MIN_TIME_MICROSEC					(8)
+#define ADI_MICROSECONDS_SLEEP_OFFSET			(14)
 
 
 /*
