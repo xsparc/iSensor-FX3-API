@@ -93,10 +93,11 @@ Partial Class FX3Connection
         Dim transferStatus As Boolean
         Dim timeoutTimer As New Stopwatch
         Dim convertedTime As Double
-        Dim status, currentTime, rollOverCount, conversionFactor As UInteger
+        Dim status, currentTime, rollOverCount As UInteger
         Dim totalTicks, rollOverCountULong As ULong
         Dim delayOverflow As Boolean
         Dim delayScaled As UInteger
+        Dim timeoutTicks, timeoutRollovers As UInteger
 
         'Validate that the pin isn't acting as a PWM pin
         If isPWMPin(pin) Then
@@ -116,44 +117,53 @@ Partial Class FX3Connection
         'Sleep on PC side if delay is too large (approx. 7 minutes)
         delayOverflow = False
         delayScaled = delayInMs
-        If delayInMs > (UInt32.MaxValue / 10000) Then
+        If delayInMs > (UInt32.MaxValue / MsToTimerTicks) Then
             delayOverflow = True
             Threading.Thread.Sleep(delayInMs)
             delayScaled = 0
             totalTime = timeoutInMs
         End If
 
+        'Add delay
         buf(3) = delayScaled And &HFF
         buf(4) = (delayScaled And &HFF00) >> 8
         buf(5) = (delayScaled And &HFF0000) >> 16
         buf(6) = (delayScaled And &HFF000000) >> 24
 
-        'set the timeout to 0 (no timeout in firmware side) if timeout + delay is greater than a single period 
-        If (timeoutInMs + delayInMs) > (UInt32.MaxValue / 10000) Then
-            timeoutInMs = 0
-        End If
+        'Calculate number of timer rollovers
+        Dim totalTimeout As ULong
+        totalTimeout = CULng(timeoutInMs) * MsToTimerTicks
+        timeoutRollovers = Math.Floor(totalTimeout / UInt32.MaxValue)
+        timeoutTicks = totalTimeout Mod UInt32.MaxValue
 
-        buf(7) = timeoutInMs And &HFF
-        buf(8) = (timeoutInMs And &HFF00) >> 8
-        buf(9) = (timeoutInMs And &HFF0000) >> 16
-        buf(10) = (timeoutInMs And &HFF000000) >> 24
+        'Add timeout ticks
+        buf(7) = timeoutTicks And &HFF
+        buf(8) = (timeoutTicks And &HFF00) >> 8
+        buf(9) = (timeoutTicks And &HFF0000) >> 16
+        buf(10) = (timeoutTicks And &HFF000000) >> 24
+
+        'Add rollover count for timeout
+        buf(11) = timeoutRollovers And &HFF
+        buf(12) = (timeoutRollovers And &HFF00) >> 8
+        buf(13) = (timeoutRollovers And &HFF0000) >> 16
+        buf(14) = (timeoutRollovers And &HFF000000) >> 24
 
         'Start stopwatch
         timeoutTimer.Start()
 
         'Send a vendor command to start a pulse wait operation (returns immediatly)
         ConfigureControlEndpoint(USBCommands.ADI_PULSE_WAIT, True)
-        If Not XferControlData(buf, 11, 2000) Then
+        If Not XferControlData(buf, 15, 2000) Then
             Throw New FX3CommunicationException("ERROR: Control Endpoint transfer timed out")
         End If
 
         'Start bulk transfer
         transferStatus = False
         If totalTime = 0 Then
-            transferStatus = DataInEndPt.XferData(buf, 16)
+            transferStatus = DataInEndPt.XferData(buf, 12)
         Else
             While ((Not transferStatus) And (timeoutTimer.ElapsedMilliseconds() < totalTime))
-                transferStatus = DataInEndPt.XferData(buf, 16)
+                transferStatus = DataInEndPt.XferData(buf, 12)
             End While
         End If
 
@@ -168,7 +178,6 @@ Partial Class FX3Connection
             Else
                 Return Convert.ToDouble(timeoutTimer.ElapsedMilliseconds())
             End If
-
         End If
 
         'Read status from the buffer and throw exception for bad status
@@ -184,16 +193,13 @@ Partial Class FX3Connection
         rollOverCount = BitConverter.ToUInt32(buf, 8)
         rollOverCountULong = CULng(rollOverCount)
 
-        'Read conversion factor
-        conversionFactor = BitConverter.ToUInt32(buf, 12)
-
         'Calculate the total time, in timer ticks
         totalTicks = rollOverCountULong * UInt32.MaxValue
         totalTicks += currentTime
 
         'Scale the time waited to MS
         convertedTime = Convert.ToDouble(totalTicks)
-        convertedTime = Math.Round(convertedTime / conversionFactor, 3)
+        convertedTime = Math.Round(convertedTime / MsToTimerTicks, 3)
 
         'Return the actual time waited
         Return convertedTime
@@ -344,7 +350,7 @@ Partial Class FX3Connection
 
     Public Function MeasureBusyPulse(TriggerPin As IPinObject, TriggerDriveTime As UInteger, TriggerDrivePolarity As UInteger, BusyPin As IPinObject, BusyPolarity As UInteger, Timeout As UInteger) As Double
         'Declare variables needed for transfer
-        Dim buf(15) As Byte
+        Dim buf(18) As Byte
         Dim transferStatus As Boolean
         Dim timeoutTimer As New Stopwatch
         Dim convertedTime As Double
@@ -363,7 +369,7 @@ Partial Class FX3Connection
         End If
 
         'Buffer will contain the following, in order:
-        'BusyPin(2), BusyPinPolarity(1), Timeout(4), TriggerMode(1), TriggerPin(2), TriggerDrivePolarity(1), TriggerDriveTime(4) ---> Total of 15 bytes
+        'BusyPin(2), BusyPinPolarity(1), TimeoutTicks(4), TimeoutRollovers(4), TriggerMode(1), TriggerPin(2), TriggerDrivePolarity(1), TriggerDriveTime(4) ---> Total of 19 bytes
 
         'Set the pin
         buf(0) = BusyPin.pinConfig And &HFF
@@ -457,7 +463,7 @@ Partial Class FX3Connection
 
     Public Function MeasureBusyPulse(TriggerRegAddr As UShort, TriggerRegValue As UShort, BusyPin As IPinObject, BusyPolarity As UInteger, Timeout As UInteger) As Double
         'Declare variables needed for transfer
-        Dim buf(15) As Byte
+        Dim buf(18) As Byte
         Dim transferStatus As Boolean
         Dim timeoutTimer As New Stopwatch
         Dim convertedTime As Double
@@ -471,7 +477,7 @@ Partial Class FX3Connection
         End If
 
         'Buffer will contain the following, in order:
-        'BusyPin(2), BusyPinPolarity(1), Timeout(4), TriggerMode(1), SPI Trigger Addr(2), SPI Trigger Value(2), Zeros (3) ---> Total of 15 bytes
+        'BusyPin(2), BusyPinPolarity(1), TimeoutTicks(4), TimeoutRolloverCount(4), TriggerMode(1), SPI Trigger Addr(2), SPI Trigger Value(2), Zeros (3) ---> Total of 19 bytes
 
         'Set the pin
         buf(0) = BusyPin.pinConfig And &HFF

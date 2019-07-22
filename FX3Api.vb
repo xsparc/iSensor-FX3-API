@@ -41,6 +41,9 @@ Public Class FX3Connection
     'Max buffer size for a buffered stream (in bytes)
     Private Const MaxBufferSize As Integer = 1600
 
+    'Set the timer tick to MS multiplier
+    Private Const MsToTimerTicks As Integer = 10078
+
     'Cypress driver objects
 
     'CyUSB Control Endpoint
