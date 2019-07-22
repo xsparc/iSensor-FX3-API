@@ -77,7 +77,7 @@ CyU3PReturnStatus_t AdiWaitForPin(uint32_t pinNumber, CyU3PGpioIntrMode_t interr
 CyU3PReturnStatus_t AdiPinRead(uint16_t pin);
 CyU3PReturnStatus_t AdiReadTimerValue();
 uint32_t AdiMStoTicks(uint32_t desiredStallTime);
-CyU3PReturnStatus_t AdiWaitForTimerTicks(uint32_t numTicks);
+CyU3PReturnStatus_t AdiSleepForMicroSeconds(uint32_t numMicroSeconds);
 CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM);
 CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength);
 
@@ -120,14 +120,6 @@ typedef enum Boolean
 	True = 1,
 	False = 0
 }Boolean;
-
-//Enum for the complex GPIO timers available
-typedef enum Timer
-{
-	ADITimer10MHz = 0,
-	ADITimer1MHz = 1,
-	ADITimer10KHz = 2
-}Timer;
 
 //Struct to store relevant board parameters
 struct BoardConfig
@@ -269,7 +261,8 @@ struct BoardConfig
 //#define ADI_GENERIC_STALL_OFFSET				(76)
 #define ADI_GENERIC_STALL_OFFSET				(90)
 
-#define ADI_STALL_OFFSET						(14)
+//Minimum time
+#define ADI_MIN_TIME_MICROSEC					(8)
 
 
 /*

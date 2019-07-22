@@ -597,7 +597,7 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 			CyU3PSpiTransmitWords(spiBuf, 2);
 
 			//wait for stall
-			AdiWaitForTimerTicks(stallTime);
+			AdiSleepForMicroSeconds(stallTime);
 
 			//transmit (addr + 1) and most significant byte of SpiValue
 			spiBuf[0] = (RegAddr + 1) | 0x80;
@@ -956,7 +956,7 @@ CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr)
 	}
 
 	/* Stall for user-specified time */
-	AdiWaitForTimerTicks(stallTime);
+	AdiSleepForMicroSeconds(stallTime);
 
 	/* Receive the data requested */
 	status = CyU3PSpiReceiveWords(tempBuffer, 2);
@@ -1198,7 +1198,7 @@ CyU3PReturnStatus_t AdiBulkByteTransfer(uint16_t numBytes, uint16_t bytesPerCapt
 		}
 		loopCounter+=2;
 
-		AdiWaitForTimerTicks(stallTime);
+		AdiSleepForMicroSeconds(stallTime);
 
 		//Loop through rest of the reads
 		while(loopCounter < bytesPerCapture)
@@ -1226,7 +1226,7 @@ CyU3PReturnStatus_t AdiBulkByteTransfer(uint16_t numBytes, uint16_t bytesPerCapt
 			}
 			bufPntr += 2;
 			loopCounter += 2;
-			AdiWaitForTimerTicks(stallTime);
+			AdiSleepForMicroSeconds(stallTime);
 		}
 		//Receive the last two bytes
 		if(buffValue & 0x80)
@@ -1430,7 +1430,7 @@ CyU3PReturnStatus_t AdiSetPin(uint16_t pinNumber, CyBool_t polarity)
 }
 
 /*
- * Function: AdiWaitForTimerTicks(uint32_t numTicks)
+ * Function: AdiSleepForMicroSeconds(uint32_t numTicks)
  *
  * This function blocks thread execution for a specified number of timer ticks.
  * It uses a complex GPIO timer which is based on the system clock.
@@ -1439,73 +1439,43 @@ CyU3PReturnStatus_t AdiSetPin(uint16_t pinNumber, CyBool_t polarity)
  *
  * Returns: status
  */
-CyU3PReturnStatus_t AdiWaitForTimerTicks(uint32_t numTicks)
+CyU3PReturnStatus_t AdiSleepForMicroSeconds(uint32_t numMicroSeconds)
 {
-	/* TODO: Fix timer scheme*/
-	numTicks = numTicks *10;
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-	uint32_t startTime, endTime, currentTime, initialRegValue;
-	CyBool_t timerRollover = CyFalse;
-	uint8_t pinIndex;
+	uint32_t finalTickCount, currentTime;
 
-	//Return if the stall offset is below the measurable threshold
-	if(numTicks < ADI_STALL_OFFSET)
+	//reset the timer register first to reduce overhead
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+
+	//Check if the sleep is too short (under measurable threshold) and return if needed
+	if(numMicroSeconds < ADI_MIN_TIME_MICROSEC)
 	{
-		status = CY_U3P_ERROR_BAD_ARGUMENT;
-		return status;
+		return CY_U3P_ERROR_BAD_ARGUMENT;
 	}
-	//Get the pin index
-	pinIndex = ADI_TIMER_PIN % 8;
-	//Get the initial pin config
-	initialRegValue = (GPIO->lpp_gpio_pin[pinIndex].status & ~CY_U3P_LPP_GPIO_INTR);
-	//Set the pin config for sample now mode
-	GPIO->lpp_gpio_pin[pinIndex].status = (initialRegValue | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
-	//wait for sample to finish
-	while (GPIO->lpp_gpio_pin[pinIndex].status & CY_U3P_LPP_GPIO_MODE_MASK);
-	//read timer value
-	startTime = GPIO->lpp_gpio_pin[pinIndex].threshold;
-	//set current time to start time
-	currentTime = startTime;
 
-	//Check for overflow
-	timerRollover = (numTicks > 0 && (startTime > (0xFFFFFFFF - numTicks)));
-
-	//Calculate the end time
-	if(timerRollover)
+	//Check if sleep is too long (would overflow on multiply) and return if needed
+	//Use the CyU3PThreadSleep() if longer sleep is needed
+	if(numMicroSeconds > 426172)
 	{
-		endTime = numTicks - (0xFFFFFFFF - startTime) - ADI_STALL_OFFSET;
-		while(currentTime <= endTime || currentTime >= startTime)
-		{
-			//Get the initial pin config
-			initialRegValue = (GPIO->lpp_gpio_pin[pinIndex].status & ~CY_U3P_LPP_GPIO_INTR);
-			//Set the pin config for sample now mode
-			GPIO->lpp_gpio_pin[pinIndex].status = (initialRegValue | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
-			//wait for sample to finish
-			while (GPIO->lpp_gpio_pin[pinIndex].status & CY_U3P_LPP_GPIO_MODE_MASK);
-			//read timer value
-			currentTime = GPIO->lpp_gpio_pin[pinIndex].threshold;
-		}
+		CyU3PDebugPrint (4, "ERROR: Sleep of %d microseconds not achievable with AdiSleepForMicroseconds, use system sleep call \r\n", numMicroSeconds);
+		return CY_U3P_ERROR_BAD_ARGUMENT;
 	}
-	else
+
+	//calculate final tick count using MS multiplier
+	finalTickCount = numMicroSeconds * MS_TO_TICKS_MULT;
+
+	//scale back to microseconds
+	finalTickCount = finalTickCount / 1000;
+
+	currentTime = 0;
+	while(currentTime < finalTickCount)
 	{
-		endTime = startTime + numTicks - ADI_STALL_OFFSET;
-		while(CyTrue)
-		{
-			//Get the initial pin config
-			initialRegValue = (GPIO->lpp_gpio_pin[pinIndex].status & ~CY_U3P_LPP_GPIO_INTR);
-			//Set the pin config for sample now mode
-			GPIO->lpp_gpio_pin[pinIndex].status = (initialRegValue | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
-			//wait for sample to finish
-			while (GPIO->lpp_gpio_pin[pinIndex].status & CY_U3P_LPP_GPIO_MODE_MASK);
-			//read timer value
-			currentTime = GPIO->lpp_gpio_pin[pinIndex].threshold;
-			//Return if timer elapsed
-			if(currentTime > endTime)
-			{
-				status = CY_U3P_ERROR_BAD_ARGUMENT;
-				return status;
-			}
-		}
+		//Set the pin config for sample now mode
+		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (timerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
+		//wait for sample to finish
+		while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
+		//read timer value
+		currentTime = GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
 	}
 	return status;
 }
@@ -1561,18 +1531,11 @@ CyU3PReturnStatus_t AdiWaitForPin(uint32_t pinNumber, CyU3PGpioIntrMode_t interr
  * Converts milliseconds to number of ticks and adjusts the resulting offset if below the
  * measurable minimum.
  *
- * timeInMS: The real stall time (in ms) desired. Minimum measurable ticks is 14 microseconds.
+ * timeInMS: The real stall time (in ms) desired.
  */
 uint32_t AdiMStoTicks(uint32_t timeInMS)
 {
-	uint32_t tempTicks = (timeInMS * MS_TO_TICKS_MULT);
-
-	if(tempTicks > ADI_STALL_OFFSET)
-	{
-		tempTicks = tempTicks - ADI_STALL_OFFSET;
-	}
-
-	return tempTicks;
+	return timeInMS * MS_TO_TICKS_MULT;
 }
 
 /*
@@ -1730,13 +1693,13 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 			{
 						return status;
 			}
-			AdiWaitForTimerTicks(stallTime);
+			AdiSleepForMicroSeconds(stallTime);
 			status = CyU3PSpiReceiveWords(tempReadBuffer, 2);
 			if (status != CY_U3P_SUCCESS)
 			{
 				return status;
 			}
-			AdiWaitForTimerTicks(stallTime);
+			AdiSleepForMicroSeconds(stallTime);
 
 			//Clear bit 12 (bit enables/disables starting a capture using SYNC pin)
 			tempReadBuffer[0] = tempReadBuffer[0] & (0xEF);
@@ -1749,7 +1712,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 			{
 				return status;
 			}
-			AdiWaitForTimerTicks(stallTime);
+			AdiSleepForMicroSeconds(stallTime);
 			tempWriteBuffer[0] = (0x80) | (0x65);
 			tempWriteBuffer[1] = tempReadBuffer[0];
 			status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
@@ -1757,7 +1720,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 			{
 				return status;
 			}
-			AdiWaitForTimerTicks(stallTime);
+			AdiSleepForMicroSeconds(stallTime);
 
 			//Configure SYNC/RTS as an output and set high
 			CyU3PGpioSimpleConfig_t gpioConfig;
@@ -1795,13 +1758,13 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 		{
 					return status;
 		}
-		AdiWaitForTimerTicks(stallTime);
+		AdiSleepForMicroSeconds(stallTime);
 		status = CyU3PSpiReceiveWords(tempReadBuffer, 2);
 		if (status != CY_U3P_SUCCESS)
 		{
 			return status;
 		}
-		AdiWaitForTimerTicks(stallTime);
+		AdiSleepForMicroSeconds(stallTime);
 
 		//Set bit 12 (bit enables/disables starting a capture using SYNC pin)
 		tempReadBuffer[0] = tempReadBuffer[0] | (0x10);
@@ -1814,7 +1777,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 		{
 			return status;
 		}
-		AdiWaitForTimerTicks(stallTime);
+		AdiSleepForMicroSeconds(stallTime);
 		tempWriteBuffer[0] = (0x80) | (0x65);
 		tempWriteBuffer[1] = tempReadBuffer[0];
 		status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
@@ -1822,7 +1785,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 		{
 			return status;
 		}
-		AdiWaitForTimerTicks(stallTime);
+		AdiSleepForMicroSeconds(stallTime);
 
 		//Configure SYNC/RTS as an output and set high
 		CyU3PGpioSimpleConfig_t gpioConfig;
@@ -1858,7 +1821,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 		{
 			return status;
 		}
-		AdiWaitForTimerTicks(stallTime);
+		AdiSleepForMicroSeconds(stallTime);
 		tempWriteBuffer[0] = (0x80) | (0x3F);
 		tempWriteBuffer[1] = 0x08;
 		status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
@@ -1866,7 +1829,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 		{
 			return status;
 		}
-		AdiWaitForTimerTicks(stallTime);
+		AdiSleepForMicroSeconds(stallTime);
 	}
 
 	//Manually reset SPI Rx/Tx FIFO
