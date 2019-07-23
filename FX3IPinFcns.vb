@@ -23,7 +23,7 @@ Partial Class FX3Connection
         ConfigureControlEndpoint(USBCommands.ADI_PULSE_DRIVE, True)
         Dim buf(6) As Byte
         Dim intPeriod As UInteger = Convert.ToUInt32(pperiod)
-        Dim status, shiftedValue As UInteger
+        Dim status As UInteger
 
         'Validate that the pin isn't acting as a PWM pin
         If isPWMPin(pin) Then
@@ -46,30 +46,21 @@ Partial Class FX3Connection
             Throw New FX3CommunicationException("ERROR: Control endpoint transfer failed before pulse drive.")
         End If
 
-        'Function should block until end of pin drive
-        System.Threading.Thread.Sleep(pperiod + 100)
-
         'Wait for the status to be returned over BULK-In
         If Not DataInEndPt.XferData(buf, 4) Then
             Throw New FX3CommunicationException("ERROR: Transfer from FX3 after pulse drive failed")
         End If
 
         'Get the status from the buffer
-        status = buf(0)
-        shiftedValue = buf(1)
-        shiftedValue = shiftedValue << 8
-        status = status + shiftedValue
-        shiftedValue = buf(2)
-        shiftedValue = shiftedValue << 16
-        status = status + shiftedValue
-        shiftedValue = buf(3)
-        shiftedValue = shiftedValue << 24
-        status = status + shiftedValue
+        status = BitConverter.ToUInt32(buf, 0)
 
         'Throw exception if the operation failed
         If Not status = 0 Then
             Throw New FX3BadStatusException("ERROR: Pin Drive Failed, Status: " + status.ToString("X4"))
         End If
+
+        'Function should block until end of pin drive
+        System.Threading.Thread.Sleep(pperiod + 10)
 
     End Sub
 

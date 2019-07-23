@@ -285,6 +285,9 @@ Public Class FX3SPIConfig
             Return m_StallTime
         End Get
         Set(value As UInt16)
+            If (value > (UInt32.MaxValue / 10078)) Then
+                Throw New FX3ConfigurationException("ERROR: Stall time of " + value.ToString() + " not supported")
+            End If
             m_StallTime = value
             'Calculate the new stall cycles value based on spi clock and update private variable
             SclkPeriod = 1 / ClockFrequency
