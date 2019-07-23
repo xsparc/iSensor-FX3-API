@@ -80,7 +80,6 @@ uint32_t AdiMStoTicks(uint32_t desiredStallTime);
 CyU3PReturnStatus_t AdiSleepForMicroSeconds(uint32_t numMicroSeconds);
 CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM);
 CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength);
-void AdiPulseDriveFinished(uint32_t pinAndPolarity);
 
 //Peripheral read-write functions.
 CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData);
