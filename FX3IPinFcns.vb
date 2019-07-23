@@ -21,14 +21,21 @@ Partial Class FX3Connection
 
         'Send a vendor command to drive pin (returns immediatly)
         ConfigureControlEndpoint(USBCommands.ADI_PULSE_DRIVE, True)
-        Dim buf(6) As Byte
-        Dim intPeriod As UInteger = Convert.ToUInt32(pperiod)
+        Dim buf(10) As Byte
         Dim status As UInteger
+        Dim ticksDouble As Double
+        Dim timerTicks As UInteger
+        Dim timerRollovers As UInteger
 
         'Validate that the pin isn't acting as a PWM pin
         If isPWMPin(pin) Then
             Throw New FX3ConfigurationException("ERROR: The selected pin is currently configured to drive a PWM signal. Please call StopPWM(pin) before interfacing with the pin further")
         End If
+
+        'Find ticks and rollover
+        ticksDouble = pperiod * MsToTimerTicks
+        timerRollovers = CUInt(Math.Floor(ticksDouble / UInt32.MaxValue))
+        timerTicks = CUInt(ticksDouble Mod UInt32.MaxValue)
 
         'Set the GPIO pin number (only 1 byte in FX3PinObject)
         buf(0) = pin.pinConfig And &HFF
@@ -36,15 +43,22 @@ Partial Class FX3Connection
         'Set the polarity (1 for high, 0 for low)
         buf(2) = polarity And &H1
         'Set the drive time
-        buf(3) = intPeriod And &HFF
-        buf(4) = (intPeriod And &HFF00) >> 8
-        buf(5) = (intPeriod And &HFF0000) >> 16
-        buf(6) = (intPeriod And &HFF000000) >> 24
+        buf(3) = timerTicks And &HFF
+        buf(4) = (timerTicks And &HFF00) >> 8
+        buf(5) = (timerTicks And &HFF0000) >> 16
+        buf(6) = (timerTicks And &HFF000000) >> 24
+        buf(7) = timerRollovers And &HFF
+        buf(8) = (timerRollovers And &HFF00) >> 8
+        buf(9) = (timerRollovers And &HFF0000) >> 16
+        buf(10) = (timerRollovers And &HFF000000) >> 24
 
         'Start data transfer
-        If Not XferControlData(buf, 7, 2000) Then
+        If Not XferControlData(buf, 11, 2000) Then
             Throw New FX3CommunicationException("ERROR: Control endpoint transfer failed before pulse drive.")
         End If
+
+        'Function should block until end of pin drive
+        System.Threading.Thread.Sleep(pperiod + 10)
 
         'Wait for the status to be returned over BULK-In
         If Not DataInEndPt.XferData(buf, 4) Then
@@ -58,9 +72,6 @@ Partial Class FX3Connection
         If Not status = 0 Then
             Throw New FX3BadStatusException("ERROR: Pin Drive Failed, Status: " + status.ToString("X4"))
         End If
-
-        'Function should block until end of pin drive
-        System.Threading.Thread.Sleep(pperiod + 10)
 
     End Sub
 
