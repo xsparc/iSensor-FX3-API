@@ -105,6 +105,8 @@ char serial_number[] __attribute__ ((aligned (32))) = {
  * Global application variables
  */
 
+CyU3PTimer softwareTimer;
+
 /*Track the USB connection speed */
 uint16_t usbBufferSize = 0;
 
@@ -171,6 +173,8 @@ uint8_t *regList;
 
 /*Number of bytes per USB packet in generic data stream mode */
 uint16_t bytesPerUsbPacket = 0;
+
+
 
 /*
  * Function: AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
@@ -247,14 +251,14 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
         		//Run pulse drive function
         		status = AdiPulseDrive();
         		//Send back status over the BULK-In endpoint
-            	USBBuffer[0] = status & 0xFF;
-            	USBBuffer[1] = (status & 0xFF00) >> 8;
-            	USBBuffer[2] = (status & 0xFF0000) >> 16;
-            	USBBuffer[3] = (status & 0xFF000000) >> 24;
-            	ManualDMABuffer.buffer = USBBuffer;
-            	ManualDMABuffer.size = 4096;
-            	ManualDMABuffer.count = 4;
-            	CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
+        		USBBuffer[0] = status & 0xFF;
+        		USBBuffer[1] = (status & 0xFF00) >> 8;
+        		USBBuffer[2] = (status & 0xFF0000) >> 16;
+        		USBBuffer[3] = (status & 0xFF000000) >> 24;
+        		ManualDMABuffer.buffer = USBBuffer;
+        		ManualDMABuffer.size = 4096;
+        		ManualDMABuffer.count = 4;
+        		CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
         		break;
 
         	//Wait on an edge, with timeout
@@ -521,6 +525,16 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
     return isHandled;
 }
 
+/*
+ * Function: AdiMeasureBusyPulse(uint16_t transferLength)
+ *
+ * Sets a user configurable trigger condition and then measures the following GPIO pulse.
+ * This function is approx. microsecond accurate.
+ *
+ * transferLength: The amount of data (in bytes) to read from the USB buffer
+ *
+ * Returns: A status code indicating the success of the measure pulse operation
+ */
 CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -1029,13 +1043,13 @@ CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data)
 CyU3PReturnStatus_t AdiPulseDrive()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-	uint16_t pin;
-	CyBool_t polarity, timerRollover;
-	uint32_t driveTime, endTime, currentTime, startTime;
+	uint16_t pinNumber;
+	CyBool_t polarity;
+	uint32_t driveTime;
 
 	//Parse request data from USBBuffer
-	pin = USBBuffer[0];
-	pin = pin + (USBBuffer[1] << 8);
+	pinNumber = USBBuffer[0];
+	pinNumber = pinNumber + (USBBuffer[1] << 8);
 	polarity = (CyBool_t) USBBuffer[2];
 	driveTime = USBBuffer[3];
 	driveTime = driveTime + (USBBuffer[4] << 8);
@@ -1049,69 +1063,70 @@ CyU3PReturnStatus_t AdiPulseDrive()
 	gpioConfig.driveLowEn = CyTrue;
 	gpioConfig.driveHighEn = CyTrue;
 	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+	status = CyU3PGpioSetSimpleConfig(pinNumber, &gpioConfig);
 
-	//Get the start time
-	CyU3PGpioComplexSampleNow(ADI_TIMER_PIN, &startTime);
-	currentTime = startTime;
-
-	status = CyU3PGpioSetSimpleConfig(pin, &gpioConfig);
-
-	//If config fails try to override and reconfigure
+	//If config fails try to disable and reconfigure
 	if(status != CY_U3P_SUCCESS)
 	{
-		status = CyU3PDeviceGpioOverride (pin, CyTrue);
-		status = CyU3PGpioSetSimpleConfig(pin, &gpioConfig);
-	}
-
-	//Check that the pin is configured to act as an output, return if not
-	status = CyU3PGpioSimpleSetValue(pin, polarity);
-	if(status != CY_U3P_SUCCESS)
-	{
-		return status;
-	}
-
-	//Convert ms to ticks
-	driveTime = AdiMStoTicks(driveTime);
-
-	//Calculate if rollover will occur on system timer
-	timerRollover = (driveTime > 0 && (startTime > (0xFFFFFFFF - driveTime)));
-
-	//Drive the pin for the specified time
-	if(timerRollover)
-	{
-		//Calculate the end time given that overflow will occur
-		endTime = driveTime - (0xFFFFFFFF - startTime);
-		while(currentTime <= endTime || currentTime >= startTime)
+		CyU3PDeviceGpioOverride(pinNumber, CyTrue);
+		CyU3PGpioDisable(pinNumber);
+		status = CyU3PGpioSetSimpleConfig(pinNumber, &gpioConfig);
+		if(status != CY_U3P_SUCCESS)
 		{
-			//Read the timer value
-			CyU3PGpioComplexSampleNow(ADI_TIMER_PIN, &currentTime);
-			//Drive the GPIO pin
-			CyU3PGpioSimpleSetValue(pin, polarity);
-		}
-	}
-	else
-	{
-		endTime = startTime + driveTime;
-		while(currentTime <= endTime)
-		{
-			//Read the timer value
-			CyU3PGpioComplexSampleNow(ADI_TIMER_PIN, &currentTime);
-			//Drive the GPIO pin
-			CyU3PGpioSimpleSetValue(pin, polarity);
+			CyU3PDebugPrint (4, "Error! Unable to configure selected pin as output, status error: 0x%x\r\n", status);
+			return status;
 		}
 	}
 
-	//Reset pin to original state
-	CyU3PGpioSimpleSetValue(pin, !polarity);
+	//start a software one-shot timer to disable the pulse drive after drive time
+	status = CyU3PTimerCreate(&softwareTimer, AdiPulseDriveFinished, (polarity << 16 | pinNumber), driveTime, 0, CYU3P_NO_ACTIVATE);
+	if (status != CY_U3P_SUCCESS)
+	{
+        CyU3PDebugPrint (4, "Error, unable to create software timer. Status code: 0x%x\r\n", status);
+	}
+	status = CyU3PTimerStart(&softwareTimer);
+	if (status != CY_U3P_SUCCESS)
+	{
+        CyU3PDebugPrint (4, "Error, unable to start software timer. Status code: 0x%x\r\n", status);
+	}
+	//return the status
+	return status;
+}
 
-	//Stop pin output drive and enable as input
+/*
+ * Function: AdiPulseDriveFinished(uint32_t pinAndPolarity)
+ *
+ * This function configures the selected pin as a simple GPIO input. It is called by a software timer
+ * following an AdiPulseDrive call.
+ *
+ * pinAndPolarity: The pin to reset in lower 16 bits, polarity in upper 16 bits.
+ *
+ * Returns: void
+ */
+void AdiPulseDriveFinished(uint32_t pinAndPolarity)
+{
+	uint16_t pinNumber = pinAndPolarity & 0xFF;
+	CyBool_t polarity = (pinAndPolarity >> 16);
+
+	//set the pin to opposite polarity
+	CyU3PGpioSetValue(pinNumber, !polarity);
+
+	//configure the selected pin as input and tristate
+	CyU3PDeviceGpioOverride(pinNumber, CyTrue);
+
+	//Disable the GPIO
+	CyU3PGpioDisable(pinNumber);
+
+	/* Set the GPIO configuration for each GPIO that was just overridden */
+	CyU3PGpioSimpleConfig_t gpioConfig;
+	CyU3PMemSet ((uint8_t *)&gpioConfig, 0, sizeof (gpioConfig));
+	gpioConfig.outValue = CyFalse;
 	gpioConfig.inputEn = CyTrue;
 	gpioConfig.driveLowEn = CyFalse;
 	gpioConfig.driveHighEn = CyFalse;
-	status = CyU3PGpioSetSimpleConfig(pin, &gpioConfig);
+	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
 
-	//return the status
-	return status;
+	CyU3PGpioSetSimpleConfig(pinNumber, &gpioConfig);
 }
 
 /*
