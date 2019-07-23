@@ -186,14 +186,18 @@ Partial Class FX3Connection
     ''' End If
     ''' myFX3.Connect(myFX3.AvailableFX3s(0))
     ''' </summary>
-    ''' <param name="Timeout">The timeout to wait for a board to connect, in seconds</param>
+    ''' <param name="TimeoutInSeconds">The timeout to wait for a board to connect, in seconds</param>
     ''' <returns>If there is a board available (false indicates timeout occured)</returns>
-    Public Function WaitForBoard(ByVal Timeout As Integer) As Boolean
+    Public Function WaitForBoard(ByVal TimeoutInSeconds As Integer) As Boolean
         Dim boardattached As Boolean = False
+        Dim originalFrame As DispatcherFrame
+        Dim tempThread As Thread
+        Dim numPolls, pollCount As Integer
+        Dim waitTime As Double = 3
 
         'Check the timeout
-        If Timeout < 0 Then
-            Throw New FX3ConfigurationException("ERROR: Invalid timeout of " + Timeout.ToString() + " seconds when waiting for bootloader")
+        If TimeoutInSeconds < 0 Then
+            Throw New FX3ConfigurationException("ERROR: Invalid timeout of " + TimeoutInSeconds.ToString() + " seconds when waiting for bootloader")
         End If
 
         'Perform first list parse
@@ -207,24 +211,56 @@ Partial Class FX3Connection
             RefreshDeviceList()
         End If
 
-        'Use event wait handle to wait for a board to be connected running the bootloader firmware
+        'Use event wait handle to wait for a board to be connected running the bootloader firmware. Takes a pseudo-polling approach (WaitOne never runs for more than 3 seconds)
+        numPolls = Math.Floor(TimeoutInSeconds / waitTime)
 
         'Ensure that the connect flag isn't erroniously set
         m_BootloaderBoardHandle.Reset()
 
-        'Create a new windows dispatcher frame
-        Dim originalFrame As DispatcherFrame = New DispatcherFrame()
-        'Create a new thread which waits for the event
-        Dim tempThread As Thread = New Thread(Sub()
-                                                  'Wait until the board connected event is triggered
-                                                  boardattached = m_BootloaderBoardHandle.WaitOne(TimeSpan.FromSeconds(Convert.ToDouble(Timeout)))
-                                                  'Stops the execution of the connect function
-                                                  originalFrame.Continue = False
-                                              End Sub)
-        'start the thread
-        tempThread.Start()
-        'Resume execution of the original
-        Dispatcher.PushFrame(originalFrame)
+        pollCount = 0
+        While pollCount < numPolls And Not boardattached
+
+            'Create a new windows dispatcher frame
+            originalFrame = New DispatcherFrame()
+            'Create a new thread which waits for the event
+            tempThread = New Thread(Sub()
+                                        'Wait until the board connected event is triggered
+                                        boardattached = m_BootloaderBoardHandle.WaitOne(TimeSpan.FromSeconds(waitTime))
+                                        'Stops the execution of the connect function
+                                        originalFrame.Continue = False
+                                    End Sub)
+            'start the thread
+            tempThread.Start()
+            'Resume execution of the original
+            Dispatcher.PushFrame(originalFrame)
+
+            'Poll the device list
+            RefreshDeviceList()
+            For Each board As CyFX3Device In m_usbList
+                If board.FriendlyName = ADIBootloaderName Then
+                    boardattached = True
+                End If
+            Next
+
+            'Increment the poll counter
+            pollCount += 1
+        End While
+
+        'If board is not attached perform the last wait
+        If Not boardattached Then
+            originalFrame = New DispatcherFrame()
+            'Create a new thread which waits for the event
+            tempThread = New Thread(Sub()
+                                        'Wait until the board connected event is triggered
+                                        boardattached = m_BootloaderBoardHandle.WaitOne(TimeSpan.FromSeconds(TimeoutInSeconds Mod waitTime))
+                                        'Stops the execution of the connect function
+                                        originalFrame.Continue = False
+                                    End Sub)
+            'start the thread
+            tempThread.Start()
+            'Resume execution of the original
+            Dispatcher.PushFrame(originalFrame)
+        End If
 
         Return boardattached
 
