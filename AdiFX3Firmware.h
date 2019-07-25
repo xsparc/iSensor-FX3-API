@@ -70,15 +70,16 @@ void AdiDataStream_Entry(uint32_t input);
 
 //Pin functions.
 CyU3PReturnStatus_t AdiPulseDrive();
-CyU3PReturnStatus_t AdiPulseWait();
+CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength);
 CyU3PReturnStatus_t AdiSetPin(uint16_t pinNumber, CyBool_t polarity);
 CyU3PReturnStatus_t AdiMeasureDR();
 CyU3PReturnStatus_t AdiWaitForPin(uint32_t pinNumber, CyU3PGpioIntrMode_t interruptSetting, uint32_t timeoutTicks);
 CyU3PReturnStatus_t AdiPinRead(uint16_t pin);
 CyU3PReturnStatus_t AdiReadTimerValue();
 uint32_t AdiMStoTicks(uint32_t desiredStallTime);
-CyU3PReturnStatus_t AdiWaitForTimerTicks(uint32_t numTicks);
+CyU3PReturnStatus_t AdiSleepForMicroSeconds(uint32_t numMicroSeconds);
 CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM);
+CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength);
 
 //Peripheral read-write functions.
 CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData);
@@ -96,6 +97,10 @@ CyU3PReturnStatus_t AdiRealTimeStreamFinished();
 //Generic data stream functions.
 CyU3PReturnStatus_t AdiGenericStreamStart();
 CyU3PReturnStatus_t AdiGenericStreamFinished();
+
+//Transfer stream functions
+CyU3PReturnStatus_t AdiTransferStreamStart();
+CyU3PReturnStatus_t AdiTransferStreamFinish();
 
 //Burst stream functions.
 CyU3PReturnStatus_t AdiBurstStreamStart();
@@ -119,14 +124,6 @@ typedef enum Boolean
 	True = 1,
 	False = 0
 }Boolean;
-
-//Enum for the complex GPIO timers available
-typedef enum Timer
-{
-	ADITimer10MHz = 0,
-	ADITimer1MHz = 1,
-	ADITimer10KHz = 2
-}Timer;
 
 //Struct to store relevant board parameters
 struct BoardConfig
@@ -201,8 +198,14 @@ struct BoardConfig
 //Used to transfer bytes without any intervention/protocol management
 #define ADI_TRANSFER_BYTES						(0xCA)
 
+//Starts a transfer stream for the ISpi32Interface
+#define ADI_TRANSFER_STREAM						(0xCC)
+
 //Command to enable or disable a PWM signal
 #define ADI_PWM_CMD  							(0xC9)
+
+//Command to trigger an event on the DUT and measure a subsequent pulse
+#define ADI_BUSY_MEASURE						(0xCB)
 
 
 /*
@@ -230,10 +233,10 @@ struct BoardConfig
 #define ADI_PIN_DIO2							(0x3)	// Commonly BUSY on ADcmXL devices
 #define ADI_PIN_DIO3							(0x2)
 #define ADI_PIN_DIO4							(0x1)
-#define FX3_PIN_GPIO0							(0x5)	// Misc pin(s) used for triggering from test equipment
-#define FX3_PIN_GPIO1							(0x6)	// Misc pin
-#define FX3_PIN_GPIO2							(0x7)	// Misc pin
-#define FX3_PIN_GPIO3							(0x12)	// Misc pin (shared complex block with DIO1, typically a data ready pin)
+#define FX3_PIN_GPIO1							(0x5)	// Misc pin(s) used for triggering from test equipment
+#define FX3_PIN_GPIO2							(0x6)	// Misc pin
+#define FX3_PIN_GPIO3							(0x7)	// Misc pin
+#define FX3_PIN_GPIO4							(0x12)	// Misc pin (shared complex block with DIO1, typically a data ready pin)
 
 /* Complex GPIO assigned as a timer input */
 #define ADI_TIMER_PIN							(0x8)
@@ -259,13 +262,14 @@ struct BoardConfig
  * Clock defines
  */
 //Conversion factor from clock ticks to milliseconds on GPIO timer
-#define MS_TO_TICKS_MULT						(10000) //(Previously 953)
+#define MS_TO_TICKS_MULT						(10078) //(Previously 953)
 
  //Offset to take away from the timer period for generic stream stall time. In 10MHz timer ticks
 //#define ADI_GENERIC_STALL_OFFSET				(76)
 #define ADI_GENERIC_STALL_OFFSET				(90)
 
-#define ADI_STALL_OFFSET						(14)
+//Minimum time
+#define ADI_MICROSECONDS_SLEEP_OFFSET			(14)
 
 
 /*
