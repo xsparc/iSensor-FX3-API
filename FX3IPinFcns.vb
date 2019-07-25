@@ -58,7 +58,7 @@ Partial Class FX3Connection
         End If
 
         'Function should block until end of pin drive
-        System.Threading.Thread.Sleep(pperiod + 10)
+        System.Threading.Thread.Sleep(pperiod)
 
         'Wait for the status to be returned over BULK-In
         If Not DataInEndPt.XferData(buf, 4) Then

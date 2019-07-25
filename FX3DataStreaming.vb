@@ -1,7 +1,7 @@
 ﻿'File:          FX3DataStreaming.vb
 'Author:        Alex Nolan (alex.nolan@analog.com), Juan Chong (juan.chong@analog.com)
 'Date:          06/26/2019
-'Description:   All streaming functions which run in the m_StreamingThread are implemented here
+'Description:   All streaming functions (except ISpi32 streams) which run in the m_StreamingThread are implemented here
 
 Imports System.Collections.Concurrent
 Imports System.Threading

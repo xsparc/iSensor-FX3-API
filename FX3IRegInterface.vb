@@ -111,8 +111,10 @@ Partial Class FX3Connection
     ''' </summary>
     Public Sub Reset() Implements IRegInterface.Reset
 
-        'Drives a low pulse on the reset pin for 500ms
-        PulseDrive(ResetPin, 0, 500, 1)
+        'Drives a low pulse on the reset pin for 250ms
+        PulseDrive(ResetPin, 0, 250, 1)
+        'Sleep for 100 ms
+        System.Threading.Thread.Sleep(100)
         'Wait for ready pin to be high
         PulseWait(ReadyPin, 1, 0, 2000)
 

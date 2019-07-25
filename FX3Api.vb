@@ -10,11 +10,10 @@ Imports System.Threading
 Imports System.Collections.Concurrent
 Imports System.Reflection
 Imports Microsoft.VisualBasic.ApplicationServices
-Imports System.ComponentModel
 
 ''' <summary>
-''' Class for interfacing with the FX3 based eval platform. Implements IRegInterface and IPinFcns, in addition
-''' to a superset of extra FX3 specific interfacing functions.
+''' This is the primary class for interfacing with the FX3 based eval platform. Implements IRegInterface, ISpi32Interface, and IPinFcns,
+''' in addition to a superset of extra interfacing functions specific to the FX3 platform.
 ''' </summary>
 Public Class FX3Connection
     Implements IRegInterface, IPinFcns, ISpi32Interface
@@ -103,6 +102,9 @@ Public Class FX3Connection
 
     'Thread safe queue to store real time data frames as UShort arrrays
     Private m_StreamData As ConcurrentQueue(Of UShort())
+
+    'Thread safe queue to store transfer data for the ISpi32Interface
+    Private m_TransferStreamData As ConcurrentQueue(Of UInteger())
 
     'Tracks the number of frames read in from DUT in real time mode
     Private m_FramesRead As Long = 0
@@ -1139,9 +1141,18 @@ Public Class FX3Connection
         Dim CRCData As New List(Of UShort)
         'Calculate the CRC
         CRCData.Clear()
-        For index = 1 To frame.Count - 4
-            CRCData.Add(frame(index))
-        Next
+        If m_FX3SPIConfig.DUTType = DUTType.ADcmXL3021 Then
+            For Index = 1 To frame.Count - 4
+                CRCData.Add(frame(Index))
+            Next
+        ElseIf m_FX3SPIConfig.DUTType = DUTType.ADcmXL1021 Then
+            For Index = 9 To frame.Count - 4
+                CRCData.Add(frame(Index))
+            Next
+        Else
+            Throw New FX3GeneralException("ERROR: Validating DUT CRC only supported for ADcmXL1021 and ADcmXL3021")
+        End If
+
         Dim expectedCRC = calcCCITT16(CRCData.ToArray)
         Return (expectedCRC = DUTCRC)
     End Function

@@ -135,9 +135,6 @@ Public Enum USBCommands
     'Wait for a user-specified pin to reach a user-specified level (with timeout)
     ADI_PULSE_WAIT = &HC6
 
-    'Command to trigger an event on the DUT and measure a subsequent pulse
-    ADI_BUSY_MEASURE = &HCB
-
     'Drive a user-specified GPIO
     ADI_SET_PIN = &HC7
 
@@ -146,6 +143,15 @@ Public Enum USBCommands
 
     'Command to enable or disable a PWM signal
     ADI_PWM_CMD = &HC9
+
+    'Used to transfer bytes without any intervention/protocol management
+    ADI_TRANSFER_BYTES = &HCA
+
+    'Command to trigger an event on the DUT and measure a subsequent pulse
+    ADI_BUSY_MEASURE = &HCB
+
+    'Starts a transfer stream for the ISpi32Interface
+    ADI_TRANSFER_STREAM = &HCC
 
     'Start/stop a real-time stream
     ADI_STREAM_REALTIME = &HD0
@@ -162,8 +168,6 @@ Public Enum USBCommands
     'Return data over a bulk endpoint before a bulk read/write operation
     ADI_BULK_REGISTER_TRANSFER = &HF2
 
-    'Used to transfer bytes without any intervention/protocol management
-    ADI_TRANSFER_BYTES = &HCA
 
     'The following commands are for the ADI bootloader only
 
