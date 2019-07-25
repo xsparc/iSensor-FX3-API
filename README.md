@@ -48,7 +48,7 @@ As of v1.0.6, custom, signed, Analog Devices drivers must be used to communicate
 
 As mentioned above, the two repositories listed below were developed alongside this firmware and provide an easy way to implement iSensor FX3 Firmware features in a .NET application. It is *highly* recommended that the FX3 Firmware and API versions match!
 
-1. [iSensor FX3 API](https://github.com/juchong/iSensor-FX3-API)
+1. [iSensor FX3 Firmware](https://github.com/juchong/iSensor-FX3-Firmware)
 
 2. [iSensor FX3 Example Gui](https://github.com/juchong/iSensor-FX3-Example-Gui)
 
