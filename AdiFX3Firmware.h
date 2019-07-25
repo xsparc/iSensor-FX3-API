@@ -98,6 +98,10 @@ CyU3PReturnStatus_t AdiRealTimeStreamFinished();
 CyU3PReturnStatus_t AdiGenericStreamStart();
 CyU3PReturnStatus_t AdiGenericStreamFinished();
 
+//Transfer stream functions
+CyU3PReturnStatus_t AdiTransferStreamStart();
+CyU3PReturnStatus_t AdiTransferStreamFinish();
+
 //Burst stream functions.
 CyU3PReturnStatus_t AdiBurstStreamStart();
 CyU3PReturnStatus_t AdiBurstStreamFinished();
@@ -193,6 +197,9 @@ struct BoardConfig
 
 //Used to transfer bytes without any intervention/protocol management
 #define ADI_TRANSFER_BYTES						(0xCA)
+
+//Starts a transfer stream for the ISpi32Interface
+#define ADI_TRANSFER_STREAM						(0xCC)
 
 //Command to enable or disable a PWM signal
 #define ADI_PWM_CMD  							(0xC9)

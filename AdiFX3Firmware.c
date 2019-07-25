@@ -131,7 +131,7 @@ uint32_t stallTime;
 uint16_t busyPin = 4;
 
 /*Track the data ready pin number */
-uint16_t dataReadyPin = 3;
+uint16_t DrPin = 3;
 
 /*Track if data ready is active (True = active, False = inactive) */
 CyBool_t DrActive = CyFalse;
@@ -445,6 +445,11 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	status = AdiTransferBytes(wIndex << 16 | wValue);
             	break;
 
+            case ADI_TRANSFER_STREAM:
+            	//TODO: Implement transfer stream functionality
+            	isHandled = CyTrue;
+            	break;
+
             default:
                 // This is unknown request
             	//CyU3PDebugPrint (4, "ERROR: Unknown vendor command 0x%x\r\n", bRequest);
@@ -521,6 +526,54 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
         }
     }
     return isHandled;
+}
+
+CyU3PReturnStatus_t AdiTransferStreamStart()
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+	uint16_t bytesRead;
+
+	/* Get the data from the control endpoint */
+	status = CyU3PUsbGetEP0Data(transferByteLength, USBBuffer, &bytesRead);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Failed to read configuration data from control endpoint!, error code = %d\r\n", status);
+	}
+
+	//The data is formatted as follows
+	//NumCaptures[1-4], NumBuffers[5-8], BytesPerBuffer[9-10], MOSIData.Count()[11-12], MOSIData[13 - ...]
+
+	/* Disable VBUS ISR */
+	CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
+
+	/* Disable GPIO interrupt before attaching interrupt to pin */
+	CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
+
+	//If using DR triggering configure the selected pin as an input with the correct polarity
+	if(DrActive)
+	{
+		//Configure the pin as an input with interrupts enabled on the selected edge
+	}
+
+	//Set up the DMA channel
+
+	//Set the data stream thread event to begin a capture
+
+	return status;
+}
+
+CyU3PReturnStatus_t AdiTransferStreamFinish()
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+
+	//If DrActive restore the data ready to normal (input, no interrupts) mode
+
+	//Destroy DMA channel
+
+	//Re-enable interrupts
+
+	//Reset timer configuration
+	return status;
 }
 
 /*
@@ -1196,7 +1249,7 @@ CyU3PReturnStatus_t AdiBulkByteTransfer(uint16_t numBytes, uint16_t bytesPerCapt
 		//Wait for data ready if needed and run through one set of registers
 		if(DrActive)
 		{
-			AdiWaitForPin(dataReadyPin, waitType, CYU3P_WAIT_FOREVER);
+			AdiWaitForPin(DrPin, waitType, CYU3P_WAIT_FOREVER);
 		}
 		//For first transfer don't read back
 		if(BulkBuffer[loopCounter] & 0x80)
@@ -1654,7 +1707,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	gpioConfig.driveLowEn = CyFalse;
 	gpioConfig.driveHighEn = CyFalse;
 	gpioConfig.intrMode = CY_U3P_GPIO_INTR_POS_EDGE;
-	CyU3PGpioSetSimpleConfig(dataReadyPin, &gpioConfig);
+	CyU3PGpioSetSimpleConfig(DrPin, &gpioConfig);
 
 	//Disable GPIO ISR
 	CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
@@ -1989,7 +2042,7 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	{
 		gpioConfig.intrMode = CY_U3P_GPIO_INTR_NEG_EDGE;
 	}
-	status = CyU3PGpioSetSimpleConfig(dataReadyPin, &gpioConfig);
+	status = CyU3PGpioSetSimpleConfig(DrPin, &gpioConfig);
 	if(status != CY_U3P_SUCCESS)
 	{
 		CyU3PDebugPrint (4, "Setting burst stream pin interrupt failed!, error code = %d\r\n", status);
@@ -2157,7 +2210,7 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 	gpioConfig.driveHighEn = CyFalse;
 	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
 
-	CyU3PGpioSetSimpleConfig(dataReadyPin, &gpioConfig);
+	CyU3PGpioSetSimpleConfig(DrPin, &gpioConfig);
 
 	/* Destroy MemoryToSpi DMA channel */
     status = CyU3PDmaChannelDestroy(&MemoryToSPI);
@@ -2245,7 +2298,7 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 		gpioConfig.intrMode = CY_U3P_GPIO_INTR_NEG_EDGE;
 	}
 
-	status = CyU3PGpioSetSimpleConfig(dataReadyPin, &gpioConfig);
+	status = CyU3PGpioSetSimpleConfig(DrPin, &gpioConfig);
 	if(status != CY_U3P_SUCCESS)
 	{
 		CyU3PDebugPrint (4, "Setting burst stream pin interrupt failed!, error code = %d\r\n", status);
@@ -2367,7 +2420,7 @@ CyU3PReturnStatus_t AdiGenericStreamFinished()
 	gpioConfig.driveHighEn = CyFalse;
 	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
 
-	CyU3PGpioSetSimpleConfig(dataReadyPin, &gpioConfig);
+	CyU3PGpioSetSimpleConfig(DrPin, &gpioConfig);
 
     /* Destroy the StreamingChannel channel (and recover a LOT of memory) */
     status = CyU3PDmaChannelDestroy(&StreamingChannel);
@@ -2812,8 +2865,8 @@ CyU3PReturnStatus_t AdiGetSpiSettings()
 	USBBuffer[14] = DUTType;
 	USBBuffer[15] = (CyBool_t)DrActive;
 	USBBuffer[16] = (CyBool_t)DrPolarity;
-	USBBuffer[17] = dataReadyPin & 0xFF;
-	USBBuffer[18] = (dataReadyPin & 0xFF00) >> 8;
+	USBBuffer[17] = DrPin & 0xFF;
+	USBBuffer[18] = (DrPin & 0xFF00) >> 8;
 	USBBuffer[19] = MS_TO_TICKS_MULT & 0xFF;
 	USBBuffer[20] = (MS_TO_TICKS_MULT & 0xFF00) >> 8;
 	USBBuffer[21] = (MS_TO_TICKS_MULT & 0xFF0000) >> 16;
@@ -2961,8 +3014,8 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 
 	case 13:
 		//Ready pin
-		dataReadyPin = value;
-		//CyU3PDebugPrint (4, "dataReadyPin = %d\r\n", value);
+		DrPin = value;
+		//CyU3PDebugPrint (4, "DrPin = %d\r\n", value);
 		break;
 
 	default:
@@ -3167,11 +3220,11 @@ void AdiDataStream_Entry(uint32_t input)
 				if (DrActive)
 				{
 					//Clear GPIO interrupts
-					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
+					GPIO->lpp_gpio_simple[DrPin] |= CY_U3P_LPP_GPIO_INTR;
 					//Loop until interrupt is triggered
-					while(!(GPIO->lpp_gpio_intr0 & (1 << dataReadyPin)));
+					while(!(GPIO->lpp_gpio_intr0 & (1 << DrPin)));
 					//Clear GPIO interrupt bit
-					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
+					GPIO->lpp_gpio_simple[DrPin] |= CY_U3P_LPP_GPIO_INTR;
 				}
 
 				//Transmit first word without reading back
@@ -3268,7 +3321,7 @@ void AdiDataStream_Entry(uint32_t input)
 					}
 
 					//Clear GPIO interrupts
-					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
+					GPIO->lpp_gpio_simple[DrPin] |= CY_U3P_LPP_GPIO_INTR;
 
 					//Clear timer interrupt
 					GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
@@ -3301,12 +3354,12 @@ void AdiDataStream_Entry(uint32_t input)
 			if (eventFlag & ADI_REAL_TIME_STREAM_ENABLE)
 			{
 				//Clear GPIO interrupts
-				GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
+				GPIO->lpp_gpio_simple[DrPin] |= CY_U3P_LPP_GPIO_INTR;
 				//Wait for GPIO interrupt flag to be set and pin to be positive (interrupt configured for positive edge)
 				interruptTriggered = CyFalse;
 				while(!interruptTriggered)
 				{
-					interruptTriggered = ((CyBool_t)(GPIO->lpp_gpio_intr0 & (1 << dataReadyPin)) && (CyBool_t)(GPIO->lpp_gpio_simple[dataReadyPin] & CY_U3P_LPP_GPIO_IN_VALUE));
+					interruptTriggered = ((CyBool_t)(GPIO->lpp_gpio_intr0 & (1 << DrPin)) && (CyBool_t)(GPIO->lpp_gpio_simple[DrPin] & CY_U3P_LPP_GPIO_IN_VALUE));
 				}
 
 				//Set the config for DMA mode
@@ -3340,7 +3393,7 @@ void AdiDataStream_Entry(uint32_t input)
 						CyU3PDebugPrint (4, "Disabling block transfer failed!, error code = %d\r\n", status);
 					}
 					//Clear GPIO interrupts
-					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
+					GPIO->lpp_gpio_simple[DrPin] |= CY_U3P_LPP_GPIO_INTR;
 					//Send whatever is in the buffer over to the PC
 					status = CyU3PDmaChannelSetWrapUp(&StreamingChannel);
 					if(status != CY_U3P_SUCCESS)
@@ -3376,12 +3429,12 @@ void AdiDataStream_Entry(uint32_t input)
 				if (DrActive)
 				{
 					/* Clear GPIO interrupts */
-					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
+					GPIO->lpp_gpio_simple[DrPin] |= CY_U3P_LPP_GPIO_INTR;
 					/* Loop until interrupt is triggered */
 					interruptTriggered = CyFalse;
 					while(!interruptTriggered)
 					{
-						interruptTriggered = ((CyBool_t)(GPIO->lpp_gpio_intr0 & (1 << dataReadyPin)));
+						interruptTriggered = ((CyBool_t)(GPIO->lpp_gpio_intr0 & (1 << DrPin)));
 					}
 				}
 
@@ -3438,7 +3491,7 @@ void AdiDataStream_Entry(uint32_t input)
 					}
 
 					/* Clear GPIO interrupts */
-					GPIO->lpp_gpio_simple[dataReadyPin] |= CY_U3P_LPP_GPIO_INTR;
+					GPIO->lpp_gpio_simple[DrPin] |= CY_U3P_LPP_GPIO_INTR;
 					/* Reset frame counter */
 					numBuffersRead = 0;
 					/* Set ADI event flags */
@@ -3754,7 +3807,7 @@ void AdiAppStart (void)
     DUTType = ADcmXL3021;
 
     /* Set the data ready pin */
-    dataReadyPin = ADI_PIN_DIO2;
+    DrPin = ADI_PIN_DIO2;
 
     /* Enable the use of a data ready pin */
     DrActive = CyTrue;
