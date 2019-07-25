@@ -1,7 +1,7 @@
 ﻿'File:          FX3DataStreaming.vb
 'Author:        Alex Nolan (alex.nolan@analog.com), Juan Chong (juan.chong@analog.com)
 'Date:          06/26/2019
-'Description:   All streaming functions which run in the m_StreamingThread are implemented here
+'Description:   All streaming functions (except ISpi32 streams) which run in the m_StreamingThread are implemented here
 
 Imports System.Collections.Concurrent
 Imports System.Threading
@@ -487,10 +487,10 @@ Partial Class FX3Connection
         End If
 
         'Determine the frame length based on DUTType
-        If m_FX3_FX3SPIConfig.DUTType = DUTType.ADcmXL1021 Then
+        If m_FX3SPIConfig.DUTType = DUTType.ADcmXL1021 Then
             'Single Axis
             frameLength = 64 * 1 + 16 + 8 '88
-        ElseIf m_FX3_FX3SPIConfig.DUTType = DUTType.ADcmXL2021 Then
+        ElseIf m_FX3SPIConfig.DUTType = DUTType.ADcmXL2021 Then
             'Two Axis
             frameLength = 64 * 2 + 16 + 8 '152
         Else

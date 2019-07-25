@@ -61,13 +61,13 @@ Partial Class FX3Connection
     ''' <returns>The current data ready usage setting</returns>
     Public Property DrActive As Boolean Implements AdisApi.IRegInterface.DrActive
         Get
-            Return m_FX3_FX3SPIConfig.DrActive
+            Return m_FX3SPIConfig.DrActive
         End Get
         Set(value As Boolean)
-            m_FX3_FX3SPIConfig.DrActive = value
+            m_FX3SPIConfig.DrActive = value
             If m_FX3Connected Then
                 m_ActiveFX3.ControlEndPt.Index = 12
-                m_ActiveFX3.ControlEndPt.Value = m_FX3_FX3SPIConfig.DrActive
+                m_ActiveFX3.ControlEndPt.Value = m_FX3SPIConfig.DrActive
                 ConfigureSPI()
             End If
         End Set
@@ -111,8 +111,10 @@ Partial Class FX3Connection
     ''' </summary>
     Public Sub Reset() Implements IRegInterface.Reset
 
-        'Drives a low pulse on the reset pin for 500ms
-        PulseDrive(ResetPin, 0, 500, 1)
+        'Drives a low pulse on the reset pin for 250ms
+        PulseDrive(ResetPin, 0, 250, 1)
+        'Sleep for 100 ms
+        System.Threading.Thread.Sleep(100)
         'Wait for ready pin to be high
         PulseWait(ReadyPin, 1, 0, 2000)
 
