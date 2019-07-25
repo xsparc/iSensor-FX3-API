@@ -350,6 +350,17 @@ Partial Class FX3Connection
 
 #Region "Other Pin Functions"
 
+    ''' <summary>
+    ''' This function triggers a DUT action using a pulse drive, and then measures the following pulse width on a seperate busy line.
+    ''' The pulse time on the busy pin is measured using a 10MHz timer with approx. 1us accuracy.
+    ''' </summary>
+    ''' <param name="TriggerPin">The pin to drive for the tigger condition (for example a sync pin)</param>
+    ''' <param name="TriggerDriveTime">The time, in ms, to drive the trigger pin for</param>
+    ''' <param name="TriggerDrivePolarity">The polarity to drive the trigger pin at (0 - low, 1 - high)</param>
+    ''' <param name="BusyPin">The pin to measure a busy pulse on</param>
+    ''' <param name="BusyPolarity">The polarity of the pulse being measured (0 will measure a low pulse, 1 will measure a high pulse)</param>
+    ''' <param name="Timeout">The timeout, in ms, to wait before cancelling, if the pulse is never detected</param>
+    ''' <returns>The pulse width, in ms. Accurate to approx. 1us</returns>
     Public Function MeasureBusyPulse(TriggerPin As IPinObject, TriggerDriveTime As UInteger, TriggerDrivePolarity As UInteger, BusyPin As IPinObject, BusyPolarity As UInteger, Timeout As UInteger) As Double
         'Declare variables needed for transfer
         Dim buf(18) As Byte
@@ -370,6 +381,12 @@ Partial Class FX3Connection
             Throw New FX3ConfigurationException("ERROR: Invalid trigger pin drive time of " + TriggerDriveTime.ToString() + "ms. Max allowed is " + (UInt32.MaxValue / 10000).ToString() + "ms")
         End If
 
+        'Validate that the trigger pin is not the busy pin
+        If TriggerPin.pinConfig = BusyPin.pinConfig Then
+            Throw New FX3ConfigurationException("ERROR: The BUSY pin cannot be used as the TRIGGER pin in a MeasureBusyPulse function call")
+        End If
+
+        'TODO: Implement the rollover calculation in API and pass to firmware
         'Buffer will contain the following, in order:
         'BusyPin(2), BusyPinPolarity(1), TimeoutTicks(4), TimeoutRollovers(4), TriggerMode(1), TriggerPin(2), TriggerDrivePolarity(1), TriggerDriveTime(4) ---> Total of 19 bytes
 
@@ -463,6 +480,15 @@ Partial Class FX3Connection
         Return convertedTime
     End Function
 
+    ''' <summary>
+    ''' Overload of measure busy pulse which triggers the DUT event using a SPI write instead of a pin drive.
+    ''' </summary>
+    ''' <param name="TriggerRegAddr">The address of the DUT trigger register (For example, a COMMAND register)</param>
+    ''' <param name="TriggerRegValue">The value to write to the DUT trigger register</param>
+    ''' <param name="BusyPin">The pin to measure a busy pulse on</param>
+    ''' <param name="BusyPolarity">The polarity of the pulse being measured (0 will measure a low pulse, 1 will measure a high pulse)</param>
+    ''' <param name="Timeout">The timeout, in ms, to wait before cancelling, if the pulse is never detected</param>
+    ''' <returns>The pulse width, in ms. Accurate to approx. 1us</returns>
     Public Function MeasureBusyPulse(TriggerRegAddr As UShort, TriggerRegValue As UShort, BusyPin As IPinObject, BusyPolarity As UInteger, Timeout As UInteger) As Double
         'Declare variables needed for transfer
         Dim buf(18) As Byte

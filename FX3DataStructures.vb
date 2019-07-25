@@ -407,16 +407,24 @@ End Class
 ''' To retrieve the FX3ApiInfo set during compile time, use the GetFX3ApiInfo call within FX3 connection.
 ''' </summary>
 Public Class FX3ApiInfo
-    'Name of the project
+    ''' <summary>
+    ''' The project name (should be FX3Api)
+    ''' </summary>
     Public Name As String
 
-    'Description
+    ''' <summary>
+    ''' The project description
+    ''' </summary>
     Public Description As String
 
-    'Last build date
+    ''' <summary>
+    ''' The date and time of the current FX3Api build in use.
+    ''' </summary>
     Public BuildDateTime As String
 
-    'Last build version
+    ''' <summary>
+    ''' The build version of this FX3Api instance. Should match application firmware.
+    ''' </summary>
     Public BuildVersion As String
 
     'Remote URL for the .git folder in the source
@@ -431,6 +439,9 @@ Public Class FX3ApiInfo
     'Current commit sha1 hash
     Private m_GitCommitSHA1 As String
 
+    ''' <summary>
+    ''' Constructor which initializes values to "Error: Not Set"
+    ''' </summary>
     Public Sub New()
         Name = "Error: Not Set"
         Description = "Error: Not Set"
@@ -442,6 +453,10 @@ Public Class FX3ApiInfo
         m_GitURL = "Error: Not Set"
     End Sub
 
+    ''' <summary>
+    ''' The base git remote URL which this version of the FX3Api was build on.
+    ''' </summary>
+    ''' <returns></returns>
     Public Property GitURL As String
         Get
             Return m_GitURL
@@ -453,6 +468,10 @@ Public Class FX3ApiInfo
         End Set
     End Property
 
+    ''' <summary>
+    ''' The branch which this version of the FX3Api was built on.
+    ''' </summary>
+    ''' <returns></returns>
     Public Property GitBranch As String
         Get
             Return m_GitBranch
@@ -464,6 +483,10 @@ Public Class FX3ApiInfo
         End Set
     End Property
 
+    ''' <summary>
+    ''' The hast for the git commit which this version of the FX3Api was built on.
+    ''' </summary>
+    ''' <returns></returns>
     Public Property GitCommitSHA1 As String
         Get
             Return m_GitCommitSHA1
@@ -475,6 +498,10 @@ Public Class FX3ApiInfo
         End Set
     End Property
 
+    ''' <summary>
+    ''' The URL of the git commit which this version of the FX3Api was built on.
+    ''' </summary>
+    ''' <returns></returns>
     Public ReadOnly Property GitCommitURL As String
         Get
             Dim strippedURL As String
@@ -489,6 +516,10 @@ Public Class FX3ApiInfo
         End Get
     End Property
 
+    ''' <summary>
+    ''' Overload of the toString function to allow for better formatting.
+    ''' </summary>
+    ''' <returns>A string representing all available FX3 API information.</returns>
     Public Overrides Function ToString() As String
         Dim info As String
         info = "Project Name: " + Name + Environment.NewLine
