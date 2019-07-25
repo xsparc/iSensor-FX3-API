@@ -2,46 +2,58 @@
 
 ## Overview
 
-The iSensor FX3 firmware and API provide you with a means of acquiring sensor data over a high-speed USB connection in any application that supports .NET libraries. This firmware was designed for the FX3 SuperSpeed Explorer Kit and relies on the open source libraries provided by Cypress to operate. The firmware was written using the freely-available Cypress EZ USB Suite, allowing anyone to modify the base firmware to fit their needs. 
+The iSensor FX3 Firmware and API are designed to provide users with a means of reliably acquiring sensor data over a high-speed USB connection in any .NET compatible application. This firmware was designed for use on the Cypress FX3 SuperSpeed Explorer Kit and relies on the open source libraries provided by Cypress to operate. The freely-available, Eclipse-based, Cypress EZ USB Suite was used for all firmware development. 
 
-The FX3 firmware is entirely event-driven and communicates with the PC using a vendor command structure. This event structure calls subroutines within the FX3 firmware to measure signals, configure SPI communication, acquire data, etc. This firmware also relies on the FX3 API to establish communication with the FX3 firmware. 
+## System Architecture
 
-Using both the FX3 firmware and the FX3 API enables you to acquire sensor data quickly while giving the freedom to add custom features to your interface software. 
+The iSensor FX3 firmware attempts to follow the Cypress program workflow and relies on FX3 system threading, execution priority, and event flags to execute firmware subroutines and transmit sensor data. Unique vendor commands trigger subroutines embedded in the iSensor FX3 firmware that read and write SPI data, measure external pulses, generate clock signals, and manage board configuration. Different SPI streaming modes are implemented which allow applications to easily communicate to most products in the iSensor portfolio. 
+
+A .NET-compatible API (this repository) has been developed in parallel to simplify interfacing with the iSensor FX3 firmware. 
 
 ## API Documentation
 
-Full documentation for the public FX3 API can be found [here](https://juchong.github.io/iSensor-FX3-API/). 
+Sandcastle-generated documentation for the FX3 API class can be found [https://juchong.github.io/iSensor-FX3-API/](https://juchong.github.io/iSensor-FX3-API/). 
 
 ## Hardware Requirements
 
-The firmware is designed to be built and run on a Cypress SuperSpeed Explorer Kit (CYUSB3KIT-003). A breakout board designed to convert the Explorer Kit's pins to a standard, 16-pin, 2mm connector used on most iSensor evaluation should be available soon. A schematic showing how to connect iSensor products to the Explorer Kit can be found in the Documentation folder of the iSensor FX3 firmware repository [here](https://github.com/juchong/iSensor-FX3-Firmware/tree/master/Documentation). 
+This firmware was designed using the Cypress SuperSpeed Explorer Kit (CYUSB3KIT-003), but should operate on a bare CYUSB3014 device assuming the correct hardware resources are externally available. 
 
-The Explorer Kit requires two jumpers to be installed before the API will communicate. The image below shows where the jumpers must be installed.
+Design files for a breakout board designed to adapt the Explorer Kit's pins to a standard, 16-pin, 2mm connector used on most iSensor evaluation boards is available in the [documentation](https://github.com/juchong/iSensor-FX3-Firmware/tree/master/Documentation) folder of this repository. 
 
- ![FX3 Jumper Locations](https://raw.githubusercontent.com/juchong/iSensor-FX3-Firmware/master/Documentation/pictures/JumperLocations.jpg)
+ ![FX3 Jumper Locations](https://raw.githubusercontent.com/juchong/iSensor-FX3-Firmware/master/documentation/pictures/JumperLocations.jpg)
 
 ## Getting Started
 
-The Explorer Kit must be programmed every time that it is powered off/on since the firmware is loaded into RAM by default. Executing the Connect() function in the FX3Connection class will automatically push the firmware image to the FX3 once the correct path has been set. 
+#### Bootloader Firmware Stage
 
-Once connected, the functions included within the FX3Connection class allow you to capture data, configure SPI, trigger GPIO, and many other functions from any .NET-compatible application.
+The API is designed such that custom bootloader firmware is loaded into FX3 RAM prior to executing the  `Connect()`function. This custom bootloader exposes LED blinking commands, a unique FX3 serial number in the USB vendor descriptor, and more importantly allows the main application firmware to be loaded over the bootloader firmware without a reboot. These features allow multiple FX3 boards to communicate with multiple application instances on a single machine. They also provide a means of visually identifying multiple FX3 boards when preparing to initiate a connection. All connected boards should be running the bootloader firmware to be considered as a "valid" board by the API. If an FX3 board is identified by the Cypress driver, but is not running the custom bootloader, then it will be ignored by the API. *FX3 boards must be running the custom bootloader firmware prior to loading application firmware~*
 
-An example VB.NET application can be found [here](https://github.com/juchong/FX3Gui). 
+#### Application Firmware Loading Stage
+
+The API provides functions to detect, identify, and program FX3 boards in user applications. Once a valid board has been identified, the `Connect()` function will push the application firmware into FX3 RAM, overwriting the bootloader firmware. The function also verifies whether communication with the FX3 board is as expected.
+
+#### API Features Overview
+
+The FX3 API translates high-level user commands into the necessary low-level Cypress API calls required to communicate with the FX3 firmware. The API also simplifies SPI configuration, data ready behavior, and device management. Using the vendor command structure outlined by Cypress, different SPI capture and streaming modes can be called based upon the user's requirements. Additional functionality such as generating clocks and pulses, measuring the time between pin pulses, waiting for external triggers, and a few other features have also been baked into the firmware and API.
+
+#### Example Application
+
+An example application was developed to provide users with a simple starting point. The application repository can be found here.
 
 ## Drivers
 
-USB drivers for the FX3 Explorer Kit should be installed automatically if the EZ USB Suite is installed. If you would like to communicate with the FX3 without installing the entire suite, the drivers are available on the ADI Wiki site [here](https://wiki.analog.com/_media/resources/eval/user-guides/inertial-mems/fx3driver.zip).
+As of v1.0.6, custom, signed, Analog Devices drivers must be used to communicate with the iSensor FX3 Firmware. The driver installation package can be found in the [drivers](https://github.com/juchong/iSensor-FX3-API/tree/master/drivers) folder in this repository or downloaded directly from [here](https://github.com/juchong/iSensor-FX3-API/raw/master/drivers/FX3DriverSetup.exe). 
 
-## Additional Repositories
+## Supporting Repositories
 
-Two additional repositories complement this API, the FX3 Firmware and the example project where these libraries are implemented. Links to both of these repositories are shown below.
+As mentioned above, the two repositories listed below were developed alongside this firmware and provide an easy way to implement iSensor FX3 Firmware features in a .NET application. It is *highly* recommended that the FX3 Firmware and API versions match!
 
-1. [FX3 Firmware](https://github.com/juchong/iSensor-FX3-Firmware)
+1. [iSensor FX3 API](https://github.com/juchong/iSensor-FX3-API)
 
-2. [FX3 ADcmXL GUI Example (FX3Gui)](https://github.com/juchong/iSensor-ADcmXL-FX3Gui)
+2. [iSensor FX3 Example Gui](https://github.com/juchong/iSensor-FX3-Example-Gui)
 
-## Additional Library Information
+## iSensor-Specific Library Information
 
-The FX3 API implements additional iSensor-specific interface libraries (IRegInterface and IPinFcns) included in the `Resources` folder in this repository. These libraries are required to maintain control and consistency with other iSensor devices and are defined in the AdisApi. 
+The FX3 API implements in-house closed-source interface libraries (IRegInterface and IPinFcns) included in the `resources` folder in this repository. These libraries are required to maintain control and consistency with other iSensor devices and are defined in the AdisApi. 
 
-This library (and the FX3-specific classes) should be used in place of the AdisBase and iSensorSpi classes for performing read/write operations. Unlike iSensorSpi, this class includes all the connection and SPI setup functions defined internally. This allows the FX3 API to perform the device connection and enumeration operations without having to pass the class an instance of AdisBase. 
+This API (and the FX3-specific classes) should be used in place of the AdisBase and iSensorSpi classes for performing read/write operations. Unlike iSensorSpi, this class includes all the connection and SPI setup functions defined internally. This allows the FX3 API to perform the device connection and enumeration operations without having to pass the class an instance of AdisBase. 
