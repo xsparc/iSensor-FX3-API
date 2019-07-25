@@ -2,120 +2,50 @@
 
 ## Overview
 
-The iSensor FX3 firmware provides you with a means of acquiring sensor data over a high-speed USB connection in any application that supports .NET libraries. This firmware was designed for the FX3 SuperSpeed Explorer Kit and relies on the open source libraries provided by Cypress to operate. The firmware was written using the freely-available Cypress EZ USB Suite, allowing anyone to modify the base firmware to fit their needs. 
+The iSensor FX3 firmware is designed to provide users with a means of reliably acquiring sensor data over a high-speed USB connection in any .NET compatible application. This firmware was designed for use on the Cypress FX3 SuperSpeed Explorer Kit and relies on the open source libraries provided by Cypress to operate. The freely-available, Eclipse-based, Cypress EZ USB Suite was used for all firmware development. 
 
-The FX3 firmware is entirely event-driven and communicates with the PC using a vendor command structure. This event structure calls subroutines within the FX3 firmware to measure signals, configure SPI communication, acquire data, etc. This firmware also relies on the FX3Interface library to establish communication with the FX3 firmware. 
+## System Architecture
 
-Using both the FX3 firmware and the FX3Interface libraries enables you to acquire sensor data quickly while giving the freedom to add custom features to your interface software. 
+The iSensor FX3 firmware attempts to follow the Cypress program workflow and relies on FX3 system threading, execution priority, and event flags to execute firmware subroutines and transmit sensor data. Unique vendor commands trigger subroutines embedded in the iSensor FX3 firmware that read and write SPI data, measure external pulses, generate clock signals, and manage board configuration. Different SPI streaming modes are implemented which allow applications to easily communicate to most products in the iSensor portfolio. 
+
+A .NET-compatible API has been developed in parallel to simplify interfacing with the iSensor FX3 firmware. 
 
 ## Hardware Requirements
 
-The firmware is designed to be built and run on a Cypress SuperSpeed Explorer Kit (CYUSB3KIT-003). A breakout board designed to convert the Explorer Kit's pins to a standard, 16-pin, 2mm connector used on most iSensor evaluation should be available soon. A schematic showing how to connect iSensor products to the Explorer Kit can be found in the Documentation folder of this repository [here](https://github.com/juchong/iSensor-FX3-Firmware/tree/master/Documentation). 
+This firmware was designed using the Cypress SuperSpeed Explorer Kit (CYUSB3KIT-003), but should operate on a bare CYUSB3014 device assuming the correct hardware resources are externally available. 
 
-![FX3 Board and ADcmXL3021](Documentation/pictures/img5.jpg)
+Design files for a breakout board designed to adapt the Explorer Kit's pins to a standard, 16-pin, 2mm connector used on most iSensor evaluation boards is available in the [documentation](https://github.com/juchong/iSensor-FX3-Firmware/tree/master/Documentation) folder of this repository. 
 
-The Explorer Kit requires two jumpers to be installed before the interface library will communicate. The image below shows where the jumpers must be installed.
+![Cypress FX3 Explorer Kit connected to an ADcmXL3021 evaluation board and module](documentation/pictures/img5.jpg)
 
- ![FX3 Jumper Locations](Documentation/pictures/JumperLocations.jpg)
+## Jumper Configuration
 
-## Getting Started
+The Explorer Kit requires four jumpers to be installed such that the interface library is able to properly detect the Explorer Kit. The jumpers also enable an onboard, 3.3V regulator and set the FX3 GPIO logic. The image below shows where the jumpers must be installed.
 
-To modify the firmware, the Cypress EZ USB Suite must first be installed on the target system. This repository includes an Eclipse project file that the Cypress EZ USB Suite IDE can open. 
+ ![FX3 Jumper Locations](documentation/pictures/JumperLocations.jpg)
 
-If you would like to use the firmware (and interface library) as-is in a .NET-compatible application, the firmware image, and .dll files should be included in your project instead. An example application can be found [here](https://github.com/juchong/FX3Gui). 
+## Setting Up The Development Environment
+
+#### Firmware Environment
+
+This repository includes an eclipse `.project` file that enables easily importing the necessary code and resources into the Cypress EZ USB Suite environment. The Cypress EZ USB Suite IDE can be found on Cypress' website [here](https://www.cypress.com/documentation/software-and-drivers/ez-usb-fx3-software-development-kit). Once downloaded and installed, open the `Cypress EZ USB Suite`, Select `File -> Import -> Existing Project Into Workplace` and select the `.project` file in this repository
+
+#### .NET Environment
+
+This firmware relies heavily on the accompanying FX3 API to implement many timing-sensitive vendor commands, data transfers, etc. It is *highly* recommended that the same firmware and interface versions be used. Additional details on setting up the API development and example application environments can be found in their respective repositories. 
 
 ## Drivers
 
-USB drivers for the FX3 Explorer Kit should be installed automatically if the EZ USB Suite is installed. If you would like to communicate with the FX3 without installing the entire suite, the drivers are available on the ADI Wiki site [here](https://wiki.analog.com/_media/resources/eval/user-guides/inertial-mems/fx3driver.zip).
+As of v1.0.6, custom, signed, Analog Devices drivers must be used to communicate with the iSensor FX3 Firmware. The driver installation package can be found in the [drivers](https://github.com/juchong/iSensor-FX3-Firmware/tree/master/drivers) folder in this repository. 
 
-## Additional Repositories
+## Supporting Repositories
 
-Two additional repositories complement this firmware, the FX3Interface library containing the .NET interface software and .dlls requires to communicate with the FX3 and the example project where these libraries are implemented. Links to both of these libraries are shown below.
+The two repositories listed below were developed alongside this firmware and provide an easy way to implement iSensor FX3 Firmware features in a .NET application. It is *highly* recommended that the FX3 Firmware and API versions match!
 
-1. [FX3 Interface Library (FX3Interface)](https://github.com/juchong/iSensor-FX3-Interface)
+1. [iSensor FX3 API](https://github.com/juchong/iSensor-FX3-API)
 
-2. [FX3 ADcmXL GUI Example (FX3Gui)](https://github.com/juchong/iSensor-ADcmXL-FX3Gui)
+2. [iSensor FX3 Example Gui](https://github.com/juchong/iSensor-FX3-Example-Gui)
 
 ## Debugging
 
-Debugging on the Explorer Kit is done primarily through the UART port. Unfortunately, the onboard USB debugging connector does not work using this project due to the resources required (primarily the SPI port peripheral) by the firmware. To enable debugging, you'll need to use a USB->UART adapter (like this one) to monitor GPIO 48 and 49 (labeled DQ 30 and DQ 31 on the Explorer Kit).  
-
-## Setting Up The Build Environment
-
-1. Download the [latest version of the FX3 SDK](http://www.cypress.com/documentation/software-and-drivers/ez-usb-fx3-software-development-kit).
-
-2. Open the "Cypress EZ USB Suite"
-
-3. Select "File -> Import -> Existing Project Into Workplace" and select this repository
-
-## Supported Vendor Commands
-
-The FX3 firmware supports several custom vendor commands used to configure the SPI interface, capture data, configure FX3 settings, etc. The vendor commands and request codes are shown below (in no particular order):
-
-1. ADI_READ_BYTES
-    * Read a word at a specified address and return the data over the control endpoint
-    * Request code: 0xF0
-
-2. ADI_WRITE_BYTE
-    * Write one byte of data to a user-specified address
-    * Request code: 0xF1
-
-3. ADI_BULK_REGISTER_TRANSFER
-    * Return data over a bulk endpoint before a bulk read/write operation
-    * Request code: 0xF2
-
-4. ADI_FIRMWARE_ID_CHECK
-    * Return FX3 firmware ID
-    * Request code: 0xB0
-
-5. ADI_FIRMWARE_RESET
-    * Reset the FX3 firmware
-    * Request code: 0xB1
-
-6. ADI_SET_SPI_CONFIG
-    * Set FX3 SPI configuration
-    * Request code: 0xB2
-
-7. ADI_READ_SPI_CONFIG
-    * Return FX3 SPI configuration
-    * Request code: 0xB3
-
-8. ADI_GET_STATUS
-    * Return the current status of the FX3 firmware
-    * Request code: 0xB4
-
-9. ADI_READ_PIN
-    * Read the value of a user-specified GPIO
-    * Request code: 0xC3
-
-10. ADI_STREAM_REALTIME
-    * Start or stop a real-time stream
-    * Request code: 0xD0
-
-11. ADI_NULL_COMMAND
-    * Do nothing (default case)
-    * Request code: 0xD1
-
-12. ADI_READ_TIMER_VALUE
-    * Read the current FX3 timer register value
-    * Request code: 0xC4
-
-13. ADI_PULSE_DRIVE
-    * Drive a user-specified GPIO for a user-specified time
-    * Request code: 0xC5
-
-14. ADI_PULSE_WAIT
-    * Wait for a user-specified pin to reach a user-specified level (with timeout)
-    * Request code: 0xC6
-
-15. ADI_SET_PIN
-    * Drive a user-specified GPIO
-    * Request code: 0xC7
-
-16. ADI_MEASURE_DR
-    * Measure the pulse frequency (used for data ready) on a user-specified pin
-    * Request code: 0xC8
-
-17. ADI_STREAM_GENERIC_DATA
-    * Start or stop a generic data stream
-    * Request code: 0xC0
+Debugging on the Explorer Kit is done primarily through the UART port. Unfortunately, the onboard USB debugging connector utilizes the same FX3 GPIO pins as the SPI peripheral and will not properly function. To enable printing debugging messages, you'll need to use a USB->UART adapter [like this one](https://www.amazon.com/ADAFRUIT-Industries-954-Serial-Raspberry/dp/B00DJUHGHI/ref=sr_1_6?keywords=usb+uart&qid=1564080408&s=gateway&sr=8-6) to monitor GPIO 48 and 49 (labeled DQ30(RX) and DQ31(TX) on the Explorer Kit).  
