@@ -806,7 +806,7 @@ Public Class FX3Connection
             'Project name
             ApiInfo.Name = DllInfo.AssemblyName
             'Build version
-            ApiInfo.BuildVersion = DllInfo.Version.ToString()
+            ApiInfo.BuildVersion = DllInfo.Version.ToString() + " - PUB"
             'Project description
             ApiInfo.Description = DllInfo.Description
             'Add compile time
