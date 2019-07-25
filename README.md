@@ -36,7 +36,7 @@ This firmware relies heavily on the accompanying FX3 API to implement many timin
 
 ## Drivers
 
-As of v1.0.6, custom, signed, Analog Devices drivers must be used to communicate with the iSensor FX3 Firmware. The driver installation package can be found in the [drivers](https://github.com/juchong/iSensor-FX3-Firmware/tree/master/drivers) folder in this repository. 
+As of v1.0.6, custom, signed, Analog Devices drivers must be used to communicate with the iSensor FX3 Firmware. The driver installation package can be found in the [drivers](https://github.com/juchong/iSensor-FX3-Firmware/tree/master/drivers) folder in this repository or downloaded directly from [here](https://github.com/juchong/iSensor-FX3-Firmware/raw/master/drivers/FX3DriverSetup.exe). 
 
 ## Supporting Repositories
 
