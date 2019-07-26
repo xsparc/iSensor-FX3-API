@@ -65,6 +65,7 @@ Public Class FX3Connection
     'Event wait handle for when a board is reconnected running the ADI bootloader.
     Private m_BootloaderBoardHandle As EventWaitHandle
 
+    'Track if a board is in the process of being connected
     Private m_BoardConnecting As Boolean
 
     'Data about the active FX3 board
@@ -154,8 +155,8 @@ Public Class FX3Connection
     'Track the number of boards connected after a disconnect event
     Private m_disconnectEvents As Integer
 
-    'Track which pins are operating as a PWM pin
-    Private m_PwmPinList As List(Of IPinObject)
+    'Store PWM config info for all PWM pins
+    Private m_PinPwmInfoList As PinList
 
     'Track which pin is being used for data ready
     Private m_DrPin As IPinObject
@@ -252,7 +253,7 @@ Public Class FX3Connection
         m_BoardConnecting = False
 
         'Set the PWM pin list
-        m_PwmPinList = New List(Of IPinObject)
+        m_PinPwmInfoList = New PinList
 
         'Set default DR pin to DIO1
         m_DrPin = DIO1

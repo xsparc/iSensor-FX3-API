@@ -306,7 +306,7 @@ Partial Class FX3Connection
         Dim numBuffersRead As Integer = 0
         'List to build output buffer in USHORT format
         Dim bufferBuilder As New List(Of UShort)
-        'Int to track buffer indexrsfer sf
+        'Int to track buffer index
         Dim bufIndex As Integer = 0
         'Short value for flipping bytes
         Dim shortValue As UShort

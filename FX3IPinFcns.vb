@@ -610,9 +610,9 @@ Partial Class FX3Connection
 
         'Check that the timer complex GPIO isnt being used
         Dim pinTimerBlock As Integer = Pin.pinConfig Mod 8
-        For Each PWMPin In m_PwmPinList
-            If Not (PWMPin.pinConfig = Pin.pinConfig) And (pinTimerBlock = PWMPin.pinConfig Mod 8) Then
-                Throw New FX3ConfigurationException("ERROR: The PWM hardware for the pin selected is currently being used by pin number " + PWMPin.pinConfig.ToString())
+        For Each PWMPin In m_PinPwmInfoList
+            If Not (PWMPin.FX3GPIONumber = Pin.pinConfig) And (pinTimerBlock = PWMPin.FX3TimerBlock) Then
+                Throw New FX3ConfigurationException("ERROR: The PWM hardware for the pin selected is currently being used by pin number " + PWMPin.FX3GPIONumber.ToString())
             End If
         Next
 
@@ -673,7 +673,12 @@ Partial Class FX3Connection
         End If
 
         'Add the selected pin to the list of active PWM pins
-        m_PwmPinList.Add(Pin)
+        Dim currentPinInfo As New PinPWMInfo
+        Dim realFreq, realDutyCycle As Double
+        realFreq = baseClock / period
+        realDutyCycle = CDbl(threshold) / period
+        currentPinInfo.SetValues(Pin, Frequency, realFreq, DutyCycle, realDutyCycle)
+        m_PinPwmInfoList.AddReplace(currentPinInfo)
 
     End Sub
 
@@ -704,9 +709,9 @@ Partial Class FX3Connection
         End If
 
         'Remove pin from the PWM pin list
-        For Each PWMPin In m_PwmPinList
-            If PWMPin.pinConfig = Pin.pinConfig Then
-                m_PwmPinList.Remove(PWMPin)
+        For Each PWMPin In m_PinPwmInfoList
+            If PWMPin.FX3GPIONumber = Pin.pinConfig Then
+                m_PinPwmInfoList.Remove(PWMPin)
                 Exit For
             End If
         Next
@@ -726,14 +731,17 @@ Partial Class FX3Connection
         End If
 
         'Check that the pin is in PWM mode
-        Dim pinFound As Boolean = False
-        For Each activePWMPin In m_PwmPinList
-            If Pin.pinConfig = activePWMPin.pinConfig Then
-                pinFound = True
-                Exit For
-            End If
-        Next
-        Return pinFound
+        Return m_PinPwmInfoList.Contains(Pin)
+
+    End Function
+
+    ''' <summary>
+    ''' Allows the user to retrieve a set of information about the current pin PWM configuration.
+    ''' </summary>
+    ''' <param name="Pin">The pin to pull from the PinPWMInfo List</param>
+    ''' <returns>The PinPWMInfo corresponding to the selected pin. If the pin is not found all fields will be -1</returns>
+    Public Function GetPinPWMInfo(Pin As IPinObject) As PinPWMInfo
+        Return m_PinPwmInfoList.GetPinPWMInfo(Pin)
     End Function
 
     ''' <summary>

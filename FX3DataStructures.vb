@@ -5,6 +5,7 @@
 
 #Region "FX3Board Class"
 
+Imports AdisApi
 ''' <summary>
 ''' This class contains information about the connected FX3 board
 ''' </summary>
@@ -534,5 +535,187 @@ Public Class FX3ApiInfo
     End Function
 
 End Class
+
+#End Region
+
+#Region "PinPWMInfo Class"
+
+''' <summary>
+''' Structure which contains all the info about the PWM status of a given pin
+''' </summary>
+Public Class PinPWMInfo
+
+    'Private members
+    Private m_FX3GPIONumber As Integer
+    Private m_FX3TimerBlock As Integer
+    Private m_IdealFrequency As Double
+    Private m_RealFrequency As Double
+    Private m_IdealDutyCycle As Double
+    Private m_RealDutyCycle As Double
+
+    ''' <summary>
+    ''' Constructor sets defaults
+    ''' </summary>
+    Public Sub New()
+        'Init values
+        m_FX3GPIONumber = -1
+        m_FX3TimerBlock = -1
+        m_IdealDutyCycle = -1
+        m_RealFrequency = -1
+        m_IdealDutyCycle = -1
+        m_RealDutyCycle = -1
+    End Sub
+
+    ''' <summary>
+    ''' Overload of toString for a PinPWMInfo
+    ''' </summary>
+    ''' <returns>String with all pertinent data about the pin PWM</returns>
+    Public Overrides Function toString() As String
+        Return "Pin: " + FX3GPIONumber.ToString() + " Timer Block: " + FX3TimerBlock.ToString() + " Freq: " + IdealFrequency.ToString() + " Duty Cycle: " + IdealDutyCycle.ToString()
+    End Function
+
+    Friend Sub SetValues(Pin As IPinObject, SelectedFreq As Double, RealFreq As Double, SelectedDutyCycle As Double, RealDutyCycle As Double)
+        m_FX3GPIONumber = Pin.pinConfig And &HFF
+        m_FX3TimerBlock = m_FX3GPIONumber Mod 8
+
+        m_IdealFrequency = SelectedFreq
+        m_RealFrequency = RealFreq
+        m_IdealDutyCycle = SelectedDutyCycle
+        m_RealDutyCycle = RealDutyCycle
+
+    End Sub
+
+    ''' <summary>
+    ''' The FX3 GPIO number for the pin (0-63)
+    ''' </summary>
+    Public ReadOnly Property FX3GPIONumber As Integer
+        Get
+            Return m_FX3GPIONumber
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' The associated complex timer block used to drive the PWM signal (0-7)
+    ''' </summary>
+    Public ReadOnly Property FX3TimerBlock As Integer
+        Get
+            Return m_FX3TimerBlock
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' The selected frequency (in Hz)
+    ''' </summary>
+    Public ReadOnly Property IdealFrequency As Double
+        Get
+            Return m_IdealFrequency
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' The actual frequency the PWM signal should be (in Hz).
+    ''' </summary>
+    Public ReadOnly Property RealFrequency As Double
+        Get
+            Return m_RealFrequency
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' The selected duty cycle
+    ''' </summary>
+    Public ReadOnly Property IdealDutyCycle As Double
+        Get
+            Return m_IdealDutyCycle
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' The actual duty cycle of the PWM pin.
+    ''' </summary>
+    Public ReadOnly Property RealDutyCycle As Double
+        Get
+            Return m_RealDutyCycle
+        End Get
+    End Property
+
+End Class
+
+#End Region
+
+#Region "PinList Class"
+
+''' <summary>
+''' Custom list class to reduce 
+''' </summary>
+Public Class PinList
+    Inherits List(Of PinPWMInfo)
+
+    ''' <summary>
+    ''' Adds a pin to the list. Replaces any existing pin with the same FX3 GPIO number.
+    ''' </summary>
+    ''' <param name="Pin">The PinPWMInfo to add</param>
+    Public Sub AddReplace(Pin As PinPWMInfo)
+        For Each value In Me
+            If value.FX3GPIONumber = Pin.FX3GPIONumber Then
+                'If the pin is already in the list replace it
+                Remove(value)
+                Add(Pin)
+                Exit Sub
+            End If
+        Next
+        'If the pin doesn't already exist in the list add it
+        Add(Pin)
+    End Sub
+
+    ''' <summary>
+    ''' Gets the info for the selected pin
+    ''' </summary>
+    ''' <param name="Pin">The pin to get the info for, as an IPinObject</param>
+    ''' <returns>The pin info, as PinPWMInfo. Will have -1 for all fields if not found</returns>
+    Public Function GetPinPWMInfo(Pin As IPinObject) As PinPWMInfo
+        Return GetPinPWMInfo(Pin.pinConfig)
+    End Function
+
+    ''' <summary>
+    ''' Gets the info for the selected pin
+    ''' </summary>
+    ''' <param name="Pin">The pin to get the info for, as a UInteger (FX3 GPIO number)</param>
+    ''' <returns>The pin info, as PinPWMInfo. Will have -1 for all fields if not found</returns>
+    Public Function GetPinPWMInfo(Pin As UInteger) As PinPWMInfo
+        For Each value In Me
+            If value.FX3GPIONumber = Pin Then
+                Return value
+            End If
+        Next
+        'Return new if not in the list
+        Return New PinPWMInfo()
+    End Function
+
+    ''' <summary>
+    ''' Overload of contains which checks if the list contains the given Pin
+    ''' </summary>
+    ''' <param name="Pin">The pin to look for (As IPinObject)</param>
+    ''' <returns>If the pin is contained in the list</returns>
+    Public Overloads Function Contains(Pin As IPinObject) As Boolean
+        Return Me.Contains(Pin.pinConfig)
+    End Function
+
+    ''' <summary>
+    ''' Overload of contains which checks if the list contains the given Pin
+    ''' </summary>
+    ''' <param name="Pin">The pin to look for (As Integer)</param>
+    ''' <returns>If the pin is contained in the list</returns>
+    Public Overloads Function Contains(Pin As UInteger) As Boolean
+        For Each value In Me
+            If value.FX3GPIONumber = Pin Then
+                Return True
+            End If
+        Next
+        Return False
+    End Function
+
+End Class
+
 
 #End Region
