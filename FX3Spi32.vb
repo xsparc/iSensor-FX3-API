@@ -291,6 +291,10 @@ Partial Class FX3Connection
         End Set
     End Property
 
+    ''' <summary>
+    ''' This property is used to get or set the data ready pin. Is tied to the ReadyPin property
+    ''' </summary>
+    ''' <returns></returns>
     Public Property DrPin As IPinObject Implements ISpi32Interface.DrPin
         Get
             Return ReadyPin
