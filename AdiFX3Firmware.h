@@ -338,6 +338,14 @@ struct BoardConfig
 #define ADI_BURST_STREAM_ENABLE					(1 << 12)
 
 /*
+ * Stream action commands
+ */
+
+#define ADI_STREAM_DONE_CMD						0
+#define ADI_STREAM_START_CMD					1
+#define ADI_STREAM_STOP_CMD						2
+
+/*
  * ADI GPIO Event Handler Definitions
  */
 #define ADI_DIO1_INTERRUPT_FLAG					(1 << 0)
