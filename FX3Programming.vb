@@ -780,6 +780,14 @@ Partial Class FX3Connection
         Dim startTime As New Stopwatch
         Dim validTransfer As Boolean = True
 
+        'Aquire the control endpoint mutex
+        validTransfer = m_ControlMutex.WaitOne(Timeout)
+        'Return if the mutex cannot be aquired
+        If Not validTransfer Then
+            Console.WriteLine("Could not acquire control endpoint mutex lock")
+            Return False
+        End If
+
         'Point the API to the target FX3
         FX3ControlEndPt = m_ActiveFX3.ControlEndPt
 
@@ -788,17 +796,18 @@ Partial Class FX3Connection
         validTransfer = FX3ControlEndPt.XferData(Buf, NumBytes)
         startTime.Stop()
 
-        'Check transfer status
-        If Not validTransfer Then
-            Return False
-        End If
-
         'Check and see if timeout expired
         If startTime.ElapsedMilliseconds() > Timeout Then
-            Return False
+            validTransfer = False
         Else
-            Return True
+            validTransfer = True
         End If
+
+        'Release the mutex
+        m_ControlMutex.ReleaseMutex()
+
+        'Return the transfer status
+        Return validTransfer
 
     End Function
 

@@ -17,6 +17,15 @@ Public Enum EndpointAddresses
 End Enum
 
 ''' <summary>
+''' This enum lists all the available streaming commands which can be sent to the FX3 (in the endpoint index)
+''' </summary>
+Public Enum StreamCommands
+    ADI_STREAM_DONE_CMD = 0
+    ADI_STREAM_START_CMD = 1
+    ADI_STREAM_STOP_CMD = 2
+End Enum
+
+''' <summary>
 ''' This enum lists all supported vendor commands for the FX3 firmware. The LED commands can only be used with the ADI bootloader firmware.
 ''' </summary>
 Public Enum USBCommands
@@ -299,7 +308,7 @@ Public Class FX3SPIConfig
             DrActive = False
             DrPolarity = True
             DataReadyPinFX3GPIO = 3
-            TimerTickScaleFactor = 1000
+            TimerTickScaleFactor = 10000
         Else
             ClockFrequency = 2000000
             WordLength = 8
@@ -316,7 +325,7 @@ Public Class FX3SPIConfig
             DrActive = True
             DrPolarity = True
             DataReadyPinFX3GPIO = 4
-            TimerTickScaleFactor = 1000
+            TimerTickScaleFactor = 10000
         End If
 
     End Sub

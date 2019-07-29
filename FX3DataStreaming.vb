@@ -20,11 +20,6 @@ Partial Class FX3Connection
         'Buffer to store command data
         Dim buf(8) As Byte
 
-        'Wait for previous stream thread to exit, if any
-        m_StreamThreadRunning = False
-        While Not m_StreamThreadTerminated
-        End While
-
         'Send number of buffers to read
         buf(0) = numBuffers And &HFF
         buf(1) = (numBuffers And &HFF00) >> 8
@@ -44,7 +39,7 @@ Partial Class FX3Connection
 
         ConfigureControlEndpoint(USBCommands.ADI_STREAM_BURST_DATA, True)
         m_ActiveFX3.ControlEndPt.Value = 0 'DNC
-        m_ActiveFX3.ControlEndPt.Index = 1 'Start stream
+        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_START_CMD 'Start stream
 
         'Send start stream command to the DUT
         If Not XferControlData(buf, 8, 2000) Then
@@ -77,7 +72,7 @@ Partial Class FX3Connection
         'Configure the endpoint
         ConfigureControlEndpoint(USBCommands.ADI_STREAM_BURST_DATA, False)
         m_ActiveFX3.ControlEndPt.Value = 0
-        m_ActiveFX3.ControlEndPt.Index = 0
+        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_STOP_CMD
 
         'Stop the stream manager thread
         m_StreamThreadRunning = False
@@ -85,6 +80,29 @@ Partial Class FX3Connection
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 2000) Then
             Throw New FX3CommunicationException("ERROR: Timeout occured while stopping burst stream")
+        End If
+
+    End Sub
+
+    Private Sub BurstStreamDone()
+        'Buffer to store command data
+        Dim buf(3) As Byte
+        Dim status As UInteger
+
+        'Configure the endpoint
+        ConfigureControlEndpoint(USBCommands.ADI_STREAM_BURST_DATA, False)
+        m_ActiveFX3.ControlEndPt.Value = 0
+        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_DONE_CMD
+
+        'Send command to the DUT to stop streaming data
+        If Not XferControlData(buf, 4, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Timeout occured when cleaning up a burst stream thread on the FX3")
+        End If
+
+        'Read status from the buffer and throw exception for bad status
+        status = BitConverter.ToUInt32(buf, 0)
+        If Not status = 0 Then
+            Throw New FX3BadStatusException("ERROR: Failed to set stream done event, status: " + status.ToString("X4"))
         End If
 
     End Sub
@@ -131,9 +149,14 @@ Partial Class FX3Connection
         'Determine the frame length (in bytes) based on configured word count plus trigger word
         frameLength = (m_WordCount * 2) + 2
 
+        'Wait for previous stream thread to exit, if any
+        m_StreamThreadRunning = False
+
+        'Wait until a lock can be acquired on the streaming end point
+        m_StreamMutex.WaitOne()
+
         'Set the stream thread running state variable
         m_StreamThreadRunning = True
-        m_StreamThreadTerminated = False
         framesCounter = 0
 
         While m_StreamThreadRunning
@@ -164,11 +187,13 @@ Partial Class FX3Connection
                         'Exit if the total number of buffers has been read
                         If framesCounter >= m_TotalBuffersToRead Then
                             'Stop streaming
+                            BurstStreamDone()
                             Exit While
                         End If
                     End If
                 Next
             Else
+                Console.WriteLine("Transfer failed during burst stream. Error code: " + StreamingEndPt.LastError.ToString() + " (0x" + StreamingEndPt.LastError.ToString("X4") + ")")
                 'Exit streaming mode if the transfer fails
                 Exit While
             End If
@@ -176,7 +201,13 @@ Partial Class FX3Connection
 
         'Update m_StreamThreadRunning state variable
         m_StreamThreadRunning = False
-        m_StreamThreadTerminated = True
+
+        'Release the mutex
+        m_StreamMutex.ReleaseMutex()
+
+    End Sub
+
+    Private Sub ValidateBurstStreamConfig()
 
     End Sub
 
@@ -195,7 +226,7 @@ Partial Class FX3Connection
         'Configure the control endpoint
         ConfigureControlEndpoint(USBCommands.ADI_STREAM_GENERIC_DATA, False)
         m_ActiveFX3.ControlEndPt.Value = 0
-        m_ActiveFX3.ControlEndPt.Index = 0
+        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_STOP_CMD
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 2000) Then
@@ -204,6 +235,29 @@ Partial Class FX3Connection
 
         'Stop the stream manager thread
         m_StreamThreadRunning = False
+
+    End Sub
+
+    Private Sub GenericStreamDone()
+        'Buffer to hold command data
+        Dim buf(3) As Byte
+        Dim status As UInteger
+
+        'Configure the control endpoint
+        ConfigureControlEndpoint(USBCommands.ADI_STREAM_GENERIC_DATA, False)
+        m_ActiveFX3.ControlEndPt.Value = 0
+        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_DONE_CMD
+
+        'Send command to the DUT to stop streaming data
+        If Not XferControlData(buf, 4, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Timeout occured when cleaning up a generic stream thread on the FX3")
+        End If
+
+        'Read status from the buffer and throw exception for bad status
+        status = BitConverter.ToUInt32(buf, 0)
+        If Not status = 0 Then
+            Throw New FX3BadStatusException("ERROR: Failed to set stream done event, status: " + status.ToString("X4"))
+        End If
 
     End Sub
 
@@ -279,11 +333,11 @@ Partial Class FX3Connection
 
         'Configure settings to enable/disable streaming
         m_ActiveFX3.ControlEndPt.Value = 0
-        m_ActiveFX3.ControlEndPt.Index = 1
+        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_START_CMD
 
         'Send start command to the FX3
         If Not XferControlData(buf.ToArray(), buf.Count, 5000) Then
-            Throw New FX3CommunicationException("ERROR: Control Endpoint transfer timed out")
+            Throw New FX3CommunicationException("ERROR: Control Endpoint transfer timed out when starting generic stream")
         End If
 
         'Start the Generic Stream Thread
@@ -324,8 +378,13 @@ Partial Class FX3Connection
         'Buffer to hold data from the FX3
         Dim buf(transferSize - 1) As Byte
 
+        'Wait for previous stream thread to exit, if any
+        m_StreamThreadRunning = False
+
+        'Wait until a lock can be acquired on the streaming end point
+        m_StreamMutex.WaitOne()
+
         'Set the thread state flags
-        m_StreamThreadTerminated = False
         m_StreamThreadRunning = True
 
         While m_StreamThreadRunning
@@ -349,21 +408,31 @@ Partial Class FX3Connection
                         If (transferSize - bufIndex) < BytesPerBuffer And Not (BytesPerBuffer > transferSize) Then
                             Exit For
                         End If
-                        'Exit while loop if the total number of buffers has been read
+                        'Finish the stream if the total number of buffers has been read
                         If numBuffersRead >= m_TotalBuffersToRead Then
+                            'Stop the stream
+                            GenericStreamDone()
+                            'Exit the while loop
                             Exit While
                         End If
                     End If
                 Next
             Else
                 'Exit for a failed data transfer
+                Console.WriteLine("Transfer failed during generic stream. Error code: " + StreamingEndPt.LastError.ToString() + " (0x" + StreamingEndPt.LastError.ToString("X4") + ")")
                 Exit While
             End If
         End While
 
         'Set thread state flags
-        m_StreamThreadTerminated = True
         m_StreamThreadRunning = False
+
+        'Release the mutex
+        m_StreamMutex.ReleaseMutex()
+
+    End Sub
+
+    Private Sub ValidateGenericStreamConfig()
 
     End Sub
 
@@ -379,10 +448,8 @@ Partial Class FX3Connection
         'Buffer to store command data
         Dim buf(4) As Byte
 
-        'Wait for previous stream thread to exit, if any
-        m_StreamThreadRunning = False
-        While Not m_StreamThreadTerminated
-        End While
+        'Validate the current FX3 settings
+        ValidateRealTimeStreamConfig()
 
         buf(0) = numFrames And &HFF
         buf(1) = (numFrames And &HFF00) >> 8
@@ -396,7 +463,7 @@ Partial Class FX3Connection
         'Configure the control endpoint
         ConfigureControlEndpoint(USBCommands.ADI_STREAM_REALTIME, True)
         m_ActiveFX3.ControlEndPt.Value = m_pinExit
-        m_ActiveFX3.ControlEndPt.Index = 1
+        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_START_CMD
 
         'Send start stream command to the DUT
         If Not XferControlData(buf, 5, 2000) Then
@@ -427,13 +494,10 @@ Partial Class FX3Connection
         'Buffer to hold command data
         Dim buf(3) As Byte
 
-        'Validate the current FX3 settings
-        ValidateRealTimeStreamConfig()
-
         'Configure the control endpoint
         ConfigureControlEndpoint(USBCommands.ADI_STREAM_REALTIME, False)
         m_ActiveFX3.ControlEndPt.Value = m_pinExit
-        m_ActiveFX3.ControlEndPt.Index = 0
+        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_STOP_CMD
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 2000) Then
@@ -442,6 +506,29 @@ Partial Class FX3Connection
 
         'Stop the stream manager thread
         m_StreamThreadRunning = False
+
+    End Sub
+
+    Private Sub RealTimeStreamingDone()
+        'Buffer to hold command data
+        Dim buf(3) As Byte
+        Dim status As UInteger
+
+        'Configure the control endpoint
+        ConfigureControlEndpoint(USBCommands.ADI_STREAM_REALTIME, False)
+        m_ActiveFX3.ControlEndPt.Value = m_pinExit
+        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_DONE_CMD
+
+        'Send command to the DUT to stop streaming data
+        If Not XferControlData(buf, 4, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Timeout occured when cleaning up a real time stream thread on the FX3")
+        End If
+
+        'Read status from the buffer and throw exception for bad status
+        status = BitConverter.ToUInt32(buf, 0)
+        If Not status = 0 Then
+            Throw New FX3BadStatusException("ERROR: Failed to set stream done event, status: " + status.ToString("X4"))
+        End If
 
     End Sub
 
@@ -498,9 +585,14 @@ Partial Class FX3Connection
             frameLength = 64 * 3 + 8 '200
         End If
 
+        'Wait for previous stream thread to exit, if any
+        m_StreamThreadRunning = False
+
+        'Wait until a lock can be acquired on the streaming end point
+        m_StreamMutex.WaitOne()
+
         'Set the stream thread running state variable
         m_StreamThreadRunning = True
-        m_StreamThreadTerminated = False
         framesCounter = 0
 
         While m_StreamThreadRunning
@@ -527,19 +619,23 @@ Partial Class FX3Connection
                         'Check that the total number of specified frames hasn't been read
                         If framesCounter >= m_TotalBuffersToRead Then
                             'Stop streaming
+                            RealTimeStreamingDone()
                             Exit While
                         End If
                     End If
                 Next
             Else
                 'Exit streaming mode if the transfer fails
+                Console.WriteLine("Transfer failed during AdCMXL real time stream. Error code: " + StreamingEndPt.LastError.ToString() + " (0x" + StreamingEndPt.LastError.ToString("X4") + ")")
                 Exit While
             End If
         End While
 
         'Update m_StreamThreadRunning state variable
         m_StreamThreadRunning = False
-        m_StreamThreadTerminated = True
+
+        'Release the mutex
+        m_StreamMutex.ReleaseMutex()
 
     End Sub
 
@@ -599,6 +695,13 @@ Partial Class FX3Connection
     ''' real time streaming mode. If the settings are not compatible, a FX3ConfigException is thrown.
     ''' </summary>
     Private Sub ValidateRealTimeStreamConfig()
+
+        'SCLK
+        If m_FX3SPIConfig.SCLKFrequency < 8000000 Then
+            Throw New FX3ConfigurationException("ERROR: Invalid SPI frequency for real time streaming")
+        End If
+
+        'Word length
 
     End Sub
 

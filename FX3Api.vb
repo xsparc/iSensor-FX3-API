@@ -116,8 +116,11 @@ Public Class FX3Connection
     'Boolean to track if the streaming thread is currently running
     Private m_StreamThreadRunning As Boolean
 
-    'Boolean to track if current thread has exited
-    Private m_StreamThreadTerminated As Boolean
+    'Mutex lock for the streaming endpoint
+    Private m_StreamMutex As Mutex
+
+    'Mutex for locking the control endpoint
+    Private m_ControlMutex As Mutex
 
     'The total number of buffers to read in real time stream (AdcmXLx021 or IMU)
     Private m_TotalBuffersToRead As Integer = 0
@@ -157,9 +160,6 @@ Public Class FX3Connection
 
     'Store PWM config info for all PWM pins
     Private m_PinPwmInfoList As PinList
-
-    'Track which pin is being used for data ready
-    Private m_DrPin As IPinObject
 
     'Events
 
@@ -241,10 +241,13 @@ Public Class FX3Connection
 
         'Set streaming variables
         m_StreamThreadRunning = False
-        m_StreamThreadTerminated = True
+        m_StreamMutex = New Mutex()
         m_TotalBuffersToRead = 0
         m_numBadFrames = 0
         m_StreamTimeout = 5
+
+        'Initialize control endpoint mutex
+        m_ControlMutex = New Mutex()
 
         'Set timer
         m_streamTimeoutTimer = New Stopwatch()
@@ -254,9 +257,6 @@ Public Class FX3Connection
 
         'Set the PWM pin list
         m_PinPwmInfoList = New PinList
-
-        'Set default DR pin to DIO1
-        m_DrPin = DIO1
 
     End Sub
 
