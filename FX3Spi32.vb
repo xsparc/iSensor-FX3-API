@@ -244,19 +244,16 @@ Partial Class FX3Connection
         'Set the stream running flags
         m_StreamThreadRunning = True
         m_FramesRead = 0
-        m_StreamThreadTerminated = False
 
         'Create the 32 bit data queue
         m_TransferStreamData = New ConcurrentQueue(Of UInteger())
 
         m_StreamThreadRunning = True
-        m_StreamThreadTerminated = False
         While m_StreamThreadRunning
 
         End While
 
         'Set exit flag
-        m_StreamThreadTerminated = True
 
     End Sub
 
@@ -296,14 +293,10 @@ Partial Class FX3Connection
 
     Public Property DrPin As IPinObject Implements ISpi32Interface.DrPin
         Get
-            Return m_DrPin
+            Return ReadyPin
         End Get
         Set(value As IPinObject)
-            If Not IsFX3Pin(value) Then
-                Throw New FX3ConfigurationException("ERROR: All pins used with the FX3 Api must be of type FX3PinObject")
-            Else
-                m_DrPin = value
-            End If
+            ReadyPin = value
         End Set
     End Property
 
