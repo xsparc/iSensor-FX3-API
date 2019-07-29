@@ -3,83 +3,7 @@
 'Date:         7/31/2018     
 'Description:  Collection of helper data structures used in the FX3Connection 
 
-#Region "FX3Board Class"
-
 Imports AdisApi
-''' <summary>
-''' This class contains information about the connected FX3 board
-''' </summary>
-Public Class FX3Board
-
-    'Private member variables
-    Private m_SerialNumber As String
-    Private m_bootTime As DateTime
-    Private m_firmwareVersion As String
-
-    Public Sub New(ByVal SerialNumber As String, ByVal BootTime As DateTime)
-
-        'set the serial number string
-        m_SerialNumber = SerialNumber
-
-        'Set the boot time
-        m_bootTime = BootTime
-
-    End Sub
-
-    'Public interfaces
-
-    ''' <summary>
-    ''' Override of the ToString function
-    ''' </summary>
-    ''' <returns></returns>
-    Public Overrides Function ToString() As String
-        Return "Firmware Version: " + FirmwareVersion + Environment.NewLine + "Serial Number: " + SerialNumber + Environment.NewLine + "Uptime: " + Uptime.ToString() + "ms"
-    End Function
-
-    ''' <summary>
-    ''' Readonly property to get the current board uptime
-    ''' </summary>
-    ''' <returns>The board uptime, in ms, as a long</returns>
-    Public ReadOnly Property Uptime As Long
-        Get
-            Return CLng(DateTime.Now.Subtract(m_bootTime).TotalMilliseconds)
-        End Get
-    End Property
-
-    ''' <summary>
-    ''' Readonly property to get the active FX3 serial number
-    ''' </summary>
-    ''' <returns>The board serial number, as a string</returns>
-    Public ReadOnly Property SerialNumber As String
-        Get
-            Return m_SerialNumber
-        End Get
-    End Property
-
-    ''' <summary>
-    ''' Readonly property to get the current application firmware version on the FX3
-    ''' </summary>
-    ''' <returns>The firmware version, as a string</returns>
-    Public ReadOnly Property FirmwareVersion As String
-        Get
-            Return m_firmwareVersion
-        End Get
-    End Property
-
-    ''' <summary>
-    ''' Set the firmware version. Is friend so as to not be accessible to outside classes.
-    ''' </summary>
-    ''' <param name="FirmwareVersion">The firmware version to set, as a string</param>
-    Friend Sub SetFirmwareVersion(ByVal FirmwareVersion As String)
-        If IsNothing(FirmwareVersion) Or FirmwareVersion = "" Then
-            Throw New FX3ConfigurationException("Error: Bad firmware version number")
-        End If
-        m_firmwareVersion = FirmwareVersion
-    End Sub
-
-End Class
-
-#End Region
 
 #Region "Enums"
 
@@ -717,5 +641,81 @@ Public Class PinList
 
 End Class
 
+
+#End Region
+
+#Region "FX3Board Class"
+''' <summary>
+''' This class contains information about the connected FX3 board
+''' </summary>
+Public Class FX3Board
+
+    'Private member variables
+    Private m_SerialNumber As String
+    Private m_bootTime As DateTime
+    Private m_firmwareVersion As String
+
+    Public Sub New(ByVal SerialNumber As String, ByVal BootTime As DateTime)
+
+        'set the serial number string
+        m_SerialNumber = SerialNumber
+
+        'Set the boot time
+        m_bootTime = BootTime
+
+    End Sub
+
+    'Public interfaces
+
+    ''' <summary>
+    ''' Override of the ToString function
+    ''' </summary>
+    ''' <returns></returns>
+    Public Overrides Function ToString() As String
+        Return "Firmware Version: " + FirmwareVersion + Environment.NewLine + "Serial Number: " + SerialNumber + Environment.NewLine + "Uptime: " + Uptime.ToString() + "ms"
+    End Function
+
+    ''' <summary>
+    ''' Readonly property to get the current board uptime
+    ''' </summary>
+    ''' <returns>The board uptime, in ms, as a long</returns>
+    Public ReadOnly Property Uptime As Long
+        Get
+            Return CLng(DateTime.Now.Subtract(m_bootTime).TotalMilliseconds)
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' Readonly property to get the active FX3 serial number
+    ''' </summary>
+    ''' <returns>The board serial number, as a string</returns>
+    Public ReadOnly Property SerialNumber As String
+        Get
+            Return m_SerialNumber
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' Readonly property to get the current application firmware version on the FX3
+    ''' </summary>
+    ''' <returns>The firmware version, as a string</returns>
+    Public ReadOnly Property FirmwareVersion As String
+        Get
+            Return m_firmwareVersion
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' Set the firmware version. Is friend so as to not be accessible to outside classes.
+    ''' </summary>
+    ''' <param name="FirmwareVersion">The firmware version to set, as a string</param>
+    Friend Sub SetFirmwareVersion(ByVal FirmwareVersion As String)
+        If IsNothing(FirmwareVersion) Or FirmwareVersion = "" Then
+            Throw New FX3ConfigurationException("Error: Bad firmware version number")
+        End If
+        m_firmwareVersion = FirmwareVersion
+    End Sub
+
+End Class
 
 #End Region
