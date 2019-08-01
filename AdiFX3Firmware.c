@@ -27,13 +27,13 @@
 CyU3PThread StreamThread;
 
 /*Thread for the main application */
-CyU3PThread appThread;
+CyU3PThread AppThread;
 
 /*ADI event structure */
-CyU3PEvent eventHandler;
+CyU3PEvent EventHandler;
 
 /*ADI GPIO event structure */
-CyU3PEvent gpioHandler;
+CyU3PEvent GpioHandler;
 
 /*
  * DMA Channel Definitions
@@ -77,7 +77,7 @@ const uint8_t FirmwareID[32] __attribute__ ((aligned (32))) = { 'A', 'D', 'I', '
 /*Constant error string used to write "ERROR" to output buffer */
 const uint8_t ErrorString[16] __attribute__ ((aligned (16))) = { 'E', 'R', 'R', 'O', 'R', '\0'};
 
-/*Constant FX3 unique serial number */
+/*FX3 unique serial number */
 char serial_number[] __attribute__ ((aligned (32))) = {
 	    '0',0x00,'0',0x00,'0',0x00,'0',0x00,
 	    '0',0x00,'0',0x00,'0',0x00,'0',0x00,
@@ -309,11 +309,11 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	switch(wIndex)
             	{
             	case ADI_STREAM_START_CMD:
-            		status = CyU3PEventSet(&eventHandler, ADI_GENERIC_STREAMING_START, CYU3P_EVENT_OR);
+            		status = CyU3PEventSet(&EventHandler, ADI_GENERIC_STREAMING_START, CYU3P_EVENT_OR);
             		StreamThreadState.TransferByteLength = wLength;
             		break;
             	case ADI_STREAM_DONE_CMD:
-            		status = CyU3PEventSet(&eventHandler, ADI_GENERIC_STREAMING_DONE, CYU3P_EVENT_OR);
+            		status = CyU3PEventSet(&EventHandler, ADI_GENERIC_STREAMING_DONE, CYU3P_EVENT_OR);
                 	USBBuffer[0] = status & 0xFF;
                 	USBBuffer[1] = (status & 0xFF00) >> 8;
                 	USBBuffer[2] = (status & 0xFF0000) >> 16;
@@ -321,7 +321,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
                 	CyU3PUsbSendEP0Data (wLength, USBBuffer);
             		break;
             	case ADI_STREAM_STOP_CMD:
-            		status = CyU3PEventSet(&eventHandler, ADI_GENERIC_STREAMING_STOP, CYU3P_EVENT_OR);
+            		status = CyU3PEventSet(&EventHandler, ADI_GENERIC_STREAMING_STOP, CYU3P_EVENT_OR);
             		break;
             	default:
             		CyU3PDebugPrint (4, "ERROR: Unknown Stream Command: %d\r\n", wIndex);
@@ -341,10 +341,10 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	switch(wIndex)
             	{
             	case ADI_STREAM_START_CMD:
-            		status = CyU3PEventSet(&eventHandler, ADI_BURST_STREAMING_START, CYU3P_EVENT_OR);
+            		status = CyU3PEventSet(&EventHandler, ADI_BURST_STREAMING_START, CYU3P_EVENT_OR);
             		break;
             	case ADI_STREAM_DONE_CMD:
-            		status = CyU3PEventSet(&eventHandler, ADI_BURST_STREAMING_DONE, CYU3P_EVENT_OR);
+            		status = CyU3PEventSet(&EventHandler, ADI_BURST_STREAMING_DONE, CYU3P_EVENT_OR);
                 	USBBuffer[0] = status & 0xFF;
                 	USBBuffer[1] = (status & 0xFF00) >> 8;
                 	USBBuffer[2] = (status & 0xFF0000) >> 16;
@@ -352,7 +352,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
                 	CyU3PUsbSendEP0Data (wLength, USBBuffer);
             		break;
             	case ADI_STREAM_STOP_CMD:
-            		status = CyU3PEventSet(&eventHandler, ADI_BURST_STREAMING_STOP, CYU3P_EVENT_OR);
+            		status = CyU3PEventSet(&EventHandler, ADI_BURST_STREAMING_STOP, CYU3P_EVENT_OR);
             		break;
             	default:
             		CyU3PDebugPrint (4, "ERROR: Unknown Stream Command: %d\r\n", wIndex);
@@ -372,10 +372,10 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 				{
 				case ADI_STREAM_START_CMD:
 					StreamThreadState.PinExitEnable = (CyBool_t) wValue;
-					status = CyU3PEventSet(&eventHandler, ADI_RT_STREAMING_START, CYU3P_EVENT_OR);
+					status = CyU3PEventSet(&EventHandler, ADI_RT_STREAMING_START, CYU3P_EVENT_OR);
 					break;
 				case ADI_STREAM_DONE_CMD:
-					status = CyU3PEventSet(&eventHandler, ADI_RT_STREAMING_DONE, CYU3P_EVENT_OR);
+					status = CyU3PEventSet(&EventHandler, ADI_RT_STREAMING_DONE, CYU3P_EVENT_OR);
 	            	USBBuffer[0] = status & 0xFF;
 	            	USBBuffer[1] = (status & 0xFF00) >> 8;
 	            	USBBuffer[2] = (status & 0xFF0000) >> 16;
@@ -383,7 +383,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 	            	CyU3PUsbSendEP0Data (wLength, USBBuffer);
 					break;
 				case ADI_STREAM_STOP_CMD:
-					status = CyU3PEventSet(&eventHandler, ADI_RT_STREAMING_STOP, CYU3P_EVENT_OR);
+					status = CyU3PEventSet(&EventHandler, ADI_RT_STREAMING_STOP, CYU3P_EVENT_OR);
 					break;
 				default:
 					CyU3PDebugPrint (4, "ERROR: Unknown Stream Command: %d\r\n", wIndex);
@@ -1571,7 +1571,7 @@ CyU3PReturnStatus_t AdiWaitForPin(uint32_t pinNumber, CyU3PGpioIntrMode_t interr
 		//Enable GPIO interrupts (in case it's not enabled)
 		CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
 		//Wait for GPIO interrupt flag
-		status = CyU3PEventGet(&gpioHandler, pinNumber, CYU3P_EVENT_OR_CLEAR, &gpioEventFlag, timeoutTicks);
+		status = CyU3PEventGet(&GpioHandler, pinNumber, CYU3P_EVENT_OR_CLEAR, &gpioEventFlag, timeoutTicks);
 		//Disable GPIO interrupts until we need them again
 		CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
 	}
@@ -1892,7 +1892,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	CyU3PDmaChannelSetXfer(&StreamingChannel, 0);
 
 	//Set the real-time data capture thread flag
-	CyU3PEventSet (&eventHandler, ADI_REAL_TIME_STREAM_ENABLE, CYU3P_EVENT_OR);
+	CyU3PEventSet (&EventHandler, ADI_REAL_TIME_STREAM_ENABLE, CYU3P_EVENT_OR);
 
 	return status;
 }
@@ -2151,7 +2151,7 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	}
 
 	/* Set the burst stream flag to notify the streaming thread it should take over */
-	CyU3PEventSet (&eventHandler, ADI_BURST_STREAM_ENABLE, CYU3P_EVENT_OR);
+	CyU3PEventSet (&EventHandler, ADI_BURST_STREAM_ENABLE, CYU3P_EVENT_OR);
 
 	return status;
 }
@@ -2365,7 +2365,7 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = (FX3State.StallTime * 10) - ADI_GENERIC_STALL_OFFSET + 1;
 
 	//Enable generic data capture thread
-	status = CyU3PEventSet (&eventHandler, ADI_GENERIC_STREAM_ENABLE, CYU3P_EVENT_OR);
+	status = CyU3PEventSet (&EventHandler, ADI_GENERIC_STREAM_ENABLE, CYU3P_EVENT_OR);
 
 	return status;
 
@@ -3116,7 +3116,7 @@ CyBool_t AdiLPMRequestHandler(CyU3PUsbLinkPowerMode link_mode)
 /*
  * Function: AdiGPIOEventHandler(uint8_t gpioId)
  *
- * This function handles GPIO interrupts and sets the appropriate flag in gpioHandler.
+ * This function handles GPIO interrupts and sets the appropriate flag in GpioHandler.
  *
  * gpioId: The pin number of the pin which generated the interrupt
  *
@@ -3133,35 +3133,35 @@ void AdiGPIOEventHandler(uint8_t gpioId)
     	switch(gpioId)
     	{
     		case ADI_PIN_DIO1:
-    			CyU3PEventSet(&gpioHandler, ADI_PIN_DIO1, CYU3P_EVENT_OR);
+    			CyU3PEventSet(&GpioHandler, ADI_PIN_DIO1, CYU3P_EVENT_OR);
     			break;
 
     		case ADI_PIN_DIO2:
-				CyU3PEventSet(&gpioHandler, ADI_PIN_DIO2, CYU3P_EVENT_OR);
+				CyU3PEventSet(&GpioHandler, ADI_PIN_DIO2, CYU3P_EVENT_OR);
 				break;
 
     		case ADI_PIN_DIO3:
-				CyU3PEventSet(&gpioHandler, ADI_PIN_DIO3, CYU3P_EVENT_OR);
+				CyU3PEventSet(&GpioHandler, ADI_PIN_DIO3, CYU3P_EVENT_OR);
 				break;
 
     		case ADI_PIN_DIO4:
-				CyU3PEventSet(&gpioHandler, ADI_PIN_DIO4, CYU3P_EVENT_OR);
+				CyU3PEventSet(&GpioHandler, ADI_PIN_DIO4, CYU3P_EVENT_OR);
 				break;
 
     		case FX3_PIN_GPIO1:
-				CyU3PEventSet(&gpioHandler, FX3_PIN_GPIO1, CYU3P_EVENT_OR);
+				CyU3PEventSet(&GpioHandler, FX3_PIN_GPIO1, CYU3P_EVENT_OR);
 				break;
 
     		case FX3_PIN_GPIO2:
-				CyU3PEventSet(&gpioHandler, FX3_PIN_GPIO2, CYU3P_EVENT_OR);
+				CyU3PEventSet(&GpioHandler, FX3_PIN_GPIO2, CYU3P_EVENT_OR);
 				break;
 
     		case FX3_PIN_GPIO3:
-				CyU3PEventSet(&gpioHandler, FX3_PIN_GPIO3, CYU3P_EVENT_OR);
+				CyU3PEventSet(&GpioHandler, FX3_PIN_GPIO3, CYU3P_EVENT_OR);
 				break;
 
     		case FX3_PIN_GPIO4:
-				CyU3PEventSet(&gpioHandler, FX3_PIN_GPIO4, CYU3P_EVENT_OR);
+				CyU3PEventSet(&GpioHandler, FX3_PIN_GPIO4, CYU3P_EVENT_OR);
 				break;
 
     		default:
@@ -3203,7 +3203,7 @@ void AdiStreamThreadEntry(uint32_t input)
 	for (;;)
 	{
 		//Wait indefinitely for any flag to be set
-		if (CyU3PEventGet (&eventHandler, eventMask, CYU3P_EVENT_OR_CLEAR, &eventFlag, CYU3P_WAIT_FOREVER) == CY_U3P_SUCCESS)
+		if (CyU3PEventGet (&EventHandler, eventMask, CYU3P_EVENT_OR_CLEAR, &eventFlag, CYU3P_WAIT_FOREVER) == CY_U3P_SUCCESS)
 		{
 			/* Generic register stream case */
 			if (eventFlag & ADI_GENERIC_STREAM_ENABLE)
@@ -3315,7 +3315,7 @@ void AdiStreamThreadEntry(uint32_t input)
 					//Set stream done flag if kill early event was processed (otherwise must be explicitly invoked by FX3 API)
 					if(KillStreamEarly)
 					{
-						CyU3PEventSet (&eventHandler, ADI_GENERIC_STREAMING_DONE, CYU3P_EVENT_OR);
+						CyU3PEventSet (&EventHandler, ADI_GENERIC_STREAMING_DONE, CYU3P_EVENT_OR);
 					}
 				}
 				else
@@ -3328,7 +3328,7 @@ void AdiStreamThreadEntry(uint32_t input)
 						while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
 					}
 					//Reset flag
-					CyU3PEventSet (&eventHandler, ADI_GENERIC_STREAM_ENABLE, CYU3P_EVENT_OR);
+					CyU3PEventSet (&EventHandler, ADI_GENERIC_STREAM_ENABLE, CYU3P_EVENT_OR);
 				}
 			}
 
@@ -3388,7 +3388,7 @@ void AdiStreamThreadEntry(uint32_t input)
 					//Set stream done flag if kill early event was processed (otherwise must be explicitly invoked by FX3 API)
 					if(KillStreamEarly)
 					{
-						CyU3PEventSet(&eventHandler, ADI_RT_STREAMING_DONE, CYU3P_EVENT_OR);
+						CyU3PEventSet(&EventHandler, ADI_RT_STREAMING_DONE, CYU3P_EVENT_OR);
 					}
 				}
 				else
@@ -3396,7 +3396,7 @@ void AdiStreamThreadEntry(uint32_t input)
 					//increment the frame counter
 					numFramesCaptured++;
 					//Reset real-time data capture thread flag
-					CyU3PEventSet (&eventHandler, ADI_REAL_TIME_STREAM_ENABLE, CYU3P_EVENT_OR);
+					CyU3PEventSet (&EventHandler, ADI_REAL_TIME_STREAM_ENABLE, CYU3P_EVENT_OR);
 				}
 			}
 
@@ -3484,7 +3484,7 @@ void AdiStreamThreadEntry(uint32_t input)
 					//Set stream done flag if kill early event was processed (otherwise must be explicitly invoked by FX3 API)
 					if(KillStreamEarly)
 					{
-						CyU3PEventSet(&eventHandler, ADI_BURST_STREAMING_DONE, CYU3P_EVENT_OR);
+						CyU3PEventSet(&EventHandler, ADI_BURST_STREAMING_DONE, CYU3P_EVENT_OR);
 					}
 				}
 				else
@@ -3492,7 +3492,7 @@ void AdiStreamThreadEntry(uint32_t input)
 					/* Increment the frame counter */
 					numBuffersRead++;
 					/* Reset the real-time data capture thread flag */
-					CyU3PEventSet (&eventHandler, ADI_BURST_STREAM_ENABLE, CYU3P_EVENT_OR);
+					CyU3PEventSet (&EventHandler, ADI_BURST_STREAM_ENABLE, CYU3P_EVENT_OR);
 				}
 			}
 		}
@@ -3833,14 +3833,14 @@ void AdiAppStart (void)
     /* Configure global, user event flags */
 
 	/* Create the stream/general use event handler */
-	status = CyU3PEventCreate(&eventHandler);
+	status = CyU3PEventCreate(&EventHandler);
     if (status != CY_U3P_SUCCESS)
     {
     	AdiAppErrorHandler(status);
     }
 
 	/* Create GPIO event handler */
-	status = CyU3PEventCreate(&gpioHandler);
+	status = CyU3PEventCreate(&GpioHandler);
     if (status != CY_U3P_SUCCESS)
     {
     	AdiAppErrorHandler(status);
@@ -3953,8 +3953,8 @@ void AdiAppStop(void)
 	CyU3PSpiDeInit();
 
 	/* Clean up event handlers */
-	CyU3PEventDestroy(&eventHandler);
-	CyU3PEventDestroy(&gpioHandler);
+	CyU3PEventDestroy(&EventHandler);
+	CyU3PEventDestroy(&GpioHandler);
 
 	/* Flush endpoint memory */
 	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
@@ -4189,7 +4189,7 @@ void AdiAppThreadEntry (uint32_t input)
     for (;;)
     {
     	//Wait for event handler flags to occur and handle them
-    	if (CyU3PEventGet(&eventHandler, eventMask, CYU3P_EVENT_OR_CLEAR, &eventFlag, CYU3P_WAIT_FOREVER) == CY_U3P_SUCCESS)
+    	if (CyU3PEventGet(&EventHandler, eventMask, CYU3P_EVENT_OR_CLEAR, &eventFlag, CYU3P_WAIT_FOREVER) == CY_U3P_SUCCESS)
     	{
 			//Handle real-time stream commands
 			if (eventFlag & ADI_RT_STREAMING_START)
@@ -4283,7 +4283,7 @@ void CyFxApplicationDefine (void)
     ptr = CyU3PMemAlloc (APPTHREAD_STACK);
 
     /* Create the thread for the application */
-    retThrdCreate = CyU3PThreadCreate (&appThread, /* Thread structure. */
+    retThrdCreate = CyU3PThreadCreate (&AppThread, /* Thread structure. */
             "21:AppThread",                        /* Thread ID and name. */
             AdiAppThreadEntry,                     /* Thread entry function. */
             0,                                     /* Thread input parameter. */
