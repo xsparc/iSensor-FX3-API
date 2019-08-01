@@ -138,10 +138,10 @@ CyBool_t DrActive = CyFalse;
 CyBool_t DrPolarity = CyTrue;
 
 /*Track the pin exit setting for RT stream mode (True = enabled, False = disabled) */
-CyBool_t pinExitEnableDisable = CyFalse;
+CyBool_t pinExitEnable = CyFalse;
 
 /*Track the pin start setting for RT stream mode (True = enabled, False = disabled) */
-CyBool_t pinStartEnableDisable = CyFalse;
+CyBool_t pinStartEnable = CyFalse;
 
 /*Track the number of real-time captures to record (0 = Infinite) */
 uint32_t numRealTimeCaptures = 0;
@@ -169,8 +169,6 @@ uint8_t *regList;
 
 /*Number of bytes per USB packet in generic data stream mode */
 uint16_t bytesPerUsbPacket = 0;
-
-
 
 /*
  * Function: AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
@@ -441,7 +439,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 				switch(wIndex)
 				{
 				case ADI_STREAM_START_CMD:
-					pinExitEnableDisable = (CyBool_t) wValue;
+					pinExitEnable = (CyBool_t) wValue;
 					status = CyU3PEventSet(&eventHandler, ADI_RT_STREAMING_START, CYU3P_EVENT_OR);
 					break;
 				case ADI_STREAM_DONE_CMD:
@@ -1770,7 +1768,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	numRealTimeCaptures += (USBBuffer[3] << 24);
 
 	//Get pin start setting
-	pinStartEnableDisable = (CyBool_t) USBBuffer[4];
+	pinStartEnable = (CyBool_t) USBBuffer[4];
 
 	//Flush streaming end point
 	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
@@ -1800,13 +1798,13 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	//Clear the DMA buffers
 	CyU3PDmaChannelReset(&StreamingChannel);
 
-	if(pinExitEnableDisable)
+	if(pinExitEnable)
 	{
 		//Disable starting the capture by raising SYNC/RTS
 		//If this is not done before setting SYNC/RTS high, things will break
 
 		//If pin start is disabled (we're starting the capture with GLOB_CMD)
-		if(!pinStartEnableDisable)
+		if(!pinStartEnable)
 		{
 			//Read MSC_CTRL register
 			tempReadBuffer[0] = (0x64);
@@ -1871,7 +1869,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	}
 
 	//If pin start is enabled, set bit 12 in MISC_CTRL and toggle SYNC, otherwise send 0x0800 to COMMAND
-	if(pinStartEnableDisable)
+	if(pinStartEnable)
 	{
 		//Read MSC_CTRL register
 		tempReadBuffer[0] = (0x64);
@@ -1983,7 +1981,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamFinished()
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
 	//Pull SYNC/RTS pin low to force x021 out of RT mode
-	if(pinExitEnableDisable || pinStartEnableDisable)
+	if(pinExitEnable || pinStartEnable)
 	{
 		//Configure SYNC/RTS as an output and set high
 		CyU3PGpioSimpleConfig_t gpioConfig;
@@ -1995,7 +1993,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamFinished()
 		CyU3PGpioSetSimpleConfig(busyPin, &gpioConfig);
 
 		//Reset flag for next run
-		pinExitEnableDisable = CyFalse;
+		pinExitEnable = CyFalse;
 	}
 
 	//Stop pin output drive and enable as input
