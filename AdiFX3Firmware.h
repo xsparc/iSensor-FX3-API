@@ -124,13 +124,6 @@ typedef enum PartTye
     Other					//Other DUT's (IMUs)
 }PartType;
 
-//Boolean enum
-typedef enum Boolean
-{
-	True = 1,
-	False = 0
-}Boolean;
-
 //Struct to store relevant board parameters
 struct BoardConfig
 {
@@ -213,7 +206,6 @@ struct BoardConfig
 //Command to trigger an event on the DUT and measure a subsequent pulse
 #define ADI_BUSY_MEASURE						(0xCB)
 
-
 /*
  * Thread Parameter Definitions
  */
@@ -228,7 +220,6 @@ struct BoardConfig
 
 // Real time thread priority
 #define STREAMINGTHREAD_PRIORITY					(8)
-
 
 /*
  * GPIO Pin mapping definitions
@@ -288,44 +279,6 @@ struct BoardConfig
 #define ERROR_THREAD_START						5
 #define ERROR_OTHER								0
 
-
-/*
- * Bit defines
- */
-#define bit0									(1 << 0)
-#define bit1									(1 << 1)
-#define bit2									(1 << 2)
-#define bit3									(1 << 3)
-#define bit4									(1 << 4)
-#define bit5									(1 << 5)
-#define bit6									(1 << 6)
-#define bit7									(1 << 7)
-#define bit8									(1 << 8)
-#define bit9									(1 << 9)
-#define bit10									(1 << 10)
-#define bit11									(1 << 11)
-#define bit12									(1 << 12)
-#define bit13									(1 << 13)
-#define bit14									(1 << 14)
-#define bit15									(1 << 15)
-#define bit16									(1 << 16)
-#define bit17									(1 << 17)
-#define bit18									(1 << 18)
-#define bit19									(1 << 19)
-#define bit20									(1 << 20)
-#define bit21									(1 << 21)
-#define bit22									(1 << 22)
-#define bit23									(1 << 23)
-#define bit24									(1 << 24)
-#define bit25									(1 << 25)
-#define bit26									(1 << 26)
-#define bit27									(1 << 27)
-#define bit28									(1 << 28)
-#define bit29									(1 << 29)
-#define bit30									(1 << 30)
-#define bit31									(1 << 31)
-
-
 /*
  * ADI Event Handler Definitions
  */
@@ -346,7 +299,6 @@ struct BoardConfig
 /*
  * Stream action commands
  */
-
 #define ADI_STREAM_DONE_CMD						0
 #define ADI_STREAM_START_CMD					1
 #define ADI_STREAM_STOP_CMD						2
