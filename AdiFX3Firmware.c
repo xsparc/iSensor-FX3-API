@@ -210,8 +210,9 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
     {
         isHandled = CyTrue;
 
+#ifdef VERBOSE_MODE
         CyU3PDebugPrint (4, "Vendor request = 0x%x\r\n", bRequest);
-
+#endif
 
         switch (bRequest)
         {
@@ -488,7 +489,9 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 
             default:
                 // This is unknown request
-            	//CyU3PDebugPrint (4, "ERROR: Unknown vendor command 0x%x\r\n", bRequest);
+#ifdef VERBOSE_MODE
+            	CyU3PDebugPrint (4, "ERROR: Un-handled vendor command 0x%x\r\n", bRequest);
+#endif
                 isHandled = CyFalse;
                 break;
         }
@@ -919,7 +922,9 @@ CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 		threshold |= (USBBuffer[8] << 16);
 		threshold |= (USBBuffer[9] << 24);
 
+#ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "Setting up PWM with period %d, threshold %d, for pin %d\r\n", period, threshold, pinNumber);
+#endif
 
 		//Override the selected pin to run as a complex GPIO
 		status = CyU3PDeviceGpioOverride(pinNumber, CyFalse);
@@ -2119,13 +2124,15 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 		roundedByteTransferLength = transferByteLength + 16 - remainder;
 	}
 
-	 /*Debugging print statements
+#ifdef VERBOSE_MODE
+	 CyU3PDebugPrint (4, "Starting burst stream");
 	 CyU3PDebugPrint (4, "burstTriggerUpper:  %d\r\n", regList[0]);
 	 CyU3PDebugPrint (4, "burstTriggerLower:  %d\r\n", regList[1]);
 	 CyU3PDebugPrint (4, "roundedTransferLength:  %d\r\n", roundedByteTransferLength);
 	 CyU3PDebugPrint (4, "transferByteLength:  %d\r\n", transferByteLength);
 	 CyU3PDebugPrint (4, "transferWordLength:  %d\r\n", transferWordLength);
-	 CyU3PDebugPrint (4, "numBuffers:  %d\r\n", numBuffers); */
+	 CyU3PDebugPrint (4, "numBuffers:  %d\r\n", numBuffers);
+#endif
 
 	/* Configure the Burst DMA Streaming Channel (SPI to PC) for Auto DMA */
 	CyU3PDmaChannelConfig_t dmaConfig;
@@ -2943,7 +2950,9 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 			clockFrequency += USBBuffer[0] << 24;
 			spiConfig.clock = clockFrequency;
 			status = CyU3PSpiSetConfig (&spiConfig, NULL);
-			//CyU3PDebugPrint (4, "SCLK = %d\r\n", clockFrequency);
+#ifdef VERBOSE_MODE
+			CyU3PDebugPrint (4, "SCLK = %d\r\n", clockFrequency);
+#endif
 		}
 		break;
 
@@ -2951,62 +2960,80 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 		//cpol
 		spiConfig.cpol = (CyBool_t) value;
 		status = CyU3PSpiSetConfig (&spiConfig, NULL);
-		//CyU3PDebugPrint (4, "cpol = %d\r\n", value);
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "cpol = %d\r\n", value);
+#endif
 		break;
 
 	case 2:
 		//cpha
 		spiConfig.cpha = (CyBool_t) value;
 		status = CyU3PSpiSetConfig (&spiConfig, NULL);
-		//CyU3PDebugPrint (4, "cpha = %d\r\n", value);
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "cpha = %d\r\n", value);
+#endif
 		break;
 
 	case 3:
 		//Chip Select Polarity
 		spiConfig.ssnPol = (CyBool_t) value;
 		status = CyU3PSpiSetConfig (&spiConfig, NULL);
-		//CyU3PDebugPrint (4, "ssnPol = %d\r\n", value);
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "ssnPol = %d\r\n", value);
+#endif
 		break;
 
 	case 4:
 		//Chip Select Control
 		spiConfig.ssnCtrl = (CyU3PSpiSsnCtrl_t) value;
 		status = CyU3PSpiSetConfig (&spiConfig, NULL);
-		//CyU3PDebugPrint (4, "ssnCtrl = %d\r\n", value);
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "ssnCtrl = %d\r\n", value);
+#endif
 		break;
 
 	case 5:
 		//Lead Time
 		spiConfig.leadTime = (CyU3PSpiSsnLagLead_t) value;
 		status = CyU3PSpiSetConfig (&spiConfig, NULL);
-		//CyU3PDebugPrint (4, "leadTime = %d\r\n", value);
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "leadTime = %d\r\n", value);
+#endif
 		break;
 
 	case 6:
 		//Lag Time
 		spiConfig.lagTime = (CyU3PSpiSsnLagLead_t) value;
 		status = CyU3PSpiSetConfig (&spiConfig, NULL);
-		//CyU3PDebugPrint (4, "lagTime = %d\r\n", value);
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "lagTime = %d\r\n", value);
+#endif
 		break;
 
 	case 7:
 		//Is LSB First
 		spiConfig.isLsbFirst = (CyBool_t) value;
 		status = CyU3PSpiSetConfig (&spiConfig, NULL);
-		//CyU3PDebugPrint (4, "isLsbFirst = %d\r\n", value);
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "isLsbFirst = %d\r\n", value);
+#endif
 		break;
 
 	case 8:
 		//Word Length
 		spiConfig.wordLen = value & 0xFF;
 		status = CyU3PSpiSetConfig (&spiConfig, NULL);
-		//CyU3PDebugPrint (4, "wordLen = %d\r\n", value);
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "wordLen = %d\r\n", value);
+#endif
 		break;
 
 	case 9:
 		//Stall time in ticks (received in ticks from the PC, each tick = 1us)
 		stallTime = value;
-		//CyU3PDebugPrint (4, "stallTime = %d\r\n", value);
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "stallTime = %d\r\n", value);
+#endif
 		break;
 
 	case 10:
@@ -3028,31 +3055,41 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 			bytesPerFrame = 200;
 			break;
 		}
-		//CyU3PDebugPrint (4, "bytesPerFrame = %d\r\n", bytesPerFrame);
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "bytesPerFrame = %d\r\n", bytesPerFrame);
+#endif
 		break;
 
 	case 11:
 		//DR polarity
 		DrPolarity = (CyBool_t) value;
-		//CyU3PDebugPrint (4, "DrPolarity = %d\r\n", value);
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "DrPolarity = %d\r\n", value);
+#endif
 		break;
 
 	case 12:
 		//DR active
 		DrActive = (CyBool_t) value;
-		//CyU3PDebugPrint (4, "DrActive = %d\r\n", value);
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "DrActive = %d\r\n", value);
+#endif
 		break;
 
 	case 13:
 		//Ready pin
 		DrPin = value;
-		//CyU3PDebugPrint (4, "DrPin = %d\r\n", value);
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "DrPin = %d\r\n", value);
+#endif
 		break;
 
 	default:
 		//Invalid Command
 		isHandled = CyFalse;
+#ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "ERROR: Invalid SPI config command!\r\n");
+#endif
 		break;
 	}
 
@@ -3523,7 +3560,6 @@ void AdiDataStream_Entry(uint32_t input)
 					CyU3PEventSet (&eventHandler, ADI_BURST_STREAM_ENABLE, CYU3P_EVENT_OR);
 				}
 			}
-			//CyU3PDebugPrint (4, "Event Exit \r\n");
 		}
         /* Allow other ready threads to run. */
         CyU3PThreadRelinquish ();
@@ -3589,7 +3625,6 @@ void AdiDebugInit(void)
     /* Send a success command over the newly-created debug port. */
     CyU3PDebugPrint (4, "\r\n");
     CyU3PDebugPrint (4, "Debugger successfully initialized!\r\n");
-    CyU3PDebugPrint (4, "\r\n");
 }
 
 /*
@@ -3602,6 +3637,7 @@ void AdiDebugInit(void)
 void AdiAppErrorHandler (CyU3PReturnStatus_t status)
 {
     /* Application failed with the error code status */
+	CyU3PDebugPrint (4, "Application startup failed with error code 0x%x. Please restart your FX3 platform\r\n");
 
     /* TODO: Add custom debug or recovery actions here */
 
@@ -3891,7 +3927,7 @@ void AdiAppStart (void)
 	status = CyU3PSetEpConfig(ADI_STREAMING_ENDPOINT, &epConfig);
     if (status != CY_U3P_SUCCESS)
     {
-    	CyU3PDebugPrint (4, "Setting RTS/Streaming endpoint failed, Error Code = %d\n", status);
+    	CyU3PDebugPrint (4, "Setting RTS/Streaming endpoint failed, Error Code = 0x%x\r\n", status);
     	AdiAppErrorHandler(status);
     }
 
@@ -3899,7 +3935,7 @@ void AdiAppStart (void)
 	status = CyU3PSetEpConfig(ADI_FROM_PC_ENDPOINT, &epConfig);
     if (status != CY_U3P_SUCCESS)
     {
-    	CyU3PDebugPrint (4, "Setting PC to FX3 endpoint failed, Error Code = %d\n", status);
+    	CyU3PDebugPrint (4, "Setting PC to FX3 endpoint failed, Error Code = 0x%x\r\n", status);
     	AdiAppErrorHandler(status);
     }
 
@@ -3907,7 +3943,7 @@ void AdiAppStart (void)
 	status = CyU3PSetEpConfig(ADI_TO_PC_ENDPOINT, &epConfig);
     if (status != CY_U3P_SUCCESS)
     {
-    	CyU3PDebugPrint (4, "Setting FX3 to PC endpoint failed, Error Code = %d\n", status);
+    	CyU3PDebugPrint (4, "Setting FX3 to PC endpoint failed, Error Code = 0x%x\r\n", status);
     	AdiAppErrorHandler(status);
     }
 
@@ -3936,7 +3972,7 @@ void AdiAppStart (void)
     status = CyU3PDmaChannelCreate(&ChannelFromPC, CY_U3P_DMA_TYPE_MANUAL_IN, &dmaConfig);
     if (status != CY_U3P_SUCCESS)
     {
-    	CyU3PDebugPrint (4, "Configuring the ChannelFromPC DMA failed, Error Code = %d\n", status);
+    	CyU3PDebugPrint (4, "Configuring the ChannelFromPC DMA failed, Error Code = 0x%x\r\n", status);
     	AdiAppErrorHandler(status);
     }
 
@@ -3947,13 +3983,14 @@ void AdiAppStart (void)
     status = CyU3PDmaChannelCreate(&ChannelToPC, CY_U3P_DMA_TYPE_MANUAL_OUT, &dmaConfig);
     if (status != CY_U3P_SUCCESS)
     {
-    	CyU3PDebugPrint (4, "Configuring the ChannelToPC DMA failed, Error Code = %d\n", status);
+    	CyU3PDebugPrint (4, "Configuring the ChannelToPC DMA failed, Error Code = 0x%x\r\n", status);
     	AdiAppErrorHandler(status);
     }
-
+    /* Set app active flag */
     appActive = CyTrue;
 
-    CyU3PDebugPrint (8, "AdiAppStart completed successfully!\r\n");
+    /*Print boot message */
+    CyU3PDebugPrint (8, "Analog Devices iSensor FX3 Demonstration Platform started successfully!\r\n");
 }
 
 /*
@@ -4066,7 +4103,7 @@ void AdiAppInit (void)
     status = CyU3PUsbStart();
     if (status != CY_U3P_SUCCESS)
     {
-    	CyU3PDebugPrint (4, "CyU3PUsbStart failed to Start, Error code = %d\r\n", status);
+    	CyU3PDebugPrint (4, "CyU3PUsbStart failed to Start, Error code = 0x%x\r\n", status);
         AdiAppErrorHandler(status);
     }
     else
@@ -4091,7 +4128,7 @@ void AdiAppInit (void)
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_DEVICE_DESCR, 0, (uint8_t *)CyFxUSB30DeviceDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set device descriptor failed, Error code = %d\r\n", status);
+        CyU3PDebugPrint (4, "USB set device descriptor failed, Error code = 0x%x\r\n", status);
         AdiAppErrorHandler(status);
     }
 
@@ -4099,7 +4136,7 @@ void AdiAppInit (void)
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_FS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBFSConfigDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB Set Configuration Descriptor failed, Error Code = %d\r\n", status);
+        CyU3PDebugPrint (4, "USB Set Configuration Descriptor failed, Error Code = 0x%x\r\n", status);
         AdiAppErrorHandler(status);
     }
 
@@ -4107,7 +4144,7 @@ void AdiAppInit (void)
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBSSConfigDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set configuration descriptor failed, Error code = %d\r\n", status);
+        CyU3PDebugPrint (4, "USB set configuration descriptor failed, Error code = 0x%x\r\n", status);
         AdiAppErrorHandler(status);
     }
 
@@ -4115,7 +4152,7 @@ void AdiAppInit (void)
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_BOS_DESCR, 0, (uint8_t *)CyFxUSBBOSDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set configuration descriptor failed, Error code = %d\r\n", status);
+        CyU3PDebugPrint (4, "USB set configuration descriptor failed, Error code = 0x%x\r\n", status);
         AdiAppErrorHandler(status);
     }
 
@@ -4123,7 +4160,7 @@ void AdiAppInit (void)
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_HS_DEVICE_DESCR, 0, (uint8_t *)CyFxUSB20DeviceDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set device descriptor failed, Error code = %d\r\n", status);
+        CyU3PDebugPrint (4, "USB set device descriptor failed, Error code = 0x%x\r\n", status);
         AdiAppErrorHandler(status);
     }
 
@@ -4131,7 +4168,7 @@ void AdiAppInit (void)
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_DEVQUAL_DESCR, 0, (uint8_t *)CyFxUSBDeviceQualDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set device qualifier descriptor failed, Error code = %d\r\n", status);
+        CyU3PDebugPrint (4, "USB set device qualifier descriptor failed, Error code = 0x%x\r\n", status);
         AdiAppErrorHandler(status);
     }
 
@@ -4139,7 +4176,7 @@ void AdiAppInit (void)
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_HS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBHSConfigDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB Set Other Speed Descriptor failed, Error Code = %d\r\n", status);
+        CyU3PDebugPrint (4, "USB Set Other Speed Descriptor failed, Error Code = 0x%x\r\n", status);
         AdiAppErrorHandler(status);
     }
 
@@ -4147,7 +4184,7 @@ void AdiAppInit (void)
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 0, (uint8_t *)CyFxUSBStringLangIDDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = %d\r\n", status);
+        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = 0x%x\r\n", status);
         AdiAppErrorHandler(status);
     }
 
@@ -4155,7 +4192,7 @@ void AdiAppInit (void)
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 1, (uint8_t *)CyFxUSBManufactureDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = %d\r\n", status);
+        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = 0x%x\r\n", status);
         AdiAppErrorHandler(status);
     }
 
@@ -4163,7 +4200,7 @@ void AdiAppInit (void)
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 2, (uint8_t *)CyFxUSBProductDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = %d\r\n", status);
+        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = 0x%x\r\n", status);
         AdiAppErrorHandler(status);
     }
 
@@ -4171,7 +4208,7 @@ void AdiAppInit (void)
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 3, (uint8_t *)CyFxUSBSerialNumDesc);
     if (status != CY_U3P_SUCCESS)
     {
-      CyU3PDebugPrint (4, "USB set serial number descriptor failed, Error code = %d\r\n", status);
+      CyU3PDebugPrint (4, "USB set serial number descriptor failed, Error code = 0x%x\r\n", status);
       AdiAppErrorHandler(status);
     }
 
@@ -4179,7 +4216,7 @@ void AdiAppInit (void)
     status = CyU3PConnectState (CyTrue, CyFalse);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB Connect failed, Error code = %d\r\n", status);
+        CyU3PDebugPrint (4, "USB Connect failed, Error code = 0x%x\r\n", status);
         AdiAppErrorHandler(status);
     }
 }
@@ -4223,51 +4260,69 @@ void AppThread_Entry (uint32_t input)
 			if (eventFlag & ADI_RT_STREAMING_START)
 			{
 				AdiRealTimeStreamStart();
+#ifdef VERBOSE_MODE
 				CyU3PDebugPrint (4, "Real time stream start command received.\r\n");
+#endif
 			}
 			if (eventFlag & ADI_RT_STREAMING_STOP)
 			{
 				AdiStopAnyDataStream();
+#ifdef VERBOSE_MODE
 				CyU3PDebugPrint (4, "Real time stream stop command received.\r\n");
+#endif
 			}
 			if (eventFlag & ADI_RT_STREAMING_DONE)
 			{
 				AdiRealTimeStreamFinished();
+#ifdef VERBOSE_MODE
 				CyU3PDebugPrint (4, "Real time stream finished.\r\n");
+#endif
 			}
 
 			//Handle generic data stream commands
 			if (eventFlag & ADI_GENERIC_STREAMING_START)
 			{
 				AdiGenericStreamStart();
+#ifdef VERBOSE_MODE
 				CyU3PDebugPrint (4, "Generic stream start command received.\r\n");
+#endif
 			}
 			if (eventFlag & ADI_GENERIC_STREAMING_STOP)
 			{
 				AdiStopAnyDataStream();
+#ifdef VERBOSE_MODE
 				CyU3PDebugPrint (4, "Stop generic stream command detected.\r\n");
+#endif
 			}
 			if (eventFlag & ADI_GENERIC_STREAMING_DONE)
 			{
 				AdiGenericStreamFinished();
+#ifdef VERBOSE_MODE
 				CyU3PDebugPrint (4, "Generic data stream finished.\r\n");
+#endif
 			}
 
 			//Handle burst data stream commands
 			if (eventFlag & ADI_BURST_STREAMING_START)
 			{
 				AdiBurstStreamStart();
+#ifdef VERBOSE_MODE
 				CyU3PDebugPrint (4, "Burst stream start command received.\r\n");
+#endif
 			}
 			if (eventFlag & ADI_BURST_STREAMING_STOP)
 			{
 				AdiStopAnyDataStream();
+#ifdef VERBOSE_MODE
 				CyU3PDebugPrint (4, "Stop burst stream command detected.\r\n");
+#endif
 			}
 			if (eventFlag & ADI_BURST_STREAMING_DONE)
 			{
 				AdiBurstStreamFinished();
+#ifdef VERBOSE_MODE
 				CyU3PDebugPrint (4, "Burst data stream finished.\r\n");
+#endif
 			}
 
     	}

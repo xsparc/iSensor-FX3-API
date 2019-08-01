@@ -20,6 +20,12 @@
 #ifndef ADIFX3FIRMWARE_H_
 #define ADIFX3FIRMWARE_H_
 
+/*
+ * This macro is used to set verbose mode during compile time.
+ * Ensure that it is commented out for release versions.
+ */
+#define VERBOSE_MODE									(0)
+
 //Cypress Library Includes
 #include "cyu3types.h"
 #include "cyu3usbconst.h"
