@@ -10,7 +10,7 @@
  * CyU3PDeviceCacheControl for more information.
  */
 
-#include "AdiFX3Firmware.h"
+#include "main.h"
 
 /* Standard device descriptor for USB 2.0 */
 const uint8_t CyFxUSB20DeviceDscr[] __attribute__ ((aligned (32))) =

@@ -19,4 +19,33 @@
 #ifndef STREAM_FUNCTIONS_H
 #define STREAM_FUNCTIONS_H
 
+/* Include the main header file */
+#include "main.h"
+
+//Real-time data stream functions.
+CyU3PReturnStatus_t AdiRealTimeStreamStart();
+CyU3PReturnStatus_t AdiRealTimeStreamFinished();
+
+//Generic data stream functions.
+CyU3PReturnStatus_t AdiGenericStreamStart();
+CyU3PReturnStatus_t AdiGenericStreamFinished();
+
+//Transfer stream functions
+CyU3PReturnStatus_t AdiTransferStreamStart();
+CyU3PReturnStatus_t AdiTransferStreamFinish();
+
+//Burst stream functions.
+CyU3PReturnStatus_t AdiBurstStreamStart();
+CyU3PReturnStatus_t AdiBurstStreamFinished();
+
+//General stream functions.
+CyU3PReturnStatus_t AdiStopAnyDataStream();
+
+/*
+ * Stream action commands
+ */
+#define ADI_STREAM_DONE_CMD						0
+#define ADI_STREAM_START_CMD					1
+#define ADI_STREAM_STOP_CMD						2
+
 #endif

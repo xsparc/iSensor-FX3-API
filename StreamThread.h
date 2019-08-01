@@ -19,4 +19,15 @@
 #ifndef STREAM_THREAD_H
 #define STREAM_THREAD_H
 
+/* Include the main header file */
+#include "main.h"
+
+void AdiStreamThreadEntry(uint32_t input);
+
+// Real time thread stack size
+#define STREAMTHREAD_STACK					(0x0800)
+
+// Real time thread priority
+#define STREAMTHREAD_PRIORITY					(8)
+
 #endif

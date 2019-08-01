@@ -17,3 +17,846 @@
  **/
 
 #include "StreamFunctions.h"
+
+/* Tell the compiler where to find the needed globals */
+extern CyU3PEvent EventHandler;
+extern CyU3PDmaChannel StreamingChannel;
+extern CyU3PDmaChannel MemoryToSPI;
+extern uint8_t USBBuffer[];
+extern CyU3PDmaBuffer_t SpiDmaBuffer;
+extern BoardState FX3State;
+extern volatile CyBool_t KillStreamEarly;
+extern StreamState StreamThreadState;
+
+/*
+ * Function: AdiStopAnyDataStream()
+ *
+ * This function sets a flag to notify the streaming thread that the user requested to cancel streaming.
+ * This function can be used to stop any stream operation.
+ *
+ * Returns: The function status code
+ *
+ */
+CyU3PReturnStatus_t AdiStopAnyDataStream()
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+	KillStreamEarly = CyTrue;
+	//TODO: Check if the stream thread is active and return status based on the thread state
+	return status;
+}
+
+CyU3PReturnStatus_t AdiTransferStreamStart()
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+	uint16_t bytesRead;
+
+	/* Get the data from the control endpoint */
+	status = CyU3PUsbGetEP0Data(StreamThreadState.TransferByteLength, USBBuffer, &bytesRead);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Failed to read configuration data from control endpoint!, error code = 0x%x\r\n", status);
+	}
+
+	//The data is formatted as follows
+	//NumCaptures[1-4], NumBuffers[5-8], BytesPerBuffer[9-10], MOSIData.Count()[11-12], MOSIData[13 - ...]
+
+	/* Disable VBUS ISR */
+	CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
+
+	/* Disable GPIO interrupt before attaching interrupt to pin */
+	CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
+
+	//If using DR triggering configure the selected pin as an input with the correct polarity
+	if(FX3State.DrActive)
+	{
+		//Configure the pin as an input with interrupts enabled on the selected edge
+	}
+
+	//Set up the DMA channel
+
+	//Set the data stream thread event to begin a capture
+
+	return status;
+}
+
+CyU3PReturnStatus_t AdiTransferStreamFinish()
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+
+	//If DrActive restore the data ready to normal (input, no interrupts) mode
+
+	//Destroy DMA channel
+
+	//Re-enable interrupts
+
+	//Reset timer configuration
+	return status;
+}
+
+/*
+ * Function: AdiRealTimeStreamStart()
+ *
+ * This function kicks off a real-time stream by configuring interrupts, SPI, and end points.
+ * It also optionally toggles the SYNC/RTS pin if requested. At the end of the function, the
+ * bit assigned to enable the capture thread is toggled to signal the streaming thread to start producing data.
+ *
+ * Returns: The status of starting a real-time stream.
+ */
+CyU3PReturnStatus_t AdiRealTimeStreamStart()
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+	uint16_t bytesRead;
+	uint8_t tempWriteBuffer[2];
+	uint8_t tempReadBuffer[2];
+
+	//Make sure the BUSY pin is configured as input (DIO2)
+	CyU3PGpioSimpleConfig_t gpioConfig;
+	gpioConfig.outValue = CyFalse;
+	gpioConfig.inputEn = CyTrue;
+	gpioConfig.driveLowEn = CyFalse;
+	gpioConfig.driveHighEn = CyFalse;
+	gpioConfig.intrMode = CY_U3P_GPIO_INTR_POS_EDGE;
+	CyU3PGpioSetSimpleConfig(FX3State.DrPin, &gpioConfig);
+
+	//Disable GPIO ISR
+	CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
+
+	//Disable VBUS ISR
+	CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
+
+	//Get number of frames to capture from control endpoint
+	CyU3PUsbGetEP0Data(5, USBBuffer, &bytesRead);
+	StreamThreadState.NumRealTimeCaptures = USBBuffer[0];
+	StreamThreadState.NumRealTimeCaptures += (USBBuffer[1] << 8);
+	StreamThreadState.NumRealTimeCaptures += (USBBuffer[2] << 16);
+	StreamThreadState.NumRealTimeCaptures += (USBBuffer[3] << 24);
+
+	//Get pin start setting
+	StreamThreadState.PinStartEnable = (CyBool_t) USBBuffer[4];
+
+	//Flush streaming end point
+	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
+
+	/* Configure RTS channel DMA */
+    CyU3PDmaChannelConfig_t dmaConfig;
+    dmaConfig.size 				= FX3State.UsbBufferSize;
+    dmaConfig.count 			= 64;
+    dmaConfig.prodSckId 		= CY_U3P_LPP_SOCKET_SPI_PROD;
+    dmaConfig.consSckId 		= CY_U3P_UIB_SOCKET_CONS_1;
+    dmaConfig.dmaMode 			= CY_U3P_DMA_MODE_BYTE;
+    dmaConfig.prodHeader    	= 0;
+    dmaConfig.prodFooter    	= 0;
+    dmaConfig.consHeader    	= 0;
+    dmaConfig.notification  	= 0;
+    dmaConfig.cb            	= NULL;
+    dmaConfig.prodAvailCount	= 0;
+
+    /* Configure DMA for RealTimeStreamingChannel */
+    status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_AUTO, &dmaConfig);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Configuring the RTS DMA failed, Error Code = %x\r\n", status);
+		return status;
+	}
+
+	//Clear the DMA buffers
+	CyU3PDmaChannelReset(&StreamingChannel);
+
+	if(StreamThreadState.PinExitEnable)
+	{
+		//Disable starting the capture by raising SYNC/RTS
+		//If this is not done before setting SYNC/RTS high, things will break
+
+		//If pin start is disabled (we're starting the capture with GLOB_CMD)
+		if(!StreamThreadState.PinStartEnable)
+		{
+			//Read MSC_CTRL register
+			tempReadBuffer[0] = (0x64);
+			tempReadBuffer[1] = (0x00);
+			status = CyU3PSpiTransmitWords(tempReadBuffer, 2);
+			if (status != CY_U3P_SUCCESS)
+			{
+						return status;
+			}
+			AdiSleepForMicroSeconds(FX3State.StallTime);
+			status = CyU3PSpiReceiveWords(tempReadBuffer, 2);
+			if (status != CY_U3P_SUCCESS)
+			{
+				return status;
+			}
+			AdiSleepForMicroSeconds(FX3State.StallTime);
+
+			//Clear bit 12 (bit enables/disables starting a capture using SYNC pin)
+			tempReadBuffer[0] = tempReadBuffer[0] & (0xEF);
+
+			//Write modified buffer to MSC_CTRL
+			tempWriteBuffer[0] = (0x80) | (0x64);
+			tempWriteBuffer[1] = tempReadBuffer[1];
+			status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
+			if (status != CY_U3P_SUCCESS)
+			{
+				return status;
+			}
+			AdiSleepForMicroSeconds(FX3State.StallTime);
+			tempWriteBuffer[0] = (0x80) | (0x65);
+			tempWriteBuffer[1] = tempReadBuffer[0];
+			status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
+			if (status != CY_U3P_SUCCESS)
+			{
+				return status;
+			}
+			AdiSleepForMicroSeconds(FX3State.StallTime);
+
+			//Configure SYNC/RTS as an output and set high
+			CyU3PGpioSimpleConfig_t gpioConfig;
+			gpioConfig.outValue = CyTrue;
+			gpioConfig.inputEn = CyFalse;
+			gpioConfig.driveLowEn = CyTrue;
+			gpioConfig.driveHighEn = CyTrue;
+			gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+			status = CyU3PGpioSetSimpleConfig(FX3State.BusyPin, &gpioConfig);
+
+			//If config fails try to override and reconfigure
+			if(status != CY_U3P_SUCCESS)
+			{
+				status = CyU3PDeviceGpioOverride (FX3State.BusyPin, CyTrue);
+				status = CyU3PGpioSetSimpleConfig(FX3State.BusyPin, &gpioConfig);
+			}
+
+			//Check that the pin is configured to act as an output, return if not
+			status = CyU3PGpioSimpleSetValue(FX3State.BusyPin, CyTrue);
+			if(status != CY_U3P_SUCCESS)
+			{
+				return status;
+			}
+		}
+	}
+
+	//If pin start is enabled, set bit 12 in MISC_CTRL and toggle SYNC, otherwise send 0x0800 to COMMAND
+	if(StreamThreadState.PinStartEnable)
+	{
+		//Read MSC_CTRL register
+		tempReadBuffer[0] = (0x64);
+		tempReadBuffer[1] = (0x00);
+		status = CyU3PSpiTransmitWords(tempReadBuffer, 2);
+		if (status != CY_U3P_SUCCESS)
+		{
+					return status;
+		}
+		AdiSleepForMicroSeconds(FX3State.StallTime);
+		status = CyU3PSpiReceiveWords(tempReadBuffer, 2);
+		if (status != CY_U3P_SUCCESS)
+		{
+			return status;
+		}
+		AdiSleepForMicroSeconds(FX3State.StallTime);
+
+		//Set bit 12 (bit enables/disables starting a capture using SYNC pin)
+		tempReadBuffer[0] = tempReadBuffer[0] | (0x10);
+
+		//Write modified buffer to MSC_CTRL
+		tempWriteBuffer[0] = (0x80) | (0x64);
+		tempWriteBuffer[1] = tempReadBuffer[1];
+		status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
+		if (status != CY_U3P_SUCCESS)
+		{
+			return status;
+		}
+		AdiSleepForMicroSeconds(FX3State.StallTime);
+		tempWriteBuffer[0] = (0x80) | (0x65);
+		tempWriteBuffer[1] = tempReadBuffer[0];
+		status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
+		if (status != CY_U3P_SUCCESS)
+		{
+			return status;
+		}
+		AdiSleepForMicroSeconds(FX3State.StallTime);
+
+		//Configure SYNC/RTS as an output and set high
+		CyU3PGpioSimpleConfig_t gpioConfig;
+		gpioConfig.outValue = CyTrue;
+		gpioConfig.inputEn = CyFalse;
+		gpioConfig.driveLowEn = CyTrue;
+		gpioConfig.driveHighEn = CyTrue;
+		gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+		status = CyU3PGpioSetSimpleConfig(FX3State.BusyPin, &gpioConfig);
+
+		//If config fails try to override and reconfigure
+		if(status != CY_U3P_SUCCESS)
+		{
+			status = CyU3PDeviceGpioOverride (FX3State.BusyPin, CyTrue);
+			status = CyU3PGpioSetSimpleConfig(FX3State.BusyPin, &gpioConfig);
+		}
+
+		//Check that the pin is configured to act as an output, return if not
+		status = CyU3PGpioSimpleSetValue(FX3State.BusyPin, CyTrue);
+		if(status != CY_U3P_SUCCESS)
+		{
+			return status;
+		}
+	}
+	else
+	{
+		//Send COMMAND 0x800
+		//Command is Page 0, Address 62
+		tempWriteBuffer[0] = (0x80) | (0x3E);
+		tempWriteBuffer[1] = 0;
+		status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
+		if (status != CY_U3P_SUCCESS)
+		{
+			return status;
+		}
+		AdiSleepForMicroSeconds(FX3State.StallTime);
+		tempWriteBuffer[0] = (0x80) | (0x3F);
+		tempWriteBuffer[1] = 0x08;
+		status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
+		if (status != CY_U3P_SUCCESS)
+		{
+			return status;
+		}
+		AdiSleepForMicroSeconds(FX3State.StallTime);
+	}
+
+	//Manually reset SPI Rx/Tx FIFO
+	AdiSpiResetFifo(CyTrue, CyTrue);
+
+	//Set infinite DMA transfer on streaming channel
+	CyU3PDmaChannelSetXfer(&StreamingChannel, 0);
+
+	//Set the real-time data capture thread flag
+	CyU3PEventSet (&EventHandler, ADI_REAL_TIME_STREAM_ENABLE, CYU3P_EVENT_OR);
+
+	return status;
+}
+
+
+/*
+ * Function: AdiRealTimeStreamFinished()
+ *
+ * This function cleans up after a real-time stream by resetting the SPI port, triggering the SYNC/RTS pin (if asked to do so),
+ * and notifying the host that the cancel operation was successful.
+ *
+ * Returns: The status of the cancel operation.
+ *
+ */
+CyU3PReturnStatus_t AdiRealTimeStreamFinished()
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+
+	//Pull SYNC/RTS pin low to force x021 out of RT mode
+	if(StreamThreadState.PinExitEnable || StreamThreadState.PinStartEnable)
+	{
+		//Configure SYNC/RTS as an output and set high
+		CyU3PGpioSimpleConfig_t gpioConfig;
+		gpioConfig.outValue = CyFalse;
+		gpioConfig.inputEn = CyFalse;
+		gpioConfig.driveLowEn = CyTrue;
+		gpioConfig.driveHighEn = CyTrue;
+		gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+		CyU3PGpioSetSimpleConfig(FX3State.BusyPin, &gpioConfig);
+
+		//Reset flag for next run
+		StreamThreadState.PinExitEnable = CyFalse;
+	}
+
+	//Stop pin output drive and enable as input
+	CyU3PGpioSimpleConfig_t gpioConfig;
+	gpioConfig.inputEn = CyTrue;
+	gpioConfig.driveLowEn = CyFalse;
+	gpioConfig.driveHighEn = CyFalse;
+	CyU3PGpioSetSimpleConfig(FX3State.BusyPin, &gpioConfig);
+
+	//Disable SPI DMA mode
+	CyU3PSpiDisableBlockXfer(CyTrue, CyTrue);
+
+	//Reset the SPI controller
+	SPI->lpp_spi_config &= ~(CY_U3P_LPP_SPI_RX_ENABLE | CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_DMA_MODE | CY_U3P_LPP_SPI_ENABLE);
+	while ((SPI->lpp_spi_config & CY_U3P_LPP_SPI_ENABLE) != 0);
+
+    /* Tear down the RT streaming channel */
+    status = CyU3PDmaChannelDestroy(&StreamingChannel);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Tearing down the RTS DMA failed, Error Code = 0x%x\r\n", status);
+		return status;
+	}
+
+	//Flush streaming end point
+	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
+
+	//Clear all interrupt flags
+	CyU3PVicClearInt();
+
+	//Re-enable relevant ISRs
+	CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
+	CyU3PVicEnableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
+
+	//Additional clean-up after a user requests an early cancellation
+	if(KillStreamEarly)
+	{
+		//Send status back over control endpoint to end USB transaction and signal cancel was completed successfully
+		USBBuffer[0] = status & 0xFF;
+		USBBuffer[1] = (status & 0xFF00) >> 8;
+		USBBuffer[2] = (status & 0xFF0000) >> 16;
+		USBBuffer[3] = (status & 0xFF000000) >> 24;
+		CyU3PUsbSendEP0Data (4, USBBuffer);
+
+		//Reset KillStreamEarly flag in case the user wants to capture data again
+		KillStreamEarly = CyFalse;
+	}
+
+	return status;
+}
+
+
+/*
+ * Function: AdiBurstStreamStart()
+ *
+ * This function kicks off a burst stream by configuring a pin interrupt on a user-specified pin, configuring
+ * the SPI and USB DMAs to handle the incoming data, and enabling the streaming function.
+ * It can be configured for "Blackfin" or "ADuC" burst using vendor requests.
+ *
+ * Returns: The status of starting a real-time stream.
+ */
+CyU3PReturnStatus_t AdiBurstStreamStart()
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+	uint16_t bytesRead;
+
+	/* Disable VBUS ISR */
+	CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
+
+	/* Disable GPIO interrupt before attaching interrupt to pin */
+	CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
+
+	/* Make sure the global data ready pin is configured as an input and attach the interrupt to the correct edge */
+	CyU3PGpioSimpleConfig_t gpioConfig;
+	gpioConfig.outValue = CyTrue;
+	gpioConfig.inputEn = CyTrue;
+	gpioConfig.driveLowEn = CyFalse;
+	gpioConfig.driveHighEn = CyFalse;
+	if (FX3State.DrPolarity)
+	{
+		gpioConfig.intrMode = CY_U3P_GPIO_INTR_POS_EDGE;
+	}
+	else
+	{
+		gpioConfig.intrMode = CY_U3P_GPIO_INTR_NEG_EDGE;
+	}
+	status = CyU3PGpioSetSimpleConfig(FX3State.DrPin, &gpioConfig);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Setting burst stream pin interrupt failed!, error code = 0x%x\r\n", status);
+		AdiAppErrorHandler(status);
+	}
+
+	/* Get the number of buffers, trigger word, and transfer length from the control endpoint */
+	CyU3PUsbGetEP0Data(8, USBBuffer, &bytesRead);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Failed to get EP0 data!, error code = 0x%x\r\n", status);
+		AdiAppErrorHandler(status);
+	}
+	StreamThreadState.NumBuffers = USBBuffer[0];
+	StreamThreadState.NumBuffers += (USBBuffer[1] << 8);
+	StreamThreadState.NumBuffers += (USBBuffer[2] << 16);
+	StreamThreadState.NumBuffers += (USBBuffer[3] << 24);
+
+	/* Get number of words to capture per transfer (minus the trigger word) */
+	StreamThreadState.TransferWordLength = USBBuffer[6];
+	StreamThreadState.TransferWordLength += (USBBuffer[7] << 8);
+
+	/* Calculate the total number of bytes to transfer and add the trigger word */
+	/* We're going to overwrite the first two bytes with the trigger word, so make the burst length 2 bytes larger */
+	StreamThreadState.TransferByteLength = (StreamThreadState.TransferWordLength * 2) + 2;
+
+	/* Set regList memory to correct length plus trigger word */
+	StreamThreadState.RegList = CyU3PDmaBufferAlloc(sizeof(uint8_t) * StreamThreadState.TransferByteLength);
+
+	/* Clear (zero) contents of regList memory. Burst transfers are DNC, so we're sending zeros */
+	CyU3PMemSet(StreamThreadState.RegList, 0, sizeof(uint8_t) * StreamThreadState.TransferByteLength);
+
+	/* Append burst trigger word to the first two bytes of regList */
+	StreamThreadState.RegList[0] = USBBuffer[4];
+	StreamThreadState.RegList[1] = USBBuffer[5];
+
+	/* Calculate the required memory block (in bytes) to be a multiple of 16 */
+	uint16_t remainder = StreamThreadState.TransferByteLength % 16;
+	if (remainder == 0)
+	{
+		StreamThreadState.RoundedByteTransferLength = StreamThreadState.TransferByteLength;
+	}
+	else
+	{
+		StreamThreadState.RoundedByteTransferLength = StreamThreadState.TransferByteLength + 16 - remainder;
+	}
+
+#ifdef VERBOSE_MODE
+	 CyU3PDebugPrint (4, "Starting burst stream");
+	 CyU3PDebugPrint (4, "burstTriggerUpper:  %d\r\n", StreamThreadState.RegList[0]);
+	 CyU3PDebugPrint (4, "burstTriggerLower:  %d\r\n", StreamThreadState.RegList[1]);
+	 CyU3PDebugPrint (4, "roundedTransferLength:  %d\r\n", StreamThreadState.RoundedByteTransferLength);
+	 CyU3PDebugPrint (4, "transferByteLength:  %d\r\n", StreamThreadState.TransferByteLength);
+	 CyU3PDebugPrint (4, "transferWordLength:  %d\r\n", StreamThreadState.TransferWordLength);
+	 CyU3PDebugPrint (4, "numBuffers:  %d\r\n", StreamThreadState.NumBuffers);
+#endif
+
+	/* Configure the Burst DMA Streaming Channel (SPI to PC) for Auto DMA */
+	CyU3PDmaChannelConfig_t dmaConfig;
+	CyU3PMemSet ((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
+	dmaConfig.size 				= FX3State.UsbBufferSize;
+	dmaConfig.count 			= 256;
+	dmaConfig.prodSckId 		= CY_U3P_LPP_SOCKET_SPI_PROD;
+	dmaConfig.consSckId 		= CY_U3P_UIB_SOCKET_CONS_1;
+	dmaConfig.dmaMode 			= CY_U3P_DMA_MODE_BYTE;
+	dmaConfig.prodHeader    	= 0;
+	dmaConfig.prodFooter    	= 0;
+	dmaConfig.consHeader    	= 0;
+	dmaConfig.notification  	= 0;
+	dmaConfig.cb            	= NULL;
+	dmaConfig.prodAvailCount	= 0;
+
+	status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_AUTO, &dmaConfig);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Configuring the Burst Stream DMA failed, Error Code = 0x%x\r\n", status);
+		AdiAppErrorHandler(status);
+	}
+
+	/* Configure SPI TX DMA (CPU memory to SPI for burst mode)
+	 * Transfer length must equal length of message to be sent
+	 * Count not required since the DMA will be run in override mode */
+	CyU3PMemSet ((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
+    dmaConfig.size 				= StreamThreadState.RoundedByteTransferLength;
+    dmaConfig.count 			= 0;
+    dmaConfig.prodSckId 		= CY_U3P_CPU_SOCKET_PROD;
+    dmaConfig.consSckId 		= CY_U3P_LPP_SOCKET_SPI_CONS;
+    dmaConfig.dmaMode 			= CY_U3P_DMA_MODE_BYTE;
+    dmaConfig.prodHeader     	= 0;
+    dmaConfig.prodFooter     	= 0;
+    dmaConfig.consHeader     	= 0;
+    dmaConfig.notification   	= 0;
+    dmaConfig.cb             	= NULL;
+    dmaConfig.prodAvailCount 	= 0;
+
+    status = CyU3PDmaChannelCreate(&MemoryToSPI, CY_U3P_DMA_TYPE_MANUAL_OUT, &dmaConfig);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Configuring the SPI TX DMA failed, Error Code = 0x%x\r\n", status);
+		AdiAppErrorHandler(status);
+	}
+
+	/* Flush the streaming endpoint */
+	status = CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Flushing the ADI_STREAMING_ENDPOINT failed, Error Code = 0x%x\r\n", status);
+		AdiAppErrorHandler(status);
+	}
+
+	/* Manually reset the SPI Rx/Tx FIFO */
+	AdiSpiResetFifo(CyTrue, CyTrue);
+
+	/* Set the SPI config for streaming mode */
+	FX3State.SpiConfig.ssnCtrl = CY_U3P_SPI_SSN_CTRL_HW_END_OF_XFER;
+	FX3State.SpiConfig.wordLen = 8;
+	status = CyU3PSpiSetConfig(&FX3State.SpiConfig, NULL);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Setting SPI config for burst stream mode failed, Error Code = 0x%x\r\n", status);
+		AdiAppErrorHandler(status);
+	}
+
+	/* Configure SpiDmaBuffer and feed it regList*/
+	CyU3PMemSet ((uint8_t *)&SpiDmaBuffer, 0, sizeof(SpiDmaBuffer));
+	SpiDmaBuffer.count = StreamThreadState.TransferByteLength;
+	SpiDmaBuffer.size = StreamThreadState.RoundedByteTransferLength;
+	SpiDmaBuffer.buffer = StreamThreadState.RegList;
+	SpiDmaBuffer.status = 0;
+
+	/* Enable an infinite DMA transfer on the streaming channel */
+	status = CyU3PDmaChannelSetXfer(&StreamingChannel, 0);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Setting CyU3PDmaChannelSetXfer failed, Error Code = 0x%x\r\n", status);
+		AdiAppErrorHandler(status);
+	}
+
+	/* Set the burst stream flag to notify the streaming thread it should take over */
+	CyU3PEventSet (&EventHandler, ADI_BURST_STREAM_ENABLE, CYU3P_EVENT_OR);
+
+	return status;
+}
+
+/*
+ * Function: AdiBurstStreamFinished()
+ *
+ * This function cleans up after a burst stream by resetting the SPI port and notifying the host
+ * that the cancel operation was successful.
+ *
+ * Returns: The status of the cancel operation.
+ *
+ */
+CyU3PReturnStatus_t AdiBurstStreamFinished()
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+
+	/* Reset the SPI controller */
+	SPI->lpp_spi_config &= ~(CY_U3P_LPP_SPI_RX_ENABLE | CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_DMA_MODE | CY_U3P_LPP_SPI_ENABLE);
+	while ((SPI->lpp_spi_config & CY_U3P_LPP_SPI_ENABLE) != 0);
+
+	/* Remove the interrupt from the global data ready pin */
+	CyU3PGpioSimpleConfig_t gpioConfig;
+	gpioConfig.outValue = CyTrue;
+	gpioConfig.inputEn = CyTrue;
+	gpioConfig.driveLowEn = CyFalse;
+	gpioConfig.driveHighEn = CyFalse;
+	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+
+	CyU3PGpioSetSimpleConfig(FX3State.DrPin, &gpioConfig);
+
+	/* Destroy MemoryToSpi DMA channel */
+    status = CyU3PDmaChannelDestroy(&MemoryToSPI);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Destroying the SPI TX DMA failed, Error Code = 0x%x\r\n", status);
+		return status;
+	}
+
+    /* Destroy the burst DMA channel (and recover a LOT of memory) */
+    status = CyU3PDmaChannelDestroy(&StreamingChannel);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Tearing down the Streaming DMA channel failed, Error Code = 0x%x\r\n", status);
+		return status;
+	}
+
+	/* Flush the streaming end point */
+	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
+
+	/* Clear all interrupt flags */
+	CyU3PVicClearInt();
+
+	/* Re-enable relevant ISRs */
+	CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
+	CyU3PVicEnableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
+
+	/* Additional clean-up after a user requests an early cancellation */
+	if(KillStreamEarly)
+	{
+		/* Send status back over control endpoint to end USB transaction and signal cancel was completed successfully */
+		USBBuffer[0] = status & 0xFF;
+		USBBuffer[1] = (status & 0xFF00) >> 8;
+		USBBuffer[2] = (status & 0xFF0000) >> 16;
+		USBBuffer[3] = (status & 0xFF000000) >> 24;
+		CyU3PUsbSendEP0Data (4, USBBuffer);
+
+		/* Reset KillStreamEarly flag in case the user wants to capture data again */
+		KillStreamEarly = CyFalse;
+	}
+
+	return status;
+}
+
+
+/*
+ * Function: AdiGenericStreamStart()
+ *
+ * This function kicks off a generic data stream by configuring interrupts, SPI, and end points.
+ * At the end of the function, the ADI_GENERIC_STREAM_ENABLE flag is set such that the
+ * generic streaming thread knows to start producing data.
+ *
+ * Returns: The status of starting a generic stream.
+ */
+CyU3PReturnStatus_t AdiGenericStreamStart()
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+	uint16_t bytesRead;
+
+	/* Get the data from the control endpoint */
+	status = CyU3PUsbGetEP0Data(StreamThreadState.TransferByteLength, USBBuffer, &bytesRead);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Failed to read configuration data from control endpoint!, error code = 0x%x\r\n", status);
+	}
+
+	/* Disable VBUS ISR */
+	CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
+
+	/* Disable GPIO interrupt before attaching interrupt to pin */
+	CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
+
+	/* Make sure the data ready pin is configured as an input and attach the correct pin interrupt */
+	CyU3PGpioSimpleConfig_t gpioConfig;
+	gpioConfig.outValue = CyTrue;
+	gpioConfig.inputEn = CyTrue;
+	gpioConfig.driveLowEn = CyFalse;
+	gpioConfig.driveHighEn = CyFalse;
+	if (FX3State.DrPolarity)
+	{
+		gpioConfig.intrMode = CY_U3P_GPIO_INTR_POS_EDGE;
+	}
+	else
+	{
+		gpioConfig.intrMode = CY_U3P_GPIO_INTR_NEG_EDGE;
+	}
+
+	status = CyU3PGpioSetSimpleConfig(FX3State.DrPin, &gpioConfig);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Setting burst stream pin interrupt failed!, error code = 0x%x\r\n", status);
+	}
+
+	/* Get the number of buffers (number of times to read each set of registers) */
+	StreamThreadState.NumBuffers = USBBuffer[0];
+	StreamThreadState.NumBuffers += (USBBuffer[1] << 8);
+	StreamThreadState.NumBuffers += (USBBuffer[2] << 16);
+	StreamThreadState.NumBuffers += (USBBuffer[3] << 24);
+
+	/* Get the number of captures of the address list (number of times to capture the list of registers per buffer) */
+	StreamThreadState.NumCaptures = USBBuffer[4];
+	StreamThreadState.NumCaptures += (USBBuffer[5] << 8);
+	StreamThreadState.NumCaptures += (USBBuffer[6] << 16);
+	StreamThreadState.NumCaptures += (USBBuffer[7] << 24);
+
+	/* Calculate the number of bytes per buffer */
+	/* Number of times to read each set of registers * (number of registers - control registers) */
+	StreamThreadState.BytesPerBuffer = StreamThreadState.NumCaptures * (StreamThreadState.TransferByteLength - 8);
+
+	/* Set regList memory ((transferByteLength - (number of config bytes) * numCaptures) + trigger word) */
+	StreamThreadState.RegList = CyU3PMemAlloc(sizeof(uint8_t) * (((StreamThreadState.TransferByteLength - 8) * StreamThreadState.NumCaptures) + 2));
+
+	/* Clear (zero) contents of regList memory */
+	CyU3PMemSet(StreamThreadState.RegList, 0, sizeof(uint8_t) * (((StreamThreadState.TransferByteLength - 8) * StreamThreadState.NumCaptures) + 2));
+
+	/* Write register list values to regList */
+	uint16_t i, j;
+	for (i = 0; i < StreamThreadState.NumCaptures; i++)
+	{
+		for(j = 0; j < (StreamThreadState.TransferByteLength - 8); j++)
+		{
+			StreamThreadState.RegList[(i * (StreamThreadState.TransferByteLength - 8)) + j] = USBBuffer[j + 8];
+		}
+	}
+
+	//Find number of register "buffers" which fit in a USB buffer
+	if(StreamThreadState.BytesPerBuffer > FX3State.UsbBufferSize)
+	{
+		StreamThreadState.BytesPerUsbPacket = FX3State.UsbBufferSize;
+	}
+	else
+	{
+		StreamThreadState.BytesPerUsbPacket = ((FX3State.UsbBufferSize / StreamThreadState.BytesPerBuffer) * StreamThreadState.BytesPerBuffer);
+	}
+
+	/* Flush the streaming endpoint */
+	status = CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Flushing the ADI_STREAMING_ENDPOINT failed, Error Code = 0x%x\r\n", status);
+		AdiAppErrorHandler(status);
+	}
+
+	/* Configure the StreamingChannel DMA (SPI to PC) */
+	CyU3PDmaChannelConfig_t dmaConfig;
+	CyU3PMemSet ((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
+	dmaConfig.size 				= FX3State.UsbBufferSize;
+	dmaConfig.count 			= 4;
+	dmaConfig.prodSckId 		= CY_U3P_CPU_SOCKET_PROD;
+	dmaConfig.consSckId 		= CY_U3P_UIB_SOCKET_CONS_1;
+	dmaConfig.dmaMode 			= CY_U3P_DMA_MODE_BYTE;
+	dmaConfig.prodHeader    	= 0;
+	dmaConfig.prodFooter    	= 0;
+	dmaConfig.consHeader    	= 0;
+	dmaConfig.notification  	= 0;
+	dmaConfig.cb            	= NULL;
+	dmaConfig.prodAvailCount	= 0;
+
+	status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_MANUAL_OUT, &dmaConfig);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Configuring the StreamingChannel DMA for generic stream failed, Error Code = 0x%x\r\n", status);
+		AdiAppErrorHandler(status);
+	}
+
+	/* Set DMA transfer mode */
+	status = CyU3PDmaChannelSetXfer(&StreamingChannel, 0);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "CyU3PDmaChannelSetXfer failed, Error Code = 0x%x\r\n", status);
+		return status;
+	}
+
+	//Enable timer interrupts
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= (~CY_U3P_LPP_GPIO_INTRMODE_MASK);
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_GPIO_INTR_TIMER_THRES << CY_U3P_LPP_GPIO_INTRMODE_POS;
+
+	//Set the timer pin threshold to correspond with the stall time
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold = (FX3State.StallTime * 10) - ADI_GENERIC_STALL_OFFSET;
+	//Set the timer pin period (useful for error case, timer register is manually reset)
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = (FX3State.StallTime * 10) - ADI_GENERIC_STALL_OFFSET + 1;
+
+	//Enable generic data capture thread
+	status = CyU3PEventSet (&EventHandler, ADI_GENERIC_STREAM_ENABLE, CYU3P_EVENT_OR);
+
+	return status;
+
+}
+
+/*
+ * Function: AdiGenericStreamFinished()
+ *
+ * This function cleans up after a generic stream and notifies the host that the cancel operation was successful if requested.
+ *
+ * Returns: The status of the cancel operation.
+ *
+ */
+CyU3PReturnStatus_t AdiGenericStreamFinished()
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+
+	/* Remove the interrupt from the global data ready pin */
+	CyU3PGpioSimpleConfig_t gpioConfig;
+	gpioConfig.outValue = CyTrue;
+	gpioConfig.inputEn = CyTrue;
+	gpioConfig.driveLowEn = CyFalse;
+	gpioConfig.driveHighEn = CyFalse;
+	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+	CyU3PGpioSetSimpleConfig(FX3State.DrPin, &gpioConfig);
+
+    /* Destroy the StreamingChannel channel (and recover a LOT of memory) */
+    status = CyU3PDmaChannelDestroy(&StreamingChannel);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Tearing down the Streaming DMA channel failed, Error Code = 0x%x\r\n", status);
+	}
+
+	/* Flush the streaming endpoint */
+	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
+
+	/* Clear all interrupt flags */
+	CyU3PVicClearInt();
+
+	/* Re-enable relevant ISRs */
+	CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
+	CyU3PVicEnableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
+
+	/* Additional clean-up after a user requests an early cancellation */
+	if(KillStreamEarly)
+	{
+		/* Send status back over control endpoint to end USB transaction and signal cancel was completed successfully */
+		USBBuffer[0] = status & 0xFF;
+		USBBuffer[1] = (status & 0xFF00) >> 8;
+		USBBuffer[2] = (status & 0xFF0000) >> 16;
+		USBBuffer[3] = (status & 0xFF000000) >> 24;
+		CyU3PUsbSendEP0Data (4, USBBuffer);
+
+		/* Reset KillStreamEarly flag in case the user wants to capture data again */
+		KillStreamEarly = CyFalse;
+
+		//print debug message
+		CyU3PDebugPrint (4, "Generic stream terminated early! \r\n");
+	}
+
+	return status;
+}
