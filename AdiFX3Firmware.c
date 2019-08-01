@@ -282,6 +282,9 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	{
             		isHandled = CyFalse;
             	}
+#ifdef VERBOSE_MODE
+            	CyU3PDebugPrint (4, "Firmware ID: %s\r\n", FirmwareID);
+#endif
                 break;
 
             //Serial Number Check
@@ -297,6 +300,9 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             case ADI_HARD_RESET:
             	CyU3PUsbAckSetup();
             	CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+#ifdef VERBOSE_MODE
+        CyU3PDebugPrint (4, "Rebooting FX3!\r\n");
+#endif
             	CyU3PThreadSleep(500);
             	CyU3PConnectState(CyFalse, CyTrue);
             	AdiAppStop ();
