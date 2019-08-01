@@ -23,23 +23,23 @@
  * Thread and Event Management Definitions
  */
 
-/*Thread for real time streaming function */
+/* Thread for real time streaming function */
 CyU3PThread StreamThread;
 
-/*Thread for the main application */
+/* Thread for the main application */
 CyU3PThread AppThread;
 
-/*ADI event structure */
+/* ADI event structure */
 CyU3PEvent EventHandler;
 
-/*ADI GPIO event structure */
+/* ADI GPIO event structure */
 CyU3PEvent GpioHandler;
 
 /*
  * DMA Channel Definitions
  */
 
-/*DMA channel for real time streaming (SPI to USB BULK-IN 0x81) */
+/* DMA channel for real time streaming (SPI to USB BULK-IN 0x81) */
 CyU3PDmaChannel StreamingChannel;
 
 /*DMA channel for BULK-OUT endpoint 0x1 (PC to FX3) */

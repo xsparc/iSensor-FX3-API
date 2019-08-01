@@ -1,5 +1,4 @@
 /*
- ## Analog Devices Inc. FX3 Interface Header (AdiFX3Firmware.h)
  ## ===========================
  ##
  ##  Copyright Analog Devices Incorporated, 2018-2019,
@@ -12,10 +11,26 @@
  ##  by the license agreement included
  ##	 in this repository.
  ##
- ##	 Juan Chong (juan.chong@analog.com), Alex Nolan (alex.nolan@analog.com)
- ##
  ## ===========================
  */
+
+/**
+  * Copyright (c) Analog Devices Inc, 2018 - 2019
+  * All Rights Reserved.
+  *
+  * THIS SOFTWARE UTILIZES LIBRARIES DEVELOPED
+  * AND MAINTAINED BY CYPRESS INC. THE LICENSE INCLUDED IN
+  * THIS REPOSITORY DOES NOT EXTEND TO CYPRESS PROPERTY.
+  *
+  * Use of this file is governed by the license agreement
+  * included in this repository.
+  *
+  * @file
+  * @date
+  * @author
+  * @version
+  * @brief
+ **/
 
 #ifndef ADIFX3FIRMWARE_H_
 #define ADIFX3FIRMWARE_H_
