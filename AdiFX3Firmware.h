@@ -71,8 +71,8 @@ CyBool_t AdiLPMRequestHandler(CyU3PUsbLinkPowerMode link_mode);
 void AdiGPIOEventHandler(uint8_t gpioId);
 
 /* Application entry points */
-void AppThread_Entry(uint32_t input);
-void AdiDataStream_Entry(uint32_t input);
+void AdiAppThreadEntry(uint32_t input);
+void AdiStreamThreadEntry(uint32_t input);
 
 //Pin functions.
 CyU3PReturnStatus_t AdiPulseDrive();
@@ -115,7 +115,9 @@ CyU3PReturnStatus_t AdiBurstStreamFinished();
 //General stream functions.
 CyU3PReturnStatus_t AdiStopAnyDataStream();
 
-//Enum for part type (used in streaming modes)
+/*
+ * Enum for the available part (DUT) types
+ */
 typedef enum PartTye
 {
 	ADcmXL1021 = 0,			//0 for ADcmXL1021 (single axis)
@@ -124,12 +126,84 @@ typedef enum PartTye
     Other					//Other DUT's (IMUs)
 }PartType;
 
-//Struct to store relevant board parameters
-struct BoardConfig
+/*
+ * Struct to store the current board state (SPI config, USB speed, etc)
+ */
+typedef struct BoardState
 {
-	//Not used yet. Plan to use once more hardware revisions are implemented.
-};
+	/*Track the SPI configuration */
+	CyU3PSpiConfig_t SpiConfig;
 
+	/*Track the part type */
+	PartType DutType;
+
+	/*Track the USB buffer size for the current USB speed setting*/
+	uint16_t UsbBufferSize;
+
+	/*Track main application execution state*/
+	CyBool_t AppActive;
+
+	/*Bit mask of the starting timer pin configuration */
+	uint32_t TimerPinConfig;
+
+	/*Track the stall time in microseconds. This is the same as the FX3Api stall time setting */
+	uint32_t StallTime;
+
+	/*Track the data ready pin number */
+	uint16_t DrPin;
+
+	/*Track the busy pin number */
+	uint16_t BusyPin;
+
+	/*Track if data ready triggering is active (True = active, False = inactive) */
+	CyBool_t DrActive;
+
+	/*Track data ready polarity (True = trigger on rising edge, False = trigger on falling edge) */
+	CyBool_t DrPolarity;
+
+}BoardState;
+
+/*
+ * Struct to store the current data stream state information
+ */
+typedef struct StreamState
+{
+	/*Track the number of bytes per real time frame */
+	uint32_t BytesPerFrame;
+
+	/*Track the pin exit setting for RT stream mode (True = enabled, False = disabled) */
+	CyBool_t PinExitEnable;
+
+	/*Track the pin start setting for RT stream mode (True = enabled, False = disabled) */
+	CyBool_t PinStartEnable;
+
+	/*Track the number of real-time captures to record (0 = Infinite) */
+	uint32_t NumRealTimeCaptures;
+
+	/*Track the total size of generic stream transfer in 16-bit words */
+	uint16_t TransferWordLength;
+
+	/*Track the total size of generic and burst stream transfers in bytes */
+	uint32_t TransferByteLength;
+
+	/*Track the total size of a generic or burst stream rounded to a multiple of 16 */
+	uint16_t RoundedByteTransferLength;
+
+	/*Track the number of captures requested for the generic data stream */
+	uint32_t NumCaptures;
+
+	/*Track the number of buffers requested for the generic data stream */
+	uint32_t NumBuffers;
+
+	/*Track the number of bytes to be read per buffer */
+	uint16_t BytesPerBuffer;
+
+	/*Pointer to byte array of registers needing to be read by the generic data stream */
+	uint8_t *RegList;
+
+	/*Number of bytes per USB packet in generic data stream mode */
+	uint16_t BytesPerUsbPacket;
+}StreamState;
 
 /*
  * Vendor Command Request Code Definitions
@@ -216,10 +290,10 @@ struct BoardConfig
 #define APPTHREAD_PRIORITY    						(8)
 
 // Real time thread stack size
-#define STREAMINGTHREAD_STACK					(0x0800)
+#define STREAMTHREAD_STACK					(0x0800)
 
 // Real time thread priority
-#define STREAMINGTHREAD_PRIORITY					(8)
+#define STREAMTHREAD_PRIORITY					(8)
 
 /*
  * GPIO Pin mapping definitions
