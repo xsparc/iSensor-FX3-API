@@ -140,7 +140,10 @@ void AdiStreamThreadEntry(uint32_t input)
 				//Check to see if we've captured enough buffers or if we were asked to stop data capture early
 				if ((numBuffersRead >= (StreamThreadState.NumBuffers - 1)) || KillStreamEarly)
 				{
-					CyU3PDebugPrint (4, "Finished reading %d buffers\r\n", numBuffersRead + 1);
+
+#ifdef VERBOSE_MODE
+					CyU3PDebugPrint (4, "Exiting stream thread, %d generic stream buffers read.\r\n", numBuffersRead + 1);
+#endif
 
 					//Reset values
 					numBuffersRead = 0;
@@ -238,6 +241,11 @@ void AdiStreamThreadEntry(uint32_t input)
 					{
 						CyU3PDebugPrint (4, "Wrapping up the streaming DMA channel failed!, error code = %d\r\n", status);
 					}
+
+#ifdef VERBOSE_MODE
+					CyU3PDebugPrint (4, "Exiting stream thread, %d real time frames read.\r\n", numFramesCaptured + 1);
+#endif
+
 					//Reset frame counter
 					numFramesCaptured = 0;
 
@@ -331,6 +339,10 @@ void AdiStreamThreadEntry(uint32_t input)
 						CyU3PDebugPrint (4, "Wrapping up the streaming DMA channel failed!, error code = %d\r\n", status);
 						AdiAppErrorHandler(status);
 					}
+
+#ifdef VERBOSE_MODE
+					CyU3PDebugPrint (4, "Exiting stream thread, %d burst stream buffers read.\r\n", numBuffersRead + 1);
+#endif
 
 					/* Clear GPIO interrupts */
 					GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;

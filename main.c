@@ -668,6 +668,8 @@ void AdiAppStop(void)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
+	CyU3PDebugPrint (4, "Application stopping!\r\n");
+
 	/* Signal that the app thread has been stopped */
 	FX3State.AppActive = CyFalse;
 
