@@ -37,6 +37,19 @@ extern StreamState StreamThreadState;
  *
  * Returns: status
  */
+
+
+/**
+  * @brief This function performs a protocol agnostic SPI bi-directional SPI transfer of (1, 2, 4) bytes
+  *
+  * @param writeData The data to transmit on the MOSI line.
+  *
+  * @return A status code indicating the success of the operation.
+  *
+  * This function performs a bi-directional SPI transfer, on up to 4 bytes of data. The transfer length is
+  * determined by the current SPI config word length setting. The status and data recieved on the MISO line
+  * are sent to the PC over EP0 following the transfer.
+ **/
 CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;

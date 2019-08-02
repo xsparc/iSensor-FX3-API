@@ -14,7 +14,7 @@
   * @author		A. Nolan (alex.nolan@analog.com)
   * @author 	J. Chong (juan.chong@analog.com)
   * @version 	1.0.7-pub
-  * @brief
+  * @brief		Entry point and setup functions for the Analog Devices iSensor FX3 Demonstration Platform firmware.
  **/
 
 #include "main.h"
