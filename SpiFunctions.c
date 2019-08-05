@@ -27,24 +27,12 @@ extern CyU3PDmaBuffer_t ManualDMABuffer;
 extern BoardState FX3State;
 extern StreamState StreamThreadState;
 
-/*
- * Function: AdiTransferBytes(uint32_t writeData)
- *
- * This function performs a bi-directional SPI transfer, on up to 4 bytes of data.
- * The status code and data read back are returned on the control endpoint.
- *
- * writeData: The TX data to transmit to the slave device.
- *
- * Returns: status
- */
-
-
 /**
   * @brief This function performs a protocol agnostic SPI bi-directional SPI transfer of (1, 2, 4) bytes
   *
   * @param writeData The data to transmit on the MOSI line.
   *
-  * @return A status code indicating the success of the operation.
+  * @return A status code indicating the success of the function.
   *
   * This function performs a bi-directional SPI transfer, on up to 4 bytes of data. The transfer length is
   * determined by the current SPI config word length setting. The status and data recieved on the MISO line
@@ -83,16 +71,16 @@ CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData)
 	return status;
 }
 
-/*
- * Function: AdiReadRegBytes(uint16_t addr)
- *
- * This function reads a single word over SPI. Note that reads are not "full duplex"
- * and will require a discrete read to set the address to be read from.
- *
- * addr: The address to send to the DUT in the first SPI transaction
- *
- * Returns: status
- */
+/**
+  * @brief This function reads a single 16 bit SPI word from a slave device.
+  *
+  * @param addr The address to send to the DUT in the first SPI transaction.
+  *
+  * @return A status code indicating the success of the function.
+  *
+  * This function reads a single word over SPI. Note that reads are not "full duplex"
+  * and will require a discrete read to set the address to be read from (two 16 bit transactions per read).
+ **/
 CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -133,17 +121,15 @@ CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr)
 	return status;
 }
 
-/*
- * Function: AdiWriteRegByte(uint16_t addr, uint8_t data)
- *
- * This function writes a single byte of data over the SPI bus
- *
- * addr: The address to write data to
- *
- * data: The byte of data to write to the address
- *
- * Returns: status
- */
+/**
+  * @brief This function writes a single byte of data over the SPI bus
+  *
+  * @param addr The DUT address to write data to (7 bits).
+  *
+  * @param data The byte of data to write to the address
+  *
+  * @return A status code indicating the success of the function.
+ **/
 CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -167,15 +153,18 @@ CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data)
 	return status;
 }
 
-/*
- * Function: AdiBulkByteTransfer()
- *
- * This function performs a bulk register transfer using the bulk in and out endpoints.
- * It handles function calls in the IRegInterface which require more than one register
- * read/write operation.
- *
- * Returns: The status of the transfer operation
- */
+/**
+  * @brief This function performs a bulk register transfer using the bulk in and out endpoints.
+  *
+  * @param numBytes The total number of bytes to read
+  *
+  * @param bytesPerCapture The total number of bytes to read per data ready, if DrActive is true.
+  *
+  * @return A status code indicating the success of the function.
+  *
+  * This function handles calls in the IRegInterface which require more than one register read/write operation,
+  * allowing for better performance.
+ **/
 CyU3PReturnStatus_t AdiBulkByteTransfer(uint16_t numBytes, uint16_t bytesPerCapture)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -301,15 +290,19 @@ CyU3PReturnStatus_t AdiBulkByteTransfer(uint16_t numBytes, uint16_t bytesPerCapt
 	return status;
 }
 
-/*
- * Function: AdiSpiResetFifo(CyBool_t isTx, CyBool_t isRx)
- *
- * This function resets the SPI FIFO and disables the SPI block after completion.
- * It is a copy of the private CyU3PSpiResetFifo() function required due to our
- * high-speed, register-initiated transfers.
- *
- * Returns: The success of the SPI reset FIFO operation
- */
+/**
+  * @brief This function resets the SPI FIFO and disables the SPI block after completion.
+  *
+  * @param isTx Boolean to indicate if you're clearing the TX FIFO
+  *
+  * @param isRx Boolean to indicate if you're clearing the RX FIFO
+  *
+  * @return The success of the SPI reset FIFO operation.
+  *
+  * It is a copy of the private CyU3PSpiResetFifo() function which bypasses some input sanitization which the Cypress
+  * libraries perform. This is required due to our high-speed, register-initiated transfers.
+  *
+ **/
 CyU3PReturnStatus_t AdiSpiResetFifo(CyBool_t isTx, CyBool_t isRx)
 {
 	uint32_t intrMask;
@@ -356,13 +349,14 @@ CyU3PReturnStatus_t AdiSpiResetFifo(CyBool_t isTx, CyBool_t isRx)
 	return CY_U3P_SUCCESS;
 }
 
-/*
- * Function: AdiGetSpiSettings()
- *
- * This function handles vendor commands to get the current SPI configuration from the FX3
- *
- * Returns: if the transaction was successful
- */
+/**
+  * @brief This function handles vendor commands to get the current SPI configuration from the FX3
+  *
+  * @return A status code indicating the success of the function.
+  *
+  * This function allows the FX3 API to verify that the FX3 board has the same SPI settings as the
+  * current FX3 connection instance. The current configuration is sent to the PC via EP0.
+ **/
 CyU3PReturnStatus_t AdiGetSpiSettings()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -395,19 +389,20 @@ CyU3PReturnStatus_t AdiGetSpiSettings()
 	return status;
 }
 
-/*
- * Function: AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
- *
- * This function handles a vendor command request to update the SPI configuration
- *
- * index: The wIndex from the control endpoint transaction which indicates which parameter to update
- *
- * value: The wValue from the control endpoint transaction which holds the SPI value to set
- *
- * length: The length of the Data In phase of the control endpoint transaction
- *
- * Returns: A boolean indicating if the SPI configuration was a success
- */
+/**
+  * @brief This function handles a vendor command request to update the SPI/DR Pin configuration.
+  *
+  * @param index The wIndex from the control endpoint transaction which indicates which parameter to update
+  *
+  * @param value The wValue from the control endpoint transaction which holds the SPI value to set for the selected parameter.
+  *
+  * @param length The length of the Data In phase of the control endpoint transaction
+  *
+  * @return A boolean indicating if the SPI configuration was a success
+  *
+  * This function provides an API for maintaining synchronicity in SPI and data ready triggering settings between the FX3 API and
+  * the firmware. Any time a setting is changed on the FX3 API, this function will be invoked to reflect that change.
+ **/
 CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 {
     uint32_t clockFrequency;
