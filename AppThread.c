@@ -22,15 +22,13 @@
 extern CyU3PEvent EventHandler;
 extern char serial_number[];
 
-/*
- * Function: AdiDebugInit()
- *
- * This function initializes the UART controller to send debug messages.
- * The debug prints are routed to the UART and can be seen using a UART console
- * running at 115200 baud rate.
- *
- * Returns: Void
- */
+/**
+  * @brief This function initializes the UART controller to send debug messages.
+  *
+  * This function is called as part of the main application thread startup process.
+  * The debug prints are routed to the UART and can be seen using a UART console
+  * running at 115200 baud rate. The UART Tx and Rx must be connected to DQ30 and DQ31.
+ **/
 void AdiDebugInit(void)
 {
     CyU3PUartConfig_t uartConfig;
@@ -83,12 +81,13 @@ void AdiDebugInit(void)
     CyU3PDebugPrint (4, "Debugger successfully initialized!\r\n");
 }
 
-/* Function: AdiAppInit()
- *
- * This function initializes the USB module and attaches core event handlers.
- *
- * Returns: void
- */
+/**
+  * @brief This function initializes the USB module and attaches core event handlers.
+  *
+  * This function is called as part of the main application thread (AppThread) startup
+  * process when the ThreadX RTOS first boots. This function also retrieves the unique
+  * FX3 serial number.
+ **/
 void AdiAppInit (void)
 {
     CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -245,16 +244,15 @@ void AdiAppInit (void)
     }
 }
 
-/*
- * Function AdiAppThreadEntry(uint32_t input)
- *
- * This is the entry point for the main application thread. It performs the device initialization
- * and then handles streaming start/stop commands for the various streaming methods.
- *
- * input: Unused input argument required by the thread manager
- *
- * Returns: void
- */
+/**
+  * @brief This is the entry point for the main application thread.
+  *
+  * @param input Unused input argument required by the thread manager
+  *
+  * @return A status code indicating the success of the function.
+  *
+  * This function performs device initialization and then handles streaming start/stop commands for the various streaming methods.
+ **/
 void AdiAppThreadEntry (uint32_t input)
 {
     uint32_t eventMask =

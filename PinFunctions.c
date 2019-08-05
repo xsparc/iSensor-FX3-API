@@ -26,16 +26,17 @@ extern BoardState FX3State;
 extern CyU3PDmaChannel ChannelToPC;
 extern CyU3PEvent GpioHandler;
 
-/*
- * Function: AdiMeasureBusyPulse(uint16_t transferLength)
- *
- * Sets a user configurable trigger condition and then measures the following GPIO pulse.
- * This function is approx. microsecond accurate.
- *
- * transferLength: The amount of data (in bytes) to read from the USB buffer
- *
- * Returns: A status code indicating the success of the measure pulse operation
- */
+/**
+  * @brief Sets a user configurable trigger condition and then measures the following GPIO pulse.
+  *
+  * @param transferLength The amount of data (in bytes) to read from the USB buffer
+  *
+  * @return A status code indicating the success of the measure pulse operation
+  *
+  * This function is approx. microsecond accurate. It can be used for timing measurements which
+  * require a high degree of accuracy since it avoids the overhead of having a USB transaction (200us)
+  * between the initial trigger condition and the pulse measurement.
+ **/
 CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -299,16 +300,15 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 	return status;
 }
 
-/*
- * Function: AdiConfigurePWM(CyBool_t EnablePWM)
- *
- * This function configures the FX3 PWM options. The pin number, threshold value,
- * and period are provided in the USBBuffer, and are calculated in the FX3Api.
- *
- * enablePWM: If the PWM should be enabled or disabled.
- *
- * Returns: status
- */
+/**
+  * @brief This function configures the FX3 PWM (enable or disable).
+  *
+  * @param enablePWM If the PWM should be enabled or disabled.
+  *
+  * @return A status code indicating the success of the function.
+  * The pin number, threshold value, and period are provided in the USBBuffer, and are
+  * calculated in the FX3Api. This avoids any potential math/rounding errors.
+ **/
 CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -402,20 +402,17 @@ CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 	return status;
 }
 
-/*
- * Function: AdiPulseDrive()
- *
- * This function drives a GPIO pin for a specified number of milliseconds. If the
- * selected GPIO pin is not configured as an output, this function configures the pin.
- *
- * pin: The GPIO pin number to drive
- *
- * polarity: The polarity of the pin (True - High, False - Low)
- *
- * driveTime: The number of milliseconds to drive the pin for
- *
- * Returns: The status of the pin drive operation
- */
+/**
+  * @brief This function drives a GPIO pin for a specified number of milliseconds, then returns it to the starting polarity.
+  *
+  * @return A status code indicating the success of the function.
+  *
+  * If the selected GPIO pin is not configured as an output, this function configures the pin. If you want the pin to stay at a
+  * given logic level, use AdiSetPin() instead.
+  * pin: The GPIO pin number to drive
+  * polarity: The polarity of the pin (True - High, False - Low)
+  * driveTime: The number of milliseconds to drive the pin for
+ **/
 CyU3PReturnStatus_t AdiPulseDrive()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -511,20 +508,22 @@ CyU3PReturnStatus_t AdiPulseDrive()
 	return status;
 }
 
-/*
- * Function: AdiPulseWait(uint16_t transferLength)
- *
- * This function waits for a pin to reach a selected logic level. The PulseWait parameters are
- * passed in the USB buffer.
- *
- * pin is the GPIO pin number to poll
- *
- * polarity is the pin polarity which will trigger an exit condition
- *
- * delay is the wait time (in ms) from when the function starts before pin polling starts
- *
- * timeout is the time (in ms) to wait for the pin level before exiting
- */
+/**
+  * @brief This function waits for a pin to reach a selected logic level. The PulseWait parameters
+  * are passed in the USB buffer.
+  *
+  * @param transferLength How many bytes to read from the USBBuffer
+  *
+  * @return A status code indicating the success of the function.
+  *
+  * The time waited and status information are sent to the PC over the bulk out endpoint at the
+  * end of this function. If you want to collect very accurate timing measurements using the FX3,
+  * consider using the AdiMeasureBusyPulse function instead.
+  * pin is the GPIO pin number to poll
+  * polarity is the pin polarity which will trigger an exit condition
+  * delay is the wait time (in ms) from when the function starts before pin polling starts
+  * timeout is the time (in ms) to wait for the pin level before exiting
+ **/
 CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -666,18 +665,15 @@ CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength)
 	return status;
 }
 
-
-/*
- * Function: AdiSetPin(uint16_t pinNumber, CyBool_t polarity)
- *
- * This function configures the specified pin as an output and sets the value
- *
- * pinNumber: The GPIO index of the pin to be set
- *
- * polarity: The polarity of the pin to be set (True - High, False - Low)
- *
- * Returns: The status of the operation
- */
+/**
+  * @brief This function configures the specified pin as an output and drives it with the desired value.
+  *
+  * @param pinNumber The GPIO index of the pin to be set
+  *
+  * @param polarity The polarity of the pin to be set (True - High, False - Low)
+  *
+  * @return A status code indicating the success of the function.
+ **/
 CyU3PReturnStatus_t AdiSetPin(uint16_t pinNumber, CyBool_t polarity)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -692,16 +688,14 @@ CyU3PReturnStatus_t AdiSetPin(uint16_t pinNumber, CyBool_t polarity)
 	return status;
 }
 
-/*
- * Function: AdiSleepForMicroSeconds(uint32_t numTicks)
- *
- * This function blocks thread execution for a specified number of timer ticks.
- * It uses a complex GPIO timer which is based on the system clock.
- *
- * numTicks: The number of timer ticks to wait for.
- *
- * Returns: status
- */
+/**
+  * @brief This function blocks thread execution for a specified number of microseconds. It uses a complex GPIO
+  * timer running at 10MHz, which is scaled down from the 403.2MHz system clock.
+  *
+  * @param numMicroSeconds The number of microseconds to stall for
+  *
+  * @return A status code indicating the success of the function.
+ **/
 CyU3PReturnStatus_t AdiSleepForMicroSeconds(uint32_t numMicroSeconds)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -747,18 +741,18 @@ CyU3PReturnStatus_t AdiSleepForMicroSeconds(uint32_t numMicroSeconds)
 	return status;
 }
 
-/*
- * Function: AdiWaitForPin(uint32_t pinNumber, PinWaitType waitType)
- *
- * This function blocks the execution of the current thread until an event happens on the
- * specified GPIO pin.
- *
- * pinNumber: The GPIO pin number to poll
- *
- * waitType: The event type to wait for, as a PinWaitType
- *
- * Returns: void
- */
+/**
+  * @brief This function blocks the execution of the current thread until an event happens on the
+  * specified GPIO pin.
+  *
+  * @param pinNumber The GPIO pin number to poll
+  *
+  * @param interruptSetting The simple GPIO interrupt mode that the selected pin is configured with.
+  *
+  * @param timeoutTicks The number of GPIO timer ticks (10MHz) to wait for before timing out and returning.
+  *
+  * @return A status code indicating the success of the function.
+ **/
 CyU3PReturnStatus_t AdiWaitForPin(uint32_t pinNumber, CyU3PGpioIntrMode_t interruptSetting, uint32_t timeoutTicks)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -792,27 +786,28 @@ CyU3PReturnStatus_t AdiWaitForPin(uint32_t pinNumber, CyU3PGpioIntrMode_t interr
 	return status;
 }
 
-/*
- * Function: AdiMStoTicks(uint32_t timeInMS)
- *
- * Converts milliseconds to number of ticks and adjusts the resulting offset if below the
- * measurable minimum.
- *
- * timeInMS: The real stall time (in ms) desired.
- */
+/**
+  * @brief Converts milliseconds to number of ticks and adjusts the resulting offset if below the measurable minimum.
+  *
+  * @param timeInMS: The real stall time (in ms) desired.
+  *
+  * @return The number of timer ticks representing that MS value.
+ **/
 uint32_t AdiMStoTicks(uint32_t timeInMS)
 {
 	return timeInMS * MS_TO_TICKS_MULT;
 }
 
-/*
- * Function: AdiPinRead(uint16_t pin)
- *
- * This function handles Pin read control end point requests. It reads the value of a specified
- * GPIO pin, and sends that value over the control endpoint, along with the pin read status.
- *
- * Returns: The success of the pin read operation
- */
+/**
+  * @brief This function handles Pin read control end point requests.
+  *
+  * @param pin The GPIO pin number of the pin to read
+  *
+  * @return The success of the pin read operation
+  *
+  * It reads the value of a specified GPIO pin, and sends that value over the control endpoint,
+  * along with the pin read status.
+ **/
 CyU3PReturnStatus_t AdiPinRead(uint16_t pin)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -850,14 +845,14 @@ CyU3PReturnStatus_t AdiPinRead(uint16_t pin)
 	return status;
 }
 
-/*
- * Function: AdiReadTimerValue()
- *
- * This function handles Timer read control endpoint requests. It reads the current value from the
- * complex GPIO timer and then sends the value over the control endpoint.
- *
- * Returns: The success of the timer read operation
- */
+/**
+  * @brief Reads the current value from the complex GPIO timer and then sends the value over the control endpoint.
+  *
+  * @return The success of the timer read operation.
+  *
+  * This function handles timer read control endpoint requests specifically. May be changed to return the actual
+  * timer value eventually.
+ **/
 CyU3PReturnStatus_t AdiReadTimerValue()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -875,24 +870,21 @@ CyU3PReturnStatus_t AdiReadTimerValue()
 	return status;
 }
 
-/*
- * Function: AdiMeasureDR()
- *
- * This function measures two data ready pulses on a user-specified pin and reports
- * back the delta-time in ticks. The function also transmits the tick scale factor
- * and a timeout counter to notify the interface of timeouts that may have occurred
- * due to missing pulses. Data is transmitted over USB via the bulk endpoint. Inputs
- * are provided through the control endpoint. This function can be expanded to capture
- * as many samples as required.
- *
- * pin: The GPIO pin number to measure
- *
- * polarity: The polarity of the pin (1 - Low-to-High, 0 - High-to-Low)
- *
- * timeoutInMs: The specified timeout in milliseconds
- *
- * Returns: The status of the pin drive operation
- */
+/**
+  * @brief Measure the data ready frequency for a user specified pin
+  *
+  * @return The status of the pin drive operation
+  *
+  * This function measures two data ready pulses on a user-specified pin and reports
+  * back the delta-time in ticks. The function also transmits the tick scale factor
+  * and a timeout counter to notify the interface of timeouts that may have occurred
+  * due to missing pulses. Data is transmitted over USB via the bulk endpoint. Inputs
+  * are provided through the control endpoint. This function can be expanded to capture
+  * as many samples as required.
+  * pin: The GPIO pin number to measure
+  * polarity: The polarity of the pin (1 - Low-to-High, 0 - High-to-Low)
+  * timeoutInMs: The specified timeout in milliseconds
+ **/
 CyU3PReturnStatus_t AdiMeasureDR()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
