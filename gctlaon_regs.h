@@ -1,4 +1,4 @@
-/****************************************************************************
+/*
  *
  * File: gctlaon_regs.h
  *
@@ -18,8 +18,7 @@
  *   <install>/license/license.txt
  *
  * where <install> is the Cypress software installation root directory path.
- *
- ****************************************************************************/
+ */
 
 #ifndef _INCLUDED_GCTLAON_REGS_H_
 #define _INCLUDED_GCTLAON_REGS_H_
