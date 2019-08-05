@@ -23,61 +23,61 @@
  * Thread and Event Management Definitions
  */
 
-/* Thread for real time streaming function */
+/** Thread for real time streaming function */
 CyU3PThread StreamThread;
 
-/* Thread for the main application */
+/** Thread for the main application */
 CyU3PThread AppThread;
 
-/* ADI event structure */
+/** ADI event structure */
 CyU3PEvent EventHandler;
 
-/* ADI GPIO event structure */
+/** ADI GPIO event structure */
 CyU3PEvent GpioHandler;
 
 /*
  * DMA Channel Definitions
  */
 
-/* DMA channel for real time streaming (SPI to USB BULK-IN 0x81) */
+/** DMA channel for real time streaming (SPI to USB BULK-IN 0x81) */
 CyU3PDmaChannel StreamingChannel;
 
-/*DMA channel for BULK-OUT endpoint 0x1 (PC to FX3) */
+/** DMA channel for BULK-OUT endpoint 0x1 (PC to FX3) */
 CyU3PDmaChannel ChannelFromPC;
 
-/*DMA channel for BULK-IN endpoint 0x82 (FX3 to PC) */
+/** DMA channel for BULK-IN endpoint 0x82 (FX3 to PC) */
 CyU3PDmaChannel ChannelToPC;
 
-/*DMA channel for reading a memory location into a DMA consumer */
+/** DMA channel for reading a memory location into a DMA consumer */
 CyU3PDmaChannel MemoryToSPI;
 
 /*
  * Buffer Definitions
  */
 
-/*USB Data buffer */
+/** USB Data buffer */
 uint8_t USBBuffer[4096] __attribute__ ((aligned (32)));
 
-/*Bulk endpoint output buffer */
+/** Bulk endpoint output buffer */
 uint8_t BulkBuffer[12288] __attribute__ ((aligned (32)));
 
-/*DMA buffer structure for output buffer */
+/** DMA buffer structure for output buffer */
 CyU3PDmaBuffer_t ManualDMABuffer;
 
-/*DMA buffer structure for SPI transmit */
+/** DMA buffer structure for SPI transmit */
 CyU3PDmaBuffer_t SpiDmaBuffer;
 
 /*
  * Application constants
  */
 
-/*Constant firmware ID string. Manually updated when building new firmware. */
+/** Constant firmware ID string. Manually updated when building new firmware. */
 const uint8_t FirmwareID[32] __attribute__ ((aligned (32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '1', '.', '0', '.', '7', '-','P','U','B',' ', '\0' };
 
-/*Constant error string used to write "ERROR" to output buffer */
+/** Constant error string used to write "ERROR" to output buffer */
 const uint8_t ErrorString[16] __attribute__ ((aligned (16))) = { 'E', 'R', 'R', 'O', 'R', '\0'};
 
-/*FX3 unique serial number */
+/** FX3 unique serial number. Set at runtime */
 char serial_number[] __attribute__ ((aligned (32))) = {
 	    '0',0x00,'0',0x00,'0',0x00,'0',0x00,
 	    '0',0x00,'0',0x00,'0',0x00,'0',0x00,
@@ -89,17 +89,17 @@ char serial_number[] __attribute__ ((aligned (32))) = {
  * Application configuration information
  */
 
-/* Struct. which stores all run time configurable FX3 settings */
+/** Struct. which stores all run time configurable FX3 settings */
 BoardState FX3State;
 
 /*
  * Thread synchronization data
  */
 
-/*Signal data stream thread to kill data capture early (True = kill thread signaled, False = allow execution) */
+/** Signal data stream thread to kill data capture early (True = kill thread signaled, False = allow execution) */
 volatile CyBool_t KillStreamEarly = CyFalse;
 
-/* Struct of data used to synchronize the data streaming / app threads */
+/** Struct of data used to synchronize the data streaming / app threads */
 StreamState StreamThreadState;
 
 /*
