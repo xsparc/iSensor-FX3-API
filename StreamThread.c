@@ -13,7 +13,7 @@
   * @date		8/1/2019
   * @author		A. Nolan (alex.nolan@analog.com)
   * @author 	J. Chong (juan.chong@analog.com)
-  * @brief		This file contains the functions associated with StreamThread.
+  * @brief		This file contains the functions directly associated with StreamThread.
  **/
 
 #include "StreamThread.h"
@@ -27,17 +27,15 @@ extern BoardState FX3State;
 extern volatile CyBool_t KillStreamEarly;
 extern StreamState StreamThreadState;
 
-/*
- * Function: AdiStreamThreadEntry(uint32_t input)
- *
- * This function runs in its own thread and handles real-time, burst, and generic streaming processes. Either type
- * of stream can be kicked off by executing the appropriate set-up routine and then triggering the corresponding
- * event flag.
- *
- * input: Unused input required by the thread manager
- *
- * Returns: void
- */
+/**
+  * @brief The entry point function for the StreamThread. Handles all streaming data captures.
+  *
+  * @param input Unused input required by the thread manager
+  *
+  * This function runs in its own thread and handles real-time, burst, generic, and transfer streaming processes.
+  * Either type of stream can be kicked off by executing the appropriate set-up routine and then
+  * triggering the corresponding event flag.
+ **/
 void AdiStreamThreadEntry(uint32_t input)
 {
 	uint32_t eventMask = ADI_GENERIC_STREAM_ENABLE|ADI_REAL_TIME_STREAM_ENABLE|ADI_BURST_STREAM_ENABLE;

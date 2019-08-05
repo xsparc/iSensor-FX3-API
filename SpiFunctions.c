@@ -35,7 +35,7 @@ extern StreamState StreamThreadState;
   * @return A status code indicating the success of the function.
   *
   * This function performs a bi-directional SPI transfer, on up to 4 bytes of data. The transfer length is
-  * determined by the current SPI config word length setting. The status and data recieved on the MISO line
+  * determined by the current SPI config word length setting. The status and data received on the MISO line
   * are sent to the PC over EP0 following the transfer.
  **/
 CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData)

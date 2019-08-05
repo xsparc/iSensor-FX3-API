@@ -28,15 +28,14 @@ extern BoardState FX3State;
 extern volatile CyBool_t KillStreamEarly;
 extern StreamState StreamThreadState;
 
-/*
- * Function: AdiStopAnyDataStream()
- *
- * This function sets a flag to notify the streaming thread that the user requested to cancel streaming.
- * This function can be used to stop any stream operation.
- *
- * Returns: The function status code
- *
- */
+/**
+  * @brief This function sets a flag to notify the streaming thread that the user requested to cancel streaming.
+  *
+  * @return A status code indicating the success of the function.
+  *
+  * This function can be used to stop any stream operation. The variable KillStreamEarly is defined as
+  * volatile to prevent any compiler optimizations.
+ **/
 CyU3PReturnStatus_t AdiStopAnyDataStream()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -45,6 +44,14 @@ CyU3PReturnStatus_t AdiStopAnyDataStream()
 	return status;
 }
 
+/**
+  * @brief Starts a protocol agnostic SPI transfer stream.
+  *
+  * @return A status code indicating the success of the stream start.
+  *
+  * This is used to implement the ISpi32Interface. The stream info is read in from EP0 into
+  * the USBBuffer. This includes stream parameters and the MOSI data.
+ **/
 CyU3PReturnStatus_t AdiTransferStreamStart()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -79,6 +86,15 @@ CyU3PReturnStatus_t AdiTransferStreamStart()
 	return status;
 }
 
+/**
+  * @brief Cleans up a protocol agnostic transfer stream.
+  *
+  * @return A status code indicating the success of the function.
+  *
+  * Resets the streaming endpoint, destroys the DMA channel, and restores the interrupt
+  * source states to their standard operating condition. Must be explicitly invoked via a
+  * vendor command when all "buffers" or captured, or indirectly via a TransferStream cancel.
+ **/
 CyU3PReturnStatus_t AdiTransferStreamFinish()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -93,15 +109,15 @@ CyU3PReturnStatus_t AdiTransferStreamFinish()
 	return status;
 }
 
-/*
- * Function: AdiRealTimeStreamStart()
- *
- * This function kicks off a real-time stream by configuring interrupts, SPI, and end points.
- * It also optionally toggles the SYNC/RTS pin if requested. At the end of the function, the
- * bit assigned to enable the capture thread is toggled to signal the streaming thread to start producing data.
- *
- * Returns: The status of starting a real-time stream.
- */
+/**
+  * @brief Starts a real time stream for ADcmXLx021 DUTs
+  *
+  * @return The status of starting a real-time stream.
+  *
+  * This function kicks off a real-time stream by configuring interrupts, SPI, and end points.
+  * It also optionally toggles the SYNC/RTS pin if requested. At the end of the function, the
+  * bit assigned to enable the capture thread is toggled to signal the streaming thread to start producing data.
+ **/
 CyU3PReturnStatus_t AdiRealTimeStreamStart()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -329,16 +345,14 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	return status;
 }
 
-
-/*
- * Function: AdiRealTimeStreamFinished()
- *
- * This function cleans up after a real-time stream by resetting the SPI port, triggering the SYNC/RTS pin (if asked to do so),
- * and notifying the host that the cancel operation was successful.
- *
- * Returns: The status of the cancel operation.
- *
- */
+/**
+  * @brief This function cleans up resources allocated for a real time stream.
+  *
+  * @return The status of the cancel operation.
+  *
+  * This function cleans up after a real-time stream by resetting the SPI port, triggering the
+  * SYNC/RTS pin (if asked to do so), and notifying the host that the cancel operation was successful.
+ **/
 CyU3PReturnStatus_t AdiRealTimeStreamFinished()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -408,16 +422,15 @@ CyU3PReturnStatus_t AdiRealTimeStreamFinished()
 	return status;
 }
 
-
-/*
- * Function: AdiBurstStreamStart()
- *
- * This function kicks off a burst stream by configuring a pin interrupt on a user-specified pin, configuring
- * the SPI and USB DMAs to handle the incoming data, and enabling the streaming function.
- * It can be configured for "Blackfin" or "ADuC" burst using vendor requests.
- *
- * Returns: The status of starting a real-time stream.
- */
+/**
+  * @brief Starts a burst stream for IMU products.
+  *
+  * @return The status of starting a real-time stream.
+  *
+  * This function kicks off a burst stream by configuring a pin interrupt on a user-specified pin, configuring
+  * the SPI and USB DMAs to handle the incoming data, and enabling the streaming function.It can be configured
+  * for "Blackfin" or "ADuC" burst using vendor requests.
+ **/
 CyU3PReturnStatus_t AdiBurstStreamStart()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -588,15 +601,14 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	return status;
 }
 
-/*
- * Function: AdiBurstStreamFinished()
- *
- * This function cleans up after a burst stream by resetting the SPI port and notifying the host
- * that the cancel operation was successful.
- *
- * Returns: The status of the cancel operation.
- *
- */
+/**
+  * @brief Cleans up resources allocated for a IMU burst stream.
+  *
+  * @return The status of the cancel operation.
+  *
+  * This function cleans up after a burst stream by resetting the SPI port and notifying the host
+  * that the cancel operation was successful.
+ **/
 CyU3PReturnStatus_t AdiBurstStreamFinished()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -658,16 +670,15 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 	return status;
 }
 
-
-/*
- * Function: AdiGenericStreamStart()
- *
- * This function kicks off a generic data stream by configuring interrupts, SPI, and end points.
- * At the end of the function, the ADI_GENERIC_STREAM_ENABLE flag is set such that the
- * generic streaming thread knows to start producing data.
- *
- * Returns: The status of starting a generic stream.
- */
+/**
+  * @brief Starts a register read/write stream, with options to trigger on a data ready.
+  *
+  * @return The status of starting a generic stream.
+  *
+  * This function kicks off a generic data stream by configuring interrupts, SPI, and end points.
+  * At the end of the function, the ADI_GENERIC_STREAM_ENABLE flag is set such that the
+  * generic streaming thread knows to start producing data.
+ **/
 CyU3PReturnStatus_t AdiGenericStreamStart()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -803,14 +814,14 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 
 }
 
-/*
- * Function: AdiGenericStreamFinished()
- *
- * This function cleans up after a generic stream and notifies the host that the cancel operation was successful if requested.
- *
- * Returns: The status of the cancel operation.
- *
- */
+/**
+  * @brief This function cleans up after a generic stream and notifies the host that the cancel operation was successful if requested.
+  *
+  * @return The status of the cancel operation.
+  *
+  * This function must be explicitly invoked via a vendor command after the PC has finished reading all data from the FX3. This is done
+  * to ensure data consistency and prevent a race condition between the FX3 API and the firmware.
+ **/
 CyU3PReturnStatus_t AdiGenericStreamFinished()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -857,6 +868,5 @@ CyU3PReturnStatus_t AdiGenericStreamFinished()
 		//print debug message
 		CyU3PDebugPrint (4, "Generic stream terminated early! \r\n");
 	}
-
 	return status;
 }
