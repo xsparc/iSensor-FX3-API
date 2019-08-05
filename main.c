@@ -1064,8 +1064,17 @@ void AdiAppStart (void)
     /* Set app active flag */
     FX3State.AppActive = CyTrue;
 
+    /*Print verbose mode message */
+#ifdef VERBOSE_MODE
+    CyU3PDebugPrint (4, "Verbose mode enabled. Device status will be logged to the serial output.\r\n");
+#endif
+
+#ifndef VERBOSE_MODE
+    CyU3PDebugPrint (4, "Verbose mode not enabled. Only error messages will be logged to the serial output.\r\n");
+#endif
+
     /*Print boot message */
-    CyU3PDebugPrint (8, "Analog Devices iSensor FX3 Demonstration Platform started successfully!\r\n");
+    CyU3PDebugPrint (4, "Analog Devices iSensor FX3 Demonstration Platform started successfully!\r\n");
 }
 
 /*

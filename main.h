@@ -23,7 +23,7 @@
  * This macro is used to set verbose mode during compile time.
  * Ensure that it is commented out for release versions.
  */
-#define VERBOSE_MODE									(0)
+//#define VERBOSE_MODE									(0)
 
 /* Include all needed Cypress libraries */
 #include "cyu3types.h"
