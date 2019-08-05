@@ -13,7 +13,7 @@
   * @date		8/1/2019
   * @author		A. Nolan (alex.nolan@analog.com)
   * @author 	J. Chong (juan.chong@analog.com)
-  * @brief
+  * @brief		This file contains all pin and timing function implementations.
  **/
 
 #include "PinFunctions.h"

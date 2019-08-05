@@ -13,7 +13,7 @@
   * @date		8/1/2019
   * @author		A. Nolan (alex.nolan@analog.com)
   * @author 	J. Chong (juan.chong@analog.com)
-  * @brief
+  * @brief		Header file for all data streaming functions (generic, burst, ADcm real time, transfer).
  **/
 
 #ifndef STREAM_FUNCTIONS_H
