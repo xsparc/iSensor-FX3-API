@@ -68,200 +68,204 @@ void AdiUSBEventHandler(CyU3PUsbEventType_t evtype, uint16_t evdata);
 CyBool_t AdiLPMRequestHandler(CyU3PUsbLinkPowerMode link_mode);
 void AdiGPIOEventHandler(uint8_t gpioId);
 
-/*
- * Enum for the available part (DUT) types
- */
+/** Enum for the available part (DUT) types */
 typedef enum PartTye
 {
-	ADcmXL1021 = 0,			//0 for ADcmXL1021 (single axis)
-	ADcmXL2021,				//1 for ADcmXL2021 (two axis)
-    ADcmXL3021,				//2 for ADcmXL3021 (three axis)
-    Other					//Other DUT's (IMUs)
+	/** 0 for ADcmXL1021 (single axis) */
+	ADcmXL1021 = 0,
+
+	/** 1 for ADcmXL2021 (two axis) */
+	ADcmXL2021,
+
+	/** 2 for ADcmXL3021 (three axis) */
+    ADcmXL3021,
+
+    /** 3 Other DUTs (IMU) */
+    Other
+
 }PartType;
 
-/*
- * Struct to store the current board state (SPI config, USB speed, etc)
- */
+/** Struct to store the current board state (SPI config, USB speed, etc) */
 typedef struct BoardState
 {
-	/*Track the SPI configuration */
+	/** Track the SPI configuration */
 	CyU3PSpiConfig_t SpiConfig;
 
-	/*Track the part type */
+	/** Track the part type */
 	PartType DutType;
 
-	/*Track the USB buffer size for the current USB speed setting*/
+	/** Track the USB buffer size for the current USB speed setting*/
 	uint16_t UsbBufferSize;
 
-	/*Track main application execution state*/
+	/** Track main application execution state*/
 	CyBool_t AppActive;
 
-	/*Bit mask of the starting timer pin configuration */
+	/** Bit mask of the starting timer pin configuration */
 	uint32_t TimerPinConfig;
 
-	/*Track the stall time in microseconds. This is the same as the FX3Api stall time setting */
+	/** Track the stall time in microseconds. This is the same as the FX3Api stall time setting */
 	uint32_t StallTime;
 
-	/*Track the data ready pin number */
+	/** Track the data ready pin number */
 	uint16_t DrPin;
 
-	/*Track the busy pin number */
+	/** Track the busy pin number */
 	uint16_t BusyPin;
 
-	/*Track if data ready triggering is active (True = active, False = inactive) */
+	/** Track if data ready triggering is active (True = active, False = inactive) */
 	CyBool_t DrActive;
 
-	/*Track data ready polarity (True = trigger on rising edge, False = trigger on falling edge) */
+	/** Track data ready polarity (True = trigger on rising edge, False = trigger on falling edge) */
 	CyBool_t DrPolarity;
-
 }BoardState;
 
-/*
- * Struct to store the current data stream state information
- */
+/** Struct to store the current data stream state information */
 typedef struct StreamState
 {
-	/*Track the number of bytes per real time frame */
+	/** Track the number of bytes per real time frame */
 	uint32_t BytesPerFrame;
 
-	/*Track the pin exit setting for RT stream mode (True = enabled, False = disabled) */
+	/** Track the pin exit setting for RT stream mode (True = enabled, False = disabled) */
 	CyBool_t PinExitEnable;
 
-	/*Track the pin start setting for RT stream mode (True = enabled, False = disabled) */
+	/** Track the pin start setting for RT stream mode (True = enabled, False = disabled) */
 	CyBool_t PinStartEnable;
 
-	/*Track the number of real-time captures to record (0 = Infinite) */
+	/** Track the number of real-time captures to record (0 = Infinite) */
 	uint32_t NumRealTimeCaptures;
 
-	/*Track the total size of generic stream transfer in 16-bit words */
+	/** Track the total size of generic stream transfer in 16-bit words */
 	uint16_t TransferWordLength;
 
-	/*Track the total size of generic and burst stream transfers in bytes */
+	/** Track the total size of generic and burst stream transfers in bytes */
 	uint32_t TransferByteLength;
 
-	/*Track the total size of a generic or burst stream rounded to a multiple of 16 */
+	/** Track the total size of a generic or burst stream rounded to a multiple of 16 */
 	uint16_t RoundedByteTransferLength;
 
-	/*Track the number of captures requested for the generic data stream */
+	/** Track the number of captures requested for the generic data stream */
 	uint32_t NumCaptures;
 
-	/*Track the number of buffers requested for the generic data stream */
+	/** Track the number of buffers requested for the generic data stream */
 	uint32_t NumBuffers;
 
-	/*Track the number of bytes to be read per buffer */
+	/** Track the number of bytes to be read per buffer */
 	uint16_t BytesPerBuffer;
 
-	/*Pointer to byte array of registers needing to be read by the generic data stream */
+	/** Pointer to byte array of registers needing to be read by the generic data stream */
 	uint8_t *RegList;
 
-	/*Number of bytes per USB packet in generic data stream mode */
+	/** Number of bytes per USB packet in generic data stream mode */
 	uint16_t BytesPerUsbPacket;
 }StreamState;
 
 /*
  * Vendor Command Request Code Definitions
  */
-//Return FX3 firmware ID (defined below)
+
+/** Return FX3 firmware ID (defined below) */
 #define ADI_FIRMWARE_ID_CHECK					(0xB0)
 
-/* Hard-reset the FX3 firmware (return to bootloader mode) */
+/** Hard-reset the FX3 firmware (return to bootloader mode) */
 #define ADI_HARD_RESET							(0xB1)
 
-//Set FX3 SPI configuration
+/** Set FX3 SPI configuration */
 #define ADI_SET_SPI_CONFIG						(0xB2)
 
-//Return FX3 SPI configuration
+/** Return FX3 SPI configuration */
 #define ADI_READ_SPI_CONFIG						(0xB3)
 
-//Return the current status of the FX3 firmware
+/** Return the current status of the FX3 firmware */
 #define ADI_GET_STATUS							(0xB4)
 
-//Return the FX3 unique serial number
+/** Return the FX3 unique serial number */
 #define ADI_SERIAL_NUMBER_CHECK					(0xB5)
 
-/* Soft-reset the FX3 firmware (don't return to bootloader mode) */
+/** Soft-reset the FX3 firmware (don't return to bootloader mode) */
 #define ADI_WARM_RESET							(0xB6)
 
-//Start/stop a generic data stream
+/** Start/stop a generic data stream */
 #define ADI_STREAM_GENERIC_DATA					(0xC0)
 
-//Start/stop a burst data stream
+/** Start/stop a burst data stream */
 #define ADI_STREAM_BURST_DATA					(0xC1)
 
-//Read the value of a user-specified GPIO
+/** Read the value of a user-specified GPIO */
 #define ADI_READ_PIN							(0xC3)
 
-//Read the current FX3 timer register value
+/** Read the current FX3 timer register value */
 #define ADI_READ_TIMER_VALUE					(0xC4)
 
-//Drive a user-specified GPIO for a user-specified time
+/** Drive a user-specified GPIO for a user-specified time */
 #define ADI_PULSE_DRIVE							(0xC5)
 
-//Wait for a user-specified pin to reach a user-specified level (with timeout)
+/** Wait for a user-specified pin to reach a user-specified level (with timeout) */
 #define ADI_PULSE_WAIT							(0xC6)
 
-//Drive a user-specified GPIO
+/** Drive a user-specified GPIO */
 #define ADI_SET_PIN								(0xC7)
 
-//Return the pulse frequency (data ready) on a user-specified pin
+/** Return the pulse frequency (data ready) on a user-specified pin */
 #define ADI_MEASURE_DR	 						(0xC8)
 
-//Start/stop a real-time stream
+/** Start/stop a real-time stream */
 #define ADI_STREAM_REALTIME						(0xD0)
 
-//Do nothing (default case)
+/** Do nothing (default case) */
 #define ADI_NULL_COMMAND						(0xD1)
 
-//Read a word at a specified address and return the data over the control endpoint
+/** Read a word at a specified address and return the data over the control endpoint */
 #define ADI_READ_BYTES							(0xF0)
 
-//Write one byte of data to a user-specified address
+/** Write one byte of data to a user-specified address */
 #define ADI_WRITE_BYTE							(0xF1)
 
-//Return data over a bulk endpoint before a bulk read/write operation
+/** Return data over a bulk endpoint before a bulk read/write operation */
 #define ADI_BULK_REGISTER_TRANSFER				(0xF2)
 
-//Used to transfer bytes without any intervention/protocol management
+/** Used to transfer bytes without any intervention/protocol management */
 #define ADI_TRANSFER_BYTES						(0xCA)
 
-//Starts a transfer stream for the ISpi32Interface
+/** Starts a transfer stream for the ISpi32Interface */
 #define ADI_TRANSFER_STREAM						(0xCC)
 
-//Command to enable or disable a PWM signal
+/** Command to enable or disable a PWM signal */
 #define ADI_PWM_CMD  							(0xC9)
 
-//Command to trigger an event on the DUT and measure a subsequent pulse
+/** Command to trigger an event on the DUT and measure a subsequent pulse */
 #define ADI_BUSY_MEASURE						(0xCB)
 
 /*
  * Clock defines
  */
-//Conversion factor from clock ticks to milliseconds on GPIO timer
-#define MS_TO_TICKS_MULT						(10078) //(Previously 953)
 
- //Offset to take away from the timer period for generic stream stall time. In 10MHz timer ticks
+/** Conversion factor from clock ticks to milliseconds on GPIO timer */
+#define MS_TO_TICKS_MULT						(10078)
+
+/** Offset to take away from the timer period for generic stream stall time. In 10MHz timer ticks */
 #define ADI_GENERIC_STALL_OFFSET				(90) //Previously 76 with optimized SPI
 
-//Minimum time
+/** Minimum possible sleep time  */
 #define ADI_MICROSECONDS_SLEEP_OFFSET			(14)
 
-/* Complex GPIO assigned as a timer input */
+/** Complex GPIO assigned as a timer input */
 #define ADI_TIMER_PIN							(0x8)
 #define ADI_TIMER_PIN_INDEX						(0x0) //ADI_TIMER_PIN % 8
 
 /*
  * Endpoint Related Defines
  */
-//BULK-IN endpoint (data goes from FX3 into PC)
+
+/** BULK-IN endpoint (data goes from FX3 into PC) */
 #define ADI_STREAMING_ENDPOINT					(0x81)
 
-//BULK-OUT endpoint (general data from PC to FX3)
+/** BULK-OUT endpoint (general data from PC to FX3) */
 #define ADI_FROM_PC_ENDPOINT					(0x1)
 
-//BULK-IN endpoint (general data from FX3 to PC)
+/** BULK-IN endpoint (general data from FX3 to PC) */
 #define ADI_TO_PC_ENDPOINT						(0x82)
 
-//Burst size for SS operation only
+/** Burst size for SS operation only */
 #define CY_FX_BULK_BURST               			(8)
 
 /*
