@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.15"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Analog Devices iSensor FX3 Demonstation Platform Firmware: Main Page</title>
+<title>Analog Devices iSensor FX3 Demonstation Platform Firmware: Analog Devices iSensor FX3 Demonstration Platform Firmware</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,11 +63,21 @@ $(function() {
 </iframe>
 </div>
 
-<div class="header">
+<div class="PageDoc"><div class="header">
   <div class="headertitle">
-<div class="title">Analog Devices iSensor FX3 Demonstation Platform Firmware Documentation</div>  </div>
+<div class="title">Analog Devices iSensor FX3 Demonstration Platform Firmware </div>  </div>
 </div><!--header-->
 <div class="contents">
+<div class="textblock"><h1><a class="anchor" id="overview"></a>
+Firmware Overview</h1>
+<p>The iSensor FX3 firmware is an RTOS based firmware for the Cypress FX3 platform. It is designed to provide users with a means of reliably acquiring data from iSensor IMUs and condition monitoring modules over a high-speed USB connection, using any .NET framework compatible application. This firmware was designed for use on the Cypress FX3 SuperSpeed Explorer Kit and relies on the open source libraries provided by Cypress to operate. The freely-available, Eclipse-based, Cypress EZ USB Suite was used for all firmware development.</p>
+<p>The Cypress EZ USB Suite can be found here: <a href="https://www.cypress.com/documentation/software-and-drivers/ez-usb-fx3-software-development-kit">https://www.cypress.com/documentation/software-and-drivers/ez-usb-fx3-software-development-kit</a></p>
+<h1><a class="anchor" id="design"></a>
+Firmware Design and Software Interface</h1>
+<p>The iSensor FX3 firmware attempts to follow the Cypress program workflow and relies on FX3 system threading, execution priority, and event flags to execute firmware subroutines and transmit sensor data. Unique vendor commands trigger subroutines embedded in the iSensor FX3 firmware that read and write SPI data, measure external pulses, generate clock signals, and manage board configuration. Different SPI streaming modes are implemented which allow applications to easily communicate to most products in the iSensor portfolio.</p>
+<p>A .NET-compatible API (FX3Api) has been developed in parallel to simplify interfacing with the iSensor FX3 firmware. This API provides simple and easy to use access to all the functionality built into the FX3 firmware.</p>
+<p>The FX3Api and associated documentation can be found here: <a href="https://github.com/juchong/iSensor-FX3-API">https://github.com/juchong/iSensor-FX3-API</a> </p>
+</div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

@@ -38,7 +38,7 @@ extern StreamState StreamThreadState;
  **/
 void AdiStreamThreadEntry(uint32_t input)
 {
-	uint32_t eventMask = ADI_GENERIC_STREAM_ENABLE|ADI_REAL_TIME_STREAM_ENABLE|ADI_BURST_STREAM_ENABLE;
+	uint32_t eventMask = ADI_GENERIC_STREAM_ENABLE|ADI_RT_STREAM_ENABLE|ADI_BURST_STREAM_ENABLE|ADI_TRANSFER_STREAM_ENABLE;
 	uint8_t tempData[2];
 	uint32_t numBuffersRead = 0;
 	uint32_t eventFlag;
@@ -172,7 +172,7 @@ void AdiStreamThreadEntry(uint32_t input)
 					//Set stream done flag if kill early event was processed (otherwise must be explicitly invoked by FX3 API)
 					if(KillStreamEarly)
 					{
-						CyU3PEventSet (&EventHandler, ADI_GENERIC_STREAMING_DONE, CYU3P_EVENT_OR);
+						CyU3PEventSet (&EventHandler, ADI_GENERIC_STREAM_DONE, CYU3P_EVENT_OR);
 					}
 				}
 				else
@@ -190,7 +190,7 @@ void AdiStreamThreadEntry(uint32_t input)
 			}
 
 			/* Real-time (ADcmXL) stream case */
-			if (eventFlag & ADI_REAL_TIME_STREAM_ENABLE)
+			if (eventFlag & ADI_RT_STREAM_ENABLE)
 			{
 				//Clear GPIO interrupts
 				GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
@@ -250,7 +250,7 @@ void AdiStreamThreadEntry(uint32_t input)
 					//Set stream done flag if kill early event was processed (otherwise must be explicitly invoked by FX3 API)
 					if(KillStreamEarly)
 					{
-						CyU3PEventSet(&EventHandler, ADI_RT_STREAMING_DONE, CYU3P_EVENT_OR);
+						CyU3PEventSet(&EventHandler, ADI_RT_STREAM_DONE, CYU3P_EVENT_OR);
 					}
 				}
 				else
@@ -258,7 +258,7 @@ void AdiStreamThreadEntry(uint32_t input)
 					//increment the frame counter
 					numFramesCaptured++;
 					//Reset real-time data capture thread flag
-					CyU3PEventSet (&EventHandler, ADI_REAL_TIME_STREAM_ENABLE, CYU3P_EVENT_OR);
+					CyU3PEventSet (&EventHandler, ADI_RT_STREAM_ENABLE, CYU3P_EVENT_OR);
 				}
 			}
 
@@ -350,7 +350,7 @@ void AdiStreamThreadEntry(uint32_t input)
 					//Set stream done flag if kill early event was processed (otherwise must be explicitly invoked by FX3 API)
 					if(KillStreamEarly)
 					{
-						CyU3PEventSet(&EventHandler, ADI_BURST_STREAMING_DONE, CYU3P_EVENT_OR);
+						CyU3PEventSet(&EventHandler, ADI_BURST_STREAM_DONE, CYU3P_EVENT_OR);
 					}
 				}
 				else

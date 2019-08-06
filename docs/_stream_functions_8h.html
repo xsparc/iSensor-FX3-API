@@ -80,14 +80,11 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:abb49eac92413946bd92507fec1735cf4"><td class="memItemLeft" align="right" valign="top"><a id="abb49eac92413946bd92507fec1735cf4"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>ADI_STREAM_DONE_CMD</b>&#160;&#160;&#160;0</td></tr>
+<tr class="memitem:abb49eac92413946bd92507fec1735cf4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_functions_8h.html#abb49eac92413946bd92507fec1735cf4">ADI_STREAM_DONE_CMD</a>&#160;&#160;&#160;0</td></tr>
 <tr class="separator:abb49eac92413946bd92507fec1735cf4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad0e750e59ef0eabbb1053f0e1b289e1f"><td class="memItemLeft" align="right" valign="top"><a id="ad0e750e59ef0eabbb1053f0e1b289e1f"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>ADI_STREAM_START_CMD</b>&#160;&#160;&#160;1</td></tr>
+<tr class="memitem:ad0e750e59ef0eabbb1053f0e1b289e1f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_functions_8h.html#ad0e750e59ef0eabbb1053f0e1b289e1f">ADI_STREAM_START_CMD</a>&#160;&#160;&#160;1</td></tr>
 <tr class="separator:ad0e750e59ef0eabbb1053f0e1b289e1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8207cffdb3ebdb67ad813139d27597bf"><td class="memItemLeft" align="right" valign="top"><a id="a8207cffdb3ebdb67ad813139d27597bf"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>ADI_STREAM_STOP_CMD</b>&#160;&#160;&#160;2</td></tr>
+<tr class="memitem:a8207cffdb3ebdb67ad813139d27597bf"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_functions_8h.html#a8207cffdb3ebdb67ad813139d27597bf">ADI_STREAM_STOP_CMD</a>&#160;&#160;&#160;2</td></tr>
 <tr class="separator:a8207cffdb3ebdb67ad813139d27597bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
@@ -129,7 +126,53 @@ Functions</h2></td></tr>
 <dl class="section author"><dt>Author</dt><dd>A. Nolan (<a href="#" onclick="location.href='mai'+'lto:'+'ale'+'x.'+'nol'+'an'+'@an'+'al'+'og.'+'co'+'m'; return false;">alex.<span style="display: none;">.nosp@m.</span>nola<span style="display: none;">.nosp@m.</span>n@ana<span style="display: none;">.nosp@m.</span>log.<span style="display: none;">.nosp@m.</span>com</a>) </dd>
 <dd>
 J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+'@an'+'al'+'og.'+'co'+'m'; return false;">juan.<span style="display: none;">.nosp@m.</span>chon<span style="display: none;">.nosp@m.</span>g@ana<span style="display: none;">.nosp@m.</span>log.<span style="display: none;">.nosp@m.</span>com</a>) </dd></dl>
-</div><h2 class="groupheader">Function Documentation</h2>
+</div><h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="abb49eac92413946bd92507fec1735cf4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abb49eac92413946bd92507fec1735cf4">&#9670;&nbsp;</a></span>ADI_STREAM_DONE_CMD</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_STREAM_DONE_CMD&#160;&#160;&#160;0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Control endpoint index value to indicate a stream is done (all data read). </p>
+
+</div>
+</div>
+<a id="ad0e750e59ef0eabbb1053f0e1b289e1f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad0e750e59ef0eabbb1053f0e1b289e1f">&#9670;&nbsp;</a></span>ADI_STREAM_START_CMD</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_STREAM_START_CMD&#160;&#160;&#160;1</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Control endpoint index value to indicate a stream needs to be started. </p>
+
+</div>
+</div>
+<a id="a8207cffdb3ebdb67ad813139d27597bf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8207cffdb3ebdb67ad813139d27597bf">&#9670;&nbsp;</a></span>ADI_STREAM_STOP_CMD</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_STREAM_STOP_CMD&#160;&#160;&#160;2</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Control endpoint index value to asynchronously stop a stream. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
 <a id="a5735bbe4e20ff7d3aa8e12783da536c7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5735bbe4e20ff7d3aa8e12783da536c7">&#9670;&nbsp;</a></span>AdiBurstStreamFinished()</h2>
 

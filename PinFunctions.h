@@ -22,6 +22,7 @@
 /* Include the main header file */
 #include "main.h"
 
+/* Function definitions */
 CyU3PReturnStatus_t AdiPulseDrive();
 CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength);
 CyU3PReturnStatus_t AdiSetPin(uint16_t pinNumber, CyBool_t polarity);
@@ -37,16 +38,33 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength);
 /*
  * GPIO Pin mapping definitions
  */
-//GPIO pins used on the FX3 evaluation board (sanitized for iSensor use)
-#define ADI_PIN_RESET							(0x0)	// Wired to the hardware reset on most iSensor products
-#define ADI_PIN_DIO1							(0x4)	// Commonly data ready on IMUs
-#define ADI_PIN_DIO2							(0x3)	// Commonly BUSY on ADcmXL devices
+
+/** Reset pin, wired to the hardware reset on most iSensor products. Mapped to GPIO 0 */
+#define ADI_PIN_RESET							(0x0)
+
+/** iSensors DIO1 pin, commonly used as data ready for IMUs. Mapped to GPIO 4 */
+#define ADI_PIN_DIO1							(0x4)
+
+/** iSensors DIO2 pin, used as BUSY(data ready) on ADcmXL devices. Mapped to GPIO 3 */
+#define ADI_PIN_DIO2							(0x3)
+
+/** iSensors DIO3 pin. Mapped to GPIO 2 */
 #define ADI_PIN_DIO3							(0x2)
+
+/** iSensors DIO4 pin. Mapped to GPIO 1 */
 #define ADI_PIN_DIO4							(0x1)
-#define FX3_PIN_GPIO1							(0x5)	// Misc pin(s) used for triggering from test equipment
-#define FX3_PIN_GPIO2							(0x6)	// Misc pin
-#define FX3_PIN_GPIO3							(0x7)	// Misc pin
-#define FX3_PIN_GPIO4							(0x12)	// Misc pin (shared complex block with DIO1, typically a data ready pin)
+
+/** General purpose FX3 GPIO 1. Used for triggering off external test equipment, etc. Mapped to GPIO 5 */
+#define FX3_PIN_GPIO1							(0x5)
+
+/** General purpose FX3 GPIO 2. Used for triggering off external test equipment, etc. Mapped to GPIO 6 */
+#define FX3_PIN_GPIO2							(0x6)
+
+/** General purpose FX3 GPIO 3. Used for triggering off external test equipment, etc. Mapped to GPIO 7 */
+#define FX3_PIN_GPIO3							(0x7)
+
+/** General purpose FX3 GPIO 4. This GPIO shares a complex GPIO block with DIO1. Mapped to GPIO 12 */
+#define FX3_PIN_GPIO4							(0x12)
 
 /*
  * ADI GPIO Event Handler Definitions

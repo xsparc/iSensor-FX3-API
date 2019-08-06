@@ -44,8 +44,14 @@ CyU3PReturnStatus_t AdiStopAnyDataStream();
 /*
  * Stream action commands
  */
+
+/** Control endpoint index value to indicate a stream is done (all data read). */
 #define ADI_STREAM_DONE_CMD						0
+
+/** Control endpoint index value to indicate a stream needs to be started. */
 #define ADI_STREAM_START_CMD					1
+
+/** Control endpoint index value to asynchronously stop a stream. */
 #define ADI_STREAM_STOP_CMD						2
 
 #endif

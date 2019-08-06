@@ -340,7 +340,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	CyU3PDmaChannelSetXfer(&StreamingChannel, 0);
 
 	//Set the real-time data capture thread flag
-	CyU3PEventSet (&EventHandler, ADI_REAL_TIME_STREAM_ENABLE, CYU3P_EVENT_OR);
+	CyU3PEventSet (&EventHandler, ADI_RT_STREAM_ENABLE, CYU3P_EVENT_OR);
 
 	return status;
 }

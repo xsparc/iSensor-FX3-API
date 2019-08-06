@@ -256,15 +256,18 @@ void AdiAppInit (void)
 void AdiAppThreadEntry (uint32_t input)
 {
     uint32_t eventMask =
-    		ADI_RT_STREAMING_DONE|
-    		ADI_RT_STREAMING_START|
-    		ADI_RT_STREAMING_STOP|
-    		ADI_GENERIC_STREAMING_DONE|
-    		ADI_GENERIC_STREAMING_START|
-    		ADI_GENERIC_STREAMING_STOP|
-    		ADI_BURST_STREAMING_DONE|
-    		ADI_BURST_STREAMING_START|
-    		ADI_BURST_STREAMING_STOP;
+    		ADI_RT_STREAM_DONE |
+    		ADI_RT_STREAM_START |
+    		ADI_RT_STREAM_STOP |
+    		ADI_GENERIC_STREAM_DONE |
+    		ADI_GENERIC_STREAM_START |
+    		ADI_GENERIC_STREAM_STOP |
+    		ADI_BURST_STREAM_DONE |
+    		ADI_BURST_STREAM_START |
+    		ADI_BURST_STREAM_STOP |
+    		ADI_TRANSFER_STREAM_DONE |
+    		ADI_TRANSFER_STREAM_START |
+    		ADI_TRANSFER_STREAM_STOP;
     uint32_t eventFlag;
 
     /* Initialize UART debugging */
@@ -279,21 +282,21 @@ void AdiAppThreadEntry (uint32_t input)
     	if (CyU3PEventGet(&EventHandler, eventMask, CYU3P_EVENT_OR_CLEAR, &eventFlag, CYU3P_WAIT_FOREVER) == CY_U3P_SUCCESS)
     	{
 			//Handle real-time stream commands
-			if (eventFlag & ADI_RT_STREAMING_START)
+			if (eventFlag & ADI_RT_STREAM_START)
 			{
 				AdiRealTimeStreamStart();
 #ifdef VERBOSE_MODE
 				CyU3PDebugPrint (4, "Real time stream start command received.\r\n");
 #endif
 			}
-			if (eventFlag & ADI_RT_STREAMING_STOP)
+			if (eventFlag & ADI_RT_STREAM_STOP)
 			{
 				AdiStopAnyDataStream();
 #ifdef VERBOSE_MODE
 				CyU3PDebugPrint (4, "Real time stream stop command received.\r\n");
 #endif
 			}
-			if (eventFlag & ADI_RT_STREAMING_DONE)
+			if (eventFlag & ADI_RT_STREAM_DONE)
 			{
 				AdiRealTimeStreamFinished();
 #ifdef VERBOSE_MODE
@@ -302,21 +305,21 @@ void AdiAppThreadEntry (uint32_t input)
 			}
 
 			//Handle generic data stream commands
-			if (eventFlag & ADI_GENERIC_STREAMING_START)
+			if (eventFlag & ADI_GENERIC_STREAM_START)
 			{
 				AdiGenericStreamStart();
 #ifdef VERBOSE_MODE
 				CyU3PDebugPrint (4, "Generic stream start command received.\r\n");
 #endif
 			}
-			if (eventFlag & ADI_GENERIC_STREAMING_STOP)
+			if (eventFlag & ADI_GENERIC_STREAM_STOP)
 			{
 				AdiStopAnyDataStream();
 #ifdef VERBOSE_MODE
 				CyU3PDebugPrint (4, "Stop generic stream command detected.\r\n");
 #endif
 			}
-			if (eventFlag & ADI_GENERIC_STREAMING_DONE)
+			if (eventFlag & ADI_GENERIC_STREAM_DONE)
 			{
 				AdiGenericStreamFinished();
 #ifdef VERBOSE_MODE
@@ -325,21 +328,21 @@ void AdiAppThreadEntry (uint32_t input)
 			}
 
 			//Handle burst data stream commands
-			if (eventFlag & ADI_BURST_STREAMING_START)
+			if (eventFlag & ADI_BURST_STREAM_START)
 			{
 				AdiBurstStreamStart();
 #ifdef VERBOSE_MODE
 				CyU3PDebugPrint (4, "Burst stream start command received.\r\n");
 #endif
 			}
-			if (eventFlag & ADI_BURST_STREAMING_STOP)
+			if (eventFlag & ADI_BURST_STREAM_STOP)
 			{
 				AdiStopAnyDataStream();
 #ifdef VERBOSE_MODE
 				CyU3PDebugPrint (4, "Stop burst stream command detected.\r\n");
 #endif
 			}
-			if (eventFlag & ADI_BURST_STREAMING_DONE)
+			if (eventFlag & ADI_BURST_STREAM_DONE)
 			{
 				AdiBurstStreamFinished();
 #ifdef VERBOSE_MODE

@@ -22,31 +22,70 @@
 /* Include the main header file */
 #include "main.h"
 
+/* Function definitions */
 void AdiAppThreadEntry(uint32_t input);
 void AdiDebugInit(void);
 void AdiAppInit(void);
 
-// App thread stack size
-#define APPTHREAD_STACK       					(0x0800)
+/** AppThread allocated stack size (2KB) */
+#define APPTHREAD_STACK        					(0x0800)
 
-// App thread priority
+/** AppThread execution priority */
 #define APPTHREAD_PRIORITY    						(8)
 
 /*
- * ADI Event Handler Definitions
+ * ADI Event Handler Flag Definitions
  */
-#define ADI_RT_STREAMING_START					(1 << 0)
-#define ADI_RT_STREAMING_DONE					(1 << 1)
-#define ADI_RT_STREAMING_STOP					(1 << 2)
-#define ADI_GENERIC_STREAMING_START				(1 << 3)
-#define ADI_GENERIC_STREAMING_STOP				(1 << 4)
-#define ADI_GENERIC_STREAMING_DONE				(1 << 5)
-#define ADI_GENERIC_STREAM_ENABLE				(1 << 6)
-#define ADI_REAL_TIME_STREAM_ENABLE				(1 << 7)
-#define ADI_KILL_THREAD_EARLY					(1 << 8)	//Currently unused.
-#define ADI_BURST_STREAMING_START				(1 << 9)
-#define ADI_BURST_STREAMING_STOP				(1 << 10)
-#define ADI_BURST_STREAMING_DONE				(1 << 11)
+
+/** Event handler bit to kill any arbitrary thread early */
+#define ADI_KILL_THREAD_EARLY					(1 << 0)
+
+/** Event handler bit for real time stream start */
+#define ADI_RT_STREAM_START						(1 << 1)
+
+/** Event handler bit for asynchronously stopping a real time stream */
+#define ADI_RT_STREAM_STOP						(1 << 2)
+
+/** Event handler bit for cleaning up a real time stream */
+#define ADI_RT_STREAM_DONE						(1 << 3)
+
+/** Event handler bit for contiuing a real time stream, within the StreamThread */
+#define ADI_RT_STREAM_ENABLE					(1 << 4)
+
+/** Event handler bit for generic stream start */
+#define ADI_GENERIC_STREAM_START				(1 << 5)
+
+/** Event handler bit for asynchronously stopping a generic stream */
+#define ADI_GENERIC_STREAM_STOP					(1 << 6)
+
+/** Event handler bit for cleaning up a generic stream */
+#define ADI_GENERIC_STREAM_DONE					(1 << 7)
+
+/** Event handler bit for continuing a generic stream, within the StreamThread */
+#define ADI_GENERIC_STREAM_ENABLE				(1 << 8)
+
+/** Event handler bit for burst stream start */
+#define ADI_BURST_STREAM_START					(1 << 9)
+
+/** Event handler bit to asynchronously stop a burst stream */
+#define ADI_BURST_STREAM_STOP					(1 << 10)
+
+/** Event handler bit for cleaning up a burst stream */
+#define ADI_BURST_STREAM_DONE					(1 << 11)
+
+/** Event handler bit for continuing a burst stream, within the StreamThread */
 #define ADI_BURST_STREAM_ENABLE					(1 << 12)
+
+/** Event handler bit for starting a transfer (ISpi32) stream */
+#define ADI_TRANSFER_STREAM_START				(1 << 13)
+
+/** Event handler bit to asynchronously stop a transfer stream */
+#define ADI_TRANSFER_STREAM_STOP				(1 << 14)
+
+/** Event handler bit for cleaning up a transfer stream */
+#define ADI_TRANSFER_STREAM_DONE				(1 << 15)
+
+/** Event handler bit for continuing a transfer stream after one "buffer", within the StreamThread */
+#define ADI_TRANSFER_STREAM_ENABLE				(1 << 16)
 
 #endif

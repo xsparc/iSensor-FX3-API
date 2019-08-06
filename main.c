@@ -82,10 +82,10 @@ CyU3PDmaChannel MemoryToSPI;
  * Buffer Definitions
  */
 
-/** USB Data buffer. Used to receive data from the control endpoint */
+/* USB Data buffer. Used to receive data from the control endpoint */
 uint8_t USBBuffer[4096] __attribute__ ((aligned (32)));
 
-/** Bulk endpoint output buffer */
+/* Bulk endpoint output buffer. Used for when data is manually sent to the PC. */
 uint8_t BulkBuffer[12288] __attribute__ ((aligned (32)));
 
 /** DMA buffer structure for output buffer */
@@ -98,19 +98,11 @@ CyU3PDmaBuffer_t SpiDmaBuffer;
  * Application constants
  */
 
-/** Constant firmware ID string. Manually updated when building new firmware. */
+/* Constant firmware ID string. Manually updated when building new firmware. */
 const uint8_t FirmwareID[32] __attribute__ ((aligned (32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '1', '.', '0', '.', '7', '-','P','U','B',' ', '\0' };
 
-/** Constant error string used to write "ERROR" to output buffer */
-const uint8_t ErrorString[16] __attribute__ ((aligned (16))) = { 'E', 'R', 'R', 'O', 'R', '\0'};
-
-/** FX3 unique serial number. Set at runtime */
-char serial_number[] __attribute__ ((aligned (32))) = {
-	    '0',0x00,'0',0x00,'0',0x00,'0',0x00,
-	    '0',0x00,'0',0x00,'0',0x00,'0',0x00,
-	    '0',0x00,'0',0x00,'0',0x00,'0',0x00,
-	    '0',0x00,'0',0x00,'0',0x00,'0',0x00,
-};
+/* FX3 unique serial number. Set at runtime */
+char serial_number[] __attribute__ ((aligned (32))) = {'0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00};
 
 /*
  * Application configuration information
@@ -130,7 +122,7 @@ volatile CyBool_t KillStreamEarly = CyFalse;
 StreamState StreamThreadState;
 
 /**
-  * @brief This is the main entry point function which the FX3 ARM9 core jumps to when first powered on.
+  * @brief This is the main entry point function which the FX3 ARM9 core jumps to when first powered on or reset.
   *
   * @return A status code indicating the success of the function. Will return 0.
   *
@@ -402,11 +394,11 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	switch(wIndex)
             	{
             	case ADI_STREAM_START_CMD:
-            		status = CyU3PEventSet(&EventHandler, ADI_GENERIC_STREAMING_START, CYU3P_EVENT_OR);
+            		status = CyU3PEventSet(&EventHandler, ADI_GENERIC_STREAM_START, CYU3P_EVENT_OR);
             		StreamThreadState.TransferByteLength = wLength;
             		break;
             	case ADI_STREAM_DONE_CMD:
-            		status = CyU3PEventSet(&EventHandler, ADI_GENERIC_STREAMING_DONE, CYU3P_EVENT_OR);
+            		status = CyU3PEventSet(&EventHandler, ADI_GENERIC_STREAM_DONE, CYU3P_EVENT_OR);
                 	USBBuffer[0] = status & 0xFF;
                 	USBBuffer[1] = (status & 0xFF00) >> 8;
                 	USBBuffer[2] = (status & 0xFF0000) >> 16;
@@ -414,7 +406,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
                 	CyU3PUsbSendEP0Data (wLength, USBBuffer);
             		break;
             	case ADI_STREAM_STOP_CMD:
-            		status = CyU3PEventSet(&EventHandler, ADI_GENERIC_STREAMING_STOP, CYU3P_EVENT_OR);
+            		status = CyU3PEventSet(&EventHandler, ADI_GENERIC_STREAM_STOP, CYU3P_EVENT_OR);
             		break;
             	default:
             		CyU3PDebugPrint (4, "ERROR: Unknown Stream Command: %d\r\n", wIndex);
@@ -434,10 +426,10 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	switch(wIndex)
             	{
             	case ADI_STREAM_START_CMD:
-            		status = CyU3PEventSet(&EventHandler, ADI_BURST_STREAMING_START, CYU3P_EVENT_OR);
+            		status = CyU3PEventSet(&EventHandler, ADI_BURST_STREAM_START, CYU3P_EVENT_OR);
             		break;
             	case ADI_STREAM_DONE_CMD:
-            		status = CyU3PEventSet(&EventHandler, ADI_BURST_STREAMING_DONE, CYU3P_EVENT_OR);
+            		status = CyU3PEventSet(&EventHandler, ADI_BURST_STREAM_DONE, CYU3P_EVENT_OR);
                 	USBBuffer[0] = status & 0xFF;
                 	USBBuffer[1] = (status & 0xFF00) >> 8;
                 	USBBuffer[2] = (status & 0xFF0000) >> 16;
@@ -445,7 +437,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
                 	CyU3PUsbSendEP0Data (wLength, USBBuffer);
             		break;
             	case ADI_STREAM_STOP_CMD:
-            		status = CyU3PEventSet(&EventHandler, ADI_BURST_STREAMING_STOP, CYU3P_EVENT_OR);
+            		status = CyU3PEventSet(&EventHandler, ADI_BURST_STREAM_STOP, CYU3P_EVENT_OR);
             		break;
             	default:
             		CyU3PDebugPrint (4, "ERROR: Unknown Stream Command: %d\r\n", wIndex);
@@ -465,10 +457,10 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 				{
 				case ADI_STREAM_START_CMD:
 					StreamThreadState.PinExitEnable = (CyBool_t) wValue;
-					status = CyU3PEventSet(&EventHandler, ADI_RT_STREAMING_START, CYU3P_EVENT_OR);
+					status = CyU3PEventSet(&EventHandler, ADI_RT_STREAM_START, CYU3P_EVENT_OR);
 					break;
 				case ADI_STREAM_DONE_CMD:
-					status = CyU3PEventSet(&EventHandler, ADI_RT_STREAMING_DONE, CYU3P_EVENT_OR);
+					status = CyU3PEventSet(&EventHandler, ADI_RT_STREAM_DONE, CYU3P_EVENT_OR);
 	            	USBBuffer[0] = status & 0xFF;
 	            	USBBuffer[1] = (status & 0xFF00) >> 8;
 	            	USBBuffer[2] = (status & 0xFF0000) >> 16;
@@ -476,7 +468,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 	            	CyU3PUsbSendEP0Data (wLength, USBBuffer);
 					break;
 				case ADI_STREAM_STOP_CMD:
-					status = CyU3PEventSet(&EventHandler, ADI_RT_STREAMING_STOP, CYU3P_EVENT_OR);
+					status = CyU3PEventSet(&EventHandler, ADI_RT_STREAM_STOP, CYU3P_EVENT_OR);
 					break;
 				default:
 					CyU3PDebugPrint (4, "ERROR: Unknown Stream Command: %d\r\n", wIndex);

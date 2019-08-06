@@ -24,10 +24,10 @@
 
 void AdiStreamThreadEntry(uint32_t input);
 
-// Real time thread stack size
+/** StreamThread allocated stack size (2KB) */
 #define STREAMTHREAD_STACK					(0x0800)
 
-// Real time thread priority
+/** StreamThread execution priority for the thread scheduler */
 #define STREAMTHREAD_PRIORITY					(8)
 
 #endif

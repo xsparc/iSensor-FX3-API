@@ -303,7 +303,7 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 /**
   * @brief This function configures the FX3 PWM (enable or disable).
   *
-  * @param enablePWM If the PWM should be enabled or disabled.
+  * @param EnablePWM If the PWM should be enabled or disabled.
   *
   * @return A status code indicating the success of the function.
   * The pin number, threshold value, and period are provided in the USBBuffer, and are
