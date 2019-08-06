@@ -17,6 +17,33 @@
   * @brief		Entry point and setup functions for the Analog Devices iSensor FX3 Demonstration Platform firmware.
  **/
 
+/**
+  * @mainpage Analog Devices iSensor FX3 Demonstration Platform Firmware
+  *
+  * @section overview Firmware Overview
+  *
+  * The iSensor FX3 firmware is an RTOS based firmware for the Cypress FX3 platform. It is designed to provide users with a means of reliably
+  * acquiring data from iSensor IMUs and condition monitoring modules over a high-speed USB connection, using any .NET framework compatible application.
+  * This firmware was designed for use on the Cypress FX3 SuperSpeed Explorer Kit and relies on the open source libraries provided by Cypress to
+  * operate. The freely-available, Eclipse-based, Cypress EZ USB Suite was used for all firmware development.
+  *
+  * The Cypress EZ USB Suite can be found here:
+  * https://www.cypress.com/documentation/software-and-drivers/ez-usb-fx3-software-development-kit
+  *
+  * @section design Firmware Design and Software Interface
+  *
+  * The iSensor FX3 firmware attempts to follow the Cypress program workflow and relies on FX3 system threading, execution priority, and event
+  * flags to execute firmware subroutines and transmit sensor data. Unique vendor commands trigger subroutines embedded in the iSensor FX3
+  * firmware that read and write SPI data, measure external pulses, generate clock signals, and manage board configuration. Different SPI streaming
+  * modes are implemented which allow applications to easily communicate to most products in the iSensor portfolio.
+  *
+  * A .NET-compatible API (FX3Api) has been developed in parallel to simplify interfacing with the iSensor FX3 firmware. This API provides
+  * simple and easy to use access to all the functionality built into the FX3 firmware.
+  *
+  * The FX3Api and associated documentation can be found here:
+  * https://github.com/juchong/iSensor-FX3-API
+ **/
+
 #include "main.h"
 
 /*
@@ -55,7 +82,7 @@ CyU3PDmaChannel MemoryToSPI;
  * Buffer Definitions
  */
 
-/** USB Data buffer */
+/** USB Data buffer. Used to receive data from the control endpoint */
 uint8_t USBBuffer[4096] __attribute__ ((aligned (32)));
 
 /** Bulk endpoint output buffer */
