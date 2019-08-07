@@ -579,7 +579,7 @@ End Class
 #Region "PinList Class"
 
 ''' <summary>
-''' Custom list class to reduce 
+''' Custom list class with some extra ease of use functions added.
 ''' </summary>
 Public Class PinList
     Inherits List(Of PinPWMInfo)
