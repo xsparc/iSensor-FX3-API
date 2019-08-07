@@ -194,6 +194,7 @@ Partial Class FX3Connection
                 Next
             Else
                 Console.WriteLine("Transfer failed during burst stream. Error code: " + StreamingEndPt.LastError.ToString() + " (0x" + StreamingEndPt.LastError.ToString("X4") + ")")
+                StopBurstStream()
                 'Exit streaming mode if the transfer fails
                 Exit While
             End If
@@ -420,6 +421,7 @@ Partial Class FX3Connection
             Else
                 'Exit for a failed data transfer
                 Console.WriteLine("Transfer failed during generic stream. Error code: " + StreamingEndPt.LastError.ToString() + " (0x" + StreamingEndPt.LastError.ToString("X4") + ")")
+                StopGenericStream()
                 Exit While
             End If
         End While
@@ -627,6 +629,7 @@ Partial Class FX3Connection
             Else
                 'Exit streaming mode if the transfer fails
                 Console.WriteLine("Transfer failed during AdCMXL real time stream. Error code: " + StreamingEndPt.LastError.ToString() + " (0x" + StreamingEndPt.LastError.ToString("X4") + ")")
+                StopRealTimeStreaming()
                 Exit While
             End If
         End While
@@ -651,6 +654,8 @@ Partial Class FX3Connection
         Dim frameDequeued As Boolean = False
         Dim tempQueue As New ConcurrentQueue(Of UShort())
         Dim frame() As UShort = Nothing
+        Dim expectedFrameNum, frameNumber As UShort
+        Dim firstFrame As Boolean
 
         'Only works for ADcmXLx021
         If Not (PartType = DUTType.ADcmXL1021 Or PartType = DUTType.ADcmXL2021 Or PartType = DUTType.ADcmXL3021) Then
@@ -666,21 +671,34 @@ Partial Class FX3Connection
 
         'Pull data from queue
         m_numBadFrames = 0
-        If purgeSuccess Then
-            While Not m_StreamData.Count = 0
-                'Dequeue the frame
-                frameDequeued = False
-                While Not frameDequeued And m_StreamData.Count > 0
-                    frameDequeued = m_StreamData.TryDequeue(frame)
-                End While
-                'Check the CRC
-                If CheckDUTCRC(frame) Then
-                    tempQueue.Enqueue(frame)
-                Else
-                    m_numBadFrames = m_numBadFrames + 1
-                End If
+        m_numFrameSkips = 0
+        frameNumber = 0
+        firstFrame = True
+        While Not m_StreamData.Count = 0
+            'Dequeue the frame
+            frameDequeued = False
+            While Not frameDequeued And m_StreamData.Count > 0
+                frameDequeued = m_StreamData.TryDequeue(frame)
             End While
-        End If
+            'Check the CRC
+            If CheckDUTCRC(frame) Then
+                tempQueue.Enqueue(frame)
+            Else
+                m_numBadFrames = m_numBadFrames + 1
+            End If
+            'Parse the frame number
+            expectedFrameNum = (frameNumber + 1) Mod 256
+            If PartType = DUTType.ADcmXL1021 Then
+                frameNumber = (frame(8) And &HFF00) >> 8
+            Else
+                frameNumber = (frame(0) And &HFF00) >> 8
+            End If
+            'Check against expected (except on first frame)
+            If Not frameNumber = expectedFrameNum And Not firstFrame Then
+                m_numFrameSkips += 1
+            End If
+            firstFrame = False
+        End While
 
         'Set the output queue equal to the temp queue
         m_StreamData = tempQueue
@@ -698,7 +716,7 @@ Partial Class FX3Connection
 
         'SCLK
         If m_FX3SPIConfig.SCLKFrequency < 8000000 Then
-            Throw New FX3ConfigurationException("ERROR: Invalid SPI frequency for real time streaming")
+            'Throw New FX3ConfigurationException("ERROR: Invalid SPI frequency for real time streaming")
         End If
 
         'Word length

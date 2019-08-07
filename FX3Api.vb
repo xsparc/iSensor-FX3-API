@@ -134,6 +134,9 @@ Public Class FX3Connection
     'Tracks the number of bad frames in a given read from the ADcmXLx021
     Private m_numBadFrames As Long
 
+    'track the number of frame skips in a given read from the ADcmXLx021
+    Private m_numFrameSkips As Long
+
     'Timer for tracking stream timeouts
     Private m_streamTimeoutTimer As Stopwatch
 
@@ -833,6 +836,15 @@ Public Class FX3Connection
         End Get
     End Property
 
+    ''' <summary>
+    ''' Property to get the number of frame skips in an ADcmXL real time stream
+    ''' </summary>
+    ''' <returns></returns>
+    Public ReadOnly Property NumFramesSkipped As Long
+        Get
+            Return m_numFrameSkips
+        End Get
+    End Property
     ''' <summary>
     ''' Readonly property to get the device type the FX3Interface was initialized for
     ''' </summary>
