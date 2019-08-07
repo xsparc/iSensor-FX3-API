@@ -937,6 +937,15 @@ CyU3PReturnStatus_t AdiGenericStreamFinished()
 	return status;
 }
 
+/**
+  * @brief Configures the data ready pin as an input with edge interrupt triggering enabled.
+  *
+  * @return The status of the pin configure operation.
+  *
+  * Configures the data ready pin (FX3State.DrPin) as an input, with edge interrupts enabled
+  * based on FX3State.DrPolarity. It is advisable to disable the GPIO interrupt vector before
+  * calling this function. If you do not, the GPIO ISR may be triggered.
+ **/
 CyU3PReturnStatus_t AdiConfigureDrPin()
 {
 	/* Make sure the data ready pin is configured as an input and attach the correct pin interrupt */

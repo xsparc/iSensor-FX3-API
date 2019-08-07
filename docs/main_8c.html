@@ -20,10 +20,10 @@
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr style="height: 56px;">
-  <td id="projectlogo"><img alt="Logo" src="Analog.ICO"/></td>
+  <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Analog Devices iSensor FX3 Demonstation Platform Firmware
-   &#160;<span id="projectnumber">v1.0.7</span>
+   &#160;<span id="projectnumber">v2.0.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -78,9 +78,14 @@ $(function() {
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:abf6342a35e1e658c0bd9f3f8cd7b88b3"><td class="memItemLeft" align="right" valign="top"><a id="abf6342a35e1e658c0bd9f3f8cd7b88b3"></a>
-uint8_t USBBuffer [4096]&#160;</td><td class="memItemRight" valign="bottom"><b>__attribute__</b> ((aligned(32)))</td></tr>
-<tr class="separator:abf6342a35e1e658c0bd9f3f8cd7b88b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aae2dfaf6e49d51d401e281fbdf83d874"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#aae2dfaf6e49d51d401e281fbdf83d874">USBBuffer</a> ((aligned(32)))</td></tr>
+<tr class="separator:aae2dfaf6e49d51d401e281fbdf83d874"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add07376eecfcd79dfd9f998172675538"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#add07376eecfcd79dfd9f998172675538">BulkBuffer</a> ((aligned(32)))</td></tr>
+<tr class="separator:add07376eecfcd79dfd9f998172675538"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1e4f00a6649f71b6f7d737b7906b7ab3"><td class="memItemLeft" align="right" valign="top">const uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#a1e4f00a6649f71b6f7d737b7906b7ab3">FirmwareID</a> ((aligned(32)))</td></tr>
+<tr class="separator:a1e4f00a6649f71b6f7d737b7906b7ab3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af944fb7c8896fdcd7f0d7d00f06fb329"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#af944fb7c8896fdcd7f0d7d00f06fb329">serial_number</a> ((aligned(32)))</td></tr>
+<tr class="separator:af944fb7c8896fdcd7f0d7d00f06fb329"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a840291bc02cba5474a4cb46a9b9566fe"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8c.html#a840291bc02cba5474a4cb46a9b9566fe">main</a> (void)</td></tr>
 <tr class="memdesc:a840291bc02cba5474a4cb46a9b9566fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the main entry point function which the FX3 ARM9 core jumps to when first powered on or reset.  <a href="#a840291bc02cba5474a4cb46a9b9566fe">More...</a><br /></td></tr>
 <tr class="separator:a840291bc02cba5474a4cb46a9b9566fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -150,7 +155,7 @@ Variables</h2></td></tr>
 <dl class="section author"><dt>Author</dt><dd>A. Nolan (<a href="#" onclick="location.href='mai'+'lto:'+'ale'+'x.'+'nol'+'an'+'@an'+'al'+'og.'+'co'+'m'; return false;">alex.<span style="display: none;">.nosp@m.</span>nola<span style="display: none;">.nosp@m.</span>n@ana<span style="display: none;">.nosp@m.</span>log.<span style="display: none;">.nosp@m.</span>com</a>) </dd>
 <dd>
 J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+'@an'+'al'+'og.'+'co'+'m'; return false;">juan.<span style="display: none;">.nosp@m.</span>chon<span style="display: none;">.nosp@m.</span>g@ana<span style="display: none;">.nosp@m.</span>log.<span style="display: none;">.nosp@m.</span>com</a>) </dd></dl>
-<dl class="section version"><dt>Version</dt><dd>1.0.7-pub </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>2.0.0-pub </dd></dl>
 </div><h2 class="groupheader">Function Documentation</h2>
 <a id="a4759bbcdd7e9e2d77fc72f1b1ed12c1a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4759bbcdd7e9e2d77fc72f1b1ed12c1a">&#9670;&nbsp;</a></span>AdiAppErrorHandler()</h2>
@@ -389,6 +394,25 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 </div>
 </div>
+<a id="add07376eecfcd79dfd9f998172675538"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add07376eecfcd79dfd9f998172675538">&#9670;&nbsp;</a></span>BulkBuffer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t BulkBuffer </td>
+          <td>(</td>
+          <td class="paramtype">(aligned(32))&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Bulk endpoint output buffer. Used for when data is manually sent to the PC. </p>
+
+</div>
+</div>
 <a id="a979d0f023cb68d36fff95c5a5f5f2bc8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a979d0f023cb68d36fff95c5a5f5f2bc8">&#9670;&nbsp;</a></span>CyFxApplicationDefine()</h2>
 
@@ -407,6 +431,25 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 <p>This function is called by the RTOS kernel after booting and creates all the user threads. </p>
 <p>After the ThreadX kernel is started by a call to CyU3PKernelEntry() in main, this function is called. It creates the AppThread (for general execution / handling vendor requests) and the StreamThread for handling high throughput data streaming from a DUT. </p>
+
+</div>
+</div>
+<a id="a1e4f00a6649f71b6f7d737b7906b7ab3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1e4f00a6649f71b6f7d737b7906b7ab3">&#9670;&nbsp;</a></span>FirmwareID()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint8_t FirmwareID </td>
+          <td>(</td>
+          <td class="paramtype">(aligned(32))&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Constant firmware ID string. Manually updated when building new firmware. </p>
 
 </div>
 </div>
@@ -429,6 +472,44 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 <p>This is the main entry point function which the FX3 ARM9 core jumps to when first powered on or reset. </p>
 <dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the function. Will return 0.</dd></dl>
 <p>When the part first powers this function initializes the device, memory, and IO matrix, and then boots the RTOS kernel. </p>
+
+</div>
+</div>
+<a id="af944fb7c8896fdcd7f0d7d00f06fb329"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af944fb7c8896fdcd7f0d7d00f06fb329">&#9670;&nbsp;</a></span>serial_number()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char serial_number </td>
+          <td>(</td>
+          <td class="paramtype">(aligned(32))&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>FX3 unique serial number. Set at runtime </p>
+
+</div>
+</div>
+<a id="aae2dfaf6e49d51d401e281fbdf83d874"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aae2dfaf6e49d51d401e281fbdf83d874">&#9670;&nbsp;</a></span>USBBuffer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t USBBuffer </td>
+          <td>(</td>
+          <td class="paramtype">(aligned(32))&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>USB Data buffer. Used to receive data from the control endpoint </p>
 
 </div>
 </div>

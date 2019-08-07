@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['main',['main',['../main_8c.html#a840291bc02cba5474a4cb46a9b9566fe',1,'main.c']]]
+  ['cyfxapplicationdefine',['CyFxApplicationDefine',['../main_8c.html#a979d0f023cb68d36fff95c5a5f5f2bc8',1,'main.c']]]
 ];

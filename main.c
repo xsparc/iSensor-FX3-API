@@ -13,7 +13,7 @@
   * @date		8/1/2019
   * @author		A. Nolan (alex.nolan@analog.com)
   * @author 	J. Chong (juan.chong@analog.com)
-  * @version 	1.0.7-pub
+  * @version 	2.0.0-pub
   * @brief		Entry point and setup functions for the Analog Devices iSensor FX3 Demonstration Platform firmware.
  **/
 
@@ -82,11 +82,11 @@ CyU3PDmaChannel MemoryToSPI;
  * Buffer Definitions
  */
 
-/* USB Data buffer. Used to receive data from the control endpoint */
-uint8_t USBBuffer[4096] __attribute__ ((aligned (32)));
+/** USB Data buffer. Used to receive data from the control endpoint */
+uint8_t USBBuffer[4096] __attribute__((aligned(32)));
 
-/* Bulk endpoint output buffer. Used for when data is manually sent to the PC. */
-uint8_t BulkBuffer[12288] __attribute__ ((aligned (32)));
+/** Bulk endpoint output buffer. Used for when data is manually sent to the PC. */
+uint8_t BulkBuffer[12288] __attribute__((aligned(32)));
 
 /** DMA buffer structure for output buffer */
 CyU3PDmaBuffer_t ManualDMABuffer;
@@ -98,11 +98,11 @@ CyU3PDmaBuffer_t SpiDmaBuffer;
  * Application constants
  */
 
-/* Constant firmware ID string. Manually updated when building new firmware. */
-const uint8_t FirmwareID[32] __attribute__ ((aligned (32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '1', '.', '0', '.', '7', '-','P','U','B',' ', '\0' };
+/** Constant firmware ID string. Manually updated when building new firmware. */
+const uint8_t FirmwareID[32] __attribute__((aligned(32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '2', '.', '0', '.', '0', '-','P','U','B',' ', '\0' };
 
-/* FX3 unique serial number. Set at runtime */
-char serial_number[] __attribute__ ((aligned (32))) = {'0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00};
+/** FX3 unique serial number. Set at runtime */
+char serial_number[] __attribute__((aligned(32))) = {'0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00};
 
 /*
  * Application configuration information

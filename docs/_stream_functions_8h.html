@@ -20,10 +20,10 @@
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr style="height: 56px;">
-  <td id="projectlogo"><img alt="Logo" src="Analog.ICO"/></td>
+  <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Analog Devices iSensor FX3 Demonstation Platform Firmware
-   &#160;<span id="projectnumber">v1.0.7</span>
+   &#160;<span id="projectnumber">v2.0.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -104,9 +104,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ad691192687ea7f683ced5ecdc7d96386"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_functions_8h.html#ad691192687ea7f683ced5ecdc7d96386">AdiTransferStreamStart</a> ()</td></tr>
 <tr class="memdesc:ad691192687ea7f683ced5ecdc7d96386"><td class="mdescLeft">&#160;</td><td class="mdescRight">Starts a protocol agnostic SPI transfer stream.  <a href="#ad691192687ea7f683ced5ecdc7d96386">More...</a><br /></td></tr>
 <tr class="separator:ad691192687ea7f683ced5ecdc7d96386"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7545fe2ee4eeefc39feabbc5e696691d"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_functions_8h.html#a7545fe2ee4eeefc39feabbc5e696691d">AdiTransferStreamFinish</a> ()</td></tr>
-<tr class="memdesc:a7545fe2ee4eeefc39feabbc5e696691d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cleans up a protocol agnostic transfer stream.  <a href="#a7545fe2ee4eeefc39feabbc5e696691d">More...</a><br /></td></tr>
-<tr class="separator:a7545fe2ee4eeefc39feabbc5e696691d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21bc8ca5ba28fea850189fd9cde3b210"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_functions_8h.html#a21bc8ca5ba28fea850189fd9cde3b210">AdiTransferStreamFinished</a> ()</td></tr>
+<tr class="memdesc:a21bc8ca5ba28fea850189fd9cde3b210"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cleans up a protocol agnostic transfer stream.  <a href="#a21bc8ca5ba28fea850189fd9cde3b210">More...</a><br /></td></tr>
+<tr class="separator:a21bc8ca5ba28fea850189fd9cde3b210"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a486f4434dc95c29845e6ee27fe259a9e"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_functions_8h.html#a486f4434dc95c29845e6ee27fe259a9e">AdiBurstStreamStart</a> ()</td></tr>
 <tr class="memdesc:a486f4434dc95c29845e6ee27fe259a9e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Starts a burst stream for IMU products.  <a href="#a486f4434dc95c29845e6ee27fe259a9e">More...</a><br /></td></tr>
 <tr class="separator:a486f4434dc95c29845e6ee27fe259a9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -116,6 +116,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a7befd6a3d6f0785d3ee11f37bef66c54"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_functions_8h.html#a7befd6a3d6f0785d3ee11f37bef66c54">AdiStopAnyDataStream</a> ()</td></tr>
 <tr class="memdesc:a7befd6a3d6f0785d3ee11f37bef66c54"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function sets a flag to notify the streaming thread that the user requested to cancel streaming.  <a href="#a7befd6a3d6f0785d3ee11f37bef66c54">More...</a><br /></td></tr>
 <tr class="separator:a7befd6a3d6f0785d3ee11f37bef66c54"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45ae5cdd0919f6acf4fbfe230bbc7dd8"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_functions_8h.html#a45ae5cdd0919f6acf4fbfe230bbc7dd8">AdiConfigureDrPin</a> ()</td></tr>
+<tr class="memdesc:a45ae5cdd0919f6acf4fbfe230bbc7dd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configures the data ready pin as an input with edge interrupt triggering enabled.  <a href="#a45ae5cdd0919f6acf4fbfe230bbc7dd8">More...</a><br /></td></tr>
+<tr class="separator:a45ae5cdd0919f6acf4fbfe230bbc7dd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Header file for all data streaming functions (generic, burst, ADcm real time, transfer). </p>
@@ -212,6 +215,27 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 <p>Starts a burst stream for IMU products. </p>
 <dl class="section return"><dt>Returns</dt><dd>The status of starting a real-time stream.</dd></dl>
 <p>This function kicks off a burst stream by configuring a pin interrupt on a user-specified pin, configuring the SPI and USB DMAs to handle the incoming data, and enabling the streaming function.It can be configured for "Blackfin" or "ADuC" burst using vendor requests. </p>
+
+</div>
+</div>
+<a id="a45ae5cdd0919f6acf4fbfe230bbc7dd8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a45ae5cdd0919f6acf4fbfe230bbc7dd8">&#9670;&nbsp;</a></span>AdiConfigureDrPin()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">CyU3PReturnStatus_t AdiConfigureDrPin </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Configures the data ready pin as an input with edge interrupt triggering enabled. </p>
+<dl class="section return"><dt>Returns</dt><dd>The status of the pin configure operation.</dd></dl>
+<p>Configures the data ready pin (FX3State.DrPin) as an input, with edge interrupts enabled based on FX3State.DrPolarity. It is advisable to disable the GPIO interrupt vector before calling this function. If you do not, the GPIO ISR may be triggered. </p>
 
 </div>
 </div>
@@ -320,14 +344,14 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 </div>
 </div>
-<a id="a7545fe2ee4eeefc39feabbc5e696691d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7545fe2ee4eeefc39feabbc5e696691d">&#9670;&nbsp;</a></span>AdiTransferStreamFinish()</h2>
+<a id="a21bc8ca5ba28fea850189fd9cde3b210"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a21bc8ca5ba28fea850189fd9cde3b210">&#9670;&nbsp;</a></span>AdiTransferStreamFinished()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">CyU3PReturnStatus_t AdiTransferStreamFinish </td>
+          <td class="memname">CyU3PReturnStatus_t AdiTransferStreamFinished </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
