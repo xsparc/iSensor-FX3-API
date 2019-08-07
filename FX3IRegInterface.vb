@@ -77,7 +77,7 @@ Partial Class FX3Connection
     ''' Switches burstMode on and off. Set burstMode to the number of burst read registers. 
     ''' </summary>
     ''' <returns>The number of burst read registers.</returns>
-    Public Property burstMode() As UShort Implements IRegInterface.BurstMode
+    Public Property BurstMode As UShort Implements IRegInterface.BurstMode
         Get
             Return m_burstMode
         End Get
