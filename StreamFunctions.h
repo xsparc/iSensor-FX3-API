@@ -32,7 +32,7 @@ CyU3PReturnStatus_t AdiGenericStreamFinished();
 
 //Transfer stream functions
 CyU3PReturnStatus_t AdiTransferStreamStart();
-CyU3PReturnStatus_t AdiTransferStreamFinish();
+CyU3PReturnStatus_t AdiTransferStreamFinished();
 
 //Burst stream functions.
 CyU3PReturnStatus_t AdiBurstStreamStart();
@@ -40,6 +40,7 @@ CyU3PReturnStatus_t AdiBurstStreamFinished();
 
 //General stream functions.
 CyU3PReturnStatus_t AdiStopAnyDataStream();
+CyU3PReturnStatus_t AdiConfigureDrPin();
 
 /*
  * Stream action commands

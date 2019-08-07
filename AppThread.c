@@ -281,6 +281,29 @@ void AdiAppThreadEntry (uint32_t input)
     	//Wait for event handler flags to occur and handle them
     	if (CyU3PEventGet(&EventHandler, eventMask, CYU3P_EVENT_OR_CLEAR, &eventFlag, CYU3P_WAIT_FOREVER) == CY_U3P_SUCCESS)
     	{
+    		/*Handle transfer stream commands */
+			if (eventFlag & ADI_TRANSFER_STREAM_START)
+			{
+				AdiTransferStreamStart();
+#ifdef VERBOSE_MODE
+				CyU3PDebugPrint (4, "Transfer stream start command received.\r\n");
+#endif
+			}
+			if (eventFlag & ADI_TRANSFER_STREAM_STOP)
+			{
+				AdiStopAnyDataStream();
+#ifdef VERBOSE_MODE
+				CyU3PDebugPrint (4, "Transfer stream stop command received.\r\n");
+#endif
+			}
+			if (eventFlag & ADI_TRANSFER_STREAM_DONE)
+			{
+				AdiTransferStreamFinished();
+#ifdef VERBOSE_MODE
+				CyU3PDebugPrint (4, "Transfer stream cleanup finished.\r\n");
+#endif
+			}
+
 			//Handle real-time stream commands
 			if (eventFlag & ADI_RT_STREAM_START)
 			{
@@ -300,7 +323,7 @@ void AdiAppThreadEntry (uint32_t input)
 			{
 				AdiRealTimeStreamFinished();
 #ifdef VERBOSE_MODE
-				CyU3PDebugPrint (4, "Real time stream finished.\r\n");
+				CyU3PDebugPrint (4, "Real time stream cleanup finished.\r\n");
 #endif
 			}
 
@@ -323,7 +346,7 @@ void AdiAppThreadEntry (uint32_t input)
 			{
 				AdiGenericStreamFinished();
 #ifdef VERBOSE_MODE
-				CyU3PDebugPrint (4, "Generic data stream finished.\r\n");
+				CyU3PDebugPrint (4, "Generic data stream cleanup finished.\r\n");
 #endif
 			}
 
@@ -346,7 +369,7 @@ void AdiAppThreadEntry (uint32_t input)
 			{
 				AdiBurstStreamFinished();
 #ifdef VERBOSE_MODE
-				CyU3PDebugPrint (4, "Burst data stream finished.\r\n");
+				CyU3PDebugPrint (4, "Burst data stream cleanup finished.\r\n");
 #endif
 			}
 

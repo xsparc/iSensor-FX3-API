@@ -22,7 +22,14 @@
 /* Include the main header file */
 #include "main.h"
 
+/* Function definitions*/
 void AdiStreamThreadEntry(uint32_t input);
+
+/* Worker functions for each of the stream modes*/
+CyU3PReturnStatus_t AdiGenericStreamWork();
+CyU3PReturnStatus_t AdiRealTimeStreamWork();
+CyU3PReturnStatus_t AdiBurstStreamWork();
+CyU3PReturnStatus_t AdiTransferStreamWork();
 
 /** StreamThread allocated stack size (2KB) */
 #define STREAMTHREAD_STACK					(0x0800)

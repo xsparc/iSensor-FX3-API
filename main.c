@@ -481,6 +481,36 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 				}
 				break;
 
+			/* Transfer stream control */
+			case ADI_TRANSFER_STREAM:
+				switch(wIndex)
+				{
+				case ADI_STREAM_START_CMD:
+					status = CyU3PEventSet(&EventHandler, ADI_TRANSFER_STREAM_START, CYU3P_EVENT_OR);
+					StreamThreadState.TransferByteLength = wLength;
+					break;
+				case ADI_STREAM_DONE_CMD:
+					status = CyU3PEventSet(&EventHandler, ADI_TRANSFER_STREAM_DONE, CYU3P_EVENT_OR);
+	            	USBBuffer[0] = status & 0xFF;
+	            	USBBuffer[1] = (status & 0xFF00) >> 8;
+	            	USBBuffer[2] = (status & 0xFF0000) >> 16;
+	            	USBBuffer[3] = (status & 0xFF000000) >> 24;
+	            	CyU3PUsbSendEP0Data (wLength, USBBuffer);
+					break;
+				case ADI_STREAM_STOP_CMD:
+					status = CyU3PEventSet(&EventHandler, ADI_TRANSFER_STREAM_STOP, CYU3P_EVENT_OR);
+					break;
+				default:
+					CyU3PDebugPrint (4, "ERROR: Unknown Stream Command: %d\r\n", wIndex);
+					break;
+				}
+				if (status != CY_U3P_SUCCESS)
+				{
+					isHandled = CyFalse;
+					CyU3PDebugPrint (4, "Setting real time stream event failed, Error code = %x\r\n", status);
+				}
+				break;
+
 			//Get the measured DR frequency
             case ADI_MEASURE_DR:
             	//Read config data into USBBuffer
@@ -501,11 +531,6 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	//Call the transfer bytes function
             	//upper 2 write bytes are passed in wIndex, lower are passed in wValue
             	status = AdiTransferBytes(wIndex << 16 | wValue);
-            	break;
-
-            case ADI_TRANSFER_STREAM:
-            	//TODO: Implement transfer stream functionality
-            	isHandled = CyTrue;
             	break;
 
             default:
