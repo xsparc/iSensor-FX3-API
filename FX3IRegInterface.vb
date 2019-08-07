@@ -9,51 +9,7 @@ Imports AdisApi
 
 Partial Class FX3Connection
 
-#Region "IRegInterface Implementation"
-
-    ''' <summary>
-    ''' This function is not currently implemented. Calling it will throw a NotImplementedException.
-    ''' </summary>
-    ''' <param name="addr"></param>
-    ''' <param name="numCaptures"></param>
-    Public Sub StartStream(addr As IEnumerable(Of UInteger), numCaptures As UInteger) Implements IRegInterface.StartStream
-        Throw New NotImplementedException()
-    End Sub
-
-    ''' <summary>
-    ''' This function is not currently implemented. Calling it will throw a NotImplementedException.
-    ''' </summary>
-    ''' <returns></returns>
-    Public Function GetStreamDataPacketU16() As UShort() Implements IRegInterface.GetStreamDataPacketU16
-        Throw New NotImplementedException()
-    End Function
-
-    ''' <summary>
-    ''' This function is not currently implemented. Calling it will throw a NotImplementedException.
-    ''' </summary>
-    ''' <param name="addrData"></param>
-    ''' <param name="numCaptures"></param>
-    ''' <param name="numBuffers"></param>
-    ''' <returns></returns>
-    Public Function ReadRegArrayStream(addrData As IEnumerable(Of AddrDataPair), numCaptures As UInteger, numBuffers As UInteger) As UShort() Implements IRegInterface.ReadRegArrayStream
-        Throw New NotImplementedException()
-    End Function
-
-    ''' <summary>
-    ''' This function is not currently implemented. Calling it will throw a NotImplementedException.
-    ''' </summary>
-    ''' <param name="addr"></param>
-    ''' <param name="data"></param>
-    Public Sub WriteRegWord(addr As UInteger, data As UInteger) Implements IRegInterface.WriteRegWord
-        Throw New NotImplementedException()
-    End Sub
-
-    ''' <summary>
-    ''' This function is not currently implemented. Calling it will throw a NotImplementedException.
-    ''' </summary>
-    Public Sub Start() Implements IRegInterface.Start
-        Throw New NotImplementedException()
-    End Sub
+#Region "Properties"
 
     ''' <summary>
     ''' If the data ready is used for register reads
@@ -106,18 +62,18 @@ Partial Class FX3Connection
         End Set
     End Property
 
+#End Region
+
+#Region "Stream Functions"
+
     ''' <summary>
-    ''' Drives the Reset pin low for 500ms and then sleeps for another 500ms
+    ''' Starts a buffered stream for only a single buffer. 
+    ''' This is equivalent to StartBufferedStream(addr, numCaptures, 1, CurrentTimeout, Nothing)
     ''' </summary>
-    Public Sub Reset() Implements IRegInterface.Reset
-
-        'Drives a low pulse on the reset pin for 250ms
-        PulseDrive(ResetPin, 0, 250, 1)
-        'Sleep for 100 ms
-        System.Threading.Thread.Sleep(100)
-        'Wait for ready pin to be high
-        PulseWait(ReadyPin, 1, 0, 2000)
-
+    ''' <param name="addr">The address list to read from</param>
+    ''' <param name="numCaptures">The number of times to capture that address list</param>
+    Public Sub StartStream(addr As IEnumerable(Of UInteger), numCaptures As UInteger) Implements IRegInterface.StartStream
+        StartBufferedStream(addr, numCaptures, 1, StreamTimeoutSeconds, Nothing)
     End Sub
 
     ''' <summary>
@@ -137,7 +93,6 @@ Partial Class FX3Connection
         Next
 
         StartBufferedStream(addrDataList, numCaptures, numBuffers, timeoutSeconds, worker)
-
     End Sub
 
     ''' <summary>
@@ -189,7 +144,7 @@ Partial Class FX3Connection
             'Start the streaming threads
             StartRealTimeStreaming(numBuffers)
         Else
-            If burstMode = 0 Then
+            If BurstMode = 0 Then
                 'Generic stream manager implementation for IMU, etc
                 StartGenericStream(addrData, numCaptures, numBuffers)
             Else
@@ -219,7 +174,6 @@ Partial Class FX3Connection
             'Sleep so as to not rail the processor
             Threading.Thread.Sleep(10)
         End While
-
     End Sub
 
     ''' <summary>
@@ -233,7 +187,7 @@ Partial Class FX3Connection
                 StopRealTimeStreaming()
             Else
                 'If streaming for other device is running then stop the stream
-                If burstMode = 0 Then
+                If BurstMode = 0 Then
                     StopGenericStream()
                 Else
                     StopBurstStream()
@@ -255,265 +209,16 @@ Partial Class FX3Connection
     End Function
 
     ''' <summary>
-    ''' This function reads a set of registers using a streaming endpoint from the FX3.
+    ''' This function does the same thing as GetBufferedStreamDataPacket()
     ''' </summary>
-    ''' <param name="addr"></param>
-    ''' <param name="numCaptures"></param>
-    ''' <param name="numBuffers"></param>
-    ''' <returns></returns>
-    Public Function ReadRegArrayStream(addr As IEnumerable(Of UInteger), numCaptures As UInteger, numBuffers As UInteger) As UShort() Implements IRegInterface.ReadRegArrayStream
-
-        Dim addrData As New List(Of AddrDataPair)
-
-        'Build a list of address data pairs from addr
-        For Each address In addr
-            addrData.Add(New AddrDataPair(address, Nothing))
-        Next
-
-        'Call the overload which takes an addrDataPair
-        Return ReadRegArrayStream(addrData, numCaptures, numBuffers)
-
+    ''' <returns>The last buffer read from the DUT</returns>
+    Public Function GetStreamDataPacketU16() As UShort() Implements IRegInterface.GetStreamDataPacketU16
+        Return GetBuffer()
     End Function
 
-    ''' <summary>
-    ''' This function writes a single register byte, given as an Address / Data pair
-    ''' </summary>
-    ''' <param name="addrData">The AddrDataPair to be written</param>
-    Public Sub WriteRegByte(addrData As AddrDataPair) Implements IRegInterface.WriteRegByte
+#End Region
 
-        'Make a call to the hardware level WriteRegByte function with the given data
-        WriteRegByte(addrData.addr, addrData.data)
-
-    End Sub
-
-    ''' <summary>
-    ''' This function writes an enumerable list of data to the DUT as AddrDataPairs
-    ''' </summary>
-    ''' <param name="addrData">The list of AddrDataPair to be written to DUT</param>
-    Public Sub WriteRegByte(addrData As IEnumerable(Of AddrDataPair)) Implements IRegInterface.WriteRegByte
-
-        'Iterate through the IEnumerable list, performing writes as needed
-        For Each value In addrData
-            WriteRegByte(value.addr, value.data)
-        Next
-
-    End Sub
-
-    ''' <summary>
-    ''' This is the most general WriteRegByte, which the others are based on
-    ''' </summary>
-    ''' <param name="addr">The address to write to</param>
-    ''' <param name="data">The byte of data to write</param>
-    Public Sub WriteRegByte(addr As UInteger, data As UInteger) Implements IRegInterface.WriteRegByte
-
-        'Transfer buffer
-        Dim buf(3) As Byte
-
-        'status message
-        Dim status As UInt32
-
-        'Configure control endpoint for a single byte register write
-        ConfigureControlEndpoint(USBCommands.ADI_WRITE_BYTE, False)
-        FX3ControlEndPt.Value = data And &HFFFF
-        FX3ControlEndPt.Index = addr And &HFFFF
-
-        'Transfer data
-        If Not XferControlData(buf, 4, 2000) Then
-            Throw New FX3CommunicationException("ERROR: WriteRegByte timed out - Check board connection")
-        End If
-
-        'Read back the operation status from the return buffer
-        status = BitConverter.ToUInt32(buf, 0)
-        If Not status = 0 Then
-            Throw New FX3BadStatusException("ERROR: Bad write command - " + status.ToString("X4"))
-        End If
-
-    End Sub
-
-    ''' <summary>
-    ''' Overload of WriteRegByte which allows for multiple registers to be specified to write to, as an IEnumerable list of register addresses.
-    ''' </summary>
-    ''' <param name="addr">The list of register addresses to write to.</param>
-    ''' <param name="data">The data to write to each register in the address list.</param>
-    Public Sub WriteRegByte(addr As IEnumerable(Of UInteger), data As IEnumerable(Of UInteger)) Implements IRegInterface.WriteRegByte
-
-        'Index in the IEnumerable register list
-        Dim index As Integer = 0
-
-        'For each address / data pair, call writeRegByte
-        While index < addr.Count And index < data.Count
-            WriteRegByte(addr(index), data(index))
-            index = index + 1
-        End While
-
-    End Sub
-
-    ''' <summary>
-    ''' Reads an array of 16 bit register values using the bulk in endpoint
-    ''' </summary>
-    ''' <param name="addr">The list of registers to read</param>
-    ''' <returns>The register values, as a UShort array</returns>
-    Public Function ReadRegArray(addr As IEnumerable(Of UInteger)) As UShort() Implements IRegInterface.ReadRegArray
-
-        'Allocate variables needed for transfer
-
-        'FX3 Buffer size (in bytes)
-        Dim bufSize As Integer = 12288
-        Dim tempBufSize As Integer
-        'Total number of bytes to be transfered
-        Dim numBytes As Integer = addr.Count * 2
-        'Number of 12KB transfers needed
-        Dim numTransfers As Integer
-        'Variable for tracking position in addr
-        Dim addrIndex As Integer
-        'Byte array for transfering data
-        Dim buf(bufSize - 1) As Byte
-        'List to store return values
-        Dim returnList As New List(Of UShort)
-        'Variable for tracking index in the transfer buffer
-        Dim bufIndex As Integer = 0
-        'Varaible for converting byte values to short
-        Dim regValue As UShort
-
-        'Split into multiple transactions if needed
-        If numBytes > bufSize Then
-            numTransfers = Math.Ceiling(numBytes / bufSize)
-        Else
-            numTransfers = 1
-        End If
-
-        'Loop though, performing transfers as needed
-        addrIndex = 0
-        For transferCount As Integer = 1 To numTransfers
-            bufIndex = 0
-
-            'Build bulk transfer buffer for when DR is enabled
-            If DrActive Then
-                While (bufIndex <= (bufSize - m_BytesPerBulkRead)) And (addrIndex < addr.Count)
-                    For i As Integer = 0 To m_BytesPerBulkRead / 2
-                        buf(bufIndex) = addr(addrIndex)
-                        buf(bufIndex + 1) = 0
-                        bufIndex = bufIndex + 2
-                        addrIndex = addrIndex + 1
-                    Next
-                End While
-            Else
-                'Build transfer buffer otherwise
-                While (addrIndex < addr.Count) And (bufIndex < bufSize)
-                    buf(bufIndex) = addr(addrIndex)
-                    buf(bufIndex + 1) = 0
-                    bufIndex = bufIndex + 2
-                    addrIndex = addrIndex + 1
-                End While
-            End If
-
-            'Send control transfer
-            ConfigureControlEndpoint(USBCommands.ADI_BULK_REGISTER_TRANSFER, True)
-            'Set the index equal to the number of bytes to read
-            FX3ControlEndPt.Index = bufIndex
-            'Set the value to the number of bytes per data ready
-            If DrActive Then
-                FX3ControlEndPt.Value = m_BytesPerBulkRead
-            Else
-                FX3ControlEndPt.Value = 0
-            End If
-            If Not XferControlData(buf, 4, 2000) Then
-                Throw New FX3CommunicationException("ERROR: Control Endpoint transfer timed out")
-            End If
-
-            'Send bulk transfer
-            tempBufSize = bufIndex
-            If Not DataOutEndPt.XferData(buf, tempBufSize) Then
-                Throw New FX3CommunicationException("ERROR: Bulk endpoint data transfer out failed")
-            End If
-
-            'Receieve data back
-            tempBufSize = bufIndex
-            If Not DataInEndPt.XferData(buf, tempBufSize) Then
-                Throw New FX3CommunicationException("ERROR: Bulk endpoint data transfer in failed")
-            End If
-
-            'Build the return array
-            For i As Integer = 0 To bufIndex - 2 Step 2
-                regValue = buf(i)
-                regValue = regValue << 8
-                regValue = regValue + buf(i + 1)
-                returnList.Add(regValue)
-            Next
-
-        Next
-
-        'Convert list to array and return
-        Return returnList.ToArray()
-
-    End Function
-
-    ''' <summary>
-    ''' ReadRegArray overload which includes register writes. Breaks the call into multiple calls of readRegByte and writeRegByte
-    ''' </summary>
-    ''' <param name="addrData">The data to read/write</param>
-    ''' <param name="numCaptures">The number of times to perform the read/write operation</param>
-    ''' <returns>The output data, as a UShort array</returns>
-    Public Function ReadRegArray(addrData As IEnumerable(Of AddrDataPair), numCaptures As UInteger) As UShort() Implements IRegInterface.ReadRegArray
-
-        'If data is null (nothing) perform a read of the address
-        'If data is not null write the data to address
-
-        'List to store output in
-        Dim outputValues As New List(Of UShort)
-        Dim loopCounter As Integer = 0
-
-        For loopCounter = 0 To numCaptures - 1
-            For Each pair In addrData
-                If IsNothing(pair.data) Then
-                    'Read operation
-                    outputValues.Add(ReadRegWord(pair.addr))
-                Else
-                    'Write operation (lower byte)
-                    WriteRegByte(pair.addr, pair.data And &HFF)
-                    'Write operation (upper byte)
-                    WriteRegByte(pair.addr + 1, (pair.data And &HFF00) >> 8)
-                    'Add a 0 to output to make adbfInterface happy
-                    outputValues.Add(0)
-                End If
-            Next
-        Next
-
-        'Return output list as array
-        Return outputValues.ToArray()
-
-    End Function
-
-    ''' <summary>
-    ''' Overload of ReadRegArray which builds a new IEnumerable of addr and call the overload which takes an enumerable of addr
-    ''' </summary>
-    ''' <param name="addr">List of register address's to read</param>
-    ''' <param name="numCaptures">Number of captures to perform on the register list</param>
-    ''' <returns>The register values, as a short array</returns>
-    Public Function ReadRegArray(addr As IEnumerable(Of UInteger), numCaptures As UInteger) As UShort() Implements IRegInterface.ReadRegArray
-
-        Dim newAddr((addr.Count) * numCaptures - 1) As UInteger
-        Dim addrIndex As Integer = 0
-
-        'Set the bytes per data ready
-        If DrActive Then
-            m_BytesPerBulkRead = addr.Count * 2
-        Else
-            m_BytesPerBulkRead = 0
-        End If
-
-        'Build address list
-        For Each address In addr
-            For i As Integer = 0 To numCaptures - 1
-                newAddr(addrIndex) = address
-                addrIndex = addrIndex + 1
-            Next
-        Next
-
-        'Call overload which only takes addresses
-        Return ReadRegArray(newAddr)
-
-    End Function
+#Region "Single Register Read/Writes"
 
     ''' <summary>
     ''' This is the most general ReadRegByte. Other implementations are based on this.
@@ -580,6 +285,271 @@ Partial Class FX3Connection
         Return returnValue
 
     End Function
+
+    ''' <summary>
+    ''' This is the most general WriteRegByte, which the others are based on
+    ''' </summary>
+    ''' <param name="addr">The address to write to</param>
+    ''' <param name="data">The byte of data to write</param>
+    Public Sub WriteRegByte(addr As UInteger, data As UInteger) Implements IRegInterface.WriteRegByte
+
+        'Transfer buffer
+        Dim buf(3) As Byte
+
+        'status message
+        Dim status As UInt32
+
+        'Configure control endpoint for a single byte register write
+        ConfigureControlEndpoint(USBCommands.ADI_WRITE_BYTE, False)
+        FX3ControlEndPt.Value = data And &HFFFF
+        FX3ControlEndPt.Index = addr And &HFFFF
+
+        'Transfer data
+        If Not XferControlData(buf, 4, 2000) Then
+            Throw New FX3CommunicationException("ERROR: WriteRegByte timed out - Check board connection")
+        End If
+
+        'Read back the operation status from the return buffer
+        status = BitConverter.ToUInt32(buf, 0)
+        If Not status = 0 Then
+            Throw New FX3BadStatusException("ERROR: Bad write command - " + status.ToString("X4"))
+        End If
+
+    End Sub
+
+    ''' <summary>
+    ''' This function writes a single register byte, given as an Address / Data pair
+    ''' </summary>
+    ''' <param name="addrData">The AddrDataPair to be written</param>
+    Public Sub WriteRegByte(addrData As AddrDataPair) Implements IRegInterface.WriteRegByte
+
+        'Make a call to the hardware level WriteRegByte function with the given data
+        WriteRegByte(addrData.addr, addrData.data)
+
+    End Sub
+
+    ''' <summary>
+    ''' This function is not currently implemented. Calling it will throw a NotImplementedException.
+    ''' </summary>
+    ''' <param name="addr"></param>
+    ''' <param name="data"></param>
+    Public Sub WriteRegWord(addr As UInteger, data As UInteger) Implements IRegInterface.WriteRegWord
+        Throw New NotImplementedException()
+    End Sub
+
+#End Region
+
+#Region "Array Register Read/Writes"
+
+    ''' <summary>
+    ''' This is the most generic array register function. All other array read/write functions call down to this one.
+    ''' </summary>
+    ''' <param name="addrData">The list of register addresses and optional writedata for each capture</param>
+    ''' <param name="numCaptures">The number of times to iterate through addrData per DUT data ready (if DrActive is set)</param>
+    ''' <param name="numBuffers">The total number of buffers to read, where one buffer is considered numCaptures iterations through addrData</param>
+    ''' <returns>An array of 16 bit values read back from the DUT. The size will be addrData.Count() * numCaptures * numBuffers</returns>
+    Public Function ReadRegArrayStream(addrData As IEnumerable(Of AddrDataPair), numCaptures As UInteger, numBuffers As UInteger) As UShort() Implements IRegInterface.ReadRegArrayStream
+
+        'Track endpoint transfer status
+        Dim validTransfer As Boolean
+        'Track number of 16 bit words to read
+        Dim WordsToRead As Integer
+        'List to build output buffer in USHORT format
+        Dim resultBuffer As New List(Of UShort)
+        'Bytes per USB buffer
+        Dim bytesPerUSBBuffer As Integer
+        'short value
+        Dim shortValue As UShort
+
+        'Find transfer size and create data buffer
+        Dim transferSize As Integer
+        If m_ActiveFX3.bSuperSpeed Then
+            transferSize = 1024
+        ElseIf m_ActiveFX3.bHighSpeed Then
+            transferSize = 512
+        Else
+            Throw New FX3GeneralException("ERROR: Streaming application requires USB 2.0 or 3.0 connection to function")
+        End If
+
+        'Buffer to hold data from the FX3
+        Dim buf(transferSize - 1) As Byte
+
+        'Calculate the number of bytes to read
+        WordsToRead = addrData.Count() * numCaptures * numBuffers * 2
+
+        'Calculate the bytes per USB buffer
+        Dim bytesPerDrTransfer As Integer = addrData.Count() * numCaptures * 2
+        If bytesPerDrTransfer > transferSize Then
+            bytesPerUSBBuffer = transferSize
+        Else
+            bytesPerUSBBuffer = Math.Floor(transferSize / bytesPerDrTransfer) * bytesPerDrTransfer
+        End If
+
+        'Stop any previously running stream thread
+        m_StreamThreadRunning = False
+
+        'Take the streaming endpoint mutex
+        m_StreamMutex.WaitOne()
+
+        'Setup generic stream and send start command
+        GenericStreamSetup(addrData, numCaptures, numBuffers)
+
+        'Read data back from the streaming endpoint and build the output array
+        While resultBuffer.Count() < WordsToRead
+            'Read data from FX3
+            validTransfer = StreamingEndPt.XferData(buf, transferSize)
+            'Check that the data was read correctly
+            If validTransfer Then
+                For bufIndex As Integer = 0 To bytesPerUSBBuffer - 2 Step 2
+                    'Add the 16 bit value at the current index
+                    'Flip bytes
+                    shortValue = buf(bufIndex)
+                    shortValue = shortValue << 8
+                    shortValue = shortValue + buf(bufIndex + 1)
+                    resultBuffer.Add(shortValue)
+                    'Check if we've read all the data
+                    If resultBuffer.Count() = WordsToRead Then
+                        Exit For
+                    End If
+                Next
+            Else
+                'Release the streaming endpoint mutex (in case exceptions are being caught, don't want to keep locking things up forever)
+                m_StreamMutex.ReleaseMutex()
+                'Send generic stream stop command
+                StopGenericStream()
+                'Throw exception
+                Throw New FX3CommunicationException("ERROR: Transfer failed during register array read/write. Error code: " + StreamingEndPt.LastError.ToString() + " (0x" + StreamingEndPt.LastError.ToString("X4") + ")")
+                Exit While
+            End If
+        End While
+
+        'Send generic stream done command
+        GenericStreamDone()
+
+        'Release the mutex
+        m_StreamMutex.ReleaseMutex()
+
+        'Return the data read from the FX3
+        Return resultBuffer.ToArray()
+
+    End Function
+
+    ''' <summary>
+    ''' 
+    ''' </summary>
+    ''' <param name="addr"></param>
+    ''' <param name="numCaptures"></param>
+    ''' <param name="numBuffers"></param>
+    ''' <returns></returns>
+    Public Function ReadRegArrayStream(addr As IEnumerable(Of UInteger), numCaptures As UInteger, numBuffers As UInteger) As UShort() Implements IRegInterface.ReadRegArrayStream
+
+        Dim addrData As New List(Of AddrDataPair)
+
+        'Build a list of address data pairs from addr
+        For Each address In addr
+            addrData.Add(New AddrDataPair(address, Nothing))
+        Next
+
+        'Call the overload which takes an addrDataPair
+        Return ReadRegArrayStream(addrData, numCaptures, numBuffers)
+
+    End Function
+
+    ''' <summary>
+    ''' Overload of ReadRegArray which builds a new IEnumerable of addr and call the overload which takes an enumerable of addr
+    ''' </summary>
+    ''' <param name="addr">List of register address's to read</param>
+    ''' <param name="numCaptures">Number of captures to perform on the register list</param>
+    ''' <returns>The register values, as a short array</returns>
+    Public Function ReadRegArray(addr As IEnumerable(Of UInteger), numCaptures As UInteger) As UShort() Implements IRegInterface.ReadRegArray
+
+        'Call implementation version with numBuffers = 1
+        Return ReadRegArrayStream(addr, numCaptures, 1)
+
+    End Function
+
+    ''' <summary>
+    ''' This function writes an enumerable list of data to the DUT as AddrDataPairs
+    ''' </summary>
+    ''' <param name="addrData">The list of AddrDataPair to be written to DUT</param>
+    Public Sub WriteRegByte(addrData As IEnumerable(Of AddrDataPair)) Implements IRegInterface.WriteRegByte
+
+        'Calls the array overload with numCaptures = 1, numBuffers = 1. Don't read back value because it is write only
+        ReadRegArrayStream(addrData, 1, 1)
+
+    End Sub
+
+    ''' <summary>
+    ''' Overload of WriteRegByte which allows for multiple registers to be specified to write to, as an IEnumerable list of register addresses.
+    ''' </summary>
+    ''' <param name="addr">The list of register addresses to write to.</param>
+    ''' <param name="data">The data to write to each register in the address list.</param>
+    Public Sub WriteRegByte(addr As IEnumerable(Of UInteger), data As IEnumerable(Of UInteger)) Implements IRegInterface.WriteRegByte
+
+        'Check input parameters
+        If addr.Count <> data.Count() Then
+            Throw New FX3ConfigurationException("ERROR: WriteRegByte must take the same number of addresses and data values")
+        End If
+
+        Dim addrData As New List(Of AddrDataPair)
+        For i As Integer = 0 To addr.Count() - 1
+            addrData.Add(New AddrDataPair With {.addr = addr(i), .data = data(i)})
+        Next
+
+        'Call the array overload with the address data pair list, numCaptures = 1, numBuffers = 1
+        ReadRegArrayStream(addrData, 1UI, 1UI)
+
+    End Sub
+
+    ''' <summary>
+    ''' Reads an array of 16 bit register values.
+    ''' </summary>
+    ''' <param name="addr">The list of registers to read</param>
+    ''' <returns>The register values, as a UShort array</returns>
+    Public Function ReadRegArray(addr As IEnumerable(Of UInteger)) As UShort() Implements IRegInterface.ReadRegArray
+
+        'Call the general overload with numCaptures = 1, numBuffers = 1
+        Return ReadRegArrayStream(addr, 1, 1)
+
+    End Function
+
+    ''' <summary>
+    ''' ReadRegArray overload which includes register writes. Breaks the call into multiple calls of readRegByte and writeRegByte
+    ''' </summary>
+    ''' <param name="addrData">The data to read/write</param>
+    ''' <param name="numCaptures">The number of times to perform the read/write operation</param>
+    ''' <returns>The output data, as a UShort array</returns>
+    Public Function ReadRegArray(addrData As IEnumerable(Of AddrDataPair), numCaptures As UInteger) As UShort() Implements IRegInterface.ReadRegArray
+
+        'Call the general overload with numBuffers = 1
+        Return ReadRegArrayStream(addrData, numCaptures, 1)
+
+    End Function
+
+#End Region
+
+#Region "Other Functions"
+
+    ''' <summary>
+    ''' Drives the Reset pin low for 500ms and then sleeps for another 500ms
+    ''' </summary>
+    Public Sub Reset() Implements IRegInterface.Reset
+
+        'Drives a low pulse on the reset pin for 250ms
+        PulseDrive(ResetPin, 0, 250, 1)
+        'Sleep for 100 ms
+        System.Threading.Thread.Sleep(100)
+        'Wait for ready pin to be high
+        PulseWait(ReadyPin, 1, 0, 2000)
+
+    End Sub
+
+    ''' <summary>
+    ''' This function is not currently implemented. Calling it will throw a NotImplementedException.
+    ''' </summary>
+    Public Sub Start() Implements IRegInterface.Start
+        Throw New NotImplementedException()
+    End Sub
 
 #End Region
 

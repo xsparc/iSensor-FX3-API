@@ -273,24 +273,7 @@ Partial Class FX3Connection
     ''' <param name="numBuffers">The total number of capture sequences to perform</param>
     Public Sub StartGenericStream(addr As IEnumerable(Of AddrDataPair), numCaptures As UInteger, numBuffers As UInteger)
 
-        'Buffer to store control data
-        Dim buf As New List(Of Byte)
         Dim BytesPerBuffer As Integer
-
-        'Validate number of buffers
-        If IsNothing(numBuffers) Or numBuffers < 1 Then
-            Throw New FX3ConfigurationException("ERROR: Invalid number of buffers for a generic register stream: " + numBuffers.ToString())
-        End If
-
-        'Validate address list
-        If IsNothing(addr) Or addr.Count = 0 Then
-            Throw New FX3ConfigurationException("ERROR: Invalid address list for generic stream")
-        End If
-
-        'Validate number of captures
-        If IsNothing(numCaptures) Or numCaptures < 1 Then
-            Throw New FX3ConfigurationException("ERROR: Invalid number of captures for a generic register stream: " + numBuffers.ToString())
-        End If
 
         'Validate buffer size
         BytesPerBuffer = (addr.Count() * numCaptures) * 2
@@ -298,10 +281,41 @@ Partial Class FX3Connection
             Throw New FX3ConfigurationException("ERROR: Generic stream capture size too large- " + BytesPerBuffer.ToString() + " bytes per buffer exceeds maximum size of " + MaxBufferSize.ToString() + " bytes.")
         End If
 
+        'Perform generic stream setup (sends start command to control endpoint)
+        GenericStreamSetup(addr, numCaptures, numBuffers)
+
         'Reset frame counter
         m_FramesRead = 0
         'Set the total number of frames to read
         m_TotalBuffersToRead = numBuffers
+
+        'Reinitialize the data queue
+        m_StreamData = New ConcurrentQueue(Of UShort())
+
+        'Start the Generic Stream Thread
+        m_StreamThread = New Thread(AddressOf GenericStreamManager)
+        m_StreamThread.Start(BytesPerBuffer)
+
+    End Sub
+
+    Private Sub GenericStreamSetup(addrData As IEnumerable(Of AddrDataPair), numCaptures As UInteger, numBuffers As UInteger)
+        'Buffer to store control data
+        Dim buf As New List(Of Byte)
+
+        'Validate number of buffers
+        If IsNothing(numBuffers) Or numBuffers < 1 Then
+            Throw New FX3ConfigurationException("ERROR: Invalid number of buffers for a generic register stream: " + numBuffers.ToString())
+        End If
+
+        'Validate address list
+        If IsNothing(addrData) Or addrData.Count = 0 Then
+            Throw New FX3ConfigurationException("ERROR: Invalid address list for generic stream")
+        End If
+
+        'Validate number of captures
+        If IsNothing(numCaptures) Or numCaptures < 1 Then
+            Throw New FX3ConfigurationException("ERROR: Invalid number of captures for a generic register stream: " + numBuffers.ToString())
+        End If
 
         'Add numBuffers
         buf.Add(numBuffers And &HFF)
@@ -316,18 +330,17 @@ Partial Class FX3Connection
         buf.Add((numCaptures And &HFF000000) >> 24)
 
         'Add address list
-        For Each item In addr
+        For Each item In addrData
             If item.data Is Nothing Then
+                'Read case
                 buf.Add(item.addr And &HFF)
                 buf.Add(&H0)
             Else
-                buf.Add(item.addr And &HFF)
+                'Write case
+                buf.Add(item.addr Or &H80)
                 buf.Add(item.data And &HFF)
             End If
         Next
-
-        'Reinitialize the data queue
-        m_StreamData = New ConcurrentQueue(Of UShort())
 
         'Configure the control endpoint
         ConfigureControlEndpoint(USBCommands.ADI_STREAM_GENERIC_DATA, True)
@@ -340,11 +353,6 @@ Partial Class FX3Connection
         If Not XferControlData(buf.ToArray(), buf.Count, 5000) Then
             Throw New FX3CommunicationException("ERROR: Control Endpoint transfer timed out when starting generic stream")
         End If
-
-        'Start the Generic Stream Thread
-        m_StreamThread = New Thread(AddressOf GenericStreamManager)
-        m_StreamThread.Start(BytesPerBuffer)
-
     End Sub
 
 

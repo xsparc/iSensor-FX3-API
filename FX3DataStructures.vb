@@ -322,7 +322,7 @@ Public Class FX3SPIConfig
             StallCycles = 50
             DUTType = DUTType.IMU
             IsLSBFirst = False
-            DrActive = True
+            DrActive = False
             DrPolarity = True
             DataReadyPinFX3GPIO = 4
             TimerTickScaleFactor = 10000
