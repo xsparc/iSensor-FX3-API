@@ -18,8 +18,8 @@
     <HtmlHelpName>Documentation</HtmlHelpName>
     <Language>en-US</Language>
     <DocumentationSources>
-      <DocumentationSource sourceFile="bin\Debug\FX3Api.dll" />
-<DocumentationSource sourceFile="bin\Debug\FX3Api.xml" /></DocumentationSources>
+      <DocumentationSource sourceFile="bin\Debug\FX3Api.xml" />
+<DocumentationSource sourceFile="bin\Debug\FX3Api.dll" /></DocumentationSources>
     <WarnOnMissingSourceContext>False</WarnOnMissingSourceContext>
     <HelpFileFormat>Website</HelpFileFormat>
     <SyntaxFilters>Standard</SyntaxFilters>
@@ -30,6 +30,10 @@
     <IndentHtml>False</IndentHtml>
     <BuildAssemblerVerbosity>OnlyWarningsAndErrors</BuildAssemblerVerbosity>
     <SaveComponentCacheCapacity>100</SaveComponentCacheCapacity>
+    <NamespaceSummaries>
+      <NamespaceSummaryItem name="(global)" isDocumented="False" />
+<NamespaceSummaryItem name="FX3Api" isDocumented="True">Documentation for the iSensor FX3 Demonstartion Platform public .NET API</NamespaceSummaryItem></NamespaceSummaries>
+    <VisibleItems>ExplicitInterfaceImplementations, InheritedMembers, InheritedFrameworkMembers, Protected, ProtectedInternalAsProtected, NonBrowsable</VisibleItems>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in order for Visual Studio to perform
 			 the build.  The others are optional common platform types that may appear. -->
