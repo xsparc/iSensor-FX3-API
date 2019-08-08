@@ -220,9 +220,6 @@ typedef struct StreamState
 /** Write one byte of data to a user-specified address */
 #define ADI_WRITE_BYTE							(0xF1)
 
-/** Return data over a bulk endpoint before a bulk read/write operation */
-#define ADI_BULK_REGISTER_TRANSFER				(0xF2)
-
 /** Used to transfer bytes without any intervention/protocol management */
 #define ADI_TRANSFER_BYTES						(0xCA)
 

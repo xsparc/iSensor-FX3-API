@@ -236,17 +236,6 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
         		status = AdiMeasureBusyPulse(wLength);
         		break;
 
-        	//Bulk register read/write using RegReadArray
-        	case ADI_BULK_REGISTER_TRANSFER:
-        		CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
-        		status = AdiBulkByteTransfer(wIndex, wValue);
-        		USBBuffer[0] = status & 0xFF;
-        		USBBuffer[1] = (status & 0xFF00) >> 8;
-        		USBBuffer[2] = (status & 0xFF0000) >> 16;
-        		USBBuffer[3] = (status & 0xFF000000) >> 24;
-        		CyU3PUsbSendEP0Data (4, USBBuffer);
-        		break;
-
         	//Read single word for IRegInterface
         	case ADI_READ_BYTES:
         		AdiReadRegBytes(wIndex);
