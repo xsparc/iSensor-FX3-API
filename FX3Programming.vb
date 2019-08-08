@@ -170,10 +170,43 @@ Partial Class FX3Connection
 
         'Reset the FX3 currently in use
         ResetFX3Firmware(m_ActiveFX3)
+
         'Set default values for the interface
         SetDefaultValues(m_sensorType)
 
     End Sub
+
+    ''' <summary>
+    ''' Overload of Disconnect which lets you specify the FX3 serial number to disconnect. Returns a boolean
+    ''' indicating if the board was disconnected.
+    ''' </summary>
+    ''' <param name="FX3SerialNumber"></param>
+    Public Function Disconnect(FX3SerialNumber As String) As Boolean
+        Dim boardFound As Boolean
+
+        'If you are disconnecting the active board use the standard disconnect function (with event generation)
+        If FX3SerialNumber = m_ActiveFX3SN Then
+            boardFound = m_FX3Connected
+            Disconnect()
+            Return boardFound
+        End If
+
+        'Refresh the board list
+        RefreshDeviceList()
+
+        'Check if the board exists
+        boardFound = False
+        For Each board As CyFX3Device In m_usbList
+            If board.SerialNumber = FX3SerialNumber And board.FriendlyName = ApplicationName Then
+                boardFound = True
+                ResetFX3Firmware(board)
+                Exit For
+            End If
+        Next
+
+        Return boardFound
+
+    End Function
 
     ''' <summary>
     ''' This function is used to wait for an FX3 to be programmed with the ADI bootloader. In general, the programming model would go as follows,
