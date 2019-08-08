@@ -242,22 +242,15 @@ Partial Class FX3Connection
     Private Sub GenericStreamDone()
         'Buffer to hold command data
         Dim buf(3) As Byte
-        Dim status As UInteger
 
         'Configure the control endpoint
-        ConfigureControlEndpoint(USBCommands.ADI_STREAM_GENERIC_DATA, False)
+        ConfigureControlEndpoint(USBCommands.ADI_STREAM_GENERIC_DATA, True)
         m_ActiveFX3.ControlEndPt.Value = 0
         m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_DONE_CMD
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 2000) Then
             Throw New FX3CommunicationException("ERROR: Timeout occured when cleaning up a generic stream thread on the FX3")
-        End If
-
-        'Read status from the buffer and throw exception for bad status
-        status = BitConverter.ToUInt32(buf, 0)
-        If Not status = 0 Then
-            Throw New FX3BadStatusException("ERROR: Failed to set stream done event, status: " + status.ToString("X4"))
         End If
 
     End Sub
@@ -353,6 +346,7 @@ Partial Class FX3Connection
         If Not XferControlData(buf.ToArray(), buf.Count, 5000) Then
             Throw New FX3CommunicationException("ERROR: Control Endpoint transfer timed out when starting generic stream")
         End If
+
     End Sub
 
 
