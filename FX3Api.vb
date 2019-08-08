@@ -37,11 +37,11 @@ Public Class FX3Connection
     'Delay (in ms) in polling the cypress USB driver for new devices connected
     Private Const DeviceListDelay As Integer = 200
 
-    'Max buffer size for a buffered stream (in bytes)
-    Private Const MaxBufferSize As Integer = 1600
-
     'Set the timer tick to MS multiplier
     Private Const MsToTimerTicks As Integer = 10078
+
+    'Maximum register list size supported (bytes)
+    Private Const MaxRegListSize As Integer = 1000
 
     'Cypress driver objects
 

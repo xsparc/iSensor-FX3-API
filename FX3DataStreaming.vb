@@ -267,11 +267,11 @@ Partial Class FX3Connection
     Public Sub StartGenericStream(addr As IEnumerable(Of AddrDataPair), numCaptures As UInteger, numBuffers As UInteger)
 
         Dim BytesPerBuffer As Integer
+        BytesPerBuffer = (addr.Count() * numCaptures) * 2
 
         'Validate buffer size
-        BytesPerBuffer = (addr.Count() * numCaptures) * 2
-        If BytesPerBuffer > MaxBufferSize Then
-            Throw New FX3ConfigurationException("ERROR: Generic stream capture size too large- " + BytesPerBuffer.ToString() + " bytes per buffer exceeds maximum size of " + MaxBufferSize.ToString() + " bytes.")
+        If addr.Count() * 2 > MaxRegListSize Then
+            Throw New FX3ConfigurationException("ERROR: Generic stream capture size too large- " + (addr.Count() * 2).ToString() + " bytes per register list exceeds maximum size of " + MaxRegListSize.ToString() + " bytes.")
         End If
 
         'Perform generic stream setup (sends start command to control endpoint)
