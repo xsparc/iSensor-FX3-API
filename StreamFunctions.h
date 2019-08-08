@@ -40,6 +40,7 @@ CyU3PReturnStatus_t AdiBurstStreamFinished();
 
 //General stream functions.
 CyU3PReturnStatus_t AdiStopAnyDataStream();
+CyBool_t AdiPrintStreamState();
 CyU3PReturnStatus_t AdiConfigureDrPin();
 
 /*

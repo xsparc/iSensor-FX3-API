@@ -320,8 +320,8 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 #endif
             	CyU3PThreadSleep(500);
             	CyU3PConnectState(CyFalse, CyTrue);
-            	AdiAppStop ();
-            	CyU3PPibDeInit ();
+            	AdiAppStop();
+            	CyU3PPibDeInit();
             	CyU3PThreadSleep(500);
 				CyU3PDeviceReset(CyFalse);
 				CyU3PThreadSleep(500);
@@ -394,16 +394,17 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	switch(wIndex)
             	{
             	case ADI_STREAM_START_CMD:
+            		/* Get the data from the control endpoint */
+            		CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+            		/* Set the generic stream start event */
             		status = CyU3PEventSet(&EventHandler, ADI_GENERIC_STREAM_START, CYU3P_EVENT_OR);
             		StreamThreadState.TransferByteLength = wLength;
             		break;
             	case ADI_STREAM_DONE_CMD:
+            		/* Get the data from the control endpoint */
+            		CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+            		/* Set the stream done event */
             		status = CyU3PEventSet(&EventHandler, ADI_GENERIC_STREAM_DONE, CYU3P_EVENT_OR);
-                	USBBuffer[0] = status & 0xFF;
-                	USBBuffer[1] = (status & 0xFF00) >> 8;
-                	USBBuffer[2] = (status & 0xFF0000) >> 16;
-                	USBBuffer[3] = (status & 0xFF000000) >> 24;
-                	CyU3PUsbSendEP0Data (wLength, USBBuffer);
             		break;
             	case ADI_STREAM_STOP_CMD:
             		status = CyU3PEventSet(&EventHandler, ADI_GENERIC_STREAM_STOP, CYU3P_EVENT_OR);

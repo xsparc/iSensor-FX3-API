@@ -54,21 +54,38 @@ void AdiStreamThreadEntry(uint32_t input)
 			if(eventFlag & ADI_TRANSFER_STREAM_ENABLE)
 			{
 				AdiTransferStreamWork();
+#ifdef VERBOSE_MODE
+				CyU3PDebugPrint (4, "Finished transfer stream work\r\n");
+#endif
 			}
 			/* Generic register stream case */
-			if (eventFlag & ADI_GENERIC_STREAM_ENABLE)
+			else if (eventFlag & ADI_GENERIC_STREAM_ENABLE)
 			{
 				AdiGenericStreamWork();
+#ifdef VERBOSE_MODE
+				CyU3PDebugPrint (4, "Finished generic stream work\r\n");
+#endif
 			}
 			/* Real-time (ADcmXL) stream case */
-			if (eventFlag & ADI_RT_STREAM_ENABLE)
+			else if (eventFlag & ADI_RT_STREAM_ENABLE)
 			{
 				AdiRealTimeStreamWork();
+#ifdef VERBOSE_MODE
+				CyU3PDebugPrint (4, "Finished real time stream work\r\n");
+#endif
 			}
 			/* Burst stream case */
-			if (eventFlag & ADI_BURST_STREAM_ENABLE)
+			else if (eventFlag & ADI_BURST_STREAM_ENABLE)
 			{
 				AdiBurstStreamWork();
+#ifdef VERBOSE_MODE
+				CyU3PDebugPrint (4, "Finished burst stream work\r\n");
+#endif
+			}
+			else
+			{
+				/* Shouldnt be able to get here */
+				CyU3PDebugPrint (4, "ERROR: Unhandled StreamThread event generated. eventFlag: 0x%x\r\n", eventFlag);
 			}
 		}
         /* Allow other ready threads to run. */

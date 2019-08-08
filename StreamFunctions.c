@@ -45,6 +45,27 @@ CyU3PReturnStatus_t AdiStopAnyDataStream()
 }
 
 /**
+  * @brief This function prints all the stream state variables to the terminal if VERBOSE_MODE is defined
+  *
+  * @return A status code indicating if the print occurred (returns false if VERBOSE_MODE is not defined)
+  *
+  * This function prints a significant amount of data, and as such is fairly slow in VERBOSE_MODE
+ **/
+CyBool_t AdiPrintStreamState()
+{
+	CyBool_t verboseMode = CyFalse;
+
+#ifdef VERBOSE_MODE
+	verboseMode = CyTrue;
+	CyU3PDebugPrint (4, "NumCaptures: %d NumBuffers: %d Bytes Per USB Packet: %d\r\n", StreamThreadState.NumCaptures, StreamThreadState.NumBuffers, StreamThreadState.BytesPerUsbPacket);
+	CyU3PDebugPrint (4, "SPI word length: %d bits, with an SCLK frequency of %dHz\r\n", FX3State.SpiConfig.wordLen, FX3State.SpiConfig.clock);
+	CyU3PDebugPrint (4, "DrActive is %d, with the data ready pin set to GPIO[%d]. DrPolarity is %d\r\n", FX3State.DrActive, FX3State.DrPin, FX3State.DrPolarity);
+#endif
+
+	return verboseMode;
+}
+
+/**
   * @brief Starts a protocol agnostic SPI transfer stream.
   *
   * @return A status code indicating the success of the stream start.
@@ -89,11 +110,7 @@ CyU3PReturnStatus_t AdiTransferStreamStart()
 	StreamThreadState.BytesPerBuffer = USBBuffer[12];
 	StreamThreadState.BytesPerBuffer |= (USBBuffer[13] << 8);
 
-#ifdef VERBOSE_MODE
-	CyU3PDebugPrint (4, "Transfer stream with %d captures, %d buffers, and %d bytes per USB buffer.\r\n", StreamThreadState.NumCaptures, StreamThreadState.NumBuffers, StreamThreadState.BytesPerUsbPacket);
-	CyU3PDebugPrint (4, "SPI word length is set to %d bits.\r\n", FX3State.SpiConfig.wordLen);
-	CyU3PDebugPrint (4, "DrActive is set to %d, with DrPin %d.\r\n", FX3State.DrActive, FX3State.DrPin);
-#endif
+	AdiPrintStreamState();
 
 	/* Disable VBUS ISR */
 	CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
@@ -760,14 +777,6 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 CyU3PReturnStatus_t AdiGenericStreamStart()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-	uint16_t bytesRead;
-
-	/* Get the data from the control endpoint */
-	status = CyU3PUsbGetEP0Data(StreamThreadState.TransferByteLength, USBBuffer, &bytesRead);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Failed to read configuration data from control endpoint!, error code = 0x%x\r\n", status);
-	}
 
 	/* Disable VBUS ISR */
 	CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
@@ -863,6 +872,9 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 		CyU3PDebugPrint (4, "CyU3PDmaChannelSetXfer failed, Error Code = 0x%x\r\n", status);
 		return status;
 	}
+
+	/* Print stream state after all config */
+	AdiPrintStreamState();
 
 	//Enable timer interrupts
 	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= (~CY_U3P_LPP_GPIO_INTRMODE_MASK);
