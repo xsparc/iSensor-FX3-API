@@ -99,10 +99,6 @@ Public Enum USBCommands
     'Write one byte of data to a user-specified address
     ADI_WRITE_BYTE = &HF1
 
-    'Return data over a bulk endpoint before a bulk read/write operation
-    ADI_BULK_REGISTER_TRANSFER = &HF2
-
-
     'The following commands are for the ADI bootloader only
 
     ' Turn on APP_LED_GPIO solid 
