@@ -23,6 +23,7 @@ extern CyU3PEvent EventHandler;
 extern CyU3PDmaChannel StreamingChannel;
 extern CyU3PDmaChannel MemoryToSPI;
 extern uint8_t USBBuffer[];
+extern uint8_t BulkBuffer[];
 extern CyU3PDmaBuffer_t SpiDmaBuffer;
 extern BoardState FX3State;
 extern volatile CyBool_t KillStreamEarly;
@@ -809,21 +810,14 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 	/* Number of times to read each set of registers * (number of registers - control registers) */
 	StreamThreadState.BytesPerBuffer = StreamThreadState.NumCaptures * (StreamThreadState.TransferByteLength - 8);
 
-	/* Set regList memory ((transferByteLength - (number of config bytes) * numCaptures) + trigger word) */
-	StreamThreadState.RegList = CyU3PMemAlloc(sizeof(uint8_t) * (((StreamThreadState.TransferByteLength - 8) * StreamThreadState.NumCaptures) + 2));
+	/* Set the reglist (just use the Bulk buffer - gives defined behavior)*/
+	StreamThreadState.RegList = BulkBuffer;
 
-	/* Clear (zero) contents of regList memory */
-	CyU3PMemSet(StreamThreadState.RegList, 0, sizeof(uint8_t) * (((StreamThreadState.TransferByteLength - 8) * StreamThreadState.NumCaptures) + 2));
+	/* Copy the register list */
+	CyU3PMemCopy(StreamThreadState.RegList, USBBuffer + 8, StreamThreadState.TransferByteLength - 8);
 
-	/* Write register list values to regList */
-	uint16_t i, j;
-	for (i = 0; i < StreamThreadState.NumCaptures; i++)
-	{
-		for(j = 0; j < (StreamThreadState.TransferByteLength - 8); j++)
-		{
-			StreamThreadState.RegList[(i * (StreamThreadState.TransferByteLength - 8)) + j] = USBBuffer[j + 8];
-		}
-	}
+	/* Zero the last value */
+	StreamThreadState.RegList[StreamThreadState.TransferByteLength - 8] = 0;
 
 	//Find number of register "buffers" which fit in a USB buffer
 	if(StreamThreadState.BytesPerBuffer > FX3State.UsbBufferSize)

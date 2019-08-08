@@ -103,14 +103,14 @@ void AdiStreamThreadEntry(uint32_t input)
  **/
 CyU3PReturnStatus_t AdiGenericStreamWork()
 {
-	uint16_t regIndex;
+	uint16_t regIndex, captureCount;
 	CyU3PReturnStatus_t status;
 
-	/* Track the current position within the DMA buffer*/
-	static uint8_t *bufPtr;
+	/* Track the current position within the MISO (streaming DMA) buffer*/
+	static uint8_t *MISOPtr;
 
-	/* array to hold the MOSI data */
-	uint8_t MOSIData[2];
+	/* track the current position within the MOSI (reglist) buffer */
+	uint8_t * MOSIPtr;
 
 	/* Track the number of buffers read */
 	static uint32_t numBuffersRead;
@@ -122,14 +122,14 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 	static CyU3PDmaBuffer_t StreamChannelBuffer;
 
 	/* If the stream channel buffer has not been set, get a new buffer */
-	if (bufPtr == 0)
+	if (MISOPtr == 0)
 	{
 		status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &StreamChannelBuffer, CYU3P_WAIT_FOREVER);
 		if (status != CY_U3P_SUCCESS)
 		{
 			CyU3PDebugPrint (4, "CyU3PDmaChannelGetBuffer in generic capture failed, Error code = %d\r\n", status);
 		}
-		bufPtr = StreamChannelBuffer.buffer;
+		MISOPtr = StreamChannelBuffer.buffer;
 	}
 
 	//Wait for DR if enabled
@@ -143,56 +143,57 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 		GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
 	}
 
-	//Transmit first word without reading back
-	MOSIData[0] = StreamThreadState.RegList[0];
-	MOSIData[1] = StreamThreadState.RegList[1];
-	CyU3PSpiTransmitWords(MOSIData, 2);
-
-	//Set the pin timer to 0
-	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
-	//clear interrupt flag
-	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
-
-	//Read the registers in the register list into regList
-	for(regIndex = 0; regIndex < (StreamThreadState.BytesPerBuffer - 1); regIndex += 2)
+	/* Run through the register list numCaptures times - this is one buffer */
+	for(captureCount = 0; captureCount < StreamThreadState.NumCaptures; captureCount++)
 	{
-		//Wait for the complex GPIO timer to reach the stall time
-		while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
+		/* Set the MOSI pointer to the bottom of the register list */
+		MOSIPtr = StreamThreadState.RegList;
+		/* Transmit the first words without reading back */
+		CyU3PSpiTransmitWords(MOSIPtr, 2);
+		/* Increment the MOSI pointer*/
+		MOSIPtr += 2;
 
-		//Prepare, transmit, and receive SPI words
-		//TODO: Adjust SPI transactions to work with variable word lengths
-		MOSIData[0] = StreamThreadState.RegList[regIndex + 2];
-		MOSIData[1] = StreamThreadState.RegList[regIndex + 3];
-
-		//tranfer words
-		status = CyU3PSpiTransferWords(MOSIData, 2, bufPtr, 2);
-
-		//Set the pin timer to 0
+		//Set the timer to 0
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
-
 		//clear interrupt flag
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
 
-		//Update counters
-		bufPtr += 2;
-		byteCounter += 2;
-
-		//Check if a transmission is needed
-		if (byteCounter >= (StreamThreadState.BytesPerUsbPacket - 1))
+		//iterate through the rest of the register list
+		for(regIndex = 0; regIndex < (StreamThreadState.TransferByteLength - 8); regIndex += 2)
 		{
-			status = CyU3PDmaChannelCommitBuffer (&StreamingChannel, FX3State.UsbBufferSize, 0);
-			if (status != CY_U3P_SUCCESS)
-			{
-				CyU3PDebugPrint (4, "CyU3PDmaChannelCommitBuffer in loop failed, Error code = 0x%x\r\n", status);
-			}
+			//Wait for the complex GPIO timer to reach the stall time
+			while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
 
-			status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &StreamChannelBuffer, CYU3P_WAIT_FOREVER);
-			if (status != CY_U3P_SUCCESS)
+			//tranfer words
+			status = CyU3PSpiTransferWords(MOSIPtr, 2, MISOPtr, 2);
+
+			//Set the pin timer to 0
+			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+			//clear interrupt flag
+			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
+
+			//Update counters
+			MOSIPtr += 2;
+			MISOPtr += 2;
+			byteCounter += 2;
+
+			//Check if a transmission is needed
+			if (byteCounter >= (StreamThreadState.BytesPerUsbPacket - 1))
 			{
-				CyU3PDebugPrint (4, "CyU3PDmaChannelGetBuffer in generic capture failed, Error code = 0x%x\r\n", status);
+				status = CyU3PDmaChannelCommitBuffer (&StreamingChannel, FX3State.UsbBufferSize, 0);
+				if (status != CY_U3P_SUCCESS)
+				{
+					CyU3PDebugPrint (4, "CyU3PDmaChannelCommitBuffer in loop failed, Error code = 0x%x\r\n", status);
+				}
+
+				status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &StreamChannelBuffer, CYU3P_WAIT_FOREVER);
+				if (status != CY_U3P_SUCCESS)
+				{
+					CyU3PDebugPrint (4, "CyU3PDmaChannelGetBuffer in generic capture failed, Error code = 0x%x\r\n", status);
+				}
+				MISOPtr = StreamChannelBuffer.buffer;
+				byteCounter = 0;
 			}
-			bufPtr = StreamChannelBuffer.buffer;
-			byteCounter = 0;
 		}
 	}
 	//Check to see if we've captured enough buffers or if we were asked to stop data capture early
@@ -206,7 +207,7 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 		//Reset values
 		numBuffersRead = 0;
 		/* Signal getting a new buffer */
-		bufPtr = 0;
+		MISOPtr = 0;
 		if (byteCounter)
 		{
 			status = CyU3PDmaChannelCommitBuffer (&StreamingChannel, FX3State.UsbBufferSize, 0);
