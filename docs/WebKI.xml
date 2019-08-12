@@ -20,7 +20,6 @@
   <HelpKINode Title="ADcmXL2021 enumeration member" Url="html/a664dc00-67b0-e1cf-2c27-cb6c9cf0cba5.htm" />
   <HelpKINode Title="ADcmXL3021 enumeration member" Url="html/a664dc00-67b0-e1cf-2c27-cb6c9cf0cba5.htm" />
   <HelpKINode Title="AddReplace method" Url="html/5c3d3260-bae4-0d5b-b526-d6eefaba4c2d.htm" />
-  <HelpKINode Title="ADI_BULK_REGISTER_TRANSFER enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="ADI_BUSY_MEASURE enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="ADI_FIRMWARE_ID_CHECK enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="ADI_FROM_PC_ENDPOINT enumeration member" Url="html/3858bc40-e306-6b88-e2ec-956c3ad36fbe.htm" />
@@ -91,7 +90,7 @@
   <HelpKINode Title="DIO2 property" Url="html/c26d9c4a-1b40-0d99-6147-850f68e42d46.htm" />
   <HelpKINode Title="DIO3 property" Url="html/f8d610ef-1825-946b-9d14-c919c6ef64dc.htm" />
   <HelpKINode Title="DIO4 property" Url="html/6e423e79-885c-e31b-111c-bc9da26d766d.htm" />
-  <HelpKINode Title="Disconnect method" Url="html/a1714e7f-2664-172c-b24d-96db264ea09f.htm" />
+  <HelpKINode Title="Disconnect method" Url="html/182a2d38-f1c9-0650-8af8-cdc7c789e81b.htm" />
   <HelpKINode Title="DisconnectFinished event" Url="html/1eab635c-251d-ae8d-eee9-bfbfb2619199.htm" />
   <HelpKINode Title="DrActive field" Url="html/9dafc9e1-6a45-31a3-6460-588af5817020.htm" />
   <HelpKINode Title="DrActive property" Url="html/5ac2f594-9622-f092-574e-deaf6fee7f88.htm" />
@@ -221,7 +220,7 @@
   <HelpKINode Title="FX3Connection.DIO2 property" Url="html/c26d9c4a-1b40-0d99-6147-850f68e42d46.htm" />
   <HelpKINode Title="FX3Connection.DIO3 property" Url="html/f8d610ef-1825-946b-9d14-c919c6ef64dc.htm" />
   <HelpKINode Title="FX3Connection.DIO4 property" Url="html/6e423e79-885c-e31b-111c-bc9da26d766d.htm" />
-  <HelpKINode Title="FX3Connection.Disconnect method" Url="html/a1714e7f-2664-172c-b24d-96db264ea09f.htm" />
+  <HelpKINode Title="FX3Connection.Disconnect method" Url="html/182a2d38-f1c9-0650-8af8-cdc7c789e81b.htm" />
   <HelpKINode Title="FX3Connection.DisconnectFinished event" Url="html/1eab635c-251d-ae8d-eee9-bfbfb2619199.htm" />
   <HelpKINode Title="FX3Connection.DisconnectFinishedEventHandler delegate" Url="html/96d0ad43-d352-d971-1e6c-c6d2ffa6e681.htm" />
   <HelpKINode Title="FX3Connection.DrActive property" Url="html/5ac2f594-9622-f092-574e-deaf6fee7f88.htm" />
@@ -291,6 +290,7 @@
   <HelpKINode Title="FX3Connection.UnexpectedDisconnect event" Url="html/fc16a835-4d83-3e8b-3239-995c79ad8e5a.htm" />
   <HelpKINode Title="FX3Connection.UnexpectedDisconnectEventHandler delegate" Url="html/534755e7-b798-0a28-046c-c2eb459477b7.htm" />
   <HelpKINode Title="FX3Connection.WaitForBoard method" Url="html/4e574267-34de-9f80-0cc0-dddf0a93d40d.htm" />
+  <HelpKINode Title="FX3Connection.WaitForStreamCompletion method" Url="html/4409394c-b943-ddef-8f45-8843d985cd84.htm" />
   <HelpKINode Title="FX3Connection.WordCount property" Url="html/af129f70-ec8e-ba83-dba9-84003867000c.htm" />
   <HelpKINode Title="FX3Connection.WordLength property" Url="html/fd51c3f2-6254-8d71-64a0-8e63d51b3cb5.htm" />
   <HelpKINode Title="FX3Connection.WriteRegByte method" Url="html/7470aa78-1dd1-b34f-92bb-eb104bcc74b4.htm" />
@@ -483,6 +483,7 @@
   <HelpKINode Title="Uptime property" Url="html/8bac1b60-641b-4bf7-1deb-eb9a14b14543.htm" />
   <HelpKINode Title="USBCommands enumeration" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="WaitForBoard method" Url="html/4e574267-34de-9f80-0cc0-dddf0a93d40d.htm" />
+  <HelpKINode Title="WaitForStreamCompletion method" Url="html/4409394c-b943-ddef-8f45-8843d985cd84.htm" />
   <HelpKINode Title="WordCount property" Url="html/af129f70-ec8e-ba83-dba9-84003867000c.htm" />
   <HelpKINode Title="WordLength field" Url="html/f7014575-856c-3a0a-e99d-0193b3739ed3.htm" />
   <HelpKINode Title="WordLength property" Url="html/fd51c3f2-6254-8d71-64a0-8e63d51b3cb5.htm" />
