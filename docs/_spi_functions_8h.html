@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.0.0-pub</span>
+   &#160;<span id="projectnumber">v2.0.1-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -97,8 +97,8 @@ Functions</h2></td></tr>
 <tr class="memitem:a57c7fc11222c453959c72eec1aa8afa2"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a57c7fc11222c453959c72eec1aa8afa2">AdiReadRegBytes</a> (uint16_t addr)</td></tr>
 <tr class="memdesc:a57c7fc11222c453959c72eec1aa8afa2"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function reads a single 16 bit SPI word from a slave device.  <a href="#a57c7fc11222c453959c72eec1aa8afa2">More...</a><br /></td></tr>
 <tr class="separator:a57c7fc11222c453959c72eec1aa8afa2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae7c601af6eb13c9caf138f6ccc145e16"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#ae7c601af6eb13c9caf138f6ccc145e16">AdiBulkByteTransfer</a> (uint16_t numBytes, uint16_t bytesPerCapture)</td></tr>
-<tr class="memdesc:ae7c601af6eb13c9caf138f6ccc145e16"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function performs a bulk register transfer using the bulk in and out endpoints.  <a href="#ae7c601af6eb13c9caf138f6ccc145e16">More...</a><br /></td></tr>
+<tr class="memitem:ae7c601af6eb13c9caf138f6ccc145e16"><td class="memItemLeft" align="right" valign="top"><a id="ae7c601af6eb13c9caf138f6ccc145e16"></a>
+CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><b>AdiBulkByteTransfer</b> (uint16_t numBytes, uint16_t bytesPerCapture)</td></tr>
 <tr class="separator:ae7c601af6eb13c9caf138f6ccc145e16"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -111,45 +111,6 @@ Functions</h2></td></tr>
 <dd>
 J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+'@an'+'al'+'og.'+'co'+'m'; return false;">juan.<span style="display: none;">.nosp@m.</span>chon<span style="display: none;">.nosp@m.</span>g@ana<span style="display: none;">.nosp@m.</span>log.<span style="display: none;">.nosp@m.</span>com</a>) </dd></dl>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="ae7c601af6eb13c9caf138f6ccc145e16"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae7c601af6eb13c9caf138f6ccc145e16">&#9670;&nbsp;</a></span>AdiBulkByteTransfer()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">CyU3PReturnStatus_t AdiBulkByteTransfer </td>
-          <td>(</td>
-          <td class="paramtype">uint16_t&#160;</td>
-          <td class="paramname"><em>numBytes</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint16_t&#160;</td>
-          <td class="paramname"><em>bytesPerCapture</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>This function performs a bulk register transfer using the bulk in and out endpoints. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">numBytes</td><td>The total number of bytes to read</td></tr>
-    <tr><td class="paramname">bytesPerCapture</td><td>The total number of bytes to read per data ready, if DrActive is true.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the function.</dd></dl>
-<p>This function handles calls in the IRegInterface which require more than one register read/write operation, allowing for better performance. </p>
-
-</div>
-</div>
 <a id="a788c3bd92096e55b7fde4da3a0308f5c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a788c3bd92096e55b7fde4da3a0308f5c">&#9670;&nbsp;</a></span>AdiGetSpiSettings()</h2>
 

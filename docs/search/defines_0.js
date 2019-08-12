@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['adi_5fbulk_5fregister_5ftransfer',['ADI_BULK_REGISTER_TRANSFER',['../main_8h.html#a058974fc8ef9d75afee77149c9a1734c',1,'main.h']]],
   ['adi_5fburst_5fstream_5fdone',['ADI_BURST_STREAM_DONE',['../_app_thread_8h.html#aba5c1bf8a07cc4510973f5b96faa942d',1,'AppThread.h']]],
   ['adi_5fburst_5fstream_5fenable',['ADI_BURST_STREAM_ENABLE',['../_app_thread_8h.html#a5f40211711dd1ce21d407ac5ea72ca02',1,'AppThread.h']]],
   ['adi_5fburst_5fstream_5fstart',['ADI_BURST_STREAM_START',['../_app_thread_8h.html#a41565af9ae5da9913e1be17cd8533b8d',1,'AppThread.h']]],
