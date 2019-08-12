@@ -9,6 +9,61 @@ Imports AdisApi
 
 Partial Class FX3Connection
 
+    ''' <summary>
+    ''' Overload of WaitForStreamCompletion which blocks forever
+    ''' </summary>
+    Public Function WaitForStreamCompletion() As Boolean
+        Return WaitForStreamCompletion(Nothing)
+    End Function
+
+    ''' <summary>
+    ''' Blocks until the streaming endpoint mutex can be aquired. Allows a user to synchronize external application
+    ''' the completion of a stream. Returns false if there is not a stream running, or if the timeout is reached without
+    ''' the stream mutex being aquired.
+    ''' </summary>
+    ''' <param name="MillisecondsTimeout">The time to wait trying to aquire the stream mutex</param>
+    ''' <returns>If the stream wait was successful</returns>
+    Public Function WaitForStreamCompletion(MillisecondsTimeout As Integer) As Boolean
+
+        'Track if lock is aquired
+        Dim lockAquired As Boolean
+        Dim timer As New Stopwatch
+
+        'Check if stream thread is running
+        If Not m_StreamThreadRunning Then
+            timer.Start()
+            While timer.ElapsedMilliseconds < MillisecondsTimeout And Not m_StreamThreadRunning
+                System.Threading.Thread.Sleep(10)
+            End While
+            timer.Stop()
+            If Not m_StreamThreadRunning Then
+                Return False
+            End If
+        End If
+
+        'Ensure that the total timeout remains consistent
+        MillisecondsTimeout -= timer.ElapsedMilliseconds()
+
+        'Aquire the mutex
+        If IsNothing(MillisecondsTimeout) Or MillisecondsTimeout <= 0 Then
+            'Perform wait with no timeout
+            lockAquired = True
+            m_StreamMutex.WaitOne()
+        Else
+            'Use mutex wait overload with timeout
+            lockAquired = m_StreamMutex.WaitOne(MillisecondsTimeout)
+        End If
+
+        If lockAquired Then
+            'Release the mutex
+            m_StreamMutex.ReleaseMutex()
+        End If
+
+        'Return if the lock was aquired
+        Return lockAquired
+
+    End Function
+
 #Region "Burst Stream Functions"
 
     ''' <summary>

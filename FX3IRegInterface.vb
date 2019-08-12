@@ -374,8 +374,8 @@ Partial Class FX3Connection
         'Buffer to hold data from the FX3
         Dim buf(transferSize - 1) As Byte
 
-        'Calculate the number of bytes to read
-        WordsToRead = addrData.Count() * numCaptures * numBuffers * 2
+        'Calculate the number of words to read
+        WordsToRead = addrData.Count() * numCaptures * numBuffers
 
         'Calculate the bytes per USB buffer
         Dim bytesPerDrTransfer As Integer = addrData.Count() * numCaptures * 2
