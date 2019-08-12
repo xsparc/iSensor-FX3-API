@@ -148,6 +148,7 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 	{
 		/* Set the MOSI pointer to the bottom of the register list */
 		MOSIPtr = StreamThreadState.RegList;
+
 		/* Transmit the first words without reading back */
 		CyU3PSpiTransmitWords(MOSIPtr, 2);
 		/* Increment the MOSI pointer*/
@@ -195,25 +196,30 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 				byteCounter = 0;
 			}
 		}
+		//Wait for the complex GPIO timer to reach the stall time
+		while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
+
+		//Set the pin timer to 0
+		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+		//clear interrupt flag
+		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
 	}
 	//Check to see if we've captured enough buffers or if we were asked to stop data capture early
 	if ((numBuffersRead >= (StreamThreadState.NumBuffers - 1)) || KillStreamEarly)
 	{
-
-#ifdef VERBOSE_MODE
-		CyU3PDebugPrint (4, "Exiting stream thread, %d generic stream buffers read.\r\n", numBuffersRead + 1);
-#endif
-
 		//Reset values
 		numBuffersRead = 0;
 		/* Signal getting a new buffer */
 		MISOPtr = 0;
 		if (byteCounter)
 		{
+#ifdef VERBOSE_MODE
+			CyU3PDebugPrint (4, "Commiting last USB buffer with %d bytes.\r\n", byteCounter);
+#endif
 			status = CyU3PDmaChannelCommitBuffer (&StreamingChannel, FX3State.UsbBufferSize, 0);
 			if (status != CY_U3P_SUCCESS)
 			{
-				CyU3PDebugPrint (4, "CyU3PDmaChannelCommitBuffer in loop failed, Error code = %d\r\n", status);
+				CyU3PDebugPrint (4, "CyU3PDmaChannelCommitBuffer in loop failed, Error code = 0x%x\r\n", status);
 			}
 			byteCounter = 0;
 		}
@@ -230,6 +236,10 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 
 		//Disable interrupts
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= ~(CY_U3P_LPP_GPIO_INTRMODE_MASK);
+
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "Exiting stream thread, %d generic stream buffers read.\r\n", numBuffersRead + 1);
+#endif
 
 		//Set stream done flag if kill early event was processed (otherwise must be explicitly invoked by FX3 API)
 		if(KillStreamEarly)

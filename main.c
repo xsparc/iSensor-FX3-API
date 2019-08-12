@@ -99,7 +99,7 @@ CyU3PDmaBuffer_t SpiDmaBuffer;
  */
 
 /** Constant firmware ID string. Manually updated when building new firmware. */
-const uint8_t FirmwareID[32] __attribute__((aligned(32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '2', '.', '0', '.', '0', '-','P','U','B',' ', '\0' };
+const uint8_t FirmwareID[32] __attribute__((aligned(32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '2', '.', '0', '.', '1', '-','P','U','B',' ', '\0' };
 
 /** FX3 unique serial number. Set at runtime */
 char serial_number[] __attribute__((aligned(32))) = {'0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00};
