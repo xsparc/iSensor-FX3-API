@@ -82,10 +82,10 @@ CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr)
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint8_t tempBuffer[2];
 
-	/* Set the address to read from */
-	tempBuffer[0] = (0x7F) & addr;
 	/* Set the second byte to 0's */
-	tempBuffer[1] = 0;
+	tempBuffer[0] = 0;
+	/* Set the address to read from */
+	tempBuffer[1] = (0x7F) & addr;
 	/* Send SPI Read command */
 	status = CyU3PSpiTransmitWords(tempBuffer, 2);
 	/* Check that the transfer was successful and end function if failed */
@@ -130,8 +130,8 @@ CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint8_t tempBuffer[2];
-	tempBuffer[0] = 0x80 | addr;
-	tempBuffer[1] = data;
+	tempBuffer[0] = data;
+	tempBuffer[1] = 0x80 | addr;
 	status = CyU3PSpiTransmitWords (tempBuffer, 2);
 	/* Check that the transfer was successful and end function if failed */
 	if (status != CY_U3P_SUCCESS)

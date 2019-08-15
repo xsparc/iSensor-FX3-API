@@ -284,8 +284,8 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 		if(!StreamThreadState.PinStartEnable)
 		{
 			//Read MSC_CTRL register
-			tempReadBuffer[0] = (0x64);
-			tempReadBuffer[1] = (0x00);
+			tempReadBuffer[1] = (0x64);
+			tempReadBuffer[0] = (0x00);
 			status = CyU3PSpiTransmitWords(tempReadBuffer, 2);
 			if (status != CY_U3P_SUCCESS)
 			{
@@ -300,19 +300,19 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 			AdiSleepForMicroSeconds(FX3State.StallTime);
 
 			//Clear bit 12 (bit enables/disables starting a capture using SYNC pin)
-			tempReadBuffer[0] = tempReadBuffer[0] & (0xEF);
+			tempReadBuffer[1] = tempReadBuffer[1] & (0xEF);
 
 			//Write modified buffer to MSC_CTRL
-			tempWriteBuffer[0] = (0x80) | (0x64);
-			tempWriteBuffer[1] = tempReadBuffer[1];
+			tempWriteBuffer[1] = (0x80) | (0x64);
+			tempWriteBuffer[0] = tempReadBuffer[0];
 			status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
 			if (status != CY_U3P_SUCCESS)
 			{
 				return status;
 			}
 			AdiSleepForMicroSeconds(FX3State.StallTime);
-			tempWriteBuffer[0] = (0x80) | (0x65);
-			tempWriteBuffer[1] = tempReadBuffer[0];
+			tempWriteBuffer[1] = (0x80) | (0x65);
+			tempWriteBuffer[0] = tempReadBuffer[0];
 			status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
 			if (status != CY_U3P_SUCCESS)
 			{
@@ -349,8 +349,8 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	if(StreamThreadState.PinStartEnable)
 	{
 		//Read MSC_CTRL register
-		tempReadBuffer[0] = (0x64);
-		tempReadBuffer[1] = (0x00);
+		tempReadBuffer[1] = (0x64);
+		tempReadBuffer[0] = (0x00);
 		status = CyU3PSpiTransmitWords(tempReadBuffer, 2);
 		if (status != CY_U3P_SUCCESS)
 		{
@@ -365,19 +365,19 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 		AdiSleepForMicroSeconds(FX3State.StallTime);
 
 		//Set bit 12 (bit enables/disables starting a capture using SYNC pin)
-		tempReadBuffer[0] = tempReadBuffer[0] | (0x10);
+		tempReadBuffer[1] = tempReadBuffer[1] | (0x10);
 
 		//Write modified buffer to MSC_CTRL
-		tempWriteBuffer[0] = (0x80) | (0x64);
-		tempWriteBuffer[1] = tempReadBuffer[1];
+		tempWriteBuffer[1] = (0x80) | (0x64);
+		tempWriteBuffer[0] = tempReadBuffer[0];
 		status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
 		if (status != CY_U3P_SUCCESS)
 		{
 			return status;
 		}
 		AdiSleepForMicroSeconds(FX3State.StallTime);
-		tempWriteBuffer[0] = (0x80) | (0x65);
-		tempWriteBuffer[1] = tempReadBuffer[0];
+		tempWriteBuffer[1] = (0x80) | (0x65);
+		tempWriteBuffer[0] = tempReadBuffer[1];
 		status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
 		if (status != CY_U3P_SUCCESS)
 		{
@@ -412,16 +412,16 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	{
 		//Send COMMAND 0x800
 		//Command is Page 0, Address 62
-		tempWriteBuffer[0] = (0x80) | (0x3E);
-		tempWriteBuffer[1] = 0;
+		tempWriteBuffer[1] = (0x80) | (0x3E);
+		tempWriteBuffer[0] = 0;
 		status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
 		if (status != CY_U3P_SUCCESS)
 		{
 			return status;
 		}
 		AdiSleepForMicroSeconds(FX3State.StallTime);
-		tempWriteBuffer[0] = (0x80) | (0x3F);
-		tempWriteBuffer[1] = 0x08;
+		tempWriteBuffer[1] = (0x80) | (0x3F);
+		tempWriteBuffer[0] = 0x08;
 		status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
 		if (status != CY_U3P_SUCCESS)
 		{
@@ -501,6 +501,14 @@ CyU3PReturnStatus_t AdiRealTimeStreamFinished()
 	//Re-enable relevant ISRs
 	CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
 	CyU3PVicEnableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
+
+	/* Restore the SPI state */
+	status = CyU3PSpiSetConfig(&FX3State.SpiConfig, NULL);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Restoring SPI config after burst stream mode failed, Error Code = 0x%x\r\n", status);
+		AdiAppErrorHandler(status);
+	}
 
 	//Additional clean-up after a user requests an early cancellation
 	if(KillStreamEarly)
@@ -668,9 +676,11 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	AdiSpiResetFifo(CyTrue, CyTrue);
 
 	/* Set the SPI config for streaming mode */
-	FX3State.SpiConfig.ssnCtrl = CY_U3P_SPI_SSN_CTRL_HW_END_OF_XFER;
-	FX3State.SpiConfig.wordLen = 8;
-	status = CyU3PSpiSetConfig(&FX3State.SpiConfig, NULL);
+	CyU3PSpiConfig_t burstConfig;
+	burstConfig = FX3State.SpiConfig;
+	burstConfig.ssnCtrl = CY_U3P_SPI_SSN_CTRL_HW_END_OF_XFER;
+	burstConfig.wordLen = 8;
+	status = CyU3PSpiSetConfig(&burstConfig, NULL);
 	if(status != CY_U3P_SUCCESS)
 	{
 		CyU3PDebugPrint (4, "Setting SPI config for burst stream mode failed, Error Code = 0x%x\r\n", status);
@@ -721,7 +731,6 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 	gpioConfig.driveLowEn = CyFalse;
 	gpioConfig.driveHighEn = CyFalse;
 	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
-
 	CyU3PGpioSetSimpleConfig(FX3State.DrPin, &gpioConfig);
 
 	/* Destroy MemoryToSpi DMA channel */
@@ -749,6 +758,14 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 	/* Re-enable relevant ISRs */
 	CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
 	CyU3PVicEnableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
+
+	/* Restore the SPI state */
+	status = CyU3PSpiSetConfig(&FX3State.SpiConfig, NULL);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Restoring SPI config after burst stream mode failed, Error Code = 0x%x\r\n", status);
+		AdiAppErrorHandler(status);
+	}
 
 	/* Additional clean-up after a user requests an early cancellation */
 	if(KillStreamEarly)
@@ -817,7 +834,8 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 	/* Copy the register list */
 	CyU3PMemCopy(StreamThreadState.RegList, USBBuffer + 8, StreamThreadState.TransferByteLength - 8);
 
-	/* Zero the last value */
+	/* Zero the last values */
+	StreamThreadState.RegList[StreamThreadState.TransferByteLength - 7] = 0;
 	StreamThreadState.RegList[StreamThreadState.TransferByteLength - 8] = 0;
 
 	//Find number of register "buffers" which fit in a USB buffer

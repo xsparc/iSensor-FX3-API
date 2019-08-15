@@ -165,7 +165,7 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 			//Wait for the complex GPIO timer to reach the stall time
 			while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
 
-			//tranfer words
+			//transfer words
 			status = CyU3PSpiTransferWords(MOSIPtr, 2, MISOPtr, 2);
 
 			//Set the pin timer to 0
@@ -196,6 +196,7 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 				byteCounter = 0;
 			}
 		}
+
 		//Wait for the complex GPIO timer to reach the stall time
 		while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
 
@@ -203,7 +204,9 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
 		//clear interrupt flag
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
+
 	}
+
 	//Check to see if we've captured enough buffers or if we were asked to stop data capture early
 	if ((numBuffersRead >= (StreamThreadState.NumBuffers - 1)) || KillStreamEarly)
 	{
