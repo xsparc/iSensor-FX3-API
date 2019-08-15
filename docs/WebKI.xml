@@ -53,6 +53,7 @@
   <HelpKINode Title="ADI_TRANSFER_STREAM enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="ADI_WARM_RESET enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="ADI_WRITE_BYTE enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
+  <HelpKINode Title="AutomotiveSpi enumeration member" Url="html/ff5bd0a4-5894-648c-a639-f210d1d45fd6.htm" />
   <HelpKINode Title="AvailableFX3s property" Url="html/5ecd11dc-34a8-24ad-67bb-e7dea5408541.htm" />
   <HelpKINode Title="BlinkFirmwarePath property" Url="html/76c327d0-6292-cd46-0c12-6bd1ea60ed51.htm" />
   <HelpKINode Title="BootloaderBlinkLED method" Url="html/36824e9a-6a88-3094-304a-90a377419241.htm" />
@@ -72,7 +73,6 @@
   <HelpKINode Title="ChipSelectPolarity field" Url="html/2282891d-ed9e-7a9c-d994-4b9235f48609.htm" />
   <HelpKINode Title="ChipSelectPolarity property" Url="html/b19164ee-0ca0-5cf0-6c08-54fa73158b3c.htm" />
   <HelpKINode Title="ClearBurstMode method" Url="html/0db9153e-9792-111c-4df9-b433ca651157.htm" />
-  <HelpKINode Title="ClockFrequency field" Url="html/178376c5-2685-397a-4507-c66decc950b3.htm" />
   <HelpKINode Title="Connect method" Url="html/4b6e5cd7-b945-45e2-6275-936e9b9b4a5e.htm" />
   <HelpKINode Title="Contains method" Url="html/dca41037-07eb-5adf-2647-4454d2ce1656.htm" />
   <HelpKINode Title="Cpha field" Url="html/4103f791-9bbd-c688-3fbb-3d17bde9f6c2.htm" />
@@ -338,7 +338,6 @@
   <HelpKINode Title="FX3SPIConfig.ChipSelectLagTime field" Url="html/792c490f-4578-eff3-e926-7e46ce067644.htm" />
   <HelpKINode Title="FX3SPIConfig.ChipSelectLeadTime field" Url="html/89f6ee69-e732-c189-780d-e82a4a5599e6.htm" />
   <HelpKINode Title="FX3SPIConfig.ChipSelectPolarity field" Url="html/2282891d-ed9e-7a9c-d994-4b9235f48609.htm" />
-  <HelpKINode Title="FX3SPIConfig.ClockFrequency field" Url="html/178376c5-2685-397a-4507-c66decc950b3.htm" />
   <HelpKINode Title="FX3SPIConfig.Cpha field" Url="html/4103f791-9bbd-c688-3fbb-3d17bde9f6c2.htm" />
   <HelpKINode Title="FX3SPIConfig.Cpol field" Url="html/7fdb8b3e-91d8-f219-093b-e602c2b7fcb3.htm" />
   <HelpKINode Title="FX3SPIConfig.DataReadyPin property" Url="html/7bedeb2a-d22c-5e87-621c-9c13a23aae7e.htm" />
