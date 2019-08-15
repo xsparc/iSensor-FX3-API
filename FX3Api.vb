@@ -227,11 +227,7 @@ Public Class FX3Connection
     Private Sub SetDefaultValues(ByVal SensorType As DeviceType)
 
         'Set the default SPI config
-        If SensorType = DeviceType.IMU Then
-            m_FX3SPIConfig = New FX3SPIConfig(FX3Api.DeviceType.IMU)
-        Else
-            m_FX3SPIConfig = New FX3SPIConfig(FX3Api.DeviceType.ADcmXL)
-        End If
+        m_FX3SPIConfig = New FX3SPIConfig(SensorType)
 
         'Set the board connection
         m_FX3Connected = False
@@ -278,17 +274,17 @@ Public Class FX3Connection
     ''' <returns>The current SPI clock frequency, in MHZ. Valid values are in the range 1 to 40,000,000</returns>
     Public Property SclkFrequency As Int32
         Get
-            Return m_FX3SPIConfig.ClockFrequency
+            Return m_FX3SPIConfig.SCLKFrequency
         End Get
         Set(value As Int32)
             'Throw an exception if the value is out of the range of frequencies supported by the board
             If IsNothing(value) Or value > 40000000 Or value < 1 Then
                 Throw New FX3ConfigurationException("ERROR: Invalid Sclk Frequency entered. Must be in the range (1-40000000)")
             End If
-            m_FX3SPIConfig.ClockFrequency = value
+            m_FX3SPIConfig.SCLKFrequency = value
             If m_FX3Connected Then
                 m_ActiveFX3.ControlEndPt.Index = 0
-                ConfigureSPI(m_FX3SPIConfig.ClockFrequency)
+                ConfigureSPI(m_FX3SPIConfig.SCLKFrequency)
             End If
         End Set
     End Property
@@ -589,11 +585,6 @@ Public Class FX3Connection
 
         'Variables to store output config
         Dim returnConfig As New FX3SPIConfig
-        Dim tempValue As UInteger
-        Dim newClock As Integer
-        Dim newStall As UInteger
-        Dim newTimerTick As UInteger
-        Dim drPinNumber As UInteger
 
         'Configure control end point for vendor command to read SPI settings
         m_ActiveFX3.ControlEndPt.Target = CyConst.TGT_DEVICE
@@ -609,17 +600,7 @@ Public Class FX3Connection
         End If
 
         'Get the SPI Clock from buf 0 - 3
-        newClock = buf(0)
-        tempValue = buf(1)
-        tempValue = tempValue << 8
-        newClock = newClock + tempValue
-        tempValue = buf(2)
-        tempValue = tempValue << 16
-        newClock = newClock + tempValue
-        tempValue = buf(3)
-        tempValue = tempValue << 24
-        newClock = newClock + tempValue
-        returnConfig.ClockFrequency = newClock
+        returnConfig.SCLKFrequency = BitConverter.ToInt32(buf, 0)
 
         'Get Cpha from buf 4
         returnConfig.Cpha = buf(4)
@@ -646,11 +627,7 @@ Public Class FX3Connection
         returnConfig.WordLength = buf(11)
 
         'Get stall time from buf 12 - 13
-        newStall = buf(12)
-        tempValue = buf(13)
-        tempValue = tempValue << 8
-        newStall = newStall + tempValue
-        returnConfig.StallTime = newStall
+        returnConfig.StallTime = BitConverter.ToUInt16(buf, 12)
 
         'Get DUT Type from buf 14
         returnConfig.DUTType = buf(14)
@@ -662,25 +639,11 @@ Public Class FX3Connection
         returnConfig.DrPolarity = buf(16)
 
         'Get data ready GPIO number from buf 17 - 18
-        drPinNumber = buf(17)
-        tempValue = buf(18)
-        tempValue = tempValue << 8
-        drPinNumber = drPinNumber + tempValue
-        returnConfig.DataReadyPinFX3GPIO = drPinNumber
+        returnConfig.DataReadyPinFX3GPIO = BitConverter.ToUInt16(buf, 17)
 
         'Get timer tick scale factor from buf 19 - 22
         'Note: the timer tick setting in read-only, so there is no accompanying write function
-        newTimerTick = buf(19)
-        tempValue = buf(20)
-        tempValue = tempValue << 8
-        newTimerTick = newTimerTick + tempValue
-        tempValue = buf(21)
-        tempValue = tempValue << 16
-        newTimerTick = newTimerTick + tempValue
-        tempValue = buf(22)
-        tempValue = tempValue << 24
-        newTimerTick = newTimerTick + tempValue
-        returnConfig.StallTime = newTimerTick
+        returnConfig.TimerTickScaleFactor = BitConverter.ToUInt32(buf, 19)
 
         Return returnConfig
 
@@ -695,8 +658,8 @@ Public Class FX3Connection
         Dim boardConfig As FX3SPIConfig = GetBoardSpiParameters()
 
         'Updating each of the properties invokes their setter, which writes the values to the FX3
-        If Not boardConfig.ClockFrequency = m_FX3SPIConfig.ClockFrequency Then
-            SclkFrequency = m_FX3SPIConfig.ClockFrequency
+        If Not boardConfig.SCLKFrequency = m_FX3SPIConfig.SCLKFrequency Then
+            SclkFrequency = m_FX3SPIConfig.SCLKFrequency
         End If
 
         If Not boardConfig.Cpha = m_FX3SPIConfig.Cpha Then
@@ -845,14 +808,23 @@ Public Class FX3Connection
             Return m_numFrameSkips
         End Get
     End Property
+
     ''' <summary>
-    ''' Readonly property to get the device type the FX3Interface was initialized for
+    ''' Property to get the device family type the FX3 was initialized for. Setting this property restores all SPI settings to the
+    ''' default for the selected device family.
     ''' </summary>
     ''' <returns>The current device mode, as an FX3Interface.DeviceType</returns>
-    Public ReadOnly Property SensorType As DeviceType
+    Public Property SensorType As DeviceType
         Get
             Return m_sensorType
         End Get
+        Set(value As DeviceType)
+            If m_sensorType <> value Then
+                m_sensorType = value
+                m_FX3SPIConfig = New FX3SPIConfig(m_sensorType)
+                WriteBoardSpiParameters()
+            End If
+        End Set
     End Property
 
     ''' <summary>

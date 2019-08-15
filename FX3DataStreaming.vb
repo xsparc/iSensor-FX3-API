@@ -381,12 +381,12 @@ Partial Class FX3Connection
         For Each item In addrData
             If item.data Is Nothing Then
                 'Read case
-                buf.Add(item.addr And &HFF)
                 buf.Add(&H0)
+                buf.Add(item.addr And &H7F)
             Else
                 'Write case
-                buf.Add(item.addr Or &H80)
                 buf.Add(item.data And &HFF)
+                buf.Add(item.addr Or &H80)
             End If
         Next
 
@@ -420,8 +420,6 @@ Partial Class FX3Connection
         Dim bufferBuilder As New List(Of UShort)
         'Int to track buffer index
         Dim bufIndex As Integer = 0
-        'Short value for flipping bytes
-        Dim shortValue As UShort
 
         'Find transfer size and create data buffer
         Dim transferSize As Integer
@@ -452,11 +450,7 @@ Partial Class FX3Connection
             If validTransfer Then
                 'Build the output buffer
                 For bufIndex = 0 To (transferSize - 2) Step 2
-                    'Flip bytes
-                    shortValue = buf(bufIndex)
-                    shortValue = shortValue << 8
-                    shortValue = shortValue + buf(bufIndex + 1)
-                    bufferBuilder.Add(shortValue)
+                    bufferBuilder.Add(BitConverter.ToUInt16(buf, bufIndex))
                     If bufferBuilder.Count() * 2 >= BytesPerBuffer Then
                         m_StreamData.Enqueue(bufferBuilder.ToArray())
                         Interlocked.Increment(m_FramesRead)
@@ -772,8 +766,8 @@ Partial Class FX3Connection
     Private Sub ValidateRealTimeStreamConfig()
 
         'SCLK
-        If m_FX3SPIConfig.SCLKFrequency < 8000000 Then
-            'Throw New FX3ConfigurationException("ERROR: Invalid SPI frequency for real time streaming")
+        If m_FX3SPIConfig.SCLKFrequency < 5000000 Then
+            Throw New FX3ConfigurationException("ERROR: Invalid SPI frequency for real time streaming")
         End If
 
         'Word length

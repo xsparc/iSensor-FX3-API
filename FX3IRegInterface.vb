@@ -254,7 +254,7 @@ Partial Class FX3Connection
         Dim status As UInt32
 
         'Variables to parse value from the buffer
-        Dim returnValue, shiftValue As UShort
+        Dim returnValue As UShort
 
         'Configure the control endpoint for a single register read
         ConfigureControlEndpoint(USBCommands.ADI_READ_BYTES, False)
@@ -271,9 +271,7 @@ Partial Class FX3Connection
         End If
 
         'Calculate reg value
-        shiftValue = buf(4)
-        shiftValue = shiftValue << 8
-        returnValue = shiftValue + buf(5)
+        returnValue = BitConverter.ToUInt16(buf, 4)
 
         'Read back the operation status from the return buffer
         status = BitConverter.ToUInt32(buf, 0)
@@ -358,8 +356,6 @@ Partial Class FX3Connection
         Dim resultBuffer As New List(Of UShort)
         'Bytes per USB buffer
         Dim bytesPerUSBBuffer As Integer
-        'short value
-        Dim shortValue As UShort
 
         'Find transfer size and create data buffer
         Dim transferSize As Integer
@@ -402,11 +398,7 @@ Partial Class FX3Connection
             If validTransfer Then
                 For bufIndex As Integer = 0 To bytesPerUSBBuffer - 2 Step 2
                     'Add the 16 bit value at the current index
-                    'Flip bytes
-                    shortValue = buf(bufIndex)
-                    shortValue = shortValue << 8
-                    shortValue = shortValue + buf(bufIndex + 1)
-                    resultBuffer.Add(shortValue)
+                    resultBuffer.Add(BitConverter.ToUInt16(buf, bufIndex))
                     'Check if we've read all the data
                     If resultBuffer.Count() = WordsToRead Then
                         Exit For

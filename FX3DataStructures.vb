@@ -144,6 +144,8 @@ Public Enum DeviceType
     IMU = 0
     'ADcmXL device
     ADcmXL
+    'Automotive grade part (32 bit SPI with CRC)
+    AutomotiveSpi
 End Enum
 
 ''' <summary>
@@ -176,7 +178,6 @@ End Enum
 Public Class FX3SPIConfig
 
     'Public Variables
-    Public ClockFrequency As Int32
     Public WordLength As Byte
     Public Cpol As Boolean
     Public ChipSelectPolarity As Boolean
@@ -193,6 +194,19 @@ Public Class FX3SPIConfig
     'Private variables for general use
     Private SclkPeriod As Double
     Private StallSeconds As Double
+    Private ClockFrequency As Int32
+
+    'Private member variable to store the current data ready pin GPIO number
+    Private m_ReadyPinGPIO As UInt16
+
+    'Private member variable to store the stall time
+    Private m_StallTime As UInt16 = 50
+
+    'Private member variable to store the stall cycles
+    Private m_StallCycles As UInt16 = 100
+
+    'Private member variable to store the current data ready pin
+    Private m_ReadyPin As FX3PinObject
 
     ''' <summary>
     ''' Property to store the current SPI clock. Updates the StallTime when set.
@@ -205,8 +219,8 @@ Public Class FX3SPIConfig
         Set(value As Int32)
             ClockFrequency = value
             SclkPeriod = (1 / ClockFrequency)
-            'Update the member variable to avoid changing the StallCycles
-            m_StallTime = Convert.ToInt16(m_StallCycles * SclkPeriod * 1000000)
+            'Update the stall cycles
+            m_StallCycles = m_StallTime / (SclkPeriod * 1000000)
         End Set
     End Property
 
@@ -229,27 +243,16 @@ Public Class FX3SPIConfig
             m_StallCycles = Convert.ToInt16(StallSeconds / SclkPeriod)
         End Set
     End Property
-    'Private member variable to store the stall time
-    Private m_StallTime As UInt16 = 50
 
     ''' <summary>
     ''' Property to set the stall time, in terms of SPI clock cycles
     ''' </summary>
     ''' <returns>The current stall cycles</returns>
-    Public Property StallCycles As UInt16
+    Public ReadOnly Property StallCycles As UInt16
         Get
             Return m_StallCycles
         End Get
-        Set(value As UInt16)
-            m_StallCycles = value
-            'Set the stall time
-            SclkPeriod = 1 / ClockFrequency
-            StallSeconds = SclkPeriod * m_StallCycles
-            m_StallTime = Convert.ToInt16(StallSeconds * 1000000)
-        End Set
     End Property
-    'Private member variable to store the stall cycles
-    Private m_StallCycles As UInt16 = 100
 
     ''' <summary>
     ''' Property to get/set the data ready pin
@@ -264,8 +267,6 @@ Public Class FX3SPIConfig
             m_ReadyPinGPIO = m_ReadyPin.PinNumber
         End Set
     End Property
-    'Private member variable to store the current data ready pin
-    Private m_ReadyPin As FX3PinObject
 
     ''' <summary>
     ''' Property to get/set the data ready FX3 GPIO number
@@ -280,48 +281,46 @@ Public Class FX3SPIConfig
             m_ReadyPin = New FX3PinObject(m_ReadyPinGPIO)
         End Set
     End Property
-    'Private member variable to store the current data ready pin GPIO number
-    Private m_ReadyPinGPIO As UInt16
 
     ''' <summary>
     ''' Class Constructor, sets reasonable default values for IMU and ADcmXL devices
     ''' </summary>
     ''' <param name="SensorType">Optional parameter to specify default device SPI settings. Valid options are IMU and ADcmXL</param>
     Public Sub New(Optional ByVal SensorType As DeviceType = DeviceType.IMU)
+        'Set the properties true for all devices
+        Cpol = True
+        Cpha = True
+        ChipSelectPolarity = False
+        ChipSelectControl = SpiChipselectControl.SPI_SSN_CTRL_HW_END_OF_XFER
+        ChipSelectLagTime = SpiLagLeadTime.SPI_SSN_LAG_LEAD_ONE_CLK
+        ChipSelectLeadTime = SpiLagLeadTime.SPI_SSN_LAG_LEAD_ONE_CLK
+        IsLSBFirst = False
+        TimerTickScaleFactor = 10078
+        DrPolarity = True
+        DrActive = False
+
         If SensorType = DeviceType.ADcmXL Then
+            'ADcmXL (machine health)
+            m_StallTime = 25
             ClockFrequency = 14000000
-            WordLength = 8
-            Cpol = True
-            Cpha = True
-            ChipSelectPolarity = False
-            ChipSelectControl = SpiChipselectControl.SPI_SSN_CTRL_HW_END_OF_XFER
-            ChipSelectLagTime = SpiLagLeadTime.SPI_SSN_LAG_LEAD_ONE_CLK
-            ChipSelectLeadTime = SpiLagLeadTime.SPI_SSN_LAG_LEAD_ONE_CLK
-            StallTime = 25
-            StallCycles = 350
+            WordLength = 16
             DUTType = DUTType.ADcmXL3021
-            IsLSBFirst = False
-            DrActive = False
-            DrPolarity = True
             DataReadyPinFX3GPIO = 3
-            TimerTickScaleFactor = 10000
-        Else
+        ElseIf SensorType = DeviceType.IMU Then
+            'General IMU
             ClockFrequency = 2000000
-            WordLength = 8
-            Cpol = True
-            Cpha = True
-            ChipSelectPolarity = False
-            ChipSelectControl = SpiChipselectControl.SPI_SSN_CTRL_HW_END_OF_XFER
-            ChipSelectLagTime = SpiLagLeadTime.SPI_SSN_LAG_LEAD_ONE_CLK
-            ChipSelectLeadTime = SpiLagLeadTime.SPI_SSN_LAG_LEAD_ONE_CLK
-            StallTime = 25
-            StallCycles = 50
+            WordLength = 16
+            m_StallTime = 25
             DUTType = DUTType.IMU
-            IsLSBFirst = False
-            DrActive = False
-            DrPolarity = True
             DataReadyPinFX3GPIO = 4
-            TimerTickScaleFactor = 10000
+        Else
+            'Automotive IMU with iSensorAutomotiveSpi protocol
+            ClockFrequency = 15000000
+            WordLength = 32
+            m_StallTime = 10
+            DUTType = DUTType.IMU
+            DataReadyPinFX3GPIO = 4
+            DrActive = True
         End If
 
     End Sub

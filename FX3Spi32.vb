@@ -175,6 +175,7 @@ Partial Class FX3Connection
     Private Sub ISpi32Interface_StartBufferedStream(WriteData As IEnumerable(Of UInteger), numCaptures As UInteger, numBuffers As UInteger, timeoutSeconds As Integer, worker As BackgroundWorker) Implements ISpi32Interface.StartBufferedStream
 
         Dim BytesPerUsbBuffer As UInteger
+        Dim streamArgs As New List(Of UInteger)
 
         'Set the total number of buffers to read
         m_TotalBuffersToRead = numBuffers
@@ -182,9 +183,12 @@ Partial Class FX3Connection
         'Setup the stream
         BytesPerUsbBuffer = ISpi32TransferStreamSetup(WriteData, numCaptures, numBuffers)
 
+
+        streamArgs.Add(BytesPerUsbBuffer)
+        streamArgs.Add(WriteData.Count() * 4 * numCaptures)
         'Start the streaming thread
         m_StreamThread = New Thread(AddressOf ISpi32InterfaceStreamWorker)
-        m_StreamThread.Start(WriteData.Count() * 4 * numCaptures)
+        m_StreamThread.Start(streamArgs)
 
         'If there is a background worker, monitor and generate the Report Progress and Cancel events as needed
         If IsNothing(worker) Then
@@ -311,9 +315,9 @@ Partial Class FX3Connection
             buf.Add((MOSIWord And &HFF000000) >> 24)
         Next
 
-        'Check that the transmit buffer isn't too large (>512)
-        If buf.Count() > 512 Then
-            Throw New FX3ConfigurationException("ERROR: Invalid WriteData provided to StartTransferStream. Transfer count of " + buf.Count().ToString() + "bytes exceeds allowed amount of 512 bytes")
+        'Check that the transmit buffer isn't too large (>4096)
+        If buf.Count() > 4096 Then
+            Throw New FX3ConfigurationException("ERROR: Invalid WriteData provided to StartTransferStream. Transfer count of " + buf.Count().ToString() + "bytes exceeds allowed amount of 4096 bytes")
         End If
 
         'Configure control endpoint
@@ -330,8 +334,9 @@ Partial Class FX3Connection
 
     End Function
 
-    Private Sub ISpi32InterfaceStreamWorker(BytesPerBuffer As UInteger)
+    Private Sub ISpi32InterfaceStreamWorker(StreamArgs As List(Of UInteger))
 
+        Dim BytesPerBuffer, BytesPerUsbBuffer As UInteger
         'Bool to track if transfer from FX3 board is successful
         Dim validTransfer As Boolean = True
         'Variable to track number of buffers read
@@ -340,6 +345,10 @@ Partial Class FX3Connection
         Dim bufferBuilder As New List(Of UInteger)
         'Int to track buffer index
         Dim bufIndex As Integer = 0
+
+        'Parse thread arguements
+        BytesPerUsbBuffer = StreamArgs(0)
+        BytesPerBuffer = StreamArgs(1)
 
         'Find transfer size and create data buffer
         Dim transferSize As Integer
@@ -374,7 +383,7 @@ Partial Class FX3Connection
             validTransfer = StreamingEndPt.XferData(buf, transferSize)
             'Check that the data was read correctly
             If validTransfer Then
-                For bufIndex = 0 To (transferSize - 4) Step 4
+                For bufIndex = 0 To (BytesPerUsbBuffer - 3) Step 4
                     'Add the value at the current index position
                     bufferBuilder.Add(BitConverter.ToUInt32(buf, bufIndex))
                     If bufferBuilder.Count() * 4 >= BytesPerBuffer Then
@@ -382,10 +391,6 @@ Partial Class FX3Connection
                         Interlocked.Increment(m_FramesRead)
                         bufferBuilder.Clear()
                         numBuffersRead = numBuffersRead + 1
-                        'Exit for loop if total integer number of buffers for the USB packet have been read (ignore for case where its more than one packet per buffer)
-                        If (transferSize - bufIndex) < BytesPerBuffer And Not (BytesPerBuffer > transferSize) Then
-                            Exit For
-                        End If
                         'Finish the stream if the total number of buffers has been read
                         If numBuffersRead >= m_TotalBuffersToRead Then
                             'Stop the stream
