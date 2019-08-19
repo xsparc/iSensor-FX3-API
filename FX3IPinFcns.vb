@@ -350,6 +350,121 @@ Partial Class FX3Connection
 
 #Region "Other Pin Functions"
 
+    Public Function MeasurePinFreq(pin As IPinObject, polarity As UInteger, timeoutInMs As UInteger, numPeriods As UShort) As Double
+        'Variable initialization
+        Dim buf(12) As Byte
+        Dim timeoutTimer As New Stopwatch()
+        Dim timeoutTicks, timeoutRollovers, timerTicks, timerRollovers, status As UInteger
+        Dim timeoutLng, totalTicks As ULong
+        Dim freq, period As Double
+        Dim transferStatus As Boolean
+
+        'Validate pin type
+        If Not IsFX3Pin(pin) Then
+            Throw New FX3GeneralException("ERROR: Data ready pin type must be an FX3PinObject")
+        End If
+
+        'Calculate the timeout ticks and timeout rollovers
+
+        'Validate the polarity (must be 0 or 1)
+        If polarity <> 0 Then
+            polarity = 1
+        End If
+
+        'Set the pin
+        buf(0) = pin.pinConfig And &HFF
+        buf(1) = (pin.pinConfig And &HFF00) >> 8
+
+        'Set the polarity
+        buf(2) = polarity
+
+        'Calculate the timeout values
+        timeoutLng = timeoutInMs * m_FX3SPIConfig.TimerTickScaleFactor
+        timeoutLng = timeoutLng / 1000
+
+        timeoutRollovers = Math.Floor(timeoutLng / UInt32.MaxValue)
+        timeoutTicks = timeoutLng Mod UInt32.MaxValue
+
+        'Add timeouts to buffer
+        buf(3) = timeoutTicks And &HFF
+        buf(4) = (timeoutTicks And &HFF00) >> 8
+        buf(5) = (timeoutTicks And &HFF0000) >> 16
+        buf(6) = (timeoutTicks And &HFF000000) >> 24
+        buf(7) = timeoutRollovers And &HFF
+        buf(8) = (timeoutRollovers And &HFF00) >> 8
+        buf(9) = (timeoutRollovers And &HFF0000) >> 16
+        buf(10) = (timeoutRollovers And &HFF000000) >> 24
+
+        'Add number of periods to average to buffer
+        buf(11) = numPeriods And &HFF
+        buf(12) = (numPeriods And &HFF00) >> 8
+
+        'Start stopwatch
+        timeoutTimer.Start()
+
+        'Send vendor command to request DR frequency
+        ConfigureControlEndpoint(USBCommands.ADI_MEASURE_DR, True)
+        If Not XferControlData(buf, 13, 2000) Then
+            Throw New FX3CommunicationException("ERROR: DR frequency read timed out")
+        End If
+
+        'Start bulk transfer
+        transferStatus = False
+        If timeoutInMs = 0 Then
+            transferStatus = DataInEndPt.XferData(buf, 12)
+        Else
+            While ((Not transferStatus) And (timeoutTimer.ElapsedMilliseconds() < timeoutInMs))
+                transferStatus = DataInEndPt.XferData(buf, 12)
+            End While
+        End If
+
+        'stop stopwatch
+        timeoutTimer.Stop()
+
+        'Read the return values from the buffer
+        status = BitConverter.ToUInt32(buf, 0)
+        timerTicks = BitConverter.ToUInt32(buf, 4)
+        timerRollovers = BitConverter.ToUInt32(buf, 8)
+
+        'find the total time
+        totalTicks = CULng(timerRollovers) * UInt32.MaxValue
+        totalTicks += timerTicks
+
+        'Find one period time
+        period = totalTicks / m_FX3SPIConfig.TimerTickScaleFactor
+        period = period / numPeriods
+
+        'Convert ticks to freq
+        freq = 1000 / period
+
+        'If the transfer failed return infinity
+        If Not transferStatus Then
+            freq = Double.PositiveInfinity
+        End If
+
+        'If the status is a timeout return infinity
+        If status = &H45 Then
+            freq = Double.PositiveInfinity
+        ElseIf status <> 0 Then
+            freq = Double.PositiveInfinity
+            Throw New FX3BadStatusException("ERROR: Bad status code after pin frequency measue. Status: 0x" + status.ToString("X"))
+        End If
+
+        'Return freq measured on specified pin
+        Return freq
+    End Function
+
+    ''' <summary>
+    ''' Reads the measured DR value
+    ''' </summary>
+    ''' <param name="pin">The DR pin to measure</param>
+    ''' <param name="polarity">The edge to measure from. 1 - low to high, 0 - high to low</param>
+    ''' <param name="timeoutInMs">The timeout from when the pin measurement starts to when the function returns if the signal cannot be found</param>
+    ''' <returns>The DR frequency in Hz</returns>
+    Public Function ReadDRFreq(pin As IPinObject, polarity As UInteger, timeoutInMs As UInteger) As Double
+        Return MeasurePinFreq(pin, polarity, timeoutInMs, 8)
+    End Function
+
     ''' <summary>
     ''' This function triggers a DUT action using a pulse drive, and then measures the following pulse width on a seperate busy line.
     ''' The pulse time on the busy pin is measured using a 10MHz timer with approx. 1us accuracy.
@@ -399,7 +514,7 @@ Partial Class FX3Connection
 
         'If the timeout is too large (greater than one timer period) set to 0 -> no timeout on firmware
         FX3Timeout = Timeout
-        If Timeout > (UInt32.MaxValue / 10000) Then
+        If Timeout > (UInt32.MaxValue / m_FX3SPIConfig.TimerTickScaleFactor) Then
             FX3Timeout = 0
         End If
 
@@ -519,7 +634,7 @@ Partial Class FX3Connection
 
         'If the timeout is too large (greater than one timer period) set to 0 -> no timeout on firmware
         FX3Timeout = Timeout
-        If Timeout > (UInt32.MaxValue / 10000) Then
+        If Timeout > (UInt32.MaxValue / m_FX3SPIConfig.TimerTickScaleFactor) Then
             FX3Timeout = 0
         End If
 

@@ -183,7 +183,6 @@ Partial Class FX3Connection
         'Setup the stream
         BytesPerUsbBuffer = ISpi32TransferStreamSetup(WriteData, numCaptures, numBuffers)
 
-
         streamArgs.Add(BytesPerUsbBuffer)
         streamArgs.Add(WriteData.Count() * 4 * numCaptures)
         'Start the streaming thread
@@ -221,7 +220,7 @@ Partial Class FX3Connection
             End If
 
             'Sleep to avoid using too much CPU time
-            System.Threading.Thread.Sleep(20)
+            System.Threading.Thread.Sleep(25)
 
         End While
 
