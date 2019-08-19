@@ -506,7 +506,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	//Read config data into USBBuffer
 				CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
 				//Run pulse drive function
-				status = AdiMeasureDR();
+				status = AdiMeasurePinFreq();
 				break;
 
 			//PWM configuration

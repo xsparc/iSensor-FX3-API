@@ -973,22 +973,5 @@ CyU3PReturnStatus_t AdiGenericStreamFinished()
  **/
 CyU3PReturnStatus_t AdiConfigureDrPin()
 {
-	/* Make sure the data ready pin is configured as an input and attach the correct pin interrupt */
-	CyU3PGpioSimpleConfig_t gpioConfig;
-	gpioConfig.outValue = CyTrue;
-	gpioConfig.inputEn = CyTrue;
-	gpioConfig.driveLowEn = CyFalse;
-	gpioConfig.driveHighEn = CyFalse;
-	if (FX3State.DrPolarity)
-	{
-		gpioConfig.intrMode = CY_U3P_GPIO_INTR_POS_EDGE;
-	}
-	else
-	{
-		gpioConfig.intrMode = CY_U3P_GPIO_INTR_NEG_EDGE;
-	}
-
-	//TODO: Check setting and override to act as simple GPIO input if needed
-
-	return CyU3PGpioSetSimpleConfig(FX3State.DrPin, &gpioConfig);
+	return AdiConfigurePinInterrupt(FX3State.DrPin, FX3State.DrPolarity);
 }

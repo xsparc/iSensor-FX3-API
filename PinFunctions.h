@@ -26,7 +26,7 @@
 CyU3PReturnStatus_t AdiPulseDrive();
 CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength);
 CyU3PReturnStatus_t AdiSetPin(uint16_t pinNumber, CyBool_t polarity);
-CyU3PReturnStatus_t AdiMeasureDR();
+CyU3PReturnStatus_t AdiMeasurePinFreq();
 CyU3PReturnStatus_t AdiWaitForPin(uint32_t pinNumber, CyU3PGpioIntrMode_t interruptSetting, uint32_t timeoutTicks);
 CyU3PReturnStatus_t AdiPinRead(uint16_t pin);
 CyU3PReturnStatus_t AdiReadTimerValue();
@@ -34,6 +34,8 @@ uint32_t AdiMStoTicks(uint32_t desiredStallTime);
 CyU3PReturnStatus_t AdiSleepForMicroSeconds(uint32_t numMicroSeconds);
 CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM);
 CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength);
+CyU3PReturnStatus_t AdiConfigurePinInterrupt(uint16_t pin, CyBool_t polarity);
+
 
 /*
  * GPIO Pin mapping definitions

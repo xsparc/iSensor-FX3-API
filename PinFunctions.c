@@ -885,283 +885,171 @@ CyU3PReturnStatus_t AdiReadTimerValue()
   * polarity: The polarity of the pin (1 - Low-to-High, 0 - High-to-Low)
   * timeoutInMs: The specified timeout in milliseconds
  **/
-CyU3PReturnStatus_t AdiMeasureDR()
+CyU3PReturnStatus_t AdiMeasurePinFreq()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-	uint16_t pin;
-	CyBool_t polarity, validPin, pinValue, sampleRollover;
-	uint32_t timeWaited[2];
-	uint32_t timeoutCounter = 0;
-	uint32_t pinRegValue, startTime, currentTime, sampleEndTime, timeout, deltat;
+	CyBool_t polarity, timeoutOccurred, interruptTriggered, exitCondition;
+	uint16_t pin, numPeriods, periodCount;
+	uint32_t timeoutTicks, timeoutRollovers, currentTime, lastTime, rollovers;
 
-	//Get the operation start time
-	CyU3PGpioComplexSampleNow(ADI_TIMER_PIN, &startTime);
-	currentTime = startTime;
-
-	//Parse request data from USBBuffer
+	/* Parse data from the USB Buffer */
 	pin = USBBuffer[0];
-	pin = pin + (USBBuffer[1] << 8);
-	polarity = (CyBool_t) USBBuffer[2];
-	timeout = USBBuffer[7];
-	timeout = timeout + (USBBuffer[8] << 8);
-	timeout = timeout + (USBBuffer[9] << 16);
-	timeout = timeout + (USBBuffer[10] << 24);
+	pin |= (USBBuffer[1] << 8);
+	polarity = USBBuffer[2];
+	timeoutTicks = USBBuffer[3];
+	timeoutTicks |= (USBBuffer[4] << 8);
+	timeoutTicks |= (USBBuffer[5] << 16);
+	timeoutTicks |= (USBBuffer[6] << 24);
+	timeoutRollovers = USBBuffer[7];
+	timeoutRollovers |= (USBBuffer[8] << 8);
+	timeoutRollovers |= (USBBuffer[9] << 16);
+	timeoutRollovers |= (USBBuffer[10] << 24);
+	numPeriods = USBBuffer[11];
+	numPeriods |= (USBBuffer[12] << 8);
 
-	//Convert from ms to timer ticks
-	timeout = AdiMStoTicks(timeout);
+	/* Disable relevant interrupts */
+	CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
+	CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
 
-	//Calculate if timer rollover is going to occur for sample period
-	sampleRollover = (timeout > 0 && (startTime > (0xFFFFFFFF - timeout)));
+	/* Configure pin as an input, with interrupts set on the desired polarity */
+	AdiConfigurePinInterrupt(pin, polarity);
 
-	//Calculate the sample period end time
-	if(sampleRollover)
+	/* Reset timer value */
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+	/* Disable interrupts on the timer pin */
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= ~(CY_U3P_LPP_GPIO_INTRMODE_MASK);
+	/* Set the pin timer period to 0xFFFFFFFF */
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = 0xFFFFFFFF;
+
+	currentTime = 0;
+	lastTime = 0;
+	rollovers = 0;
+	timeoutOccurred = CyFalse;
+	interruptTriggered = CyFalse;
+	/* Clear GPIO interrupts */
+	GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
+	/* Wait for edge, checking timeout as well */
+	while(!(interruptTriggered | timeoutOccurred))
 	{
-		sampleEndTime = timeout - (0xFFFFFFFF - startTime);
-	}
-	else
-	{
-		sampleEndTime = timeout + startTime;
-	}
-
-	//Check that input pin specified is configured as input
-	status = CyU3PGpioSimpleGetValue(pin, &pinValue);
-	if(status != CY_U3P_SUCCESS)
-	{
-		//If initial pin read fails try and configure as input
-		CyU3PGpioSimpleConfig_t gpioConfig;
-		gpioConfig.outValue = CyFalse;
-		gpioConfig.inputEn = CyTrue;
-		gpioConfig.driveLowEn = CyFalse;
-		gpioConfig.driveHighEn = CyFalse;
-		gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
-		status = CyU3PGpioSetSimpleConfig(pin, &gpioConfig);
-
-		//get the pin value again after configuring
-		status = CyU3PGpioSimpleGetValue(pin, &pinValue);
-
-		//If pin setup not successful skip wait operation and return -1
-		if(status != CY_U3P_SUCCESS)
+		interruptTriggered = GPIO->lpp_gpio_intr0 & (1 << pin);
+		if(interruptTriggered)
 		{
-			validPin = CyFalse;
+			/* Reset the timer and clear bit*/
+			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+			GPIO->lpp_gpio_simple[pin] |= CY_U3P_LPP_GPIO_INTR;
+		}
+		else
+		{
+			/* Get the new time values */
+			lastTime = currentTime;
+
+			//Set the pin config for sample now mode
+			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (FX3State.TimerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
+			//wait for sample to finish
+			while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
+			//read timer value
+			currentTime = GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
+
+			/* Check if rollover occured */
+			if(currentTime < lastTime)
+			{
+				rollovers++;
+			}
+
+			/* Determine if a timeout has occurred */
+			timeoutOccurred = (currentTime >= timeoutTicks) && (rollovers >= timeoutRollovers);
 		}
 	}
-	else
-	{
-	validPin = CyTrue;
-	}
 
-	//If the pin is properly configured
-	if(validPin)
+	/* Reset counters */
+	currentTime = 0;
+	lastTime = 0;
+	rollovers = 0;
+	periodCount = 0;
+	interruptTriggered = CyFalse;
+
+	/* Set initial exit condition */
+	exitCondition = timeoutOccurred;
+
+	/* Wait for specified number of edges, or timeout */
+	while(!exitCondition)
 	{
-		//Loop through samples
-		for(uint32_t i = 0; i <= 2; i++)
+		/* Save the last timer value */
+		lastTime = currentTime;
+
+		/* Get the new timer value */
+		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (FX3State.TimerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
+		while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
+		currentTime = GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
+
+		/* Check interrupt status */
+		interruptTriggered = GPIO->lpp_gpio_intr0 & (1 << pin);
+		if(interruptTriggered)
 		{
-			//Poll the input pin until a transition is detected or the timer runs out
-			if(timeout)
-			{
-				//If the timeout will roll over
-				if(sampleRollover)
-				{
-					//Low to high transition
-					if(polarity == 1)
-					{
-						pinRegValue = GPIO->lpp_gpio_simple[pin];
-						//If pin starts high wait for low transition
-						if(pinRegValue & CY_U3P_LPP_GPIO_IN_VALUE)
-						{
-							while((pinRegValue & CY_U3P_LPP_GPIO_IN_VALUE) && (currentTime >= startTime || currentTime <= sampleEndTime))
-							{
-								CyU3PGpioComplexSampleNow(ADI_TIMER_PIN, &currentTime);
-								pinRegValue = GPIO->lpp_gpio_simple[pin];
-								//Increment timeout counter if a timeout occurs
-								if(currentTime <= startTime || currentTime >= sampleEndTime)
-								{
-									timeoutCounter++;
-								}
-							}
-						}
-						//Wait for a low to high transition
-						while((!(pinRegValue & CY_U3P_LPP_GPIO_IN_VALUE)) && (currentTime >= startTime || currentTime <= sampleEndTime))
-						{
-							CyU3PGpioComplexSampleNow(ADI_TIMER_PIN, &currentTime);
-							pinRegValue = GPIO->lpp_gpio_simple[pin];
-							//Increment timeout counter if a timeout occurs
-							if(currentTime <= startTime || currentTime >= sampleEndTime)
-							{
-								timeoutCounter++;
-							}
-						}
-					}
-					//Default / high to low transition
-					else
-					{
-						pinRegValue = GPIO->lpp_gpio_simple[pin];
-						//If pin starts low wait for high transition
-						if((!(pinRegValue & CY_U3P_LPP_GPIO_IN_VALUE)) && (currentTime >= startTime || currentTime <= sampleEndTime))
-						{
-							while(!(pinRegValue & CY_U3P_LPP_GPIO_IN_VALUE))
-							{
-								CyU3PGpioComplexSampleNow(ADI_TIMER_PIN, &currentTime);
-								pinRegValue = GPIO->lpp_gpio_simple[pin];
-								//Increment timeout counter if a timeout occurs
-								if(currentTime <= startTime || currentTime >= sampleEndTime)
-								{
-									timeoutCounter++;
-								}
-							}
-						}
-						//Wait for a high to low transition
-						while((pinRegValue & CY_U3P_LPP_GPIO_IN_VALUE) && (currentTime >= startTime || currentTime <= sampleEndTime))
-						{
-							CyU3PGpioComplexSampleNow(ADI_TIMER_PIN, &currentTime);
-							pinRegValue = GPIO->lpp_gpio_simple[pin];
-							//Increment timeout counter if a timeout occurs
-							if(currentTime <= startTime || currentTime >= sampleEndTime)
-							{
-								timeoutCounter++;
-							}
-						}
-					}
-				}
-				else
-				{
-					//Low to high transition
-					if(polarity == 1)
-					{
-						pinRegValue = GPIO->lpp_gpio_simple[pin];
-						//If pin starts high wait for low transition
-						if(pinRegValue & CY_U3P_LPP_GPIO_IN_VALUE)
-						{
-							while((pinRegValue & CY_U3P_LPP_GPIO_IN_VALUE) && currentTime < sampleEndTime)
-							{
-								CyU3PGpioComplexSampleNow(ADI_TIMER_PIN, &currentTime);
-								pinRegValue = GPIO->lpp_gpio_simple[pin];
-								//Increment timeout counter if a timeout occurs
-								if(currentTime > sampleEndTime)
-								{
-									timeoutCounter++;
-								}
-							}
-						}
-						//Wait for a low to high transition
-						while((!(pinRegValue & CY_U3P_LPP_GPIO_IN_VALUE)) && currentTime < sampleEndTime)
-						{
-							CyU3PGpioComplexSampleNow(ADI_TIMER_PIN, &currentTime);
-							pinRegValue = GPIO->lpp_gpio_simple[pin];
-							//Increment timeout counter if a timeout occurs
-							if(currentTime > sampleEndTime)
-							{
-								timeoutCounter++;
-							}
-						}
-					}
-					//Default / high to low transition
-					else
-					{
-						pinRegValue = GPIO->lpp_gpio_simple[pin];
-						//If pin starts low wait for high transition
-						if((!(pinRegValue & CY_U3P_LPP_GPIO_IN_VALUE)) && currentTime < sampleEndTime)
-						{
-							while(!(pinRegValue & CY_U3P_LPP_GPIO_IN_VALUE))
-							{
-								CyU3PGpioComplexSampleNow(ADI_TIMER_PIN, &currentTime);
-								pinRegValue = GPIO->lpp_gpio_simple[pin];
-								//Increment timeout counter if a timeout occurs
-								if(currentTime > sampleEndTime)
-								{
-									timeoutCounter++;
-								}
-							}
-						}
-						//Wait for a high to low transition
-						while((pinRegValue & CY_U3P_LPP_GPIO_IN_VALUE) && currentTime < sampleEndTime)
-						{
-							CyU3PGpioComplexSampleNow(ADI_TIMER_PIN, &currentTime);
-							pinRegValue = GPIO->lpp_gpio_simple[pin];
-							//Increment timeout counter if a timeout occurs
-							if(currentTime > sampleEndTime)
-							{
-								timeoutCounter++;
-							}
-						}
-					}
-				}
-			}
-			//If timeout is 0 treat it like there is no timeout
-			else
-			{
-				//Low to high transition
-				if(polarity == 1)
-				{
-					pinRegValue = GPIO->lpp_gpio_simple[pin];
-					//If pin starts high wait for low transition
-					if(pinRegValue & CY_U3P_LPP_GPIO_IN_VALUE)
-					{
-						while(pinRegValue & CY_U3P_LPP_GPIO_IN_VALUE)
-						{
-							pinRegValue = GPIO->lpp_gpio_simple[pin];
-						}
-					}
-					//Wait for a low to high transition
-					while(!(pinRegValue & CY_U3P_LPP_GPIO_IN_VALUE))
-					{
-						pinRegValue = GPIO->lpp_gpio_simple[pin];
-					}
-				}
-				//Default / high to low transition
-				else
-				{
-					pinRegValue = GPIO->lpp_gpio_simple[pin];
-					//If pin starts low wait for high transition
-					if(!(pinRegValue & CY_U3P_LPP_GPIO_IN_VALUE))
-					{
-						while(!(pinRegValue & CY_U3P_LPP_GPIO_IN_VALUE))
-						{
-							pinRegValue = GPIO->lpp_gpio_simple[pin];
-						}
-					}
-					//Wait for a high to low transition
-					while(pinRegValue & CY_U3P_LPP_GPIO_IN_VALUE)
-					{
-						pinRegValue = GPIO->lpp_gpio_simple[pin];
-					}
-				}
-			}
-			//Calculate the time waited
-			CyU3PGpioComplexSampleNow(ADI_TIMER_PIN, &currentTime);
-			if (currentTime > startTime)
-			{
-				timeWaited[i] = currentTime - startTime;
-			}
-			else
-			{
-				timeWaited[i] = currentTime + (0xFFFFFFFF - startTime);
-			}
+			/*Increment counter and clear the interrupt bit */
+			periodCount++;
+			GPIO->lpp_gpio_simple[pin] |= CY_U3P_LPP_GPIO_INTR;
 		}
-		//Calculate delta time
-		deltat = timeWaited[1] - timeWaited[0];
+
+		/* Check if rollover occured */
+		if(currentTime < lastTime)
+		{
+			rollovers++;
+		}
+
+		/* Determine if a timeout has occurred */
+		timeoutOccurred = (currentTime >= timeoutTicks) && (rollovers >= timeoutRollovers);
+
+		/* Determine the exit condition */
+		exitCondition = timeoutOccurred || (periodCount >= numPeriods);
+	}
+
+	//add 2.1us to current time (fudge factor, calibrated using DSLogic Pro)
+	if(currentTime < (0xFFFFFFFF - 21))
+	{
+		currentTime = currentTime + 21;
 	}
 	else
 	{
-		//Set the wait time to max when invalid pin is specified
-		deltat = 0xFFFFFFFF;
+		currentTime = 0;
+		rollovers++;
 	}
-	//Return delta time over ChannelToPC
-	//TODO: Stop sending MS_TO_TICKS_MULT since it's already
-	//      part of the SPI config message
-	BulkBuffer[0] = deltat & 0xFF;
-	BulkBuffer[1] = (deltat & 0xFF00) >> 8;
-	BulkBuffer[2] = (deltat & 0xFF0000) >> 16;
-	BulkBuffer[3] = (deltat & 0xFF000000) >> 24;
-	BulkBuffer[4] = MS_TO_TICKS_MULT & 0xFF;
-	BulkBuffer[5] = (MS_TO_TICKS_MULT & 0xFF00) >> 8;
-	BulkBuffer[6] = (MS_TO_TICKS_MULT & 0xFF00) >> 16;
-	BulkBuffer[7] = (MS_TO_TICKS_MULT & 0xFF00) >> 24;
-	BulkBuffer[8] = timeoutCounter;
 
+	/* Set error flags if a timeout occurred (status = timeout error) */
+	if(timeoutOccurred)
+	{
+		status = CY_U3P_ERROR_TIMEOUT;
+	}
+
+	/* Disable interrupt mode on the pin */
+	CyU3PGpioSimpleConfig_t gpioConfig;
+	gpioConfig.outValue = CyTrue;
+	gpioConfig.inputEn = CyTrue;
+	gpioConfig.driveLowEn = CyFalse;
+	gpioConfig.driveHighEn = CyFalse;
+	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+	CyU3PGpioSetSimpleConfig(pin, &gpioConfig);
+
+	/* Re-enable relevant ISRs */
+	CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
+	CyU3PVicEnableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
+
+	/* Return data over ChannelToPC */
+	BulkBuffer[0] = status & 0xFF;
+	BulkBuffer[1] = (status & 0xFF00) >> 8;
+	BulkBuffer[2] = (status & 0xFF0000) >> 16;
+	BulkBuffer[3] = (status & 0xFF000000) >> 24;
+	BulkBuffer[4] = currentTime & 0xFF;
+	BulkBuffer[5] = (currentTime & 0xFF00) >> 8;
+	BulkBuffer[6] = (currentTime & 0xFF0000) >> 16;
+	BulkBuffer[7] = (currentTime & 0xFF000000) >> 24;
+	BulkBuffer[8] = rollovers & 0xFF;
+	BulkBuffer[9] = (rollovers & 0xFF00) >> 8;
+	BulkBuffer[10] = (rollovers & 0xFF0000) >> 16;
+	BulkBuffer[11] = (rollovers & 0xFF000000) >> 24;
 	ManualDMABuffer.buffer = BulkBuffer;
 	ManualDMABuffer.size = sizeof(BulkBuffer);
-	ManualDMABuffer.count = 9;
+	ManualDMABuffer.count = 12;
 
 	//Send the data to PC
 	status = CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
@@ -1170,5 +1058,44 @@ CyU3PReturnStatus_t AdiMeasureDR()
 		CyU3PDebugPrint (4, "Sending DR data to PC failed!, error code = 0x%x\r\n", status);
 	}
 
+	return status;
+}
+
+/**
+  * @brief configures the selected pin as an interrupt with edge triggering based on polarity
+  *
+  * @param polarity The edge to trigger on (true -> rising edge, false -> falling edge)
+  *
+  * @param pin The GPIO pin number to configure
+  *
+  * @return The succes of the pin configuration operation.
+ **/
+CyU3PReturnStatus_t AdiConfigurePinInterrupt(uint16_t pin, CyBool_t polarity)
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+
+	/* Make sure the data ready pin is configured as an input and attach the correct pin interrupt */
+	CyU3PGpioSimpleConfig_t gpioConfig;
+	gpioConfig.outValue = CyTrue;
+	gpioConfig.inputEn = CyTrue;
+	gpioConfig.driveLowEn = CyFalse;
+	gpioConfig.driveHighEn = CyFalse;
+	if (polarity)
+	{
+		gpioConfig.intrMode = CY_U3P_GPIO_INTR_POS_EDGE;
+	}
+	else
+	{
+		gpioConfig.intrMode = CY_U3P_GPIO_INTR_NEG_EDGE;
+	}
+
+	status = CyU3PGpioSetSimpleConfig(pin, &gpioConfig);
+	if(status != CY_U3P_SUCCESS)
+	{
+		/* Override the pin to act as simple GPIO */
+		CyU3PDeviceGpioOverride(pin, CyTrue);
+		/* Set the config again */
+		status = CyU3PGpioSetSimpleConfig(pin, &gpioConfig);
+	}
 	return status;
 }
