@@ -974,14 +974,6 @@ CyU3PReturnStatus_t AdiMeasurePinFreq()
 	/* Wait for specified number of edges, or timeout */
 	while(!exitCondition)
 	{
-		/* Save the last timer value */
-		lastTime = currentTime;
-
-		/* Get the new timer value */
-		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (FX3State.TimerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
-		while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
-		currentTime = GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
-
 		/* Check interrupt status */
 		interruptTriggered = GPIO->lpp_gpio_intr0 & (1 << pin);
 		if(interruptTriggered)
@@ -990,6 +982,14 @@ CyU3PReturnStatus_t AdiMeasurePinFreq()
 			periodCount++;
 			GPIO->lpp_gpio_simple[pin] |= CY_U3P_LPP_GPIO_INTR;
 		}
+
+		/* Save the last timer value */
+		lastTime = currentTime;
+
+		/* Get the new timer value */
+		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (FX3State.TimerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
+		while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
+		currentTime = GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
 
 		/* Check if rollover occured */
 		if(currentTime < lastTime)
@@ -1004,10 +1004,10 @@ CyU3PReturnStatus_t AdiMeasurePinFreq()
 		exitCondition = timeoutOccurred || (periodCount >= numPeriods);
 	}
 
-	//add 2.1us to current time (fudge factor, calibrated using DSLogic Pro)
-	if(currentTime < (0xFFFFFFFF - 21))
+	//add 2.4us to current time (fudge factor, calibrated using DSLogic Pro)
+	if(currentTime < (0xFFFFFFFF - 24))
 	{
-		currentTime = currentTime + 21;
+		currentTime = currentTime + 24;
 	}
 	else
 	{

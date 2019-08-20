@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.0.2-pub</span>
+   &#160;<span id="projectnumber">v2.0.3-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -131,9 +131,9 @@ Functions</h2></td></tr>
 <tr class="memitem:aefc8f76636a3cadcb3d0f4121bfeb154"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#aefc8f76636a3cadcb3d0f4121bfeb154">AdiSetPin</a> (uint16_t pinNumber, CyBool_t polarity)</td></tr>
 <tr class="memdesc:aefc8f76636a3cadcb3d0f4121bfeb154"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function configures the specified pin as an output and drives it with the desired value.  <a href="#aefc8f76636a3cadcb3d0f4121bfeb154">More...</a><br /></td></tr>
 <tr class="separator:aefc8f76636a3cadcb3d0f4121bfeb154"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abf676f4bf40122c4822555b581eac53d"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#abf676f4bf40122c4822555b581eac53d">AdiMeasureDR</a> ()</td></tr>
-<tr class="memdesc:abf676f4bf40122c4822555b581eac53d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Measure the data ready frequency for a user specified pin.  <a href="#abf676f4bf40122c4822555b581eac53d">More...</a><br /></td></tr>
-<tr class="separator:abf676f4bf40122c4822555b581eac53d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a013157d27a8853f3c42a90cc988c72b6"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#a013157d27a8853f3c42a90cc988c72b6">AdiMeasurePinFreq</a> ()</td></tr>
+<tr class="memdesc:a013157d27a8853f3c42a90cc988c72b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Measure the data ready frequency for a user specified pin.  <a href="#a013157d27a8853f3c42a90cc988c72b6">More...</a><br /></td></tr>
+<tr class="separator:a013157d27a8853f3c42a90cc988c72b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2d30ded78cc1f92727b2bc2ec89ecf0b"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#a2d30ded78cc1f92727b2bc2ec89ecf0b">AdiWaitForPin</a> (uint32_t pinNumber, CyU3PGpioIntrMode_t interruptSetting, uint32_t timeoutTicks)</td></tr>
 <tr class="memdesc:a2d30ded78cc1f92727b2bc2ec89ecf0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function blocks the execution of the current thread until an event happens on the specified GPIO pin.  <a href="#a2d30ded78cc1f92727b2bc2ec89ecf0b">More...</a><br /></td></tr>
 <tr class="separator:a2d30ded78cc1f92727b2bc2ec89ecf0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -155,6 +155,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a2b44440abc8a978f29eb87e5fc609dda"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#a2b44440abc8a978f29eb87e5fc609dda">AdiMeasureBusyPulse</a> (uint16_t transferLength)</td></tr>
 <tr class="memdesc:a2b44440abc8a978f29eb87e5fc609dda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets a user configurable trigger condition and then measures the following GPIO pulse.  <a href="#a2b44440abc8a978f29eb87e5fc609dda">More...</a><br /></td></tr>
 <tr class="separator:a2b44440abc8a978f29eb87e5fc609dda"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3c19cd7624851187c6343b9990de817"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#aa3c19cd7624851187c6343b9990de817">AdiConfigurePinInterrupt</a> (uint16_t pin, CyBool_t polarity)</td></tr>
+<tr class="memdesc:aa3c19cd7624851187c6343b9990de817"><td class="mdescLeft">&#160;</td><td class="mdescRight">configures the selected pin as an interrupt with edge triggering based on polarity  <a href="#aa3c19cd7624851187c6343b9990de817">More...</a><br /></td></tr>
+<tr class="separator:aa3c19cd7624851187c6343b9990de817"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Header file for all the pin I/O and timing related functions. </p>
@@ -302,6 +305,44 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="aa3c19cd7624851187c6343b9990de817"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa3c19cd7624851187c6343b9990de817">&#9670;&nbsp;</a></span>AdiConfigurePinInterrupt()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">CyU3PReturnStatus_t AdiConfigurePinInterrupt </td>
+          <td>(</td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>pin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">CyBool_t&#160;</td>
+          <td class="paramname"><em>polarity</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>configures the selected pin as an interrupt with edge triggering based on polarity </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">polarity</td><td>The edge to trigger on (true -&gt; rising edge, false -&gt; falling edge)</td></tr>
+    <tr><td class="paramname">pin</td><td>The GPIO pin number to configure</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The succes of the pin configuration operation. </dd></dl>
+
+</div>
+</div>
 <a id="a90e2e0a316ab7aa9e42e0ddab3ab8668"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a90e2e0a316ab7aa9e42e0ddab3ab8668">&#9670;&nbsp;</a></span>AdiConfigurePWM()</h2>
 
@@ -357,14 +398,14 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 </div>
 </div>
-<a id="abf676f4bf40122c4822555b581eac53d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abf676f4bf40122c4822555b581eac53d">&#9670;&nbsp;</a></span>AdiMeasureDR()</h2>
+<a id="a013157d27a8853f3c42a90cc988c72b6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a013157d27a8853f3c42a90cc988c72b6">&#9670;&nbsp;</a></span>AdiMeasurePinFreq()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">CyU3PReturnStatus_t AdiMeasureDR </td>
+          <td class="memname">CyU3PReturnStatus_t AdiMeasurePinFreq </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
