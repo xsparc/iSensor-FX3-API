@@ -350,6 +350,14 @@ Partial Class FX3Connection
 
 #Region "Other Pin Functions"
 
+    ''' <summary>
+    ''' Measures the frequency of an input signal to the selected pin.
+    ''' </summary>
+    ''' <param name="pin">The pin to measure. Must be an FX3 pin object</param>
+    ''' <param name="polarity">THe edge to measure from. 0 - falling edge, 1 - rising edge</param>
+    ''' <param name="timeoutInMs">The time to wait for the FX3 to return values before defaulting to infinity (in ms)</param>
+    ''' <param name="numPeriods">THe number of periods to sample for. Minimum value of 1</param>
+    ''' <returns>The signal frequency, in Hz. Goes to infinity if no signal found.</returns>
     Public Function MeasurePinFreq(pin As IPinObject, polarity As UInteger, timeoutInMs As UInteger, numPeriods As UShort) As Double
         'Variable initialization
         Dim buf(12) As Byte
@@ -362,6 +370,11 @@ Partial Class FX3Connection
         'Validate pin type
         If Not IsFX3Pin(pin) Then
             Throw New FX3GeneralException("ERROR: Data ready pin type must be an FX3PinObject")
+        End If
+
+        'Validate periods
+        If numPeriods = 0 Then
+            Throw New FX3ConfigurationException("ERRROR: NumPeriods cannot be 0")
         End If
 
         'Calculate the timeout ticks and timeout rollovers

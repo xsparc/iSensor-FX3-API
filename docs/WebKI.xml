@@ -246,6 +246,7 @@
   <HelpKINode Title="FX3Connection.IsLSBFirst property" Url="html/f37c14dd-441b-f398-e41c-1f80b6033194.htm" />
   <HelpKINode Title="FX3Connection.isPWMPin method" Url="html/fe7d19f7-40da-11f1-de8d-42c07116628f.htm" />
   <HelpKINode Title="FX3Connection.MeasureBusyPulse method" Url="html/b416fddf-98f9-01ef-1d88-f71bce9cf5e2.htm" />
+  <HelpKINode Title="FX3Connection.MeasurePinFreq method" Url="html/3aa1bf05-a720-4f7e-df82-790e8b584f4f.htm" />
   <HelpKINode Title="FX3Connection.NumFramesPurged property" Url="html/a9c441e2-05c5-4ede-a74f-2b657b158a9d.htm" />
   <HelpKINode Title="FX3Connection.NumFramesSkipped property" Url="html/2b2df8a0-585e-e9f1-0379-38700b659b06.htm" />
   <HelpKINode Title="FX3Connection.PartType property" Url="html/5f8f4499-b516-fb23-7581-b621192fae71.htm" />
@@ -384,6 +385,7 @@
   <HelpKINode Title="IsLSBFirst property" Url="html/f37c14dd-441b-f398-e41c-1f80b6033194.htm" />
   <HelpKINode Title="isPWMPin method" Url="html/fe7d19f7-40da-11f1-de8d-42c07116628f.htm" />
   <HelpKINode Title="MeasureBusyPulse method" Url="html/b416fddf-98f9-01ef-1d88-f71bce9cf5e2.htm" />
+  <HelpKINode Title="MeasurePinFreq method" Url="html/3aa1bf05-a720-4f7e-df82-790e8b584f4f.htm" />
   <HelpKINode Title="Name field" Url="html/92cf4648-7b40-1610-bcd7-873ee7aa736f.htm" />
   <HelpKINode Title="NumFramesPurged property" Url="html/a9c441e2-05c5-4ede-a74f-2b657b158a9d.htm" />
   <HelpKINode Title="NumFramesSkipped property" Url="html/2b2df8a0-585e-e9f1-0379-38700b659b06.htm" />
@@ -433,8 +435,8 @@
   <HelpKINode Title="Reset method" Url="html/f0bff5d7-785a-008d-08eb-9f7aaa2992b5.htm" />
   <HelpKINode Title="ResetAllFX3s method" Url="html/4c19ef3f-5883-86b8-38cc-ddcf1ec14044.htm" />
   <HelpKINode Title="ResetPin property" Url="html/323fa924-24da-f60d-2c4d-b0e63c274ee7.htm" />
-  <HelpKINode Title="SCLKFrequency property" Url="html/705196d0-12a4-0bd3-2faa-f275f3ce5943.htm" />
   <HelpKINode Title="SclkFrequency property" Url="html/6c81a4f6-5c6c-36a0-9c51-90450e3a156a.htm" />
+  <HelpKINode Title="SCLKFrequency property" Url="html/705196d0-12a4-0bd3-2faa-f275f3ce5943.htm" />
   <HelpKINode Title="SensorType property" Url="html/9e341986-58e8-d7fe-7994-f5dc0f2913f7.htm" />
   <HelpKINode Title="SerialNumber property" Url="html/3f41ce39-2334-2b3b-5841-a7ba619ebe37.htm" />
   <HelpKINode Title="SetPin method" Url="html/7c878496-b143-52d3-657e-ac23ead892db.htm" />
