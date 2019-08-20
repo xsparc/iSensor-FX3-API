@@ -380,7 +380,6 @@ Partial Class FX3Connection
 
         'Calculate the timeout values
         timeoutLng = timeoutInMs * m_FX3SPIConfig.TimerTickScaleFactor
-        timeoutLng = timeoutLng / 1000
 
         timeoutRollovers = Math.Floor(timeoutLng / UInt32.MaxValue)
         timeoutTicks = timeoutLng Mod UInt32.MaxValue
