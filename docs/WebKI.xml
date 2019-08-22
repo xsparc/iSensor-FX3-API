@@ -61,7 +61,6 @@
   <HelpKINode Title="BootloaderTurnOnLED method" Url="html/5a7529d1-fb20-b1af-c740-b705d3c5af4e.htm" />
   <HelpKINode Title="BufferAvailable property" Url="html/e92c6a5d-4828-2487-991e-571f4dc99e61.htm" />
   <HelpKINode Title="BuildDateTime field" Url="html/65e52223-6400-4b8d-112b-919f05b7609f.htm" />
-  <HelpKINode Title="BuildVersion field" Url="html/76a752c3-3b99-9d19-4c7e-8f592f608c21.htm" />
   <HelpKINode Title="BurstMode property" Url="html/7984a80e-023d-e96f-f8dd-9df74751fd4c.htm" />
   <HelpKINode Title="BusyFX3s property" Url="html/775a9e53-dceb-246f-f434-1d487470f894.htm" />
   <HelpKINode Title="ChipSelectControl field" Url="html/c1da2c80-a439-c1a0-a50b-50ad35dc506a.htm" />
@@ -102,6 +101,7 @@
   <HelpKINode Title="EndpointAddresses enumeration" Url="html/3858bc40-e306-6b88-e2ec-956c3ad36fbe.htm" />
   <HelpKINode Title="FirmwarePath property" Url="html/a9ae94f8-9c05-5ddf-c844-07c1fdd8801f.htm" />
   <HelpKINode Title="FirmwareVersion property" Url="html/225dcc56-f369-8603-2410-5ebddd55ed57.htm" />
+  <HelpKINode Title="FirmwareVersionNumber property" Url="html/4b918f9c-ba4b-897c-60b0-517727af6954.htm" />
   <HelpKINode Title="FX3Api namespace" Url="html/338939de-c7bb-3899-fea8-9b1a456a0a9c.htm" />
   <HelpKINode Title="FX3Api.DeviceType enumeration" Url="html/ff5bd0a4-5894-648c-a639-f210d1d45fd6.htm" />
   <HelpKINode Title="FX3Api.DUTType enumeration" Url="html/a664dc00-67b0-e1cf-2c27-cb6c9cf0cba5.htm" />
@@ -114,7 +114,7 @@
   <HelpKINode Title="FX3Api.FX3Connection class" Url="html/8620563f-3f40-5410-ed4b-dfba03527986.htm" />
   <HelpKINode Title="FX3Api.FX3Connection.DisconnectFinishedEventHandler delegate" Url="html/96d0ad43-d352-d971-1e6c-c6d2ffa6e681.htm" />
   <HelpKINode Title="FX3Api.FX3Connection.UnexpectedDisconnectEventHandler delegate" Url="html/534755e7-b798-0a28-046c-c2eb459477b7.htm" />
-  <HelpKINode Title="FX3Api.FX3GeneralException class" Url="html/52f0bd36-5def-4300-d6a0-bf46afae0f7c.htm" />
+  <HelpKINode Title="FX3Api.FX3Exception class" Url="html/9d8abe8e-9f83-fc8c-e72e-e5a53c931a8a.htm" />
   <HelpKINode Title="FX3Api.FX3PinObject class" Url="html/437f623b-8fa7-178c-ff30-61bb68bb622f.htm" />
   <HelpKINode Title="FX3Api.FX3ProgrammingException class" Url="html/16a39d22-24a2-be91-e5cf-fa5ab779db9e.htm" />
   <HelpKINode Title="FX3Api.FX3SPIConfig class" Url="html/8e72f395-0ddd-51f7-906f-74fb7c11ea45.htm" />
@@ -132,7 +132,6 @@
     <HelpKINode Title="properties" Url="html/c20f9448-9e34-a822-df8f-5f8ea8c283a2.htm" />
   </HelpKINode>
   <HelpKINode Title="FX3ApiInfo.BuildDateTime field" Url="html/65e52223-6400-4b8d-112b-919f05b7609f.htm" />
-  <HelpKINode Title="FX3ApiInfo.BuildVersion field" Url="html/76a752c3-3b99-9d19-4c7e-8f592f608c21.htm" />
   <HelpKINode Title="FX3ApiInfo.Description field" Url="html/6f172777-b7f7-0762-ea61-58bbb85a3f9c.htm" />
   <HelpKINode Title="FX3ApiInfo.FX3ApiInfo constructor" Url="html/ff42d6f5-f1e1-2cb4-7819-5416beb08046.htm" />
   <HelpKINode Title="FX3ApiInfo.GitBranch property" Url="html/f26ec043-0ac7-d293-acf9-8bf94e7d5b37.htm" />
@@ -141,6 +140,7 @@
   <HelpKINode Title="FX3ApiInfo.GitURL property" Url="html/a13eeff7-20a4-473b-68e6-19ef1aae81b0.htm" />
   <HelpKINode Title="FX3ApiInfo.Name field" Url="html/92cf4648-7b40-1610-bcd7-873ee7aa736f.htm" />
   <HelpKINode Title="FX3ApiInfo.ToString method" Url="html/8b1cd4ac-7e43-9b82-d924-52e115e2029b.htm" />
+  <HelpKINode Title="FX3ApiInfo.VersionNumber field" Url="html/b28f2d65-6f98-eb0e-a4d1-6941660b9bd5.htm" />
   <HelpKINode Title="FX3BadStatusException class">
     <HelpKINode Title="FX3BadStatusException Class" Url="html/5dd375f1-50eb-1d7e-73a9-0a185ee41c0a.htm" />
     <HelpKINode Title="constructor" Url="html/72e5aa12-3eb4-e987-07b0-7695712444ad.htm" />
@@ -156,10 +156,12 @@
     <HelpKINode Title="properties" Url="html/a4b9a618-2b91-0200-d220-948bf4f30d79.htm" />
   </HelpKINode>
   <HelpKINode Title="FX3Board.FirmwareVersion property" Url="html/225dcc56-f369-8603-2410-5ebddd55ed57.htm" />
+  <HelpKINode Title="FX3Board.FirmwareVersionNumber property" Url="html/4b918f9c-ba4b-897c-60b0-517727af6954.htm" />
   <HelpKINode Title="FX3Board.FX3Board constructor" Url="html/769997b7-1a4f-08d1-64ec-3ebd734eeb85.htm" />
   <HelpKINode Title="FX3Board.SerialNumber property" Url="html/3f41ce39-2334-2b3b-5841-a7ba619ebe37.htm" />
   <HelpKINode Title="FX3Board.ToString method" Url="html/b72f9634-88f6-a97f-7e7b-b03f2837d903.htm" />
   <HelpKINode Title="FX3Board.Uptime property" Url="html/8bac1b60-641b-4bf7-1deb-eb9a14b14543.htm" />
+  <HelpKINode Title="FX3Board.VerboseMode property" Url="html/8f05fb6a-5a94-5db5-2577-8d320dfce4ec.htm" />
   <HelpKINode Title="FX3BoardAttached property" Url="html/7b540c3d-26b6-4eab-f435-56fbbcbfb586.htm" />
   <HelpKINode Title="FX3CodeRunningOnTarget method" Url="html/2ffc4023-b4c8-1c27-15c2-f34ecdcec13e.htm" />
   <HelpKINode Title="FX3CommunicationException class">
@@ -296,14 +298,14 @@
   <HelpKINode Title="FX3Connection.WordLength property" Url="html/fd51c3f2-6254-8d71-64a0-8e63d51b3cb5.htm" />
   <HelpKINode Title="FX3Connection.WriteRegByte method" Url="html/7470aa78-1dd1-b34f-92bb-eb104bcc74b4.htm" />
   <HelpKINode Title="FX3Connection.WriteRegWord method" Url="html/bd17d83e-656a-fb48-f222-fb658ea122a2.htm" />
-  <HelpKINode Title="FX3GeneralException class">
-    <HelpKINode Title="FX3GeneralException Class" Url="html/52f0bd36-5def-4300-d6a0-bf46afae0f7c.htm" />
-    <HelpKINode Title="constructor" Url="html/ffa422d7-26c4-8f30-fac9-355f89428691.htm" />
-    <HelpKINode Title="events" Url="html/88f226b6-9ab2-035f-425e-d48b7158da6b.htm" />
-    <HelpKINode Title="methods" Url="html/5bddf9b3-3f38-398b-9351-9af6f1843152.htm" />
-    <HelpKINode Title="properties" Url="html/520f89d0-b9f8-c97c-a97a-4e37dcdc1f06.htm" />
+  <HelpKINode Title="FX3Exception class">
+    <HelpKINode Title="FX3Exception Class" Url="html/9d8abe8e-9f83-fc8c-e72e-e5a53c931a8a.htm" />
+    <HelpKINode Title="constructor" Url="html/b51fb537-8234-8862-290e-b069dd8b323a.htm" />
+    <HelpKINode Title="events" Url="html/25a0bc9b-0b31-c43b-72bc-c6e7e854b7a9.htm" />
+    <HelpKINode Title="methods" Url="html/9b789559-5c57-8502-8a69-bb9e0a78c0b4.htm" />
+    <HelpKINode Title="properties" Url="html/9dcf0cd6-cafb-88b1-e4cf-74fa90334089.htm" />
   </HelpKINode>
-  <HelpKINode Title="FX3GeneralException.FX3GeneralException constructor" Url="html/ffa422d7-26c4-8f30-fac9-355f89428691.htm" />
+  <HelpKINode Title="FX3Exception.FX3Exception constructor" Url="html/b51fb537-8234-8862-290e-b069dd8b323a.htm" />
   <HelpKINode Title="FX3GPIONumber property" Url="html/ccc9666b-68cb-6be2-dc53-0099e0ccc4a0.htm" />
   <HelpKINode Title="FX3PinObject class">
     <HelpKINode Title="FX3PinObject Class" Url="html/437f623b-8fa7-178c-ff30-61bb68bb622f.htm" />
@@ -435,8 +437,8 @@
   <HelpKINode Title="Reset method" Url="html/f0bff5d7-785a-008d-08eb-9f7aaa2992b5.htm" />
   <HelpKINode Title="ResetAllFX3s method" Url="html/4c19ef3f-5883-86b8-38cc-ddcf1ec14044.htm" />
   <HelpKINode Title="ResetPin property" Url="html/323fa924-24da-f60d-2c4d-b0e63c274ee7.htm" />
-  <HelpKINode Title="SclkFrequency property" Url="html/6c81a4f6-5c6c-36a0-9c51-90450e3a156a.htm" />
   <HelpKINode Title="SCLKFrequency property" Url="html/705196d0-12a4-0bd3-2faa-f275f3ce5943.htm" />
+  <HelpKINode Title="SclkFrequency property" Url="html/6c81a4f6-5c6c-36a0-9c51-90450e3a156a.htm" />
   <HelpKINode Title="SensorType property" Url="html/9e341986-58e8-d7fe-7994-f5dc0f2913f7.htm" />
   <HelpKINode Title="SerialNumber property" Url="html/3f41ce39-2334-2b3b-5841-a7ba619ebe37.htm" />
   <HelpKINode Title="SetPin method" Url="html/7c878496-b143-52d3-657e-ac23ead892db.htm" />
@@ -483,6 +485,8 @@
   <HelpKINode Title="UnexpectedDisconnect event" Url="html/fc16a835-4d83-3e8b-3239-995c79ad8e5a.htm" />
   <HelpKINode Title="Uptime property" Url="html/8bac1b60-641b-4bf7-1deb-eb9a14b14543.htm" />
   <HelpKINode Title="USBCommands enumeration" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
+  <HelpKINode Title="VerboseMode property" Url="html/8f05fb6a-5a94-5db5-2577-8d320dfce4ec.htm" />
+  <HelpKINode Title="VersionNumber field" Url="html/b28f2d65-6f98-eb0e-a4d1-6941660b9bd5.htm" />
   <HelpKINode Title="WaitForBoard method" Url="html/4e574267-34de-9f80-0cc0-dddf0a93d40d.htm" />
   <HelpKINode Title="WaitForStreamCompletion method" Url="html/4409394c-b943-ddef-8f45-8843d985cd84.htm" />
   <HelpKINode Title="WordCount property" Url="html/af129f70-ec8e-ba83-dba9-84003867000c.htm" />
