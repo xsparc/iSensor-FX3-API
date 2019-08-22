@@ -369,7 +369,7 @@ Partial Class FX3Connection
 
         'Validate pin type
         If Not IsFX3Pin(pin) Then
-            Throw New FX3GeneralException("ERROR: Data ready pin type must be an FX3PinObject")
+            Throw New FX3Exception("ERROR: Data ready pin type must be an FX3PinObject")
         End If
 
         'Validate periods
@@ -732,7 +732,7 @@ Partial Class FX3Connection
 
         'Check that pin is an fx3pin
         If Not IsFX3Pin(Pin) Then
-            Throw New FX3GeneralException("ERROR: All pin objects used with the FX3 API must be of type FX3PinObject")
+            Throw New FX3Exception("ERROR: All pin objects used with the FX3 API must be of type FX3PinObject")
         End If
 
         'Check that the timer complex GPIO isn't being used

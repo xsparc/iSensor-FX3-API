@@ -767,13 +767,17 @@ Public Class FX3Connection
     Public ReadOnly Property GetFX3ApiInfo As FX3ApiInfo
         Get
             Dim ApiInfo As New FX3ApiInfo
+            Dim buildVersion As String
             'Get the assembly info for where the fx3 connection lives
             Dim FX3ApiDLL As Assembly = Assembly.GetAssembly(GetType(FX3Api.FX3Connection))
             Dim DllInfo As New AssemblyInfo(FX3ApiDLL)
             'Project name
             ApiInfo.Name = DllInfo.AssemblyName
             'Build version
-            ApiInfo.BuildVersion = DllInfo.Version.ToString() + "-PUB"
+            buildVersion = DllInfo.Version.ToString()
+            'Remove last number
+            buildVersion = buildVersion.Remove(buildVersion.Length - 2)
+            ApiInfo.VersionNumber = buildVersion + "-PUB"
             'Project description
             ApiInfo.Description = DllInfo.Description
             'Add compile time
@@ -1011,7 +1015,7 @@ Public Class FX3Connection
                 CRCData.Add(frame(Index))
             Next
         Else
-            Throw New FX3GeneralException("ERROR: Validating DUT CRC only supported for ADcmXL1021 and ADcmXL3021")
+            Throw New FX3Exception("ERROR: Validating DUT CRC only supported for ADcmXL1021 and ADcmXL3021")
         End If
 
         Dim expectedCRC = calcCCITT16(CRCData.ToArray)

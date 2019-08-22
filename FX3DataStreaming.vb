@@ -192,7 +192,7 @@ Partial Class FX3Connection
         ElseIf m_ActiveFX3.bHighSpeed Then
             transferSize = 512
         Else
-            Throw New FX3GeneralException("ERROR: Streaming application requires USB 2.0 or 3.0 connection to function")
+            Throw New FX3Exception("ERROR: Streaming application requires USB 2.0 or 3.0 connection to function")
         End If
 
         'Buffer to hold data from the FX3
@@ -435,7 +435,7 @@ Partial Class FX3Connection
         ElseIf m_ActiveFX3.bHighSpeed Then
             transferSize = 512
         Else
-            Throw New FX3GeneralException("ERROR: Streaming application requires USB 2.0 or 3.0 connection to function")
+            Throw New FX3Exception("ERROR: Streaming application requires USB 2.0 or 3.0 connection to function")
         End If
 
         'Buffer to hold data from the FX3
@@ -630,7 +630,7 @@ Partial Class FX3Connection
         ElseIf m_ActiveFX3.bHighSpeed Then
             transferSize = 512
         Else
-            Throw New FX3GeneralException("ERROR: Streaming application requires USB 2.0 or 3.0 connection to function")
+            Throw New FX3Exception("ERROR: Streaming application requires USB 2.0 or 3.0 connection to function")
         End If
 
         'Buffer to hold data from the FX3

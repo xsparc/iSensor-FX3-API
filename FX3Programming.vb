@@ -22,6 +22,7 @@ Partial Class FX3Connection
 
         Dim tempHandle As CyUSBDevice = Nothing
         Dim boardProgrammed As Boolean = False
+        Dim apiVersion As String
 
         'Exit sub if we're already connected to a device
         If m_FX3Connected = True Then
@@ -138,7 +139,7 @@ Partial Class FX3Connection
             'Set default values for the interface
             SetDefaultValues(m_sensorType)
             'Throw exception
-            Throw New FX3GeneralException("ERROR: Unable to configure endpoints")
+            Throw New FX3Exception("ERROR: Unable to configure endpoints")
         End If
 
         'Make sure that the board SPI parameters match current setting
@@ -147,6 +148,12 @@ Partial Class FX3Connection
         'Set the board info
         m_ActiveFX3Info = New FX3Board(FX3SerialNumber, DateTime.Now)
         m_ActiveFX3Info.SetFirmwareVersion(GetFirmwareID())
+
+        'Verify that the FX3 firmware version matches the API firmware version
+        apiVersion = GetFX3ApiInfo.VersionNumber
+        If Not apiVersion.Equals(m_ActiveFX3Info.FirmwareVersionNumber, StringComparison.OrdinalIgnoreCase) Then
+            Throw New FX3Exception("ERROR: FX3 Api version " + apiVersion + " requires matching firmware version. Supplied firmware file is version " + m_ActiveFX3Info.FirmwareVersionNumber)
+        End If
 
     End Sub
 
@@ -853,11 +860,11 @@ Partial Class FX3Connection
 
         'Validate inputs
         If IsNothing(m_ActiveFX3) Then
-            Throw New FX3GeneralException("ERROR: Attempted to configure control endpoint without FX3 being enumerated.")
+            Throw New FX3Exception("ERROR: Attempted to configure control endpoint without FX3 being enumerated.")
         End If
 
         If Not m_FX3Connected Then
-            Throw New FX3GeneralException("ERROR: Attempted to configure control endpoint without FX3 connected.")
+            Throw New FX3Exception("ERROR: Attempted to configure control endpoint without FX3 connected.")
         End If
 
         'Point the API to the target FX3
@@ -902,7 +909,7 @@ Partial Class FX3Connection
             firmwareID = firmwareID.Substring(0, Math.Max(0, firmwareID.IndexOf(vbNullChar)))
         Catch ex As Exception
             'Throw the exception up
-            Throw New FX3GeneralException("ERROR: Parsing firmware ID failed", ex)
+            Throw New FX3Exception("ERROR: Parsing firmware ID failed", ex)
         End Try
 
         Return firmwareID
@@ -933,7 +940,7 @@ Partial Class FX3Connection
             serialNumber = System.Text.Encoding.Unicode.GetString(buf)
         Catch ex As Exception
             'Throw the exception up
-            Throw New FX3GeneralException("ERROR: Parsing FX3 serial number failed", ex)
+            Throw New FX3Exception("ERROR: Parsing FX3 serial number failed", ex)
         End Try
         Return serialNumber
     End Function
@@ -1013,13 +1020,13 @@ Partial Class FX3Connection
     Private Sub CheckConnectionSpeedOnTarget()
 
         If IsNothing(m_ActiveFX3) Then
-            Throw New FX3GeneralException("ERROR: FX3 Board not enumerated")
+            Throw New FX3Exception("ERROR: FX3 Board not enumerated")
         End If
 
         If Not (m_ActiveFX3.bHighSpeed Or m_ActiveFX3.bSuperSpeed) Then
             'Clear the active FX3 device handle
             m_ActiveFX3 = Nothing
-            Throw New FX3GeneralException("ERROR: FX3 must be connected with USB 2.0 or better")
+            Throw New FX3Exception("ERROR: FX3 must be connected with USB 2.0 or better")
         End If
 
     End Sub
@@ -1049,11 +1056,11 @@ Partial Class FX3Connection
         Next
 
         If Not String.Equals(tempHandle.FriendlyName, ADIBootloaderName) Then
-            Throw New FX3GeneralException("ERROR: The selected board is not in bootloader mode")
+            Throw New FX3Exception("ERROR: The selected board is not in bootloader mode")
         End If
 
         If Not boardOk Then
-            Throw New FX3GeneralException("ERROR: Could not find the board ID matching the serial number specified")
+            Throw New FX3Exception("ERROR: Could not find the board ID matching the serial number specified")
         End If
 
         'Set board handle
@@ -1095,11 +1102,11 @@ Partial Class FX3Connection
         Next
 
         If Not String.Equals(tempHandle.FriendlyName, ADIBootloaderName) Then
-            Throw New FX3GeneralException("ERROR: The selected board is not in bootloader mode")
+            Throw New FX3Exception("ERROR: The selected board is not in bootloader mode")
         End If
 
         If Not boardOk Then
-            Throw New FX3GeneralException("ERROR: Could not find the board ID matching the serial number specified")
+            Throw New FX3Exception("ERROR: Could not find the board ID matching the serial number specified")
         End If
 
         'Set board handle
@@ -1141,11 +1148,11 @@ Partial Class FX3Connection
         Next
 
         If Not String.Equals(tempHandle.FriendlyName, ADIBootloaderName) Then
-            Throw New FX3GeneralException("ERROR: The selected board is not in bootloader mode")
+            Throw New FX3Exception("ERROR: The selected board is not in bootloader mode")
         End If
 
         If Not boardOk Then
-            Throw New FX3GeneralException("ERROR: Could not find the board ID matching the serial number specified")
+            Throw New FX3Exception("ERROR: Could not find the board ID matching the serial number specified")
         End If
 
         'Set board handle
