@@ -13,7 +13,7 @@
   * @date		8/1/2019
   * @author		A. Nolan (alex.nolan@analog.com)
   * @author 	J. Chong (juan.chong@analog.com)
-  * @version 	2.0.3-pub
+  * @version 	2.0.4-pub
   * @brief		Entry point and setup functions for the Analog Devices iSensor FX3 Demonstration Platform firmware.
  **/
 
@@ -99,7 +99,7 @@ CyU3PDmaBuffer_t SpiDmaBuffer;
  */
 
 /** Constant firmware ID string. Manually updated when building new firmware. */
-const uint8_t FirmwareID[32] __attribute__((aligned(32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '2', '.', '0', '.', '3', '-','P','U','B',' ', '\0' };
+const uint8_t FirmwareID[32] __attribute__((aligned(32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '2', '.', '0', '.', '4', '-','P','U','B',' ', '\0' };
 
 /** FX3 unique serial number. Set at runtime */
 char serial_number[] __attribute__((aligned(32))) = {'0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00};
@@ -370,11 +370,17 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 
             //Get the current status of the FX3
             case ADI_GET_STATUS:
+            	/* Return the status in bytes 0-3 */
             	USBBuffer[0] = status & 0xFF;
             	USBBuffer[1] = (status & 0xFF00) >> 8;
             	USBBuffer[2] = (status & 0xFF0000) >> 16;
             	USBBuffer[3] = (status & 0xFF000000) >> 24;
-            	CyU3PUsbSendEP0Data (4, USBBuffer);
+            	USBBuffer[4] = 0;
+            	/* Return the verbose mode state in byte 4 */
+#ifdef VERBOSE_MODE
+            	USBBuffer[4] = 1;
+#endif
+            	CyU3PUsbSendEP0Data (wLength, USBBuffer);
             	break;
 
             //Generic stream is a register stream triggered on data ready
