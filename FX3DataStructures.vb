@@ -354,7 +354,7 @@ Public Class FX3ApiInfo
     ''' <summary>
     ''' The build version of this FX3Api instance. Should match application firmware.
     ''' </summary>
-    Public BuildVersion As String
+    Public VersionNumber As String
 
     'Remote URL for the .git folder in the source
     Private m_GitURL As String
@@ -375,7 +375,7 @@ Public Class FX3ApiInfo
         Name = "Error: Not Set"
         Description = "Error: Not Set"
         BuildDateTime = "Error: Not Set"
-        BuildVersion = "Error: Not Set"
+        VersionNumber = "Error: Not Set"
         m_GitBranch = "Error: Not Set"
         m_GitCommitSHA1 = "Error: Not Set"
         m_GitCommitURL = "Error: Not Set"
@@ -453,7 +453,7 @@ Public Class FX3ApiInfo
         Dim info As String
         info = "Project Name: " + Name + Environment.NewLine
         info = info + "Description: " + Description + Environment.NewLine
-        info = info + "Build Version: " + BuildVersion + Environment.NewLine
+        info = info + "Version Number: " + VersionNumber + Environment.NewLine
         info = info + "Build Date and Time: " + BuildDateTime + Environment.NewLine
         info = info + "Base Git URL: " + m_GitURL
         info = info + "Current Branch: " + m_GitBranch + Environment.NewLine
@@ -658,6 +658,7 @@ Public Class FX3Board
     Private m_SerialNumber As String
     Private m_bootTime As DateTime
     Private m_firmwareVersion As String
+    Private m_versionNumber As String
 
     Public Sub New(ByVal SerialNumber As String, ByVal BootTime As DateTime)
 
@@ -709,6 +710,12 @@ Public Class FX3Board
         End Get
     End Property
 
+    Public ReadOnly Property FirmwareVersionNumber As String
+        Get
+            Return m_versionNumber
+        End Get
+    End Property
+
     ''' <summary>
     ''' Set the firmware version. Is friend so as to not be accessible to outside classes.
     ''' </summary>
@@ -718,6 +725,8 @@ Public Class FX3Board
             Throw New FX3ConfigurationException("Error: Bad firmware version number")
         End If
         m_firmwareVersion = FirmwareVersion
+        m_versionNumber = m_firmwareVersion.Substring(m_firmwareVersion.IndexOf("REV") + 4)
+        m_versionNumber = m_versionNumber.Replace(" ", "")
     End Sub
 
 End Class
