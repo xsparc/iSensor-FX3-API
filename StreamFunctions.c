@@ -675,17 +675,8 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	/* Manually reset the SPI Rx/Tx FIFO */
 	AdiSpiResetFifo(CyTrue, CyTrue);
 
-	/* Set the SPI config for streaming mode */
-	CyU3PSpiConfig_t burstConfig;
-	burstConfig = FX3State.SpiConfig;
-	burstConfig.ssnCtrl = CY_U3P_SPI_SSN_CTRL_HW_END_OF_XFER;
-	burstConfig.wordLen = 8;
-	status = CyU3PSpiSetConfig(&burstConfig, NULL);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Setting SPI config for burst stream mode failed, Error Code = 0x%x\r\n", status);
-		AdiAppErrorHandler(status);
-	}
+	/* Set the SPI config for streaming mode (8 bit transactions) */
+	AdiSetSpiWordLength(8);
 
 	/* Configure SpiDmaBuffer and feed it regList*/
 	CyU3PMemSet ((uint8_t *)&SpiDmaBuffer, 0, sizeof(SpiDmaBuffer));
@@ -760,12 +751,7 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 	CyU3PVicEnableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
 
 	/* Restore the SPI state */
-	status = CyU3PSpiSetConfig(&FX3State.SpiConfig, NULL);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Restoring SPI config after burst stream mode failed, Error Code = 0x%x\r\n", status);
-		AdiAppErrorHandler(status);
-	}
+	AdiSetSpiWordLength(FX3State.SpiConfig.wordLen);
 
 	/* Additional clean-up after a user requests an early cancellation */
 	if(KillStreamEarly)

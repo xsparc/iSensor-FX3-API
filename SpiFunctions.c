@@ -150,6 +150,39 @@ CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data)
 }
 
 /**
+  * @brief Sets the SPI controller word length (4 - 32 bits)
+  *
+  * @param wordLength The number of bits to transfer in a single SPI transaction
+  *
+  * This function writes directly to the SPI control register. It does not cause the toggle
+  * on the chip select line seen using the cypress API for setting the SPI word length.
+ **/
+void AdiSetSpiWordLength(uint8_t wordLength)
+{
+	uint32_t spiConf;
+	/* Truncate input to 6 bits */
+	wordLength &= 0x3F;
+	/* Wait for any previous transactions */
+	AdiWaitForSpiNotBusy();
+	/* Read the SPI configuration register */
+	spiConf = SPI->lpp_spi_config;
+	/* Clear word length field*/
+	spiConf &= ~(0x3F << 17);
+	/* Sets bits 17 - 22 to wordlength */
+	spiConf |= wordLength << 17;
+	/* Write the new config value */
+	SPI->lpp_spi_config = spiConf;
+}
+
+/**
+  * @brief Waits for the SPI controller busy bit to be not set
+ **/
+void AdiWaitForSpiNotBusy()
+{
+	while(SPI->lpp_spi_status & 1<<28);
+}
+
+/**
   * @brief This function resets the SPI FIFO and disables the SPI block after completion.
   *
   * @param isTx Boolean to indicate if you're clearing the TX FIFO
