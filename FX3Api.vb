@@ -101,7 +101,7 @@ Public Class FX3Connection
     'Data ready polarity
     Private m_DrPolarity As Boolean = True
 
-    'Thread safe queue to store real time data frames as UShort arrrays
+    'Thread safe queue to store real time data frames as UShort arrays
     Private m_StreamData As ConcurrentQueue(Of UShort())
 
     'Thread safe queue to store transfer data for the ISpi32Interface
@@ -167,7 +167,7 @@ Public Class FX3Connection
     'Events
 
     ''' <summary>
-    ''' This event is raised when the active board is disconnected unexpectedly (ie unplugged)
+    ''' This event is raised when the active board is disconnected unexpectedly (IE unplugged)
     ''' </summary>
     ''' <param name="FX3SerialNum">Serial number of the board which was disconnected</param>
     Event UnexpectedDisconnect(ByVal FX3SerialNum As String)
@@ -761,7 +761,7 @@ Public Class FX3Connection
     ''' <summary>
     ''' This property returns a class containing some useful information about the current FX3 Dll. Some of the
     ''' information is available as a attribute of the DLL, while others (build date/time and git revision) are
-    ''' generated at compile time using a brebuild batch file script.
+    ''' generated at compile time using a pre-build batch file script.
     ''' </summary>
     ''' <returns></returns>
     Public ReadOnly Property GetFX3ApiInfo As FX3ApiInfo
@@ -778,7 +778,7 @@ Public Class FX3Connection
             ApiInfo.Description = DllInfo.Description
             'Add compile time
             ApiInfo.BuildDateTime = My.Resources.BuildDate
-            'Add url
+            'Add URL
             ApiInfo.GitURL = My.Resources.CurrentURL
             'Add git branch
             ApiInfo.GitBranch = My.Resources.CurrentBranch
@@ -789,7 +789,7 @@ Public Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Readonly property to get the number of bad frames purged with a call to PurgeBadFrameData. Frames are purged when the CRC appended to the end of
+    ''' Read-only property to get the number of bad frames purged with a call to PurgeBadFrameData. Frames are purged when the CRC appended to the end of
     ''' the frame does not match the expected CRC.
     ''' </summary>
     ''' <returns>Number of frames purged from data array</returns>
@@ -891,15 +891,18 @@ Public Class FX3Connection
         Dim validData As Boolean = False
         m_streamTimeoutTimer.Restart()
 
-        'Wait for a buffer to be avialable and dequeue
+        'Wait for a buffer to be available and dequeue
         While (Not validData) And (m_streamTimeoutTimer.ElapsedMilliseconds < m_StreamTimeout * 1000)
             validData = m_StreamData.TryDequeue(buffer)
+            If Not validData Then
+                System.Threading.Thread.Sleep(10)
+            End If
         End While
         Return buffer
     End Function
 
     ''' <summary>
-    ''' Readonly property to get the number of buffers read in from the DUT in buffered streaming mode
+    ''' Read-only property to get the number of buffers read in from the DUT in buffered streaming mode
     ''' </summary>
     ''' <returns>The current buffer read count</returns>
     Public ReadOnly Property GetNumBuffersRead As Long
@@ -913,8 +916,8 @@ Public Class FX3Connection
 
 #Region "Checksum Calculations"
     ''' <summary>
-    '''Expecteds bytes in the order they are clocked out of ADcmXLx021
-    '''CRC-16-CCITT, initialized with crc = 0xFFFF, No final XOR.
+    '''Expects bytes in the order they are clocked out of ADcmXLx021
+    '''CRC-16-CCITT, initialized with CRC = 0xFFFF, No final XOR.
     '''Limit crc accumulation to 16 bits to prevent U32 overflow.
     ''' </summary>
     ''' <param name="ByteData">The input data set to calculate the CRC of</param>
@@ -989,7 +992,7 @@ Public Class FX3Connection
     ''' Checks the CRC for a real time frame
     ''' </summary>
     ''' <param name="frame">The frame to check</param>
-    ''' <returns>A boolean indicating if the accel. data CRC matches the frame CRC</returns>
+    ''' <returns>A boolean indicating if the accelerometer data CRC matches the frame CRC</returns>
     Private Function CheckDUTCRC(ByRef frame() As UShort) As Boolean
         'Read CRC from frame
         Dim DUTCRC As UShort = frame(frame.Count - 1)

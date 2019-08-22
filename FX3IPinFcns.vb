@@ -19,7 +19,7 @@ Partial Class FX3Connection
     ''' <param name="mode">Not implemented</param>
     Public Sub PulseDrive(pin As IPinObject, polarity As UInteger, pperiod As Double, mode As UInteger) Implements IPinFcns.PulseDrive
 
-        'Send a vendor command to drive pin (returns immediatly)
+        'Send a vendor command to drive pin (returns immediately)
         ConfigureControlEndpoint(USBCommands.ADI_PULSE_DRIVE, True)
         Dim buf(10) As Byte
         Dim status As UInteger
@@ -153,7 +153,7 @@ Partial Class FX3Connection
         'Start stopwatch
         timeoutTimer.Start()
 
-        'Send a vendor command to start a pulse wait operation (returns immediatly)
+        'Send a vendor command to start a pulse wait operation (returns immediately)
         ConfigureControlEndpoint(USBCommands.ADI_PULSE_WAIT, True)
         If Not XferControlData(buf, 15, 2000) Then
             Throw New FX3CommunicationException("ERROR: Control Endpoint transfer timed out")
@@ -298,7 +298,7 @@ Partial Class FX3Connection
     End Function
 
     ''' <summary>
-    ''' Sets the value of a FX3 GPIO pin. This value will perist until the pin is set to a different value, or read from
+    ''' Sets the value of a FX3 GPIO pin. This value will persist until the pin is set to a different value, or read from
     ''' </summary>
     ''' <param name="pin">The FX3PinObject pin to read</param>
     ''' <param name="value">The polarity to set the pin to, 1 - high, 0 - low</param>
@@ -459,7 +459,7 @@ Partial Class FX3Connection
             freq = Double.PositiveInfinity
         ElseIf status <> 0 Then
             freq = Double.PositiveInfinity
-            Throw New FX3BadStatusException("ERROR: Bad status code after pin frequency measue. Status: 0x" + status.ToString("X"))
+            Throw New FX3BadStatusException("ERROR: Bad status code after pin frequency measure. Status: 0x" + status.ToString("X"))
         End If
 
         'Return freq measured on specified pin
@@ -478,15 +478,15 @@ Partial Class FX3Connection
     End Function
 
     ''' <summary>
-    ''' This function triggers a DUT action using a pulse drive, and then measures the following pulse width on a seperate busy line.
+    ''' This function triggers a DUT action using a pulse drive, and then measures the following pulse width on a separate busy line.
     ''' The pulse time on the busy pin is measured using a 10MHz timer with approx. 1us accuracy.
     ''' </summary>
-    ''' <param name="TriggerPin">The pin to drive for the tigger condition (for example a sync pin)</param>
+    ''' <param name="TriggerPin">The pin to drive for the trigger condition (for example a sync pin)</param>
     ''' <param name="TriggerDriveTime">The time, in ms, to drive the trigger pin for</param>
     ''' <param name="TriggerDrivePolarity">The polarity to drive the trigger pin at (0 - low, 1 - high)</param>
     ''' <param name="BusyPin">The pin to measure a busy pulse on</param>
     ''' <param name="BusyPolarity">The polarity of the pulse being measured (0 will measure a low pulse, 1 will measure a high pulse)</param>
-    ''' <param name="Timeout">The timeout, in ms, to wait before cancelling, if the pulse is never detected</param>
+    ''' <param name="Timeout">The timeout, in ms, to wait before canceling, if the pulse is never detected</param>
     ''' <returns>The pulse width, in ms. Accurate to approx. 1us</returns>
     Public Function MeasureBusyPulse(TriggerPin As IPinObject, TriggerDriveTime As UInteger, TriggerDrivePolarity As UInteger, BusyPin As IPinObject, BusyPolarity As UInteger, Timeout As UInteger) As Double
         'Declare variables needed for transfer
@@ -555,7 +555,7 @@ Partial Class FX3Connection
         'Start stopwatch
         timeoutTimer.Start()
 
-        'Send a vendor command to start a pulse wait operation (returns immediatly)
+        'Send a vendor command to start a pulse wait operation (returns immediately)
         ConfigureControlEndpoint(USBCommands.ADI_BUSY_MEASURE, True)
         If Not XferControlData(buf, 15, 2000) Then
             Throw New FX3CommunicationException("ERROR: Control Endpoint transfer timed out")
@@ -614,7 +614,7 @@ Partial Class FX3Connection
     ''' <param name="TriggerRegValue">The value to write to the DUT trigger register</param>
     ''' <param name="BusyPin">The pin to measure a busy pulse on</param>
     ''' <param name="BusyPolarity">The polarity of the pulse being measured (0 will measure a low pulse, 1 will measure a high pulse)</param>
-    ''' <param name="Timeout">The timeout, in ms, to wait before cancelling, if the pulse is never detected</param>
+    ''' <param name="Timeout">The timeout, in ms, to wait before canceling, if the pulse is never detected</param>
     ''' <returns>The pulse width, in ms. Accurate to approx. 1us</returns>
     Public Function MeasureBusyPulse(TriggerRegAddr As UShort, TriggerRegValue As UShort, BusyPin As IPinObject, BusyPolarity As UInteger, Timeout As UInteger) As Double
         'Declare variables needed for transfer
@@ -669,7 +669,7 @@ Partial Class FX3Connection
         'Start stopwatch
         timeoutTimer.Start()
 
-        'Send a vendor command to start a pulse wait operation (returns immediatly)
+        'Send a vendor command to start a pulse wait operation (returns immediately)
         ConfigureControlEndpoint(USBCommands.ADI_BUSY_MEASURE, True)
         If Not XferControlData(buf, 15, 2000) Then
             Throw New FX3CommunicationException("ERROR: Control Endpoint transfer timed out")
@@ -732,10 +732,10 @@ Partial Class FX3Connection
 
         'Check that pin is an fx3pin
         If Not IsFX3Pin(Pin) Then
-            Throw New FX3GeneralException("ERROR: All pin objects used with the FX3 Api must be of type FX3PinObject")
+            Throw New FX3GeneralException("ERROR: All pin objects used with the FX3 API must be of type FX3PinObject")
         End If
 
-        'Check that the timer complex GPIO isnt being used
+        'Check that the timer complex GPIO isn't being used
         Dim pinTimerBlock As Integer = Pin.pinConfig Mod 8
         For Each PWMPin In m_PinPwmInfoList
             If Not (PWMPin.FX3GPIONumber = Pin.pinConfig) And (pinTimerBlock = PWMPin.FX3TimerBlock) Then
@@ -810,11 +810,11 @@ Partial Class FX3Connection
     End Sub
 
     ''' <summary>
-    ''' This function call disables the PWM output from the FX3 and returns the pin to a tristated mode.
+    ''' This function call disables the PWM output from the FX3 and returns the pin to a tri-stated mode.
     ''' </summary>
     Public Sub StopPWM(ByVal Pin As IPinObject)
 
-        'Exit if the pin isnt acting as a PWM
+        'Exit if the pin isn't acting as a PWM
         If Not isPWMPin(Pin) Then
             Exit Sub
         End If
@@ -878,7 +878,7 @@ Partial Class FX3Connection
     ''' <returns>True if Pin is an FX3 pin, false if not</returns>
     Private Function IsFX3Pin(ByVal Pin As IPinObject) As Boolean
         Dim validPin As Boolean = False
-        'Check the tostring overload and type
+        'Check the toString overload and type
         If Pin.ToString().Substring(0, 3) = "FX3" And (Pin.GetType() = GetType(FX3PinObject)) Then
             validPin = True
         End If
@@ -891,7 +891,7 @@ Partial Class FX3Connection
 #Region "Pin Properties"
 
     ''' <summary>
-    ''' Readonly property to get the reset pin (mapped to GPIO 0 on FX3)
+    ''' Read-only property to get the reset pin (mapped to GPIO 0 on FX3)
     ''' </summary>
     ''' <returns>The reset pin, as an IPinObject</returns>
     Public ReadOnly Property ResetPin As IPinObject
@@ -901,7 +901,7 @@ Partial Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Readonly property to get the DIO1 pin (mapped to GPIO 4 on FX3)
+    ''' Read-only property to get the DIO1 pin (mapped to GPIO 4 on FX3)
     ''' </summary>
     ''' <returns>Returns the DIO1 pin, as an IPinObject</returns>
     Public ReadOnly Property DIO1 As IPinObject
@@ -911,7 +911,7 @@ Partial Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Readonly property to get the DIO2 pin (mapped to GPIO 3 on FX3)
+    ''' Read-only property to get the DIO2 pin (mapped to GPIO 3 on FX3)
     ''' </summary>
     ''' <returns>Returns the DIO2 pin, as an IPinObject</returns>
     Public ReadOnly Property DIO2 As IPinObject
@@ -921,7 +921,7 @@ Partial Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Readonly property to get the DIO3 pin (mapped to GPIO 2 on FX3)
+    ''' Read-only property to get the DIO3 pin (mapped to GPIO 2 on FX3)
     ''' </summary>
     ''' <returns>Returns the DIO3 pin, as an IPinObject</returns>
     Public ReadOnly Property DIO3 As IPinObject
@@ -931,7 +931,7 @@ Partial Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Readonly property to get the DIO4 pin (mapped to GPIO 1 on FX3)
+    ''' Read-only property to get the DIO4 pin (mapped to GPIO 1 on FX3)
     ''' </summary>
     ''' <returns>Returns the DIO4 pin, as an IPinObject</returns>
     Public ReadOnly Property DIO4 As IPinObject
@@ -941,7 +941,7 @@ Partial Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Readonly property to get the FX3_GPIO0 pin (mapped to GPIO 5 on FX3). This pin does not map to the standard iSensor breakout,
+    ''' Read-only property to get the FX3_GPIO0 pin (mapped to GPIO 5 on FX3). This pin does not map to the standard iSensor breakout,
     ''' and should be used for other general purpose interfacing.
     ''' </summary>
     ''' <returns>Returns the GPIO pin, as an IPinObject</returns>
@@ -952,7 +952,7 @@ Partial Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Readonly property to get the FX3_GPIO1 pin (mapped to GPIO 6 on FX3). This pin does not map to the standard iSensor breakout,
+    ''' Read-only property to get the FX3_GPIO1 pin (mapped to GPIO 6 on FX3). This pin does not map to the standard iSensor breakout,
     ''' and should be used for other general purpose interfacing.
     ''' </summary>
     ''' <returns>Returns the GPIO pin, as an IPinObject</returns>
@@ -963,7 +963,7 @@ Partial Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Readonly property to get the FX3_GPIO2 pin (mapped to GPIO 7 on FX3). This pin does not map to the standard iSensor breakout,
+    ''' Read-only property to get the FX3_GPIO2 pin (mapped to GPIO 7 on FX3). This pin does not map to the standard iSensor breakout,
     ''' and should be used for other general purpose interfacing.
     ''' </summary>
     ''' <returns>Returns the GPIO pin, as an IPinObject</returns>
@@ -974,7 +974,7 @@ Partial Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Readonly property to get the FX3_GPIO3 pin (mapped to GPIO 12 on FX3). This pin does not map to the standard iSensor breakout,
+    ''' Read-only property to get the FX3_GPIO3 pin (mapped to GPIO 12 on FX3). This pin does not map to the standard iSensor breakout,
     ''' and should be used for other general purpose interfacing. This pin shares a complex GPIO block with DIO1. If DIO1 is being used
     ''' as a clock source, via the StartPWM function, then this pin cannot be used as a clock source.
     ''' </summary>

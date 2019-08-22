@@ -29,12 +29,12 @@ Imports AdisApi
             Me.PinNumber = pinNumber
         End Sub
 
-        ''' <summary>
-        ''' reates a new instance of PinObject with the given pin number and inversion.
-        ''' </summary>
-        ''' <param name="pinNumber">Number of FX3 GPIO Pin to Use</param>
-        ''' <param name="invert"></param>
-        Public Sub New(pinNumber As UInteger, invert As Boolean)
+    ''' <summary>
+    ''' creates a new instance of PinObject with the given pin number and inversion.
+    ''' </summary>
+    ''' <param name="pinNumber">Number of FX3 GPIO Pin to Use</param>
+    ''' <param name="invert"></param>
+    Public Sub New(pinNumber As UInteger, invert As Boolean)
             Me.PinNumber = pinNumber
             Me.Invert = invert
         End Sub
@@ -95,8 +95,8 @@ Imports AdisApi
         ''' </summary>
         ''' <returns></returns>
         Private Function IPinObject_GetHashCode() As Integer Implements IPinObject.GetHashCode
-            Return CInt(Me.pinConfig)  ' uint to int conversion ok, as MSB should always be zero
-        End Function
+        Return CInt(Me.pinConfig)  ' uint to int conversion OK, as MSB should always be zero
+    End Function
 
         ''' <summary>
         ''' Returns a string representation of the FX3PinObject.

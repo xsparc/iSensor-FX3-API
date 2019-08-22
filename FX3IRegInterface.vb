@@ -342,7 +342,7 @@ Partial Class FX3Connection
     ''' <summary>
     ''' This is the most generic array register function. All other array read/write functions call down to this one.
     ''' </summary>
-    ''' <param name="addrData">The list of register addresses and optional writedata for each capture</param>
+    ''' <param name="addrData">The list of register addresses and optional write data for each capture</param>
     ''' <param name="numCaptures">The number of times to iterate through addrData per DUT data ready (if DrActive is set)</param>
     ''' <param name="numBuffers">The total number of buffers to read, where one buffer is considered numCaptures iterations through addrData</param>
     ''' <returns>An array of 16 bit values read back from the DUT. The size will be addrData.Count() * numCaptures * numBuffers</returns>

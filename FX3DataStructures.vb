@@ -122,7 +122,7 @@ Public Enum SpiChipselectControl
     'SSN Is controlled by API And Is Not at clock boundaries. 
     SPI_SSN_CTRL_FW = 0
     'SSN Is controlled by hardware And Is done In sync With clock.
-    'The SSN Is asserted at the beginning Of a transfer, And de-asserted
+    'The SSN Is asserted at the beginning Of a transfer, and de-asserted
     'at the End Of a transfer Or When no data Is available To transmit. 
     SPI_SSN_CTRL_HW_END_OF_XFER
     'SSN Is controlled by the hardware And Is done In sync With clock.
@@ -237,7 +237,7 @@ Public Class FX3SPIConfig
                 Throw New FX3ConfigurationException("ERROR: Stall time of " + value.ToString() + " not supported")
             End If
             m_StallTime = value
-            'Calculate the new stall cycles value based on spi clock and update private variable
+            'Calculate the new stall cycles value based on SPI clock and update private variable
             SclkPeriod = 1 / ClockFrequency
             StallSeconds = m_StallTime / 1000000
             m_StallCycles = Convert.ToInt16(StallSeconds / SclkPeriod)
@@ -332,7 +332,7 @@ End Class
 #Region "FX3APIInfo Class"
 
 ''' <summary>
-''' This class provides a collection of information about the FX3 API. All the fields are hardcoded into the DLL at compile time.
+''' This class provides a collection of information about the FX3 API. All the fields are hard-coded into the DLL at compile time.
 ''' To retrieve the FX3ApiInfo set during compile time, use the GetFX3ApiInfo call within FX3 connection.
 ''' </summary>
 Public Class FX3ApiInfo
@@ -485,7 +485,7 @@ Public Class PinPWMInfo
     ''' Constructor sets defaults
     ''' </summary>
     Public Sub New()
-        'Init values
+        'Initial values
         m_FX3GPIONumber = -1
         m_FX3TimerBlock = -1
         m_IdealDutyCycle = -1
@@ -680,7 +680,7 @@ Public Class FX3Board
     End Function
 
     ''' <summary>
-    ''' Readonly property to get the current board uptime
+    ''' Read-only property to get the current board uptime
     ''' </summary>
     ''' <returns>The board uptime, in ms, as a long</returns>
     Public ReadOnly Property Uptime As Long
@@ -690,7 +690,7 @@ Public Class FX3Board
     End Property
 
     ''' <summary>
-    ''' Readonly property to get the active FX3 serial number
+    ''' Read-only property to get the active FX3 serial number
     ''' </summary>
     ''' <returns>The board serial number, as a string</returns>
     Public ReadOnly Property SerialNumber As String
@@ -700,7 +700,7 @@ Public Class FX3Board
     End Property
 
     ''' <summary>
-    ''' Readonly property to get the current application firmware version on the FX3
+    ''' Read-only property to get the current application firmware version on the FX3
     ''' </summary>
     ''' <returns>The firmware version, as a string</returns>
     Public ReadOnly Property FirmwareVersion As String

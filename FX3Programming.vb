@@ -72,7 +72,7 @@ Partial Class FX3Connection
                                                       'Stops the execution of the connect function
                                                       originalFrame.Continue = False
                                                   End Sub)
-            'Ensure that the connect flag isn't erroniously set already
+            'Ensure that the connect flag isn't erroneously set already
             m_AppBoardHandle.Reset()
             'Start the thread
             tempThread.Start()
@@ -82,7 +82,7 @@ Partial Class FX3Connection
             'Throw exception if no board connected within timeout period
             If Not boardProgrammed Then
                 m_BoardConnecting = False
-                Throw New FX3ProgrammingException("ERROR: Timeout occured during the FX3 re-enumeration process")
+                Throw New FX3ProgrammingException("ERROR: Timeout occurred during the FX3 re-enumeration process")
             End If
         End If
 
@@ -106,7 +106,7 @@ Partial Class FX3Connection
             End If
         Next
 
-        'Throw exception if the board isnt found on the device list
+        'Throw exception if the board isn't found on the device list
         If Not boardProgrammed Then
             Throw New FX3ProgrammingException("ERROR: No application firmware found with the correct serial number")
         End If
@@ -220,7 +220,7 @@ Partial Class FX3Connection
     ''' myFX3.Connect(myFX3.AvailableFX3s(0))
     ''' </summary>
     ''' <param name="TimeoutInSeconds">The timeout to wait for a board to connect, in seconds</param>
-    ''' <returns>If there is a board available (false indicates timeout occured)</returns>
+    ''' <returns>If there is a board available (false indicates timeout occurred)</returns>
     Public Function WaitForBoard(ByVal TimeoutInSeconds As Integer) As Boolean
         Dim boardattached As Boolean = False
         Dim originalFrame As DispatcherFrame
@@ -247,7 +247,7 @@ Partial Class FX3Connection
         'Use event wait handle to wait for a board to be connected running the bootloader firmware. Takes a pseudo-polling approach (WaitOne never runs for more than 3 seconds)
         numPolls = Math.Floor(TimeoutInSeconds / waitTime)
 
-        'Ensure that the connect flag isn't erroniously set
+        'Ensure that the connect flag isn't erroneously set
         m_BootloaderBoardHandle.Reset()
 
         pollCount = 0
@@ -377,7 +377,7 @@ Partial Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Readonly property to get the serial number of the active FX3 board
+    ''' Read-only property to get the serial number of the active FX3 board
     ''' </summary>
     ''' <returns>The current serial number, as a string</returns>
     Public ReadOnly Property GetTargetSerialNumber As String
@@ -438,7 +438,7 @@ Partial Class FX3Connection
 
     ''' <summary>
     ''' This function checks the event arguments when a USB disconnect occurs. If the FX3 which was
-    ''' disconnected is marked as the active device, this function attepmpts to gracefully update the 
+    ''' disconnected is marked as the active device, this function attempts to gracefully update the 
     ''' interface state to prevent application lockup from accessing a disconnected board.
     ''' </summary>
     ''' <param name="usbEvent">The event to handle</param>
@@ -524,7 +524,7 @@ Partial Class FX3Connection
         Next
 
         'There is an issue with the ADI FX3 driver which causes the events to be raised without any data when there 
-        'are multiple boards connected to the system. This logic is designed to mitagate that effect.
+        'are multiple boards connected to the system. This logic is designed to mitigate that effect.
         If usbEvent.FriendlyName = "" Or usbEvent.SerialNum = "" And Not IsNothing(m_disconnectedFX3SN) Then
             'The second event is the ADI bootloader being connected (Cypress bootloader -> ADI bootloader)
             If m_disconnectEvents = 1 Then
@@ -558,7 +558,7 @@ Partial Class FX3Connection
     End Sub
 
     ''' <summary>
-    ''' This function runs in a seperate thread from the main application. When a new, unprogrammed board
+    ''' This function runs in a separate thread from the main application. When a new, un-programmed board
     ''' is connected to the system, the device identifier is placed in a queue, indicating to this thread
     ''' that a new board needs to be programmed with the ADI bootloader.
     ''' </summary>
@@ -668,7 +668,7 @@ Partial Class FX3Connection
     ''' <summary>
     ''' The path to the firmware .img file. Needs to be set before the FX3 can be programmed
     ''' </summary>
-    ''' <returns>A string, represeting the path</returns>
+    ''' <returns>A string, representing the path</returns>
     Public Property FirmwarePath As String
         Get
             Return m_FirmwarePath
@@ -763,7 +763,7 @@ Partial Class FX3Connection
         'Refresh the connected board list
         RefreshDeviceList()
 
-        'Loop through current device list and reporgram all boards running the ADI Application firmware
+        'Loop through current device list and reprogram all boards running the ADI Application firmware
         For Each item As CyFX3Device In m_usbList
             If String.Equals(item.FriendlyName, ApplicationName) Then
                 ResetFX3Firmware(item)
@@ -813,9 +813,9 @@ Partial Class FX3Connection
         Dim startTime As New Stopwatch
         Dim validTransfer As Boolean = True
 
-        'Aquire the control endpoint mutex
+        'Acquire the control endpoint mutex
         validTransfer = m_ControlMutex.WaitOne(Timeout)
-        'Return if the mutex cannot be aquired
+        'Return if the mutex cannot be acquired
         If Not validTransfer Then
             Console.WriteLine("Could not acquire control endpoint mutex lock")
             Return False
@@ -1029,7 +1029,7 @@ Partial Class FX3Connection
 #Region "FX3 Bootloader Functions"
 
     ''' <summary>
-    ''' BOOTLOADER FW: Blink the onboard LED
+    ''' BOOTLOADER FW: Blink the on-board LED
     ''' </summary>
     ''' <param name="SerialNumber">Serial number of the selected board</param>
     Public Sub BootloaderBlinkLED(ByVal SerialNumber As String)

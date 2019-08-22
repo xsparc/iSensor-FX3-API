@@ -9,6 +9,7 @@ Imports AdisApi
 
 Partial Class FX3Connection
 
+#Region "Stream Synchronization"
     ''' <summary>
     ''' Overload of WaitForStreamCompletion which blocks forever
     ''' </summary>
@@ -17,15 +18,15 @@ Partial Class FX3Connection
     End Function
 
     ''' <summary>
-    ''' Blocks until the streaming endpoint mutex can be aquired. Allows a user to synchronize external application
+    ''' Blocks until the streaming endpoint mutex can be acquired. Allows a user to synchronize external application
     ''' the completion of a stream. Returns false if there is not a stream running, or if the timeout is reached without
-    ''' the stream mutex being aquired.
+    ''' the stream mutex being acquired.
     ''' </summary>
-    ''' <param name="MillisecondsTimeout">The time to wait trying to aquire the stream mutex</param>
+    ''' <param name="MillisecondsTimeout">The time to wait trying to acquire the stream mutex</param>
     ''' <returns>If the stream wait was successful</returns>
     Public Function WaitForStreamCompletion(MillisecondsTimeout As Integer) As Boolean
 
-        'Track if lock is aquired
+        'Track if lock is acquired
         Dim lockAquired As Boolean
         Dim timer As New Stopwatch
 
@@ -44,7 +45,7 @@ Partial Class FX3Connection
         'Ensure that the total timeout remains consistent
         MillisecondsTimeout -= timer.ElapsedMilliseconds()
 
-        'Aquire the mutex
+        'Acquire the mutex
         If IsNothing(MillisecondsTimeout) Or MillisecondsTimeout <= 0 Then
             'Perform wait with no timeout
             lockAquired = True
@@ -59,10 +60,11 @@ Partial Class FX3Connection
             m_StreamMutex.ReleaseMutex()
         End If
 
-        'Return if the lock was aquired
+        'Return if the lock was acquired
         Return lockAquired
 
     End Function
+#End Region
 
 #Region "Burst Stream Functions"
 
@@ -98,7 +100,7 @@ Partial Class FX3Connection
 
         'Send start stream command to the DUT
         If Not XferControlData(buf, 8, 2000) Then
-            Throw New FX3CommunicationException("ERROR: Timeout occured while starting burst stream")
+            Throw New FX3CommunicationException("ERROR: Timeout occurred while starting burst stream")
         End If
 
         'Reset number of frames read
@@ -134,7 +136,7 @@ Partial Class FX3Connection
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 2000) Then
-            Throw New FX3CommunicationException("ERROR: Timeout occured while stopping burst stream")
+            Throw New FX3CommunicationException("ERROR: Timeout occurred while stopping burst stream")
         End If
 
     End Sub
@@ -151,7 +153,7 @@ Partial Class FX3Connection
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 2000) Then
-            Throw New FX3CommunicationException("ERROR: Timeout occured when cleaning up a burst stream thread on the FX3")
+            Throw New FX3CommunicationException("ERROR: Timeout occurred when cleaning up a burst stream thread on the FX3")
         End If
 
         'Read status from the buffer and throw exception for bad status
@@ -265,6 +267,11 @@ Partial Class FX3Connection
 
     Private Sub ValidateBurstStreamConfig()
 
+        'Chip select control mode
+        If m_FX3SPIConfig.ChipSelectControl <> SpiChipselectControl.SPI_SSN_CTRL_HW_END_OF_XFER Then
+            Throw New FX3ConfigurationException("ERROR: Chip select hardware control must be enabled for real time streaming")
+        End If
+
     End Sub
 
 #End Region
@@ -286,7 +293,7 @@ Partial Class FX3Connection
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 2000) Then
-            Throw New FX3CommunicationException("ERROR: Timeout occured when stopping a generic stream")
+            Throw New FX3CommunicationException("ERROR: Timeout occurred when stopping a generic stream")
         End If
 
         'Stop the stream manager thread
@@ -305,14 +312,14 @@ Partial Class FX3Connection
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 2000) Then
-            Throw New FX3CommunicationException("ERROR: Timeout occured when cleaning up a generic stream thread on the FX3")
+            Throw New FX3CommunicationException("ERROR: Timeout occurred when cleaning up a generic stream thread on the FX3")
         End If
 
     End Sub
 
     ''' <summary>
     ''' Starts a generic data stream. This allows you to read/write a set of registers on the DUT, triggering off the data ready if needed.
-    ''' The data read is placed in the threadsafe queue and can be retrieved with a call to GetBuffer. Each "buffer" is the result of
+    ''' The data read is placed in the thread-safe queue and can be retrieved with a call to GetBuffer. Each "buffer" is the result of
     ''' reading the addr list of registers numCaptures times. For example, if addr is set to [0, 2, 4] and numCaptures is set to 10, each
     ''' buffer will contain the 30 register values. The total number of register reads performed is numCaptures * numBuffers
     ''' </summary>
@@ -485,7 +492,15 @@ Partial Class FX3Connection
 
     End Sub
 
+    ''' <summary>
+    ''' Validate the SPI configuration for a generic stream
+    ''' </summary>
     Private Sub ValidateGenericStreamConfig()
+
+        'Check the word length (must be 16)
+        If m_FX3SPIConfig.WordLength <> 16 Then
+            Throw New FX3ConfigurationException("ERROR: Generic stream only supported for a word length of 16 bits")
+        End If
 
     End Sub
 
@@ -520,7 +535,7 @@ Partial Class FX3Connection
 
         'Send start stream command to the DUT
         If Not XferControlData(buf, 5, 2000) Then
-            Throw New FX3CommunicationException("ERROR: Timeout occured while starting real time streaming")
+            Throw New FX3CommunicationException("ERROR: Timeout occurred while starting real time streaming")
         End If
 
         'Set the thread control bool
@@ -554,7 +569,7 @@ Partial Class FX3Connection
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 2000) Then
-            Throw New FX3CommunicationException("ERROR: Timeout occured while stopping a real time stream")
+            Throw New FX3CommunicationException("ERROR: Timeout occurred while stopping a real time stream")
         End If
 
         'Stop the stream manager thread
@@ -574,7 +589,7 @@ Partial Class FX3Connection
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 2000) Then
-            Throw New FX3CommunicationException("ERROR: Timeout occured when cleaning up a real time stream thread on the FX3")
+            Throw New FX3CommunicationException("ERROR: Timeout occurred when cleaning up a real time stream thread on the FX3")
         End If
 
         'Read status from the buffer and throw exception for bad status
@@ -770,7 +785,20 @@ Partial Class FX3Connection
             Throw New FX3ConfigurationException("ERROR: Invalid SPI frequency for real time streaming")
         End If
 
-        'Word length
+        'Chip select control mode
+        If m_FX3SPIConfig.ChipSelectControl <> SpiChipselectControl.SPI_SSN_CTRL_HW_END_OF_XFER Then
+            Throw New FX3ConfigurationException("ERROR: Chip select hardware control must be enabled for real time streaming")
+        End If
+
+        'CPHA and CPOL must be true
+        If m_FX3SPIConfig.Cpha = False Or m_FX3SPIConfig.Cpol = False Then
+            Throw New FX3ConfigurationException("ERROR: Cpol and Cpha must both be set to true for real time streaming")
+        End If
+
+        'CS polarity
+        If m_FX3SPIConfig.ChipSelectPolarity = True Then
+            Throw New FX3ConfigurationException("ERROR: Chip select polarity must be false (active low) for real time streaming")
+        End If
 
     End Sub
 

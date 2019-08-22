@@ -78,7 +78,7 @@ Partial Class FX3Connection
     ''' numCaptures times per data ready condition being met. It captures data from numBuffers data ready signals. If DrActive is set to false, all the
     ''' transfers are performed asynchronously. The total number of SPI transfers is WriteData.Count()*numCaptures*numBuffers.
     ''' 
-    ''' The following code snippet would perform 400 total SPI transfers, accross 100 data ready conditions. 
+    ''' The following code snippet would perform 400 total SPI transfers, across 100 data ready conditions. 
     ''' 
     ''' MOSI = (&H1234, &H5678)
     ''' myISpi32.DrActive = True
@@ -92,7 +92,7 @@ Partial Class FX3Connection
     ''' </summary>
     ''' <param name="WriteData">The data to be written to the slave over the MOSI line in each SPI transaction</param>
     ''' <param name="numCaptures">The number of transfers of the WriteData array performed on each data ready (if enabled).</param>
-    ''' <param name="numBuffers">The total number of data readys to capture.</param>
+    ''' <param name="numBuffers">The total number of data ready's to capture.</param>
     ''' <returns></returns>
     Public Function TransferArray(WriteData As IEnumerable(Of UInteger), numCaptures As UInteger, numBuffers As UInteger) As UInteger() Implements ISpi32Interface.TransferArray
         Dim MISOData As New List(Of UInteger)
@@ -119,6 +119,9 @@ Partial Class FX3Connection
         'Buffer to hold data from the FX3
         Dim buf(transferSize - 1) As Byte
 
+        'Acquire stream endpoint mutex
+        m_StreamMutex.WaitOne()
+
         For transferCount As Integer = 0 To numTransfers - 1
             validTransfer = StreamingEndPt.XferData(buf, transferSize)
             If validTransfer Then
@@ -131,6 +134,10 @@ Partial Class FX3Connection
             End If
         Next
 
+        'Release stream mutex
+        m_StreamMutex.ReleaseMutex()
+
+        'Send stream done command to FX3
         ISpi32TransferStreamDone()
 
         Return MISOData.ToArray()
@@ -151,7 +158,7 @@ Partial Class FX3Connection
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 2000) Then
-            Throw New FX3CommunicationException("ERROR: Timeout occured when stopping a transfer stream thread on the FX3")
+            Throw New FX3CommunicationException("ERROR: Timeout occurred when stopping a transfer stream thread on the FX3")
         End If
 
         'Read status from the buffer and throw exception for bad status
@@ -168,7 +175,7 @@ Partial Class FX3Connection
     ''' The stream is expected to produce numBuffers total buffers.
     ''' </summary>
     ''' <param name="WriteData">The data to send over the MOSI line</param>
-    ''' <param name="numCaptures">The number of interations of the WriteData array to perform in a single buffer</param>
+    ''' <param name="numCaptures">The number of iterations of the WriteData array to perform in a single buffer</param>
     ''' <param name="numBuffers">The total number of buffers to capture</param>
     ''' <param name="timeoutSeconds">The time to wait on the interfacing board before stopping the stream</param>
     ''' <param name="worker">A background worker used to notify the caller of progress made in the stream. You MUST check that this parameter has been initialized</param>
@@ -241,7 +248,7 @@ Partial Class FX3Connection
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 2000) Then
-            Throw New FX3CommunicationException("ERROR: Timeout occured when cleaning up a transfer stream thread on the FX3")
+            Throw New FX3CommunicationException("ERROR: Timeout occurred when cleaning up a transfer stream thread on the FX3")
         End If
 
         'Read status from the buffer and throw exception for bad status
@@ -276,7 +283,7 @@ Partial Class FX3Connection
         buf.Add((numBuffers And &HFF0000) >> 16)
         buf.Add((numBuffers And &HFF000000) >> 24)
 
-        'Calculate the number of bytes per "register" buffer (iterating through writedata numcapture times)
+        'Calculate the number of bytes per "register" buffer (iterating through write data numcapture times)
         bytesPerDrTransfer = WriteData.Count() * 4 * numCaptures
 
         'Get the USB transfer size
@@ -325,10 +332,10 @@ Partial Class FX3Connection
 
         'Send stream start command
         If Not XferControlData(buf.ToArray(), buf.Count(), 2000) Then
-            Throw New FX3CommunicationException("ERROR: Timeout occured during control endpoint transfer for SPI transfer stream")
+            Throw New FX3CommunicationException("ERROR: Timeout occurred during control endpoint transfer for SPI transfer stream")
         End If
 
-        'Return the bytes per buffer so it doesnt have to be calculated again
+        'Return the bytes per buffer so it doesn't have to be calculated again
         Return bytesPerUsbBuffer
 
     End Function
@@ -345,7 +352,7 @@ Partial Class FX3Connection
         'Int to track buffer index
         Dim bufIndex As Integer = 0
 
-        'Parse thread arguements
+        'Parse thread arguments
         BytesPerUsbBuffer = StreamArgs(0)
         BytesPerBuffer = StreamArgs(1)
 
@@ -435,9 +442,12 @@ Partial Class FX3Connection
         Dim validData As Boolean = False
         m_streamTimeoutTimer.Restart()
 
-        'Wait for a buffer to be avialable and dequeue
+        'Wait for a buffer to be available and dequeue
         While (Not validData) And (m_streamTimeoutTimer.ElapsedMilliseconds < m_StreamTimeout * 1000)
             validData = m_TransferStreamData.TryDequeue(buffer)
+            If Not validData Then
+                System.Threading.Thread.Sleep(10)
+            End If
         End While
         Return buffer
 

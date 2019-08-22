@@ -45,7 +45,7 @@ Public Class FX3ConfigurationException : Inherits System.Exception
     End Sub
 
     ''' <summary>
-    ''' Create a new exception with a specified message and the previos exception from down the stack
+    ''' Create a new exception with a specified message and the previous exception from down the stack
     ''' </summary>
     ''' <param name="message">The message to pass with the exception</param>
     ''' <param name="innerException">The lower level exception to pass up</param>
@@ -76,7 +76,7 @@ Public Class FX3CommunicationException : Inherits System.Exception
     End Sub
 
     ''' <summary>
-    ''' Create a new exception with a specified message and the previos exception from down the stack
+    ''' Create a new exception with a specified message and the previous exception from down the stack
     ''' </summary>
     ''' <param name="message">The message to pass with the exception</param>
     ''' <param name="innerException">The lower level exception to pass up</param>
@@ -108,7 +108,7 @@ Public Class FX3BadStatusException : Inherits System.Exception
     End Sub
 
     ''' <summary>
-    ''' Create a new exception with a specified message and the previos exception from down the stack
+    ''' Create a new exception with a specified message and the previous exception from down the stack
     ''' </summary>
     ''' <param name="message">The message to pass with the exception</param>
     ''' <param name="innerException">The lower level exception to pass up</param>
@@ -139,7 +139,7 @@ Public Class FX3ProgrammingException : Inherits System.Exception
     End Sub
 
     ''' <summary>
-    ''' Create a new exception with a specified message and the previos exception from down the stack
+    ''' Create a new exception with a specified message and the previous exception from down the stack
     ''' </summary>
     ''' <param name="message">The message to pass with the exception</param>
     ''' <param name="innerException">The lower level exception to pass up</param>
@@ -170,7 +170,7 @@ Public Class FX3GeneralException : Inherits System.Exception
     End Sub
 
     ''' <summary>
-    ''' Create a new exception with a specified message and the previos exception from down the stack
+    ''' Create a new exception with a specified message and the previous exception from down the stack
     ''' </summary>
     ''' <param name="message">The message to pass with the exception</param>
     ''' <param name="innerException">The lower level exception to pass up</param>

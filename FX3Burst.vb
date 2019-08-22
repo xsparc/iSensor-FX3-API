@@ -67,7 +67,7 @@ Partial Class FX3Connection
             Return m_WordCount
         End Get
         Set(ByVal value As Integer)
-            ' Validate and that we have a valid UShort value, as we must convert to ushort for spi object.  
+            ' Validate and that we have a valid UShort value, as we must convert to UShort for SPI object.  
             If value < 1 Or value > UShort.MaxValue Then
                 Throw New ArgumentException("WordCount must be between 1 and " & UShort.MaxValue.ToString() & ".")
             End If
@@ -106,10 +106,10 @@ Partial Class FX3Connection
     ''' <exception cref="System.InvalidOperationException">Thrown if word count has not been set.</exception>
     Public Sub SetupBurstMode()
         If Me.WordCount = 0 Then
-            Throw New InvalidOperationException("WordCount must be set before performing a burst read Operaton.")
+            Throw New InvalidOperationException("WordCount must be set before performing a burst read operation.")
         End If
         If Me.TriggerReg Is Nothing Then
-            Throw New InvalidOperationException("Trigger register must be set before performing a burst read Operaton.")
+            Throw New InvalidOperationException("Trigger register must be set before performing a burst read operation.")
         End If
         burstMode = CUShort(Me.WordCount)
     End Sub
