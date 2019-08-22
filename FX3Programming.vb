@@ -23,6 +23,7 @@ Partial Class FX3Connection
         Dim tempHandle As CyUSBDevice = Nothing
         Dim boardProgrammed As Boolean = False
         Dim apiVersion As String
+        Dim verboseMode As Boolean = False
 
         'Exit sub if we're already connected to a device
         If m_FX3Connected = True Then
@@ -148,6 +149,9 @@ Partial Class FX3Connection
         'Set the board info
         m_ActiveFX3Info = New FX3Board(FX3SerialNumber, DateTime.Now)
         m_ActiveFX3Info.SetFirmwareVersion(GetFirmwareID())
+        'Get the verbose mode setting
+        GetBoardStatus(verboseMode)
+        m_ActiveFX3Info.SetVerboseMode(verboseMode)
 
         'Verify that the FX3 firmware version matches the API firmware version
         apiVersion = GetFX3ApiInfo.VersionNumber

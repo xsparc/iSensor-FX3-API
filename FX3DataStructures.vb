@@ -659,6 +659,7 @@ Public Class FX3Board
     Private m_bootTime As DateTime
     Private m_firmwareVersion As String
     Private m_versionNumber As String
+    Private m_verboseMode As Boolean
 
     Public Sub New(ByVal SerialNumber As String, ByVal BootTime As DateTime)
 
@@ -667,6 +668,9 @@ Public Class FX3Board
 
         'Set the boot time
         m_bootTime = BootTime
+
+        'Set the verbose mode
+        m_verboseMode = False
 
     End Sub
 
@@ -677,7 +681,7 @@ Public Class FX3Board
     ''' </summary>
     ''' <returns></returns>
     Public Overrides Function ToString() As String
-        Return "Firmware Version: " + FirmwareVersion + Environment.NewLine + "Serial Number: " + SerialNumber + Environment.NewLine + "Uptime: " + Uptime.ToString() + "ms"
+        Return "Firmware Version: " + FirmwareVersion + Environment.NewLine + "Serial Number: " + SerialNumber + Environment.NewLine + "Debug Mode: " + VerboseMode.ToString() + Environment.NewLine + "Uptime: " + Uptime.ToString() + "ms"
     End Function
 
     ''' <summary>
@@ -710,9 +714,25 @@ Public Class FX3Board
         End Get
     End Property
 
+    ''' <summary>
+    ''' Read-only property to get the firmware version number
+    ''' </summary>
+    ''' <returns></returns>
     Public ReadOnly Property FirmwareVersionNumber As String
         Get
             Return m_versionNumber
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' Read-only property to check if the firmware version was compiled with verbose mode enabled. When verbose mode
+    ''' is enabled, much more data will be logged to the UART output. This is useful for debugging, but causes significant
+    ''' performance loss for high throughput applications.
+    ''' </summary>
+    ''' <returns></returns>
+    Public ReadOnly Property VerboseMode As Boolean
+        Get
+            Return m_verboseMode
         End Get
     End Property
 
@@ -727,6 +747,14 @@ Public Class FX3Board
         m_firmwareVersion = FirmwareVersion
         m_versionNumber = m_firmwareVersion.Substring(m_firmwareVersion.IndexOf("REV") + 4)
         m_versionNumber = m_versionNumber.Replace(" ", "")
+    End Sub
+
+    ''' <summary>
+    ''' Sets if the firmware is currently running in verbose mode. Should NOT be used in verbose mode in normal operating conditions.
+    ''' </summary>
+    ''' <param name="isVerbose">If the board is in verbose mode or not</param>
+    Friend Sub SetVerboseMode(isVerbose As Boolean)
+        m_verboseMode = isVerbose
     End Sub
 
 End Class

@@ -759,6 +759,30 @@ Public Class FX3Connection
     'The functions in this region are not a part of the IDutInterface, and are specific to the FX3 board
 
     ''' <summary>
+    ''' Gets the current status code from the FX3.
+    ''' </summary>
+    ''' <param name="VerboseMode">Return by reference of the verbose mode of the FX3</param>
+    Private Function GetBoardStatus(ByRef VerboseMode As Boolean) As UInteger
+
+        Dim buf(4) As Byte
+
+        'Setup a set pin command
+        ConfigureControlEndpoint(USBCommands.ADI_GET_STATUS, False)
+
+        'Transfer data
+        If Not XferControlData(buf, 5, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Pin set operation timed out")
+        End If
+
+        'read verbose mode
+        VerboseMode = buf(4)
+
+        'Return status code
+        Return BitConverter.ToUInt32(buf, 0)
+
+    End Function
+
+    ''' <summary>
     ''' This property returns a class containing some useful information about the current FX3 Dll. Some of the
     ''' information is available as a attribute of the DLL, while others (build date/time and git revision) are
     ''' generated at compile time using a pre-build batch file script.
