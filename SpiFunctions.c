@@ -167,9 +167,9 @@ void AdiSetSpiWordLength(uint8_t wordLength)
 	/* Read the SPI configuration register */
 	spiConf = SPI->lpp_spi_config;
 	/* Clear word length field*/
-	spiConf &= ~(0x3F << 17);
+	spiConf &= ~(0x3F << CY_U3P_LPP_SPI_WL_POS);
 	/* Sets bits 17 - 22 to wordlength */
-	spiConf |= wordLength << 17;
+	spiConf |= wordLength << CY_U3P_LPP_SPI_WL_POS;
 	/* Write the new config value */
 	SPI->lpp_spi_config = spiConf;
 }

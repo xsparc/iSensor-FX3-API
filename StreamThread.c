@@ -173,6 +173,19 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 			//clear interrupt flag
 			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
 
+			/* If check if a readback is needed for the last transfer */
+			if(regIndex == (StreamThreadState.TransferByteLength - 12))
+			{
+				/* If the write bit was set skip the read back*/
+				if(MOSIPtr[1] & 0x80)
+				{
+					regIndex += 2;
+					MOSIPtr += 2;
+					MISOPtr += 2;
+					byteCounter += 2;
+				}
+			}
+
 			//Update counters
 			MOSIPtr += 2;
 			MISOPtr += 2;
