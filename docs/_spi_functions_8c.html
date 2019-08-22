@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.0.3-pub</span>
+   &#160;<span id="projectnumber">v2.0.4-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -87,6 +87,13 @@ Functions</h2></td></tr>
 <tr class="memitem:a09c91fa11a171844d59e40a4d0fee7cf"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a09c91fa11a171844d59e40a4d0fee7cf">AdiWriteRegByte</a> (uint16_t addr, uint8_t data)</td></tr>
 <tr class="memdesc:a09c91fa11a171844d59e40a4d0fee7cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function writes a single byte of data over the SPI bus.  <a href="#a09c91fa11a171844d59e40a4d0fee7cf">More...</a><br /></td></tr>
 <tr class="separator:a09c91fa11a171844d59e40a4d0fee7cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a46fad4317c94479eaf852e5b22ea4d2a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a46fad4317c94479eaf852e5b22ea4d2a">AdiSetSpiWordLength</a> (uint8_t wordLength)</td></tr>
+<tr class="memdesc:a46fad4317c94479eaf852e5b22ea4d2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the SPI controller word length (4 - 32 bits)  <a href="#a46fad4317c94479eaf852e5b22ea4d2a">More...</a><br /></td></tr>
+<tr class="separator:a46fad4317c94479eaf852e5b22ea4d2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a46d5ab32e1256b10aa2f6e2c7ebede7a"><td class="memItemLeft" align="right" valign="top"><a id="a46d5ab32e1256b10aa2f6e2c7ebede7a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a46d5ab32e1256b10aa2f6e2c7ebede7a">AdiWaitForSpiNotBusy</a> ()</td></tr>
+<tr class="memdesc:a46d5ab32e1256b10aa2f6e2c7ebede7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Waits for the SPI controller busy bit to be not set. <br /></td></tr>
+<tr class="separator:a46d5ab32e1256b10aa2f6e2c7ebede7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa083144a6203655613621a89d8e809e1"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#aa083144a6203655613621a89d8e809e1">AdiSpiResetFifo</a> (CyBool_t isTx, CyBool_t isRx)</td></tr>
 <tr class="memdesc:aa083144a6203655613621a89d8e809e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function resets the SPI FIFO and disables the SPI block after completion.  <a href="#aa083144a6203655613621a89d8e809e1">More...</a><br /></td></tr>
 <tr class="separator:aa083144a6203655613621a89d8e809e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -163,6 +170,33 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the function.</dd></dl>
 <p>This function reads a single word over SPI. Note that reads are not "full duplex" and will require a discrete read to set the address to be read from (two 16 bit transactions per read). </p>
+
+</div>
+</div>
+<a id="a46fad4317c94479eaf852e5b22ea4d2a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a46fad4317c94479eaf852e5b22ea4d2a">&#9670;&nbsp;</a></span>AdiSetSpiWordLength()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void AdiSetSpiWordLength </td>
+          <td>(</td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>wordLength</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sets the SPI controller word length (4 - 32 bits) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">wordLength</td><td>The number of bits to transfer in a single SPI transaction</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>This function writes directly to the SPI control register. It does not cause the toggle on the chip select line seen using the cypress API for setting the SPI word length. </p>
 
 </div>
 </div>
