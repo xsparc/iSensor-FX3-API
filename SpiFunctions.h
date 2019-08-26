@@ -26,8 +26,10 @@
 CyU3PReturnStatus_t AdiGetSpiSettings();
 CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length);
 CyU3PReturnStatus_t AdiSpiResetFifo(CyBool_t isTx, CyBool_t isRx);
+CyU3PSpiConfig_t AdiGetSpiConfig();
 void AdiWaitForSpiNotBusy();
 void AdiSetSpiWordLength(uint8_t wordLength);
+void AdiPrintSpiConfig(CyU3PSpiConfig_t config);
 
 /* SPI data transfer functions */
 CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData);

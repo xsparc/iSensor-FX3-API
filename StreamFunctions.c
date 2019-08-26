@@ -60,8 +60,8 @@ CyBool_t AdiPrintStreamState()
 	verboseMode = CyTrue;
 	CyU3PDebugPrint (4, "Endpoint Transfer Size: %d\r\n", StreamThreadState.TransferByteLength);
 	CyU3PDebugPrint (4, "NumCaptures: %d NumBuffers: %d Bytes Per USB Packet: %d\r\n", StreamThreadState.NumCaptures, StreamThreadState.NumBuffers, StreamThreadState.BytesPerUsbPacket);
-	CyU3PDebugPrint (4, "SPI word length: %d bits, with an SCLK frequency of %dHz\r\n", FX3State.SpiConfig.wordLen, FX3State.SpiConfig.clock);
 	CyU3PDebugPrint (4, "DrActive is %d, with the data ready pin set to GPIO[%d]. DrPolarity is %d\r\n", FX3State.DrActive, FX3State.DrPin, FX3State.DrPolarity);
+	AdiPrintSpiConfig(AdiGetSpiConfig());
 #endif
 
 	return verboseMode;

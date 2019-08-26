@@ -24,6 +24,52 @@ extern BoardState FX3State;
 extern StreamState StreamThreadState;
 
 /**
+  * @brief This function parses the SPI control registers into an easier to work with config struct.
+  *
+  * @return The current SPI config, as set in the hardware.
+ **/
+CyU3PSpiConfig_t AdiGetSpiConfig()
+{
+	CyU3PSpiConfig_t conf;
+	uint32_t CONFIG;
+
+	AdiWaitForSpiNotBusy();
+
+	/* Read SPI config register */
+	CONFIG = SPI->lpp_spi_config;
+
+	/* Parse out SPI config */
+	conf.wordLen = (CONFIG >> CY_U3P_LPP_SPI_WL_POS) & 0x3F;
+	conf.ssnPol = (CONFIG >> 16) & 0x1;
+	conf.lagTime = (CONFIG >> CY_U3P_LPP_SPI_LAG_POS) & 0x3;
+	conf.leadTime = (CONFIG >> CY_U3P_LPP_SPI_LEAD_POS) & 0x3;
+	conf.cpha = (CONFIG >> 11) & 0x1;
+	conf.cpol = (CONFIG >> 10) & 0x1;
+	conf.ssnCtrl = (CONFIG >> CY_U3P_LPP_SPI_SSNCTRL_POS) & 0x3;
+	conf.isLsbFirst = (CONFIG >> 3) & 0x1;
+
+	/* use existing clock setting */
+	conf.clock = FX3State.SpiConfig.clock;
+	return conf;
+}
+
+/**
+  * @brief Prints a given SPI config over the UART debug port.
+ **/
+void AdiPrintSpiConfig(CyU3PSpiConfig_t config)
+{
+	CyU3PDebugPrint (4, "SPI Clock Frequency: %d\r\n", config.clock);
+	CyU3PDebugPrint (4, "SPI Clock Phase: %d\r\n", config.cpha);
+	CyU3PDebugPrint (4, "SPI Clock Polarity: %d\r\n", config.cpol);
+	CyU3PDebugPrint (4, "SPI LSB First Mode: %d\r\n", config.isLsbFirst);
+	CyU3PDebugPrint (4, "SPI CS Lag Time (SCLK periods): %d\r\n", config.lagTime);
+	CyU3PDebugPrint (4, "SPI CS Lead Time (SCLK periods): %d\r\n", config.leadTime);
+	CyU3PDebugPrint (4, "SPI CS Control Mode: %d\r\n", config.ssnCtrl);
+	CyU3PDebugPrint (4, "SPI CS Polarity: %d\r\n", config.ssnPol);
+	CyU3PDebugPrint (4, "SPI Word Length: %d\r\n", config.wordLen);
+}
+
+/**
   * @brief This function performs a protocol agnostic SPI bi-directional SPI transfer of (1, 2, 4) bytes
   *
   * @param writeData The data to transmit on the MOSI line.
