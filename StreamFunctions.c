@@ -222,6 +222,12 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	uint8_t tempWriteBuffer[2];
 	uint8_t tempReadBuffer[2];
 
+	//Disable GPIO ISR
+	CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
+
+	//Disable VBUS ISR
+	CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
+
 	//Make sure the BUSY pin is configured as input (DIO2)
 	CyU3PGpioSimpleConfig_t gpioConfig;
 	gpioConfig.outValue = CyFalse;
@@ -230,12 +236,6 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	gpioConfig.driveHighEn = CyFalse;
 	gpioConfig.intrMode = CY_U3P_GPIO_INTR_POS_EDGE;
 	CyU3PGpioSetSimpleConfig(FX3State.DrPin, &gpioConfig);
-
-	//Disable GPIO ISR
-	CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
-
-	//Disable VBUS ISR
-	CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
 
 	//Get number of frames to capture from control endpoint
 	CyU3PUsbGetEP0Data(5, USBBuffer, &bytesRead);
@@ -251,24 +251,25 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
 
 	/* Configure RTS channel DMA */
-    CyU3PDmaChannelConfig_t dmaConfig;
-    dmaConfig.size 				= FX3State.UsbBufferSize;
-    dmaConfig.count 			= 64;
-    dmaConfig.prodSckId 		= CY_U3P_LPP_SOCKET_SPI_PROD;
-    dmaConfig.consSckId 		= CY_U3P_UIB_SOCKET_CONS_1;
-    dmaConfig.dmaMode 			= CY_U3P_DMA_MODE_BYTE;
-    dmaConfig.prodHeader    	= 0;
-    dmaConfig.prodFooter    	= 0;
-    dmaConfig.consHeader    	= 0;
-    dmaConfig.notification  	= 0;
-    dmaConfig.cb            	= NULL;
-    dmaConfig.prodAvailCount	= 0;
+	CyU3PDmaChannelConfig_t dmaConfig;
+	CyU3PMemSet ((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
+	dmaConfig.size 				= FX3State.UsbBufferSize;
+	dmaConfig.count 			= 16;
+	dmaConfig.prodSckId 		= CY_U3P_LPP_SOCKET_SPI_PROD;
+	dmaConfig.consSckId 		= CY_U3P_UIB_SOCKET_CONS_1;
+	dmaConfig.dmaMode 			= CY_U3P_DMA_MODE_BYTE;
+	dmaConfig.prodHeader    	= 0;
+	dmaConfig.prodFooter    	= 0;
+	dmaConfig.consHeader    	= 0;
+	dmaConfig.notification  	= 0;
+	dmaConfig.cb            	= NULL;
+	dmaConfig.prodAvailCount	= 0;
 
     /* Configure DMA for RealTimeStreamingChannel */
     status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_AUTO, &dmaConfig);
 	if(status != CY_U3P_SUCCESS)
 	{
-		CyU3PDebugPrint (4, "Configuring the RTS DMA failed, Error Code = %x\r\n", status);
+		CyU3PDebugPrint (4, "Configuring the RTS DMA failed, Error Code = 0x%x\r\n", status);
 		return status;
 	}
 
@@ -432,6 +433,12 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 
 	//Manually reset SPI Rx/Tx FIFO
 	AdiSpiResetFifo(CyTrue, CyTrue);
+
+	/* Set the SPI config for streaming mode (8 bit transactions) */
+	AdiSetSpiWordLength(8);
+
+	/* Print the stream state */
+	AdiPrintStreamState();
 
 	//Set infinite DMA transfer on streaming channel
 	CyU3PDmaChannelSetXfer(&StreamingChannel, 0);
@@ -623,7 +630,7 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	CyU3PDmaChannelConfig_t dmaConfig;
 	CyU3PMemSet ((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
 	dmaConfig.size 				= FX3State.UsbBufferSize;
-	dmaConfig.count 			= 256;
+	dmaConfig.count 			= 16;
 	dmaConfig.prodSckId 		= CY_U3P_LPP_SOCKET_SPI_PROD;
 	dmaConfig.consSckId 		= CY_U3P_UIB_SOCKET_CONS_1;
 	dmaConfig.dmaMode 			= CY_U3P_DMA_MODE_BYTE;
