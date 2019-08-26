@@ -922,9 +922,6 @@ Public Class FX3Connection
         'Wait for a buffer to be available and dequeue
         While (Not validData) And (m_streamTimeoutTimer.ElapsedMilliseconds < m_StreamTimeout * 1000)
             validData = m_StreamData.TryDequeue(buffer)
-            If Not validData Then
-                System.Threading.Thread.Sleep(10)
-            End If
         End While
         Return buffer
     End Function

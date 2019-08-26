@@ -538,9 +538,6 @@ Partial Class FX3Connection
             Throw New FX3CommunicationException("ERROR: Timeout occurred while starting real time streaming")
         End If
 
-        'Set the thread control bool
-        m_StreamThreadRunning = True
-
         'Reset number of frames read
         m_FramesRead = 0
         m_numBadFrames = 0

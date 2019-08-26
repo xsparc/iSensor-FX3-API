@@ -165,15 +165,16 @@ Partial Class FX3Connection
             End If
             'Update progress every percent
             If reportProgress Then
-                progress = (GetNumBuffersRead / numBuffers) * 100
+                progress = (GetNumBuffersRead * 100) / numBuffers
                 If progress > oldProgress Then
                     worker.ReportProgress(progress)
                     oldProgress = progress
                 End If
             End If
             'Sleep so as to not rail the processor
-            Threading.Thread.Sleep(10)
+            Threading.Thread.Sleep(25)
         End While
+
     End Sub
 
     ''' <summary>
