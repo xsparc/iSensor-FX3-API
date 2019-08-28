@@ -846,6 +846,21 @@ CyU3PReturnStatus_t AdiPinRead(uint16_t pin)
 }
 
 /**
+  * @brief Reads the current value of the 10MHz timer (32 bit)
+  *
+  * @return The timer value
+ **/
+uint32_t AdiReadTimerRegValue()
+{
+	/* Set config for sample now mode */
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (FX3State.TimerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
+	/* Wait for sample to finish */
+	while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
+	/* Return the threshold value (timer register value) */
+	return GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
+}
+
+/**
   * @brief Reads the current value from the complex GPIO timer and then sends the value over the control endpoint.
   *
   * @return The success of the timer read operation.

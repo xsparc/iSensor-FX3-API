@@ -35,6 +35,7 @@ CyU3PReturnStatus_t AdiSleepForMicroSeconds(uint32_t numMicroSeconds);
 CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM);
 CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength);
 CyU3PReturnStatus_t AdiConfigurePinInterrupt(uint16_t pin, CyBool_t polarity);
+uint32_t AdiReadTimerRegValue();
 
 
 /*

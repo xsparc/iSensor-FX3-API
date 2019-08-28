@@ -22,6 +22,20 @@
 /* Include the main header file */
 #include "main.h"
 
+/**
+  * @brief Structure to store configuration parameters for a bitbang SPI.
+ **/
+typedef struct BitBangSpiConf
+{
+	uint8_t MOSI;
+	uint8_t MISO;
+	uint8_t CS;
+	uint8_t SCLK;
+	uint16_t HalfClockDelay;
+	uint16_t CSLeadDelay;
+	uint16_t CSLagDelay;
+}BitBangSpiConf;
+
 /* SPI configuration functions */
 CyU3PReturnStatus_t AdiGetSpiSettings();
 CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length);
@@ -36,5 +50,10 @@ CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData);
 CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data);
 CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr);
 CyU3PReturnStatus_t AdiBulkByteTransfer(uint16_t numBytes, uint16_t bytesPerCapture);
+
+/* Bitbang SPI functions */
+void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, BitBangSpiConf config);
+CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config);
+CyU3PReturnStatus_t AdiBitBangSpiHandler();
 
 #endif

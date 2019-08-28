@@ -529,6 +529,12 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	status = AdiTransferBytes(wIndex << 16 | wValue);
             	break;
 
+            case ADI_BITBANG_SPI:
+            	/* Call the handler function for the SPI bit bang. Returns data to PC over bulk endpoint */
+            	CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+            	status = AdiBitBangSpiHandler();
+            	break;
+
             default:
                 // This is unknown request
 #ifdef VERBOSE_MODE
@@ -856,15 +862,16 @@ void AdiAppStart (void)
 
     /* Configure GPIO for ADI application */
 
-	/* Configure fast sample clock to use a GPIO as a high-resolution timer.
-	 * SYSCLK = 403.2 MHz. Effective clock speed for timer
-	 * is 403.2MHz / (10 * 4) = 10.08 MHz. GPIO sample clock = 201.6 MHz */
+	/* SYS_CLK = 403.2MHz
+	 * GPIO Fast Clock = SYS_CLK / 2 -> 201.6MHz
+	 * GPIO Slow Clock (Used for 10MHz timer) = Fast Clock / 20 -> 10.08MHz
+	 * Simple GPIO Sample Clock = Fast Clock / 2 -> 100.8MHz */
 	CyU3PGpioClock_t gpioClock;
 	CyU3PMemSet ((uint8_t *)&gpioClock, 0, sizeof (gpioClock));
-	gpioClock.fastClkDiv = 10;
-	gpioClock.slowClkDiv = 0;
+	gpioClock.fastClkDiv = 2;
+	gpioClock.slowClkDiv = 20;
 	gpioClock.simpleDiv = CY_U3P_GPIO_SIMPLE_DIV_BY_2;
-	gpioClock.clkSrc = CY_U3P_SYS_CLK_BY_4;
+	gpioClock.clkSrc = CY_U3P_SYS_CLK;
 	gpioClock.halfDiv = 0;
 
 	/* Set GPIO configuration and attach GPIO event handler */
@@ -1008,7 +1015,7 @@ void AdiAppStart (void)
 	gpioComplexConfig.driveHighEn = CyTrue;
 	gpioComplexConfig.pinMode = CY_U3P_GPIO_MODE_STATIC;
 	gpioComplexConfig.intrMode = CY_U3P_GPIO_NO_INTR;
-	gpioComplexConfig.timerMode = CY_U3P_GPIO_TIMER_HIGH_FREQ;
+	gpioComplexConfig.timerMode = CY_U3P_GPIO_TIMER_LOW_FREQ;
 	gpioComplexConfig.timer = 0;
 	gpioComplexConfig.period = 0xFFFFFFFF;
 	gpioComplexConfig.threshold = 0xFFFFFFFF;

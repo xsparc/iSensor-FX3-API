@@ -232,6 +232,9 @@ typedef struct StreamState
 /** Command to trigger an event on the DUT and measure a subsequent pulse */
 #define ADI_BUSY_MEASURE						(0xCB)
 
+/** Bitbang a SPI message on the selected pins */
+#define ADI_BITBANG_SPI							(0xCD)
+
 /*
  * Clock defines
  */
