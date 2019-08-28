@@ -87,6 +87,9 @@ Public Enum USBCommands
     'Starts a transfer stream for the ISpi32Interface
     ADI_TRANSFER_STREAM = &HCC
 
+    'Bitbang SPI command
+    ADI_BITBANG_SPI = &HCD
+
     'Start/stop a real-time stream
     ADI_STREAM_REALTIME = &HD0
 
@@ -167,6 +170,62 @@ Public Enum DUTType
     ADcmXL3021
     IMU
 End Enum
+
+#End Region
+
+#Region "BitBang SPI Config Class"
+
+Public Class BitBangSpiConfig
+
+    Public CS As FX3PinObject
+    Public SCLK As FX3PinObject
+    Public MOSI As FX3PinObject
+    Public MISO As FX3PinObject
+    Public CSLeadTicks As UShort
+    Public CSLagTicks As UShort
+    Public SCLKHalfPeriodTicks As UShort
+
+    Public Sub New(OverrideHardwareSpi As Boolean)
+
+        If OverrideHardwareSpi Then
+            'Override the hardware SPI pins
+            SCLK = New FX3PinObject(53)
+            CS = New FX3PinObject(54)
+            MOSI = New FX3PinObject(56)
+            MISO = New FX3PinObject(55)
+        Else
+            'Provide defaults onto the FX3 GPIO pins
+            SCLK = New FX3PinObject(5) 'FX3_GPIO1
+            CS = New FX3PinObject(6) 'FX3_GPIO2
+            MOSI = New FX3PinObject(7) 'FX3_GPIO3
+            MISO = New FX3PinObject(12) 'FX3_GPIO4
+        End If
+
+        CSLeadTicks = 5 'Lead one SCLK period
+        CSLagTicks = 5 'Lag one SCLK period
+        SCLKHalfPeriodTicks = 5 'Should give approx. 1MHz
+    End Sub
+
+    ''' <summary>
+    ''' Get a parameters array for the current bit bang SPI configuration
+    ''' </summary>
+    ''' <returns>The parameter array to send to the FX3 for a bit bang vendor command</returns>
+    Public Function GetParameterArray() As Byte()
+        Dim params As New List(Of Byte)
+        params.Add(SCLK.pinConfig() And &HFF)
+        params.Add(CS.pinConfig() And &HFF)
+        params.Add(MOSI.pinConfig() And &HFF)
+        params.Add(MISO.pinConfig() And &HFF)
+        params.Add(SCLKHalfPeriodTicks And &HFF)
+        params.Add((SCLKHalfPeriodTicks And &HFF00) >> 8)
+        params.Add(CSLeadTicks And &HFF)
+        params.Add((CSLeadTicks And &HFF00) >> 8)
+        params.Add(CSLagTicks And &HFF)
+        params.Add((CSLagTicks And &HFF00) >> 8)
+        Return params.ToArray()
+    End Function
+
+End Class
 
 #End Region
 

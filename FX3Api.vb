@@ -164,6 +164,9 @@ Public Class FX3Connection
     'Store PWM config info for all PWM pins
     Private m_PinPwmInfoList As PinList
 
+    'Store bitbang SPI config
+    Private m_BitBangSpi As BitBangSpiConfig
+
     'Events
 
     ''' <summary>
@@ -256,6 +259,9 @@ Public Class FX3Connection
 
         'Set the PWM pin list
         m_PinPwmInfoList = New PinList
+
+        'set bitbang spi config
+        m_BitBangSpi = New BitBangSpiConfig(False)
 
     End Sub
 
