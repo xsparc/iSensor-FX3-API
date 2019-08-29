@@ -119,7 +119,16 @@ Partial Class FX3Connection
     End Sub
 
     Public Sub RestoreHardwareSpi()
-
+        Dim buf(3) As Byte
+        Dim status As UInt32
+        ConfigureControlEndpoint(USBCommands.ADI_RESET_SPI, False)
+        If Not XferControlData(buf, 4, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control Endpoint transfer failed for SPI hardware controller reset")
+        End If
+        status = BitConverter.ToUInt32(buf, 0)
+        If status <> 0 Then
+            Throw New FX3BadStatusException("ERROR: Invalid status received after SPI hardware controller reset: 0x" + status.ToString("X4"))
+        End If
     End Sub
 
 End Class

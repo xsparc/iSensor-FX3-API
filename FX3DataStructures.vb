@@ -90,6 +90,9 @@ Public Enum USBCommands
     'Bitbang SPI command
     ADI_BITBANG_SPI = &HCD
 
+    'Reset the SPI controller
+    ADI_RESET_SPI = &HCE
+
     'Start/stop a real-time stream
     ADI_STREAM_REALTIME = &HD0
 
