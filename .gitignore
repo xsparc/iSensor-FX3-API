@@ -6,7 +6,6 @@
 *.sln
 
 testGUI/
-*.img
 
 # User-specific files
 *.suo
