@@ -379,7 +379,6 @@ Public Class FX3SPIConfig
             m_StallTime = 10
             DUTType = DUTType.IMU
             DataReadyPinFX3GPIO = 4
-            DrActive = True
         End If
 
     End Sub

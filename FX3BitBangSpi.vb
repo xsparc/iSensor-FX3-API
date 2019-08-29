@@ -5,6 +5,10 @@
 
 Partial Class FX3Connection
 
+    ''' <summary>
+    ''' Property to get or set the bit bang SPI configuration. Can select pins, timings, etc
+    ''' </summary>
+    ''' <returns></returns>
     Public Property BitBangSpiConfig As BitBangSpiConfig
         Get
             Return m_BitBangSpi
@@ -14,12 +18,30 @@ Partial Class FX3Connection
         End Set
     End Property
 
+    ''' <summary>
+    ''' Perform a bit banged SPI transfer, using the config set in BitBangSpiConfig.
+    ''' </summary>
+    ''' <param name="BitsPerTransfer">The total number of bits to clock in a single transfer. Can be any number greater than 0.</param>
+    ''' <param name="NumTransfers">The number of separate SPI transfers to clock out</param>
+    ''' <param name="MOSIData">The MOSI data to clock out. Each SPI transfer must be byte aligned. Data is clocked out MSB first</param>
+    ''' <param name="TimeoutInMs">The time to wait on the bulk endpoint for a return transfer (in ms)</param>
+    ''' <returns>The data received over the selected MISO line</returns>
     Public Function BitBangSpi(BitsPerTransfer As UInteger, NumTransfers As UInteger, MOSIData As Byte(), TimeoutInMs As UInteger) As Byte()
         Dim buf As New List(Of Byte)
         Dim timeoutTimer As New Stopwatch()
         Dim transferStatus As Boolean
         Dim bytesPerTransfer As UInteger
         Dim len As Integer
+
+        'Validate bits per transfer
+        If BitsPerTransfer = 0 Then
+            Throw New FX3ConfigurationException("ERROR: Bits per transfer must be non-zero in a bit banged SPI transfer")
+        End If
+
+        'Return for 0 transfers
+        If NumTransfers = 0 Then
+            Return buf.ToArray()
+        End If
 
         'Build the buffer
         buf.AddRange(m_BitBangSpi.GetParameterArray())
@@ -37,6 +59,10 @@ Partial Class FX3Connection
         bytesPerTransfer = BitsPerTransfer >> 3
         If BitsPerTransfer And &H7 Then bytesPerTransfer += 1
 
+        If bytesPerTransfer * NumTransfers <> MOSIData.Count() Then
+            Throw New FX3ConfigurationException("ERROR: MOSI data size must match total transfer size")
+        End If
+
         'Check size
         If buf.Count() > 4096 Then
             Throw New FX3ConfigurationException("ERROR: Too much data (" + buf.Count() + " bytes) in a single bit banged SPI transaction.")
@@ -50,7 +76,6 @@ Partial Class FX3Connection
 
         'Read data back from part
         transferStatus = False
-        bytesPerTransfer = BitsPerTransfer / 8
         timeoutTimer.Start()
         Dim resultBuf(bytesPerTransfer * NumTransfers - 1) As Byte
         While ((Not transferStatus) And (timeoutTimer.ElapsedMilliseconds() < TimeoutInMs))

@@ -941,7 +941,7 @@ Partial Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Read-only property to get the FX3_GPIO0 pin (mapped to GPIO 5 on FX3). This pin does not map to the standard iSensor breakout,
+    ''' Read-only property to get the FX3_GPIO1 pin (mapped to GPIO 5 on FX3). This pin does not map to the standard iSensor breakout,
     ''' and should be used for other general purpose interfacing.
     ''' </summary>
     ''' <returns>Returns the GPIO pin, as an IPinObject</returns>
@@ -952,7 +952,7 @@ Partial Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Read-only property to get the FX3_GPIO1 pin (mapped to GPIO 6 on FX3). This pin does not map to the standard iSensor breakout,
+    ''' Read-only property to get the FX3_GPIO2 pin (mapped to GPIO 6 on FX3). This pin does not map to the standard iSensor breakout,
     ''' and should be used for other general purpose interfacing.
     ''' </summary>
     ''' <returns>Returns the GPIO pin, as an IPinObject</returns>
@@ -963,7 +963,7 @@ Partial Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Read-only property to get the FX3_GPIO2 pin (mapped to GPIO 7 on FX3). This pin does not map to the standard iSensor breakout,
+    ''' Read-only property to get the FX3_GPIO3 pin (mapped to GPIO 7 on FX3). This pin does not map to the standard iSensor breakout,
     ''' and should be used for other general purpose interfacing.
     ''' </summary>
     ''' <returns>Returns the GPIO pin, as an IPinObject</returns>
@@ -974,7 +974,7 @@ Partial Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Read-only property to get the FX3_GPIO3 pin (mapped to GPIO 12 on FX3). This pin does not map to the standard iSensor breakout,
+    ''' Read-only property to get the FX3_GPIO4 pin (mapped to GPIO 12 on FX3). This pin does not map to the standard iSensor breakout,
     ''' and should be used for other general purpose interfacing. This pin shares a complex GPIO block with DIO1. If DIO1 is being used
     ''' as a clock source, via the StartPWM function, then this pin cannot be used as a clock source.
     ''' </summary>

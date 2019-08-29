@@ -779,7 +779,7 @@ Partial Class FX3Connection
 
         'SCLK
         If m_FX3SPIConfig.SCLKFrequency < 5000000 Then
-            Throw New FX3ConfigurationException("ERROR: Invalid SPI frequency for real time streaming")
+            'Throw New FX3ConfigurationException("ERROR: Invalid SPI frequency for real time streaming")
         End If
 
         'Chip select control mode
