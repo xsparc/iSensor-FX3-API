@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.0.4-pub</span>
+   &#160;<span id="projectnumber">v2.1.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -94,7 +94,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:aefc8f76636a3cadcb3d0f4121bfeb154"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function configures the specified pin as an output and drives it with the desired value.  <a href="#aefc8f76636a3cadcb3d0f4121bfeb154">More...</a><br /></td></tr>
 <tr class="separator:aefc8f76636a3cadcb3d0f4121bfeb154"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4191f362f953cee5a7ad6170349760c0"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8c.html#a4191f362f953cee5a7ad6170349760c0">AdiSleepForMicroSeconds</a> (uint32_t numMicroSeconds)</td></tr>
-<tr class="memdesc:a4191f362f953cee5a7ad6170349760c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function blocks thread execution for a specified number of microseconds. It uses a complex GPIO timer running at 10MHz, which is scaled down from the 403.2MHz system clock.  <a href="#a4191f362f953cee5a7ad6170349760c0">More...</a><br /></td></tr>
+<tr class="memdesc:a4191f362f953cee5a7ad6170349760c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function blocks thread execution for a specified number of microseconds.  <a href="#a4191f362f953cee5a7ad6170349760c0">More...</a><br /></td></tr>
 <tr class="separator:a4191f362f953cee5a7ad6170349760c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2d30ded78cc1f92727b2bc2ec89ecf0b"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8c.html#a2d30ded78cc1f92727b2bc2ec89ecf0b">AdiWaitForPin</a> (uint32_t pinNumber, CyU3PGpioIntrMode_t interruptSetting, uint32_t timeoutTicks)</td></tr>
 <tr class="memdesc:a2d30ded78cc1f92727b2bc2ec89ecf0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function blocks the execution of the current thread until an event happens on the specified GPIO pin.  <a href="#a2d30ded78cc1f92727b2bc2ec89ecf0b">More...</a><br /></td></tr>
@@ -105,6 +105,9 @@ Functions</h2></td></tr>
 <tr class="memitem:acbbc30db6ed8f5e4b7ddbf348c7c55e5"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8c.html#acbbc30db6ed8f5e4b7ddbf348c7c55e5">AdiPinRead</a> (uint16_t pin)</td></tr>
 <tr class="memdesc:acbbc30db6ed8f5e4b7ddbf348c7c55e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function handles Pin read control end point requests.  <a href="#acbbc30db6ed8f5e4b7ddbf348c7c55e5">More...</a><br /></td></tr>
 <tr class="separator:acbbc30db6ed8f5e4b7ddbf348c7c55e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5625dbcdebf4e5a6bd279e922b099be"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8c.html#af5625dbcdebf4e5a6bd279e922b099be">AdiReadTimerRegValue</a> ()</td></tr>
+<tr class="memdesc:af5625dbcdebf4e5a6bd279e922b099be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads the current value of the 10MHz timer (32 bit)  <a href="#af5625dbcdebf4e5a6bd279e922b099be">More...</a><br /></td></tr>
+<tr class="separator:af5625dbcdebf4e5a6bd279e922b099be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae84d4ba67148ed3a892f467ca2fe5441"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8c.html#ae84d4ba67148ed3a892f467ca2fe5441">AdiReadTimerValue</a> ()</td></tr>
 <tr class="memdesc:ae84d4ba67148ed3a892f467ca2fe5441"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads the current value from the complex GPIO timer and then sends the value over the control endpoint.  <a href="#ae84d4ba67148ed3a892f467ca2fe5441">More...</a><br /></td></tr>
 <tr class="separator:ae84d4ba67148ed3a892f467ca2fe5441"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -360,6 +363,26 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 </div>
 </div>
+<a id="af5625dbcdebf4e5a6bd279e922b099be"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af5625dbcdebf4e5a6bd279e922b099be">&#9670;&nbsp;</a></span>AdiReadTimerRegValue()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t AdiReadTimerRegValue </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Reads the current value of the 10MHz timer (32 bit) </p>
+<dl class="section return"><dt>Returns</dt><dd>The timer value </dd></dl>
+
+</div>
+</div>
 <a id="ae84d4ba67148ed3a892f467ca2fe5441"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae84d4ba67148ed3a892f467ca2fe5441">&#9670;&nbsp;</a></span>AdiReadTimerValue()</h2>
 
@@ -435,7 +458,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
       </table>
 </div><div class="memdoc">
 
-<p>This function blocks thread execution for a specified number of microseconds. It uses a complex GPIO timer running at 10MHz, which is scaled down from the 403.2MHz system clock. </p>
+<p>This function blocks thread execution for a specified number of microseconds. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">numMicroSeconds</td><td>The number of microseconds to stall for</td></tr>

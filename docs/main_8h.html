@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.0.4-pub</span>
+   &#160;<span id="projectnumber">v2.1.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -162,6 +162,10 @@ Macros</h2></td></tr>
 <tr class="separator:aaab0381b01d21613c149558466d195c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaa8716486c7b369e67094ad0b88f3007"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#aaa8716486c7b369e67094ad0b88f3007">ADI_BUSY_MEASURE</a>&#160;&#160;&#160;(0xCB)</td></tr>
 <tr class="separator:aaa8716486c7b369e67094ad0b88f3007"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2cae78d6ffaeb70b824cdcf4851eee4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#ae2cae78d6ffaeb70b824cdcf4851eee4">ADI_BITBANG_SPI</a>&#160;&#160;&#160;(0xCD)</td></tr>
+<tr class="separator:ae2cae78d6ffaeb70b824cdcf4851eee4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa24753293e05408a3c51c892547d4841"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#aa24753293e05408a3c51c892547d4841">ADI_RESET_SPI</a>&#160;&#160;&#160;(0xCE)</td></tr>
+<tr class="separator:aa24753293e05408a3c51c892547d4841"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a42e00fdbd5af84e095a80b2e2d4df1dd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a42e00fdbd5af84e095a80b2e2d4df1dd">MS_TO_TICKS_MULT</a>&#160;&#160;&#160;(10078)</td></tr>
 <tr class="separator:a42e00fdbd5af84e095a80b2e2d4df1dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b6136776fe6c8498a8a7da63bdb8db0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a5b6136776fe6c8498a8a7da63bdb8db0">ADI_GENERIC_STALL_OFFSET</a>&#160;&#160;&#160;(90)</td></tr>
@@ -291,6 +295,21 @@ uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>CyFxUSBSerialNumDe
 <dd>
 J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+'@an'+'al'+'og.'+'co'+'m'; return false;">juan.<span style="display: none;">.nosp@m.</span>chon<span style="display: none;">.nosp@m.</span>g@ana<span style="display: none;">.nosp@m.</span>log.<span style="display: none;">.nosp@m.</span>com</a>) </dd></dl>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="ae2cae78d6ffaeb70b824cdcf4851eee4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae2cae78d6ffaeb70b824cdcf4851eee4">&#9670;&nbsp;</a></span>ADI_BITBANG_SPI</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_BITBANG_SPI&#160;&#160;&#160;(0xCD)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Bitbang a SPI message on the selected pins </p>
+
+</div>
+</div>
 <a id="aaa8716486c7b369e67094ad0b88f3007"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aaa8716486c7b369e67094ad0b88f3007">&#9670;&nbsp;</a></span>ADI_BUSY_MEASURE</h2>
 
@@ -528,6 +547,21 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
       </table>
 </div><div class="memdoc">
 <p>Read the current FX3 timer register value </p>
+
+</div>
+</div>
+<a id="aa24753293e05408a3c51c892547d4841"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa24753293e05408a3c51c892547d4841">&#9670;&nbsp;</a></span>ADI_RESET_SPI</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_RESET_SPI&#160;&#160;&#160;(0xCE)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Reset the hardware SPI controller </p>
 
 </div>
 </div>

@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['reglist',['RegList',['../struct_stream_state.html#afdc02985c7b2291fcf55397f4db61e38',1,'StreamState']]],
-  ['roundedbytetransferlength',['RoundedByteTransferLength',['../struct_stream_state.html#ad29bdadbd9a94e8faa2f5a98b954218d',1,'StreamState']]]
+  ['pinexitenable',['PinExitEnable',['../struct_stream_state.html#adff3a3ce23fd26136d0354f2d518c164',1,'StreamState']]],
+  ['pinstartenable',['PinStartEnable',['../struct_stream_state.html#a15dc4ab7ae466aaff3ea8e36a5b496c5',1,'StreamState']]]
 ];

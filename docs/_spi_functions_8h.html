@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.0.4-pub</span>
+   &#160;<span id="projectnumber">v2.1.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -65,6 +65,9 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Data Structures</a> &#124;
+<a href="#define-members">Macros</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">C:/Users/anolan3/Documents/iSensor-FX3-Firmware/SpiFunctions.h File Reference</div>  </div>
@@ -77,6 +80,24 @@ $(function() {
 </div>
 <p><a href="_spi_functions_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_bit_bang_spi_conf.html">BitBangSpiConf</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure to store configuration parameters for a bitbang SPI.  <a href="struct_bit_bang_spi_conf.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:a0871091ac711260182300d99d852b859"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a0871091ac711260182300d99d852b859">BITBANG_HALFCLOCK_OFFSET</a>&#160;&#160;&#160;11</td></tr>
+<tr class="separator:a0871091ac711260182300d99d852b859"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:ad5767ba5fb928632201d3cb2e4dce9e0"><td class="memItemLeft" align="right" valign="top"><a id="ad5767ba5fb928632201d3cb2e4dce9e0"></a>
+typedef struct <a class="el" href="struct_bit_bang_spi_conf.html">BitBangSpiConf</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#ad5767ba5fb928632201d3cb2e4dce9e0">BitBangSpiConf</a></td></tr>
+<tr class="memdesc:ad5767ba5fb928632201d3cb2e4dce9e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure to store configuration parameters for a bitbang SPI. <br /></td></tr>
+<tr class="separator:ad5767ba5fb928632201d3cb2e4dce9e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a788c3bd92096e55b7fde4da3a0308f5c"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a788c3bd92096e55b7fde4da3a0308f5c">AdiGetSpiSettings</a> ()</td></tr>
@@ -88,6 +109,9 @@ Functions</h2></td></tr>
 <tr class="memitem:aa083144a6203655613621a89d8e809e1"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#aa083144a6203655613621a89d8e809e1">AdiSpiResetFifo</a> (CyBool_t isTx, CyBool_t isRx)</td></tr>
 <tr class="memdesc:aa083144a6203655613621a89d8e809e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function resets the SPI FIFO and disables the SPI block after completion.  <a href="#aa083144a6203655613621a89d8e809e1">More...</a><br /></td></tr>
 <tr class="separator:aa083144a6203655613621a89d8e809e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ada9219b41ae6d89a54e2d37696c64a6b"><td class="memItemLeft" align="right" valign="top">CyU3PSpiConfig_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#ada9219b41ae6d89a54e2d37696c64a6b">AdiGetSpiConfig</a> ()</td></tr>
+<tr class="memdesc:ada9219b41ae6d89a54e2d37696c64a6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function parses the SPI control registers into an easier to work with config struct.  <a href="#ada9219b41ae6d89a54e2d37696c64a6b">More...</a><br /></td></tr>
+<tr class="separator:ada9219b41ae6d89a54e2d37696c64a6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a46d5ab32e1256b10aa2f6e2c7ebede7a"><td class="memItemLeft" align="right" valign="top"><a id="a46d5ab32e1256b10aa2f6e2c7ebede7a"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a46d5ab32e1256b10aa2f6e2c7ebede7a">AdiWaitForSpiNotBusy</a> ()</td></tr>
 <tr class="memdesc:a46d5ab32e1256b10aa2f6e2c7ebede7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Waits for the SPI controller busy bit to be not set. <br /></td></tr>
@@ -95,6 +119,13 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi
 <tr class="memitem:a46fad4317c94479eaf852e5b22ea4d2a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a46fad4317c94479eaf852e5b22ea4d2a">AdiSetSpiWordLength</a> (uint8_t wordLength)</td></tr>
 <tr class="memdesc:a46fad4317c94479eaf852e5b22ea4d2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the SPI controller word length (4 - 32 bits)  <a href="#a46fad4317c94479eaf852e5b22ea4d2a">More...</a><br /></td></tr>
 <tr class="separator:a46fad4317c94479eaf852e5b22ea4d2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91b6e4f6710b6e1c9f7eee02eb6613ca"><td class="memItemLeft" align="right" valign="top"><a id="a91b6e4f6710b6e1c9f7eee02eb6613ca"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a91b6e4f6710b6e1c9f7eee02eb6613ca">AdiPrintSpiConfig</a> (CyU3PSpiConfig_t config)</td></tr>
+<tr class="memdesc:a91b6e4f6710b6e1c9f7eee02eb6613ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints a given SPI config over the UART debug port. <br /></td></tr>
+<tr class="separator:a91b6e4f6710b6e1c9f7eee02eb6613ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72c5344f6d7ce3000731bd79737be26d"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a72c5344f6d7ce3000731bd79737be26d">AdiRestartSpi</a> ()</td></tr>
+<tr class="memdesc:a72c5344f6d7ce3000731bd79737be26d"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function restarts the SPI controller.  <a href="#a72c5344f6d7ce3000731bd79737be26d">More...</a><br /></td></tr>
+<tr class="separator:a72c5344f6d7ce3000731bd79737be26d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5254848805c4b8e74cbc8e94fa78307f"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a5254848805c4b8e74cbc8e94fa78307f">AdiTransferBytes</a> (uint32_t writeData)</td></tr>
 <tr class="memdesc:a5254848805c4b8e74cbc8e94fa78307f"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function performs a protocol agnostic SPI bi-directional SPI transfer of (1, 2, 4) bytes.  <a href="#a5254848805c4b8e74cbc8e94fa78307f">More...</a><br /></td></tr>
 <tr class="separator:a5254848805c4b8e74cbc8e94fa78307f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -107,6 +138,15 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi
 <tr class="memitem:ae7c601af6eb13c9caf138f6ccc145e16"><td class="memItemLeft" align="right" valign="top"><a id="ae7c601af6eb13c9caf138f6ccc145e16"></a>
 CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><b>AdiBulkByteTransfer</b> (uint16_t numBytes, uint16_t bytesPerCapture)</td></tr>
 <tr class="separator:ae7c601af6eb13c9caf138f6ccc145e16"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1341777b3be0c5885b2b76566e7827f2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a1341777b3be0c5885b2b76566e7827f2">AdiBitBangSpiTransfer</a> (uint8_t *MOSI, uint8_t *MISO, uint32_t BitCount, <a class="el" href="struct_bit_bang_spi_conf.html">BitBangSpiConf</a> config)</td></tr>
+<tr class="memdesc:a1341777b3be0c5885b2b76566e7827f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a single bit banged SPI transfer. Pins must already be configured as needed.  <a href="#a1341777b3be0c5885b2b76566e7827f2">More...</a><br /></td></tr>
+<tr class="separator:a1341777b3be0c5885b2b76566e7827f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acad9c35efa0de2b518ac623c35ca9de2"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#acad9c35efa0de2b518ac623c35ca9de2">AdiBitBangSpiSetup</a> (<a class="el" href="struct_bit_bang_spi_conf.html">BitBangSpiConf</a> config)</td></tr>
+<tr class="memdesc:acad9c35efa0de2b518ac623c35ca9de2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configures all pins and timers needed to bitbang a SPI connection.  <a href="#acad9c35efa0de2b518ac623c35ca9de2">More...</a><br /></td></tr>
+<tr class="separator:acad9c35efa0de2b518ac623c35ca9de2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9515c0308c76a45b338c9c3e47890017"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a9515c0308c76a45b338c9c3e47890017">AdiBitBangSpiHandler</a> ()</td></tr>
+<tr class="memdesc:a9515c0308c76a45b338c9c3e47890017"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function handles bit bang SPI requests from the control endpoint.  <a href="#a9515c0308c76a45b338c9c3e47890017">More...</a><br /></td></tr>
+<tr class="separator:a9515c0308c76a45b338c9c3e47890017"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Header file for all SPI related functions. </p>
@@ -117,7 +157,142 @@ CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><b>AdiBul
 <dl class="section author"><dt>Author</dt><dd>A. Nolan (<a href="#" onclick="location.href='mai'+'lto:'+'ale'+'x.'+'nol'+'an'+'@an'+'al'+'og.'+'co'+'m'; return false;">alex.<span style="display: none;">.nosp@m.</span>nola<span style="display: none;">.nosp@m.</span>n@ana<span style="display: none;">.nosp@m.</span>log.<span style="display: none;">.nosp@m.</span>com</a>) </dd>
 <dd>
 J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+'@an'+'al'+'og.'+'co'+'m'; return false;">juan.<span style="display: none;">.nosp@m.</span>chon<span style="display: none;">.nosp@m.</span>g@ana<span style="display: none;">.nosp@m.</span>log.<span style="display: none;">.nosp@m.</span>com</a>) </dd></dl>
-</div><h2 class="groupheader">Function Documentation</h2>
+</div><h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="a0871091ac711260182300d99d852b859"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0871091ac711260182300d99d852b859">&#9670;&nbsp;</a></span>BITBANG_HALFCLOCK_OFFSET</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define BITBANG_HALFCLOCK_OFFSET&#160;&#160;&#160;11</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Offset to make the short side of the bitbang SPI match long side. Approx. 62ns per tick </p>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="a9515c0308c76a45b338c9c3e47890017"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9515c0308c76a45b338c9c3e47890017">&#9670;&nbsp;</a></span>AdiBitBangSpiHandler()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">CyU3PReturnStatus_t AdiBitBangSpiHandler </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This function handles bit bang SPI requests from the control endpoint. </p>
+<dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the SPI bitbang operation.</dd></dl>
+<p>This function requires all data to have been retrieved from the control endpoint before being called. </p>
+
+</div>
+</div>
+<a id="acad9c35efa0de2b518ac623c35ca9de2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acad9c35efa0de2b518ac623c35ca9de2">&#9670;&nbsp;</a></span>AdiBitBangSpiSetup()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">CyU3PReturnStatus_t AdiBitBangSpiSetup </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_bit_bang_spi_conf.html">BitBangSpiConf</a>&#160;</td>
+          <td class="paramname"><em>config</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Configures all pins and timers needed to bitbang a SPI connection. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">config</td><td>A structure containing all the relevant bit banged SPI configuration parameters. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a1341777b3be0c5885b2b76566e7827f2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1341777b3be0c5885b2b76566e7827f2">&#9670;&nbsp;</a></span>AdiBitBangSpiTransfer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void AdiBitBangSpiTransfer </td>
+          <td>(</td>
+          <td class="paramtype">uint8_t *&#160;</td>
+          <td class="paramname"><em>MOSI</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t *&#160;</td>
+          <td class="paramname"><em>MISO</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>BitCount</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="struct_bit_bang_spi_conf.html">BitBangSpiConf</a>&#160;</td>
+          <td class="paramname"><em>config</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Performs a single bit banged SPI transfer. Pins must already be configured as needed. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">MOSI</td><td>A pointer to the master out data buffer. This data will be transmitted MSB first, over the MOSI line in config.</td></tr>
+    <tr><td class="paramname">MISO</td><td>A pointer to the data receive (rx) buffer. The data received from a slave will be placed here.</td></tr>
+    <tr><td class="paramname">BitCount</td><td>The number of bits to transfer.</td></tr>
+    <tr><td class="paramname">config</td><td>The configuration settings to use for the transfer.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>This function allows a user to use any pins on the FX3 as a low speed SPI master. The API provided is similar to the Cypress API for the hardware SPI. </p>
+
+</div>
+</div>
+<a id="ada9219b41ae6d89a54e2d37696c64a6b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ada9219b41ae6d89a54e2d37696c64a6b">&#9670;&nbsp;</a></span>AdiGetSpiConfig()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">CyU3PSpiConfig_t AdiGetSpiConfig </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This function parses the SPI control registers into an easier to work with config struct. </p>
+<dl class="section return"><dt>Returns</dt><dd>The current SPI config, as set in the hardware. </dd></dl>
+
+</div>
+</div>
 <a id="a788c3bd92096e55b7fde4da3a0308f5c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a788c3bd92096e55b7fde4da3a0308f5c">&#9670;&nbsp;</a></span>AdiGetSpiSettings()</h2>
 
@@ -164,6 +339,27 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the function.</dd></dl>
 <p>This function reads a single word over SPI. Note that reads are not "full duplex" and will require a discrete read to set the address to be read from (two 16 bit transactions per read). </p>
+
+</div>
+</div>
+<a id="a72c5344f6d7ce3000731bd79737be26d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a72c5344f6d7ce3000731bd79737be26d">&#9670;&nbsp;</a></span>AdiRestartSpi()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">CyU3PReturnStatus_t AdiRestartSpi </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This function restarts the SPI controller. </p>
+<dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the setConfig call after re-initialization.</dd></dl>
+<p>This function can be used to restore hardware SPI functionality after overriding the SPI pins to act as a bitbanged SPI port. This function can be called before or after the SPI controller has been initialized without causing problems. </p>
 
 </div>
 </div>

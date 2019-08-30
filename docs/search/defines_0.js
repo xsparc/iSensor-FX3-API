@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['adi_5fbitbang_5fspi',['ADI_BITBANG_SPI',['../main_8h.html#ae2cae78d6ffaeb70b824cdcf4851eee4',1,'main.h']]],
   ['adi_5fburst_5fstream_5fdone',['ADI_BURST_STREAM_DONE',['../_app_thread_8h.html#aba5c1bf8a07cc4510973f5b96faa942d',1,'AppThread.h']]],
   ['adi_5fburst_5fstream_5fenable',['ADI_BURST_STREAM_ENABLE',['../_app_thread_8h.html#a5f40211711dd1ce21d407ac5ea72ca02',1,'AppThread.h']]],
   ['adi_5fburst_5fstream_5fstart',['ADI_BURST_STREAM_START',['../_app_thread_8h.html#a41565af9ae5da9913e1be17cd8533b8d',1,'AppThread.h']]],
@@ -30,6 +31,7 @@ var searchData=
   ['adi_5fread_5fpin',['ADI_READ_PIN',['../main_8h.html#afba49f4d05f3731b39a722c7a6a22e06',1,'main.h']]],
   ['adi_5fread_5fspi_5fconfig',['ADI_READ_SPI_CONFIG',['../main_8h.html#a4518e6ad889955c77d2f76b86be7f4a1',1,'main.h']]],
   ['adi_5fread_5ftimer_5fvalue',['ADI_READ_TIMER_VALUE',['../main_8h.html#a89eb736aee3d19a30ea4ccd306b970f6',1,'main.h']]],
+  ['adi_5freset_5fspi',['ADI_RESET_SPI',['../main_8h.html#aa24753293e05408a3c51c892547d4841',1,'main.h']]],
   ['adi_5frt_5fstream_5fdone',['ADI_RT_STREAM_DONE',['../_app_thread_8h.html#ac5ff8e1f4d8af36d8b63ff106a114345',1,'AppThread.h']]],
   ['adi_5frt_5fstream_5fenable',['ADI_RT_STREAM_ENABLE',['../_app_thread_8h.html#aa41b4b43ca43cd26d2af997d4cb07276',1,'AppThread.h']]],
   ['adi_5frt_5fstream_5fstart',['ADI_RT_STREAM_START',['../_app_thread_8h.html#aea4d697ce8044fce01e790ee4b2d03bc',1,'AppThread.h']]],

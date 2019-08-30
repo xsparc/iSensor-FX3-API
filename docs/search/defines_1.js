@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['cy_5ffx_5fbulk_5fburst',['CY_FX_BULK_BURST',['../main_8h.html#ab12f852dbefaa3efed59479ca1910b10',1,'main.h']]]
+  ['bitbang_5fhalfclock_5foffset',['BITBANG_HALFCLOCK_OFFSET',['../_spi_functions_8h.html#a0871091ac711260182300d99d852b859',1,'SpiFunctions.h']]]
 ];

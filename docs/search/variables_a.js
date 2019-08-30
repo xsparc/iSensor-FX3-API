@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['pinexitenable',['PinExitEnable',['../struct_stream_state.html#adff3a3ce23fd26136d0354f2d518c164',1,'StreamState']]],
-  ['pinstartenable',['PinStartEnable',['../struct_stream_state.html#a15dc4ab7ae466aaff3ea8e36a5b496c5',1,'StreamState']]]
+  ['numbuffers',['NumBuffers',['../struct_stream_state.html#aac46e6503d65bc2bdd8b5f338fde7a3d',1,'StreamState']]],
+  ['numcaptures',['NumCaptures',['../struct_stream_state.html#a0a4365d72019a9a26b3b73f80b76b39f',1,'StreamState']]],
+  ['numrealtimecaptures',['NumRealTimeCaptures',['../struct_stream_state.html#ae7508d498a6d9019fdf897002babe7ed',1,'StreamState']]]
 ];
