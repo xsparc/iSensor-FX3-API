@@ -91,6 +91,11 @@ Partial Class FX3Connection
         Return resultBuf
     End Function
 
+    ''' <summary>
+    ''' Read a standard iSensors 16-bit register using a bitbang SPI connection
+    ''' </summary>
+    ''' <param name="addr">The address of the register to read</param>
+    ''' <returns>The register value</returns>
     Public Function BitBangReadReg16(addr As UInteger) As UShort
         Dim MOSI As New List(Of Byte)
         Dim buf() As Byte
@@ -107,6 +112,11 @@ Partial Class FX3Connection
         Return retValue
     End Function
 
+    ''' <summary>
+    ''' Write a byte to an iSensor register using a bitbang SPI connection
+    ''' </summary>
+    ''' <param name="addr">The address of the register to write to</param>
+    ''' <param name="data">The data to write to the register</param>
     Public Sub BitBangWriteRegByte(addr As Byte, data As Byte)
         Dim MOSI As New List(Of Byte)
         'Addr first (with write bit)
@@ -118,6 +128,10 @@ Partial Class FX3Connection
         BitBangSpi(16, 1, MOSI.ToArray(), m_StreamTimeout)
     End Sub
 
+    ''' <summary>
+    ''' Resets the hardware SPI pins to their default operating mode. Can be used to recover the SPI functionality after a bit-bang SPI transaction over the hardware SPI pins
+    ''' without having to reboot the FX3.
+    ''' </summary>
     Public Sub RestoreHardwareSpi()
         Dim buf(3) As Byte
         Dim status As UInt32
@@ -131,6 +145,11 @@ Partial Class FX3Connection
         End If
     End Sub
 
+    ''' <summary>
+    ''' Set the SCLK frequency for a bit banged SPI connection.
+    ''' </summary>
+    ''' <param name="Freq">The SPI frequency, in Hz</param>
+    ''' <returns>A boolean indicating if the frequency could be set.</returns>
     Public Function SetBitBangSpiFreq(Freq As UInteger) As Boolean
 
         Dim halfPeriodNsOffset As Double = 740

@@ -342,6 +342,33 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  <param name="TimeoutInMs">The time to wait on the bulk endpoint for a return transfer (in ms)</param>
  <returns>The data received over the selected MISO line</returns>
 </member>
+<member name="M:FX3Api.FX3Connection.BitBangReadReg16(System.UInt32)">
+ <summary>
+ Read a standard iSensors 16-bit register using a bitbang SPI connection
+ </summary>
+ <param name="addr">The address of the register to read</param>
+ <returns>The register value</returns>
+</member>
+<member name="M:FX3Api.FX3Connection.BitBangWriteRegByte(System.Byte,System.Byte)">
+ <summary>
+ Write a byte to an iSensor register using a bitbang SPI connection
+ </summary>
+ <param name="addr">The address of the register to write to</param>
+ <param name="data">The data to write to the register</param>
+</member>
+<member name="M:FX3Api.FX3Connection.RestoreHardwareSpi">
+ <summary>
+ Resets the hardware SPI pins to their default operating mode. Can be used to recover the SPI functionality after a bit-bang SPI transaction over the hardware SPI pins
+ without having to reboot the FX3.
+ </summary>
+</member>
+<member name="M:FX3Api.FX3Connection.SetBitBangSpiFreq(System.UInt32)">
+ <summary>
+ Set the SCLK frequency for a bit banged SPI connection.
+ </summary>
+ <param name="Freq">The SPI frequency, in Hz</param>
+ <returns>A boolean indicating if the frequency could be set.</returns>
+</member>
 <member name="P:FX3Api.FX3Connection.CrcFirstIndex">
  <summary>
  Gets or sets the index of the first burst data word used in CRC calculations.
@@ -1180,6 +1207,17 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  <summary>
  Enum of the possible DUT types for the ADcmXLx021
  </summary>
+</member>
+<member name="T:FX3Api.BitBangSpiConfig">
+ <summary>
+ This class stores all the relevant information about a given bit bang SPI connection.
+ </summary>
+</member>
+<member name="M:FX3Api.BitBangSpiConfig.#ctor(System.Boolean)">
+ <summary>
+ Constructor which lets you specify set of default pins to use as bit bang SPI pins
+ </summary>
+ <param name="OverrideHardwareSpi">If the constructed BitBangSpiConfig should use hardware SPI pins, or FX3GPIO</param>
 </member>
 <member name="M:FX3Api.BitBangSpiConfig.GetParameterArray">
  <summary>

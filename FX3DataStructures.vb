@@ -178,6 +178,9 @@ End Enum
 
 #Region "BitBang SPI Config Class"
 
+''' <summary>
+''' This class stores all the relevant information about a given bit bang SPI connection.
+''' </summary>
 Public Class BitBangSpiConfig
 
     Public CS As FX3PinObject
@@ -188,6 +191,10 @@ Public Class BitBangSpiConfig
     Public CSLagTicks As UShort
     Public SCLKHalfPeriodTicks As UShort
 
+    ''' <summary>
+    ''' Constructor which lets you specify set of default pins to use as bit bang SPI pins
+    ''' </summary>
+    ''' <param name="OverrideHardwareSpi">If the constructed BitBangSpiConfig should use hardware SPI pins, or FX3GPIO</param>
     Public Sub New(OverrideHardwareSpi As Boolean)
 
         If OverrideHardwareSpi Then
