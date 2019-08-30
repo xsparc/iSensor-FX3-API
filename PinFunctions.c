@@ -319,6 +319,13 @@ CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 	pinNumber = USBBuffer[0];
 	pinNumber |= (USBBuffer[1] << 8);
 
+	/* Check that GPIO is valid */
+	if(!CyU3PIsGpioValid(pinNumber))
+	{
+		CyU3PDebugPrint (4, "Error! Invalid GPIO pin number: %d\r\n", pinNumber);
+		return CY_U3P_ERROR_BAD_ARGUMENT;
+	}
+
 	if(EnablePWM)
 	{
 		//get the period
@@ -341,7 +348,7 @@ CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 		status = CyU3PDeviceGpioOverride(pinNumber, CyFalse);
 		if(status != CY_U3P_SUCCESS)
 		{
-			CyU3PDebugPrint (4, "Error! GPIO override for PWM mode failed, error code: 0x%s\r\n", status);
+			CyU3PDebugPrint (4, "Error! GPIO override for PWM mode failed, error code: 0x%x\r\n", status);
 			return status;
 		}
 
@@ -361,7 +368,7 @@ CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 		status = CyU3PGpioSetComplexConfig(pinNumber, &gpioComplexConfig);
 	    if (status != CY_U3P_SUCCESS)
 	    {
-	    	CyU3PDebugPrint (4, "Error! GPIO config for PWM mode failed, error code: 0x%s\r\n", status);
+	    	CyU3PDebugPrint (4, "Error! GPIO config for PWM mode failed, error code: 0x%x\r\n", status);
 	    	return status;
 	    }
 	}
@@ -452,8 +459,8 @@ CyU3PReturnStatus_t AdiPulseDrive()
 	//If config fails try to disable and reconfigure
 	if(status != CY_U3P_SUCCESS)
 	{
-		CyU3PDeviceGpioOverride(pinNumber, CyTrue);
 		CyU3PGpioDisable(pinNumber);
+		CyU3PDeviceGpioOverride(pinNumber, CyTrue);
 		status = CyU3PGpioSetSimpleConfig(pinNumber, &gpioConfig);
 		if(status != CY_U3P_SUCCESS)
 		{
@@ -677,6 +684,11 @@ CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength)
 CyU3PReturnStatus_t AdiSetPin(uint16_t pinNumber, CyBool_t polarity)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+	if(!CyU3PIsGpioValid(pinNumber))
+	{
+		CyU3PDebugPrint (4, "Error! Invalid GPIO pin number: %d\r\n", pinNumber);
+		return CY_U3P_ERROR_BAD_ARGUMENT;
+	}
 	//Configure pin as output and set the drive value
 	CyU3PGpioSimpleConfig_t gpioConfig;
 	gpioConfig.outValue = polarity;
@@ -685,12 +697,21 @@ CyU3PReturnStatus_t AdiSetPin(uint16_t pinNumber, CyBool_t polarity)
 	gpioConfig.driveHighEn = CyTrue;
 	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
 	status = CyU3PGpioSetSimpleConfig(pinNumber, &gpioConfig);
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PGpioDisable(pinNumber);
+		CyU3PDeviceGpioOverride(pinNumber, CyTrue);
+		status = CyU3PGpioSetSimpleConfig(pinNumber, &gpioConfig);
+		if(status != CY_U3P_SUCCESS)
+		{
+			CyU3PDebugPrint (4, "Error! Unable to configure selected pin as output, status error: 0x%x\r\n", status);
+		}
+	}
 	return status;
 }
 
 /**
-  * @brief This function blocks thread execution for a specified number of microseconds. It uses a complex GPIO
-  * timer running at 10MHz, which is scaled down from the 403.2MHz system clock.
+  * @brief This function blocks thread execution for a specified number of microseconds.
   *
   * @param numMicroSeconds The number of microseconds to stall for
   *
@@ -698,47 +719,12 @@ CyU3PReturnStatus_t AdiSetPin(uint16_t pinNumber, CyBool_t polarity)
  **/
 CyU3PReturnStatus_t AdiSleepForMicroSeconds(uint32_t numMicroSeconds)
 {
-	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-	uint32_t finalTickCount, currentTime;
-
-	//reset the timer register first to reduce overhead
-	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
-
-	//Offset the timer value
-	if(numMicroSeconds > ADI_MICROSECONDS_SLEEP_OFFSET)
+	if(numMicroSeconds < 2 || numMicroSeconds > 0xFFFFFFFF)
 	{
-		numMicroSeconds = numMicroSeconds - ADI_MICROSECONDS_SLEEP_OFFSET;
-	}
-	else
-	{
-		return status;
-	}
-
-	//Check if sleep is too long (would overflow on multiply) and return if needed
-	//Use the CyU3PThreadSleep() if longer sleep is needed
-	if(numMicroSeconds > 426172)
-	{
-		CyU3PDebugPrint (4, "ERROR: Sleep of %d microseconds not achievable with AdiSleepForMicroseconds, use system sleep call!\r\n", numMicroSeconds);
 		return CY_U3P_ERROR_BAD_ARGUMENT;
 	}
-
-	//calculate final tick count using MS multiplier
-	finalTickCount = numMicroSeconds * MS_TO_TICKS_MULT;
-
-	//scale back to microseconds
-	finalTickCount = finalTickCount / 1000;
-
-	currentTime = 0;
-	while(currentTime < finalTickCount)
-	{
-		//Set the pin config for sample now mode
-		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (FX3State.TimerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
-		//wait for sample to finish
-		while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
-		//read timer value
-		currentTime = GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
-	}
-	return status;
+	CyFx3BusyWait(numMicroSeconds - 2);
+	return CY_U3P_SUCCESS;
 }
 
 /**

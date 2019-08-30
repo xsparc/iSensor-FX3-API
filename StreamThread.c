@@ -318,7 +318,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamWork()
 
 	if (status != CY_U3P_SUCCESS)
 	{
-		CyU3PDebugPrint (4, "Waiting for the block xfer to finish failed!, error code = %d\r\n", status);
+		CyU3PDebugPrint (4, "Waiting for SPI DMA block xfer to finish failed!, error code: 0x%x\r\n", status);
 	}
 
 	//Check that we haven't captured the desired number of frames or were asked to kill the thread early
@@ -328,7 +328,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamWork()
 		status = CyU3PSpiDisableBlockXfer(CyTrue, CyTrue);
 		if(status != CY_U3P_SUCCESS)
 		{
-			CyU3PDebugPrint (4, "Disabling block transfer failed!, error code = %d\r\n", status);
+			CyU3PDebugPrint (4, "Disabling block transfer failed!, error code = 0x%x\r\n", status);
 		}
 		//Clear GPIO interrupts
 		GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
@@ -382,7 +382,7 @@ CyU3PReturnStatus_t AdiBurstStreamWork()
 	status = CyU3PDmaChannelSetupSendBuffer(&MemoryToSPI, &SpiDmaBuffer);
 	if(status != CY_U3P_SUCCESS)
 	{
-		CyU3PDebugPrint (4, "Setting up the MemoryToSpi buffer channel failed!, error code = %d\r\n", status);
+		CyU3PDebugPrint (4, "Setting up the MemoryToSpi buffer channel failed!, error code: 0x%x\r\n", status);
 		AdiAppErrorHandler(status);
 	}
 

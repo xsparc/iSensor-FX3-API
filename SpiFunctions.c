@@ -27,6 +27,31 @@ extern CyU3PDmaBuffer_t ManualDMABuffer;
 extern CyU3PDmaChannel ChannelToPC;
 
 /**
+  * @brief This function restarts the SPI controller.
+  *
+  * @return A status code indicating the success of the setConfig call after re-initialization.
+  *
+  * This function can be used to restore hardware SPI functionality after overriding the SPI pins
+  * to act as a bitbanged SPI port. This function can be called before or after the SPI controller
+  * has been initialized without causing problems.
+ **/
+CyU3PReturnStatus_t AdiRestartSpi()
+{
+	/* Deactivate SPI controller */
+	CyU3PSpiDeInit();
+	/* Restore pins */
+	CyU3PDeviceGpioRestore(53);
+	CyU3PDeviceGpioRestore(54);
+	CyU3PDeviceGpioRestore(55);
+	CyU3PDeviceGpioRestore(56);
+	/* Reinitialized */
+	CyU3PSpiInit();
+	/* Set the prior config */
+	return CyU3PSpiSetConfig(&FX3State.SpiConfig, NULL);
+}
+
+
+/**
   * @brief This function handles bit bang SPI requests from the control endpoint.
   *
   * @returns A status code indicating the success of the SPI bitbang operation.
@@ -91,17 +116,19 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 	{
 		CyU3PDebugPrint (4, "Bit bang SPI setup failed, error code: = 0x%x\r\n", status);
 	}
-
-	/* Perform transfers */
-	for(transferCounter = 0; transferCounter < numTransfers; transferCounter++)
+	else
 	{
-		/* Transfer data */
-		AdiBitBangSpiTransfer(MOSIPtr, MISOPtr, bitsPerTransfer, config);
-		/* Wait for stall time */
-		AdiSleepForMicroSeconds(FX3State.StallTime);
-		/* Update buffer pointers */
-		MOSIPtr += bytesPerTransfer;
-		MISOPtr += bytesPerTransfer;
+		/* Perform transfers */
+		for(transferCounter = 0; transferCounter < numTransfers; transferCounter++)
+		{
+			/* Transfer data */
+			AdiBitBangSpiTransfer(MOSIPtr, MISOPtr, bitsPerTransfer, config);
+			/* Wait for stall time */
+			CyFx3BusyWait(FX3State.StallTime - 2);
+			/* Update buffer pointers */
+			MOSIPtr += bytesPerTransfer;
+			MISOPtr += bytesPerTransfer;
+		}
 	}
 
 	/* Return MISO data over bulk buffer */
@@ -127,6 +154,27 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+
+	if(!CyU3PIsGpioValid(config.MOSI))
+	{
+		CyU3PDebugPrint (4, "Error! Invalid MOSI GPIO pin number: %d\r\n", config.MOSI);
+		return CY_U3P_ERROR_BAD_ARGUMENT;
+	}
+	if(!CyU3PIsGpioValid(config.SCLK))
+	{
+		CyU3PDebugPrint (4, "Error! Invalid SCLK GPIO pin number: %d\r\n", config.SCLK);
+		return CY_U3P_ERROR_BAD_ARGUMENT;
+	}
+	if(!CyU3PIsGpioValid(config.CS))
+	{
+		CyU3PDebugPrint (4, "Error! Invalid CS GPIO pin number: %d\r\n", config.CS);
+		return CY_U3P_ERROR_BAD_ARGUMENT;
+	}
+	if(!CyU3PIsGpioValid(config.MISO))
+	{
+		CyU3PDebugPrint (4, "Error! Invalid MISO GPIO pin number: %d\r\n", config.MISO);
+		return CY_U3P_ERROR_BAD_ARGUMENT;
+	}
 
 	/* Output config */
 	CyU3PGpioSimpleConfig_t gpioConfig;
@@ -188,68 +236,111 @@ CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 	return status;
 }
 
+/**
+  * @brief Performs a single bit banged SPI transfer. Pins must already be configured as needed.
+  *
+  * @param MOSI A pointer to the master out data buffer. This data will be transmitted MSB first, over the MOSI line in config.
+  *
+  * @param MISO A pointer to the data receive (rx) buffer. The data received from a slave will be placed here.
+  *
+  * @param BitCount The number of bits to transfer.
+  *
+  * @param config The configuration settings to use for the transfer.
+  *
+  * This function allows a user to use any pins on the FX3 as a low speed SPI master. The API
+  * provided is similar to the Cypress API for the hardware SPI.
+ **/
 void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, BitBangSpiConf config)
 {
 	/* Track the number of bits clocked */
-	uint32_t bitCounter, byteCounter, startTime, MOSIReg;
+	uint32_t bitCounter, byteCounter, highMask, lowMask, MOSIMask, finalTime, tempCnt;
 	uint8_t bytePosition;
-	CyBool_t MISOValue;
+	register uint32_t MISOValue;
+	register uvint32_t cycleTimer;
+	uvint32_t *SCLKPin, *CSPin, *MISOPin, *MOSIPin;
+
+	/* Set pin pointers */
+	MOSIPin = &GPIO->lpp_gpio_simple[config.MOSI];
+	MISOPin = &GPIO->lpp_gpio_simple[config.MISO];
+	CSPin = &GPIO->lpp_gpio_simple[config.CS];
+	SCLKPin = &GPIO->lpp_gpio_simple[config.SCLK];
+
+	/* Set the high and low masks (from SCLK initial value)*/
+	highMask = *SCLKPin;
+	highMask |= CY_U3P_LPP_GPIO_OUT_VALUE;
+	lowMask = highMask & ~CY_U3P_LPP_GPIO_OUT_VALUE;
+
+	/* Set the MOSI mask and clear output bit */
+	MOSIMask = *MOSIPin;
+	MOSIMask &= ~CY_U3P_LPP_GPIO_OUT_VALUE;
+
+	/* Calculate wait value for short half of period */
+	finalTime = config.HalfClockDelay + BITBANG_HALFCLOCK_OFFSET;
 
 	/* Drop chip select */
-	GPIO->lpp_gpio_simple[config.CS] &= ~CY_U3P_LPP_GPIO_OUT_VALUE;
+	*CSPin = lowMask;
 
 	/* Wait for CS lead delay */
-	startTime = AdiReadTimerRegValue();
-	while(AdiReadTimerRegValue() < (startTime + config.CSLeadDelay));
+	cycleTimer = 0;
+	while(cycleTimer < config.CSLeadDelay)
+	{
+		cycleTimer++;
+	}
 
 	/* main transmission loop */
 	bytePosition = 7;
 	byteCounter = 0;
+	tempCnt = 0;
 	for(bitCounter = 0; bitCounter < BitCount; bitCounter++)
 	{
-		/* Place output data bit on MOSI pin */
-		MOSIReg = GPIO->lpp_gpio_simple[config.MOSI];
-		MOSIReg &= ~CY_U3P_LPP_GPIO_OUT_VALUE;
-		GPIO->lpp_gpio_simple[config.MOSI] = MOSIReg | ((MOSI[byteCounter] >> bytePosition) & 0x1);
+		/* Place output data bit on MOSI pin (approx. 150ns) */
+		*MOSIPin = MOSIMask | ((MOSI[byteCounter] >> bytePosition) & 0x1);
 
 		/* Toggle SCLK low */
-		GPIO->lpp_gpio_simple[config.SCLK] &= ~CY_U3P_LPP_GPIO_OUT_VALUE;
+		*SCLKPin = lowMask;
 
 		/* Wait HalfClock period */
-		startTime = AdiReadTimerRegValue();
-		while(AdiReadTimerRegValue() < (startTime + config.HalfClockDelay));
+		cycleTimer = 0;
+		while(cycleTimer < finalTime)
+		{
+			cycleTimer++;
+		}
 
 		/* Toggle SCLK high */
-		GPIO->lpp_gpio_simple[config.SCLK] |= CY_U3P_LPP_GPIO_OUT_VALUE;
+		*SCLKPin = highMask;
 
-		/* Sample MISO pin */
-		MISOValue = (GPIO->lpp_gpio_simple[config.MISO] & CY_U3P_LPP_GPIO_IN_VALUE) >> 1;
+		/* Sample MISO pin - just sampling takes 200ns */
+		MISOValue = (*MISOPin & CY_U3P_LPP_GPIO_IN_VALUE) >> 1;
 		MISO[byteCounter] |= (MISOValue << bytePosition);
 
 		/* Wait HalfClock period */
-		startTime = AdiReadTimerRegValue();
-		while(AdiReadTimerRegValue() < (startTime + config.HalfClockDelay));
+		if(config.HalfClockDelay)
+		{
+			cycleTimer = 0;
+			while(cycleTimer < config.HalfClockDelay)
+			{
+				cycleTimer++;
+			}
+		}
 
-		/* Update counters */
-		if(bytePosition == 0)
-		{
-			byteCounter++;
-			bytePosition = 7;
-		}
-		else
-		{
-			bytePosition--;
-		}
+		/* Update counters (approx. 50ns) */
+		tempCnt++;
+		bytePosition = 7 - tempCnt;
+		byteCounter += (tempCnt >> 3);
+		tempCnt &= 0x7;
 	}
 
 	/* Wait for CS lag delay */
-	startTime = AdiReadTimerRegValue();
-	while(AdiReadTimerRegValue() < (startTime + config.CSLagDelay));
+	cycleTimer = 0;
+	while(cycleTimer < config.CSLagDelay)
+	{
+		cycleTimer++;
+	}
 
 	/* Restore CS, SCLK, MOSI to high */
-	GPIO->lpp_gpio_simple[config.CS] |= CY_U3P_LPP_GPIO_OUT_VALUE;
-	GPIO->lpp_gpio_simple[config.SCLK] |= CY_U3P_LPP_GPIO_OUT_VALUE;
-	GPIO->lpp_gpio_simple[config.MOSI] |= CY_U3P_LPP_GPIO_OUT_VALUE;
+	*CSPin = highMask;
+	*SCLKPin = highMask;
+	*MOSIPin = highMask;
 }
 
 /**

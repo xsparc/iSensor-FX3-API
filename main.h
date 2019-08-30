@@ -235,6 +235,9 @@ typedef struct StreamState
 /** Bitbang a SPI message on the selected pins */
 #define ADI_BITBANG_SPI							(0xCD)
 
+/** Reset the hardware SPI controller */
+#define ADI_RESET_SPI							(0xCE)
+
 /*
  * Clock defines
  */

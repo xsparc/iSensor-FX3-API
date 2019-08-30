@@ -44,6 +44,7 @@ CyU3PSpiConfig_t AdiGetSpiConfig();
 void AdiWaitForSpiNotBusy();
 void AdiSetSpiWordLength(uint8_t wordLength);
 void AdiPrintSpiConfig(CyU3PSpiConfig_t config);
+CyU3PReturnStatus_t AdiRestartSpi();
 
 /* SPI data transfer functions */
 CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData);
@@ -55,5 +56,8 @@ CyU3PReturnStatus_t AdiBulkByteTransfer(uint16_t numBytes, uint16_t bytesPerCapt
 void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, BitBangSpiConf config);
 CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config);
 CyU3PReturnStatus_t AdiBitBangSpiHandler();
+
+/** Offset to make the short side of the bitbang SPI match long side. Approx. 62ns per tick */
+#define BITBANG_HALFCLOCK_OFFSET 11
 
 #endif

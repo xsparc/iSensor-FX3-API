@@ -535,6 +535,17 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	status = AdiBitBangSpiHandler();
             	break;
 
+            case ADI_RESET_SPI:
+            	status = AdiRestartSpi();
+            	/* Return the status in bytes 0-3 */
+            	USBBuffer[0] = status & 0xFF;
+            	USBBuffer[1] = (status & 0xFF00) >> 8;
+            	USBBuffer[2] = (status & 0xFF0000) >> 16;
+            	USBBuffer[3] = (status & 0xFF000000) >> 24;
+            	CyU3PUsbSendEP0Data (wLength, USBBuffer);
+            	break;
+
+
             default:
                 // This is unknown request
 #ifdef VERBOSE_MODE
