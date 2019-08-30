@@ -725,7 +725,7 @@ Partial Class FX3Connection
     ''' <summary>
     ''' This function configures the selected pin to drive a pulse width modulated output.
     ''' </summary>
-    ''' <param name="Frequency">The desired PWM frequency, in Hz. Valid values are in the range of 0.1Hz (0.1) - 1MHz (1000000.0)</param>
+    ''' <param name="Frequency">The desired PWM frequency, in Hz. Valid values are in the range of 0.05Hz (0.05) - 10MHz (10000000.0)</param>
     ''' <param name="DutyCycle">The PWM duty cycle. Valid values are in the range 0.0 - 1.0. To achieve a "clock" signal set the duty cycle to 0.5</param>
     ''' <param name="Pin">The pin to configure as a PWM signal.</param>
     Public Sub StartPWM(ByVal Frequency As Double, ByVal DutyCycle As Double, ByVal Pin As IPinObject)
@@ -744,7 +744,7 @@ Partial Class FX3Connection
         Next
 
         'Validate frequency
-        If Frequency < 0.1 Or Frequency > 1000000 Then
+        If Frequency < 0.05 Or Frequency > 10000000 Then
             Throw New FX3ConfigurationException("ERROR: Invalid PWM frequency: " + Frequency.ToString() + "Hz")
         End If
 
@@ -761,8 +761,8 @@ Partial Class FX3Connection
         'Calculate the needed period and threshold value for the given setting
         Dim period, threshold As UInt32
 
-        'The base clock is 10.08MHz (403.2MHz / 40)
-        Dim baseClock As Double = 10080000
+        'The base clock is 201.6MHz (403.2MHz / 2)
+        Dim baseClock As Double = 201600000
 
         period = Convert.ToUInt32(baseClock / Frequency) - 1
         threshold = Convert.ToUInt32((baseClock / Frequency) * DutyCycle)
@@ -773,7 +773,7 @@ Partial Class FX3Connection
 
         'If the threshold is 0 throw an exception, this particular setting is not achievable by the board (min 1)
         If threshold < 1 Then
-            Throw New FX3ConfigurationException("ERROR: The selected PWM setting (Freq: " + Frequency.ToString() + "Hz, Duty Cycle: " + (DutyCycle * 100).ToString() + "%) is not achievable using a 10MHz clock")
+            Throw New FX3ConfigurationException("ERROR: The selected PWM setting (Freq: " + Frequency.ToString() + "Hz, Duty Cycle: " + (DutyCycle * 100).ToString() + "%) is not achievable using a 200MHz clock")
         End If
 
         'Create transfer buffer

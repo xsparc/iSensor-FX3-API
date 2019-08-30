@@ -131,4 +131,24 @@ Partial Class FX3Connection
         End If
     End Sub
 
+    Public Function SetBitBangSpiFreq(Freq As UInteger) As Boolean
+
+        Dim halfPeriodNsOffset As Double = 740
+        'Check if freq is more than max capable freq
+        If Freq > (1 / (2 * halfPeriodNsOffset * 10 ^ -9)) Then
+            m_BitBangSpi.SCLKHalfPeriodTicks = 0
+            Return False
+        End If
+
+        Dim desiredPeriodNS As Double
+        desiredPeriodNS = 10 ^ 9 / Freq
+        'There is a base half clock period of 740ns (atm). Each value added to that adds an additional 50ns
+        desiredPeriodNS = desiredPeriodNS / 2
+        desiredPeriodNS = desiredPeriodNS - halfPeriodNsOffset
+        m_BitBangSpi.SCLKHalfPeriodTicks = Math.Floor(desiredPeriodNS / 62)
+
+        Return True
+
+    End Function
+
 End Class
