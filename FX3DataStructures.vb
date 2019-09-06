@@ -189,7 +189,7 @@ Public Class BitBangSpiConfig
     Public MISO As FX3PinObject
     Public CSLeadTicks As UShort
     Public CSLagTicks As UShort
-    Public SCLKHalfPeriodTicks As UShort
+    Public SCLKHalfPeriodTicks As UInteger
 
     ''' <summary>
     ''' Constructor which lets you specify set of default pins to use as bit bang SPI pins
@@ -228,6 +228,8 @@ Public Class BitBangSpiConfig
         params.Add(MISO.pinConfig() And &HFF)
         params.Add(SCLKHalfPeriodTicks And &HFF)
         params.Add((SCLKHalfPeriodTicks And &HFF00) >> 8)
+        params.Add((SCLKHalfPeriodTicks And &HFF0000) >> 16)
+        params.Add((SCLKHalfPeriodTicks And &HFF000000) >> 24)
         params.Add(CSLeadTicks And &HFF)
         params.Add((CSLeadTicks And &HFF00) >> 8)
         params.Add(CSLagTicks And &HFF)

@@ -146,12 +146,23 @@ Partial Class FX3Connection
     End Sub
 
     ''' <summary>
-    ''' Set the SCLK frequency for a bit banged SPI connection.
+    ''' Set the SCLK frequency for a bit banged SPI connection. Overloaded to allow for a UInt
     ''' </summary>
     ''' <param name="Freq">The SPI frequency, in Hz</param>
     ''' <returns>A boolean indicating if the frequency could be set.</returns>
     Public Function SetBitBangSpiFreq(Freq As UInteger) As Boolean
 
+        Dim Freq_Dbl As Double = Convert.ToDouble(Freq)
+        Return SetBitBangSpiFreq(Freq_Dbl)
+
+    End Function
+
+    ''' <summary>
+    ''' Sets the SCLK frequency for a bit bang SPI connection. 
+    ''' </summary>
+    ''' <param name="Freq">The desired SPI frequency. Can go from 800KHz to approx 0.001Hz</param>
+    ''' <returns></returns>
+    Public Function SetBitBangSpiFreq(Freq As Double) As Boolean
         Dim halfPeriodNsOffset As Double = 740
         'Check if freq is more than max capable freq
         If Freq > (1 / (2 * halfPeriodNsOffset * 10 ^ -9)) Then
@@ -161,13 +172,12 @@ Partial Class FX3Connection
 
         Dim desiredPeriodNS As Double
         desiredPeriodNS = 10 ^ 9 / Freq
-        'There is a base half clock period of 740ns (atm). Each value added to that adds an additional 50ns
+        'There is a base half clock period of 740ns (atm). Each value added to that adds an additional 62ns
         desiredPeriodNS = desiredPeriodNS / 2
         desiredPeriodNS = desiredPeriodNS - halfPeriodNsOffset
         m_BitBangSpi.SCLKHalfPeriodTicks = Math.Floor(desiredPeriodNS / 62)
 
         Return True
-
     End Function
 
 End Class
