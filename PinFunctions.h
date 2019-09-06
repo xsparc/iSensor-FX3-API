@@ -72,6 +72,7 @@ uint32_t AdiReadTimerRegValue();
 /*
  * ADI GPIO Event Handler Definitions
  */
+
 #define ADI_DIO1_INTERRUPT_FLAG					(1 << 0)
 #define ADI_DIO2_INTERRUPT_FLAG					(1 << 1)
 #define ADI_DIO3_INTERRUPT_FLAG					(1 << 2)

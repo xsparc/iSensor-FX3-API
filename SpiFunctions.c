@@ -79,18 +79,20 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 	config.MISO = USBBuffer[3];
 	config.HalfClockDelay = USBBuffer[4];
 	config.HalfClockDelay |= (USBBuffer[5] << 8);
-	config.CSLeadDelay = USBBuffer[6];
-	config.CSLeadDelay |= (USBBuffer[7] << 8);
-	config.CSLagDelay = USBBuffer[8];
-	config.CSLagDelay |= (USBBuffer[9] << 8);
-	bitsPerTransfer = USBBuffer[10];
-	bitsPerTransfer |= (USBBuffer[11] << 8);
-	bitsPerTransfer |= (USBBuffer[12] << 16);
-	bitsPerTransfer |= (USBBuffer[13] << 24);
-	numTransfers = USBBuffer[14];
-	numTransfers |= (USBBuffer[15] << 8);
-	numTransfers |= (USBBuffer[16] << 16);
-	numTransfers |= (USBBuffer[17] << 24);
+	config.HalfClockDelay |= (USBBuffer[6] << 16);
+	config.HalfClockDelay |= (USBBuffer[7] << 24);
+	config.CSLeadDelay = USBBuffer[8];
+	config.CSLeadDelay |= (USBBuffer[9] << 8);
+	config.CSLagDelay = USBBuffer[10];
+	config.CSLagDelay |= (USBBuffer[11] << 8);
+	bitsPerTransfer = USBBuffer[12];
+	bitsPerTransfer |= (USBBuffer[13] << 8);
+	bitsPerTransfer |= (USBBuffer[14] << 16);
+	bitsPerTransfer |= (USBBuffer[15] << 24);
+	numTransfers = USBBuffer[16];
+	numTransfers |= (USBBuffer[17] << 8);
+	numTransfers |= (USBBuffer[18] << 16);
+	numTransfers |= (USBBuffer[19] << 24);
 
 	/* Calculate bytes per transfer */
 	bytesPerTransfer = bitsPerTransfer >> 3;
@@ -106,9 +108,9 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 	/* Start MISO pointer at bulk buffer */
 	MISOPtr = BulkBuffer;
 
-	/* Start MOSI pointer at USBBuffer[18] */
+	/* Start MOSI pointer at USBBuffer[20] */
 	MOSIPtr = USBBuffer;
-	MOSIPtr += 18;
+	MOSIPtr += 20;
 
 	/* Setup the GPIO selected */
 	status = AdiBitBangSpiSetup(config);

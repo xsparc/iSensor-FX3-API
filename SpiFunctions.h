@@ -36,7 +36,7 @@ typedef struct BitBangSpiConf
 	/** The SPI clock pin number */
 	uint8_t SCLK;
 	/** The delay per half-period of the SPI clock. Approx. 62ns per. */
-	uint16_t HalfClockDelay;
+	uint32_t HalfClockDelay;
 	/** The delay after dropping CS before toggling SCLK */
 	uint16_t CSLeadDelay;
 	/** The delay after finishing SCLKs before raising CS */
