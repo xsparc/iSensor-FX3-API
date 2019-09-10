@@ -165,6 +165,19 @@ Partial Class FX3Connection
     End Sub
 
     ''' <summary>
+    ''' Property to choose if the readback from the 16 bit trigger word at the start of each burst is discarded or not
+    ''' </summary>
+    ''' <returns></returns>
+    Public Property StripBurstTriggerWord As Boolean
+        Get
+            Return m_StripBurstTriggerWord
+        End Get
+        Set(value As Boolean)
+            m_StripBurstTriggerWord = value
+        End Set
+    End Property
+
+    ''' <summary>
     ''' This function reads burst stream data from the DUT over the streaming endpoint. It is intended to operate in its own thread, and should not be called directly.
     ''' </summary>
     Private Sub BurstStreamManager()
@@ -231,7 +244,9 @@ Partial Class FX3Connection
                     'Once the end of each frame is reached add it to the queue
                     If frameIndex >= frameLength Then
                         'Remove trigger word entry
-                        frameBuilder.RemoveAt(0)
+                        If m_StripBurstTriggerWord Then
+                            frameBuilder.RemoveAt(0)
+                        End If
                         'Enqueue data into thread-safe queue
                         m_StreamData.Enqueue(frameBuilder.ToArray())
                         'Increment the shared frame counter

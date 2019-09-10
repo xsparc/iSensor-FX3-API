@@ -167,6 +167,9 @@ Public Class FX3Connection
     'Store bitbang SPI config
     Private m_BitBangSpi As BitBangSpiConfig
 
+    'Track if the trigger word read back should be included in a burst stream transaction
+    Private m_StripBurstTriggerWord As Boolean
+
     'Events
 
     ''' <summary>
@@ -262,6 +265,9 @@ Public Class FX3Connection
 
         'set bitbang spi config
         m_BitBangSpi = New BitBangSpiConfig(False)
+
+        'strip trigger word readback by default
+        m_StripBurstTriggerWord = True
 
     End Sub
 
