@@ -46,7 +46,7 @@ The two repositories listed below were developed alongside this firmware and pro
 
 1. [iSensor FX3 API](https://github.com/juchong/iSensor-FX3-API)
 
-2. [iSensor FX3 Example Gui](https://github.com/juchong/iSensor-FX3-Example-Gui)
+2. [iSensor FX3 Example Gui](https://github.com/juchong/iSensor-FX3-ExampleGui)
 
 ## Debugging
 
