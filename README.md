@@ -50,7 +50,7 @@ As mentioned above, the two repositories listed below were developed alongside t
 
 1. [iSensor FX3 Firmware](https://github.com/juchong/iSensor-FX3-Firmware)
 
-2. [iSensor FX3 Example Gui](https://github.com/juchong/iSensor-FX3-Example-Gui)
+2. [iSensor FX3 Example Gui](https://github.com/juchong/iSensor-FX3-ExampleGui)
 
 ## iSensor-Specific Library Information
 
