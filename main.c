@@ -416,21 +416,20 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 
             	break;
 
-			//Burst stream control for IMUs
+			/* Burst stream control for IMUs */
 			case ADI_STREAM_BURST_DATA:
-            	//Start, stop, async stop depending on index
+            	/* Start, stop, async stop depending on index */
             	switch(wIndex)
             	{
             	case ADI_STREAM_START_CMD:
+            		/* Set event handler */
             		status = CyU3PEventSet(&EventHandler, ADI_BURST_STREAM_START, CYU3P_EVENT_OR);
             		break;
             	case ADI_STREAM_DONE_CMD:
+            		/* Get the data from the control endpoint */
+            		CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+            		/* Set event handler*/
             		status = CyU3PEventSet(&EventHandler, ADI_BURST_STREAM_DONE, CYU3P_EVENT_OR);
-                	USBBuffer[0] = status & 0xFF;
-                	USBBuffer[1] = (status & 0xFF00) >> 8;
-                	USBBuffer[2] = (status & 0xFF0000) >> 16;
-                	USBBuffer[3] = (status & 0xFF000000) >> 24;
-                	CyU3PUsbSendEP0Data (wLength, USBBuffer);
             		break;
             	case ADI_STREAM_STOP_CMD:
             		status = CyU3PEventSet(&EventHandler, ADI_BURST_STREAM_STOP, CYU3P_EVENT_OR);
