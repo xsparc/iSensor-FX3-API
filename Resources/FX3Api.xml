@@ -66,6 +66,16 @@ FX3Api
  <param name="FX3SerialNum">Serial number of the board</param>
  <param name="DisconnectTime">Time (in ms) elapsed between the disconnect call and board re-enumeration</param>
 </member>
+<member name="E:FX3Api.FX3Connection.NewBufferAvailable">
+ <summary>
+ This event is raised when there is a new buffer available from a buffered stream
+ </summary>
+</member>
+<member name="E:FX3Api.FX3Connection.StreamFinished">
+ <summary>
+ This event is raised when a stream is finished
+ </summary>
+</member>
 <member name="M:FX3Api.FX3Connection.#ctor(System.String,System.String,FX3Api.DeviceType)">
  <summary>
  Class Constructor. Loads SPI settings and default values for the interface, and starts a background thread to manage programming newly
@@ -442,6 +452,12 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  </summary>
  <param name="MillisecondsTimeout">The time to wait trying to acquire the stream mutex</param>
  <returns>If the stream wait was successful</returns>
+</member>
+<member name="M:FX3Api.FX3Connection.EnqueueStreamData(System.UInt16[]@)">
+ <summary>
+ Place data in the thread safe queue and raise a buffer available event
+ </summary>
+ <param name="buf"></param>
 </member>
 <member name="M:FX3Api.FX3Connection.StartBurstStream(System.UInt32)">
  <summary>
@@ -1185,6 +1201,11 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  Sets/Gets the data ready polarity for the ISpi32Interface.
  </summary>
  <returns></returns>
+</member>
+<member name="T:FX3Api.StreamType">
+ <summary>
+ Enum of all possible stream types which can be running
+ </summary>
 </member>
 <member name="T:FX3Api.EndpointAddresses">
  <summary>

@@ -8,6 +8,17 @@ Imports AdisApi
 #Region "Enums"
 
 ''' <summary>
+''' Enum of all possible stream types which can be running
+''' </summary>
+Public Enum StreamType
+    None = 0
+    BurstStream = 1
+    RealTimeStream = 2
+    GenericStream = 3
+    TransferStream = 4
+End Enum
+
+''' <summary>
 ''' This enum lists all USB endpoints generated and used by the application firmware.
 ''' </summary>
 Public Enum EndpointAddresses

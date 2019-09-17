@@ -103,7 +103,7 @@ Partial Class FX3Connection
     ''' <param name="numBuffers">The total number of buffers to read. One buffer is either a frame or a set of register reads</param>
     ''' <param name="timeoutSeconds">The bulk endpoint timeout time</param>
     ''' <param name="worker">A Background worker object which can be used by a GUI to track the current stream status and send cancellation requests</param>
-    Public Sub StartBufferedStream(ByVal addrData As IEnumerable(Of AddrDataPair), ByVal numCaptures As UInteger, ByVal numBuffers As UInteger, ByVal timeoutSeconds As Integer, ByVal worker As BackgroundWorker) Implements IRegInterface.StartBufferedStream
+    Public Sub StartBufferedStream(addrData As IEnumerable(Of AddrDataPair), numCaptures As UInteger, numBuffers As UInteger, timeoutSeconds As Integer, worker As BackgroundWorker) Implements IRegInterface.StartBufferedStream
 
         'Check the worker status
         Dim reportProgress As Boolean = Not IsNothing(worker)
@@ -181,21 +181,19 @@ Partial Class FX3Connection
     ''' Stops the currently running data stream, if any.
     ''' </summary>
     Public Sub StopStream() Implements IRegInterface.StopStream
-
-        'If the DUT is set to ADcmXLx021 and it is streaming then stop
-        If m_StreamThreadRunning Then
-            If PartType = DUTType.ADcmXL1021 Or PartType = DUTType.ADcmXL2021 Or PartType = DUTType.ADcmXL3021 Then
+        'depending on the stream mode, cancel as needed
+        Select Case m_StreamType
+            Case StreamType.BurstStream
+                StopBurstStream()
+            Case StreamType.GenericStream
+                StopGenericStream()
+            Case StreamType.RealTimeStream
                 StopRealTimeStreaming()
-            Else
-                'If streaming for other device is running then stop the stream
-                If BurstMode = 0 Then
-                    StopGenericStream()
-                Else
-                    StopBurstStream()
-                End If
-            End If
-        End If
-
+            Case StreamType.TransferStream
+                ISpi32Interface_StopStream()
+            Case Else
+                m_StreamType = StreamType.None
+        End Select
     End Sub
 
     ''' <summary>

@@ -6,6 +6,7 @@
 Imports System.Collections.Concurrent
 Imports System.Threading
 Imports AdisApi
+Imports StreamDataLogger
 
 Partial Class FX3Connection
 
@@ -64,6 +65,34 @@ Partial Class FX3Connection
         Return lockAquired
 
     End Function
+
+    ''' <summary>
+    ''' Place data in the thread safe queue and raise a buffer available event
+    ''' </summary>
+    ''' <param name="buf"></param>
+    Private Sub EnqueueStreamData(ByRef buf As UShort())
+        m_StreamData.Enqueue(buf)
+        RaiseEvent NewBufferAvailable(m_StreamData.Count())
+    End Sub
+
+    Public Sub CancelStreamAsync() Implements IStreamEventProducer.CancelStreamAsync
+        StopStream()
+    End Sub
+
+    Private Sub ExitStreamThread()
+        'Set thread state flags
+        m_StreamThreadRunning = False
+
+        'Reset stream type to none
+        m_StreamType = StreamType.None
+
+        'Release the mutex
+        m_StreamMutex.ReleaseMutex()
+
+        'Raise stream done event
+        RaiseEvent StreamFinished()
+    End Sub
+
 #End Region
 
 #Region "Burst Stream Functions"
@@ -108,6 +137,9 @@ Partial Class FX3Connection
 
         'Set the total number of frames to read
         m_TotalBuffersToRead = numBuffers
+
+        'Set the stream type
+        m_StreamType = StreamType.BurstStream
 
         'Spin up a BurstStreamManager thread
         m_StreamThread = New Thread(AddressOf BurstStreamManager)
@@ -238,7 +270,7 @@ Partial Class FX3Connection
                             frameBuilder.RemoveAt(0)
                         End If
                         'Enqueue data into thread-safe queue
-                        m_StreamData.Enqueue(frameBuilder.ToArray())
+                        EnqueueStreamData(frameBuilder.ToArray())
                         'Increment the shared frame counter
                         Interlocked.Increment(m_FramesRead)
                         'Increment the local frame counter
@@ -262,11 +294,7 @@ Partial Class FX3Connection
             End If
         End While
 
-        'Update m_StreamThreadRunning state variable
-        m_StreamThreadRunning = False
-
-        'Release the mutex
-        m_StreamMutex.ReleaseMutex()
+        ExitStreamThread()
 
     End Sub
 
@@ -291,6 +319,9 @@ Partial Class FX3Connection
         'Buffer to hold command data
         Dim buf(3) As Byte
 
+        'Stop the stream manager thread
+        m_StreamThreadRunning = False
+
         'Configure the control endpoint
         ConfigureControlEndpoint(USBCommands.ADI_STREAM_GENERIC_DATA, False)
         m_ActiveFX3.ControlEndPt.Value = 0
@@ -300,9 +331,6 @@ Partial Class FX3Connection
         If Not XferControlData(buf, 4, 2000) Then
             Throw New FX3CommunicationException("ERROR: Timeout occurred when stopping a generic stream")
         End If
-
-        'Stop the stream manager thread
-        m_StreamThreadRunning = False
 
     End Sub
 
@@ -351,6 +379,9 @@ Partial Class FX3Connection
 
         'Reinitialize the data queue
         m_StreamData = New ConcurrentQueue(Of UShort())
+
+        'Set the stream type
+        m_StreamType = StreamType.GenericStream
 
         'Start the Generic Stream Thread
         m_StreamThread = New Thread(AddressOf GenericStreamManager)
@@ -464,7 +495,7 @@ Partial Class FX3Connection
                 For bufIndex = 0 To (transferSize - 2) Step 2
                     bufferBuilder.Add(BitConverter.ToUInt16(buf, bufIndex))
                     If bufferBuilder.Count() * 2 >= BytesPerBuffer Then
-                        m_StreamData.Enqueue(bufferBuilder.ToArray())
+                        EnqueueStreamData(bufferBuilder.ToArray())
                         Interlocked.Increment(m_FramesRead)
                         bufferBuilder.Clear()
                         numBuffersRead = numBuffersRead + 1
@@ -481,19 +512,18 @@ Partial Class FX3Connection
                         End If
                     End If
                 Next
-            Else
+            ElseIf m_StreamThreadRunning Then
                 'Exit for a failed data transfer
                 Console.WriteLine("Transfer failed during generic stream. Error code: " + StreamingEndPt.LastError.ToString() + " (0x" + StreamingEndPt.LastError.ToString("X4") + ")")
                 StopGenericStream()
                 Exit While
+            Else
+                'Exit for a cancel
+                Exit While
             End If
         End While
 
-        'Set thread state flags
-        m_StreamThreadRunning = False
-
-        'Release the mutex
-        m_StreamMutex.ReleaseMutex()
+        ExitStreamThread()
 
     End Sub
 
@@ -549,6 +579,9 @@ Partial Class FX3Connection
 
         'Set the total number of frames to read
         m_TotalBuffersToRead = numFrames
+
+        'Set the stream type
+        m_StreamType = StreamType.RealTimeStream
 
         'Spin up a RealTimeStreamManager thread
         m_StreamThread = New Thread(AddressOf RealTimeStreamManager)
@@ -679,7 +712,7 @@ Partial Class FX3Connection
                     frameIndex = frameIndex + 2
                     'Once the end of each frame is reached add it to the queue
                     If frameIndex >= frameLength Then
-                        m_StreamData.Enqueue(frameBuilder.ToArray())
+                        EnqueueStreamData(frameBuilder.ToArray())
                         'Increment shared frame counter
                         Interlocked.Increment(m_FramesRead)
                         framesCounter = framesCounter + 1
@@ -702,11 +735,7 @@ Partial Class FX3Connection
             End If
         End While
 
-        'Update m_StreamThreadRunning state variable
-        m_StreamThreadRunning = False
-
-        'Release the mutex
-        m_StreamMutex.ReleaseMutex()
+        ExitStreamThread()
 
     End Sub
 

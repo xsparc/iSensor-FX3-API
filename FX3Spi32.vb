@@ -189,9 +189,12 @@ Partial Class FX3Connection
 
         'Setup the stream
         BytesPerUsbBuffer = ISpi32TransferStreamSetup(WriteData, numCaptures, numBuffers)
-
         streamArgs.Add(BytesPerUsbBuffer)
         streamArgs.Add(WriteData.Count() * 4 * numCaptures)
+
+        'Set the stream type
+        m_StreamType = StreamType.TransferStream
+
         'Start the streaming thread
         m_StreamThread = New Thread(AddressOf ISpi32InterfaceStreamWorker)
         m_StreamThread.Start(streamArgs)
@@ -394,6 +397,8 @@ Partial Class FX3Connection
                     bufferBuilder.Add(BitConverter.ToUInt32(buf, bufIndex))
                     If bufferBuilder.Count() * 4 >= BytesPerBuffer Then
                         m_TransferStreamData.Enqueue(bufferBuilder.ToArray())
+                        'Raise event indicating new data available
+                        RaiseEvent NewBufferAvailable(m_TransferStreamData.Count())
                         Interlocked.Increment(m_FramesRead)
                         bufferBuilder.Clear()
                         numBuffersRead = numBuffersRead + 1
@@ -414,11 +419,8 @@ Partial Class FX3Connection
             End If
         End While
 
-        'Set thread state flags
-        m_StreamThreadRunning = False
-
-        'Release the mutex
-        m_StreamMutex.ReleaseMutex()
+        'Clean up
+        ExitStreamThread()
 
     End Sub
 
@@ -439,18 +441,11 @@ Partial Class FX3Connection
 
         'Set up variables for return buffer
         Dim buffer() As UInteger = Nothing
-        Dim validData As Boolean = False
-        m_streamTimeoutTimer.Restart()
 
-        'Wait for a buffer to be available and dequeue
-        While (Not validData) And (m_streamTimeoutTimer.ElapsedMilliseconds < m_StreamTimeout * 1000)
-            validData = m_TransferStreamData.TryDequeue(buffer)
-            If Not validData Then
-                System.Threading.Thread.Sleep(10)
-            End If
-        End While
+        'Try to dequeue a buffer
+        m_TransferStreamData.TryDequeue(buffer)
+
         Return buffer
-
     End Function
 
     ''' <summary>

@@ -10,13 +10,14 @@ Imports System.Threading
 Imports System.Collections.Concurrent
 Imports System.Reflection
 Imports Microsoft.VisualBasic.ApplicationServices
+Imports StreamDataLogger
 
 ''' <summary>
 ''' This is the primary class for interfacing with the FX3 based eval platform. Implements IRegInterface, ISpi32Interface, and IPinFcns,
 ''' in addition to a superset of extra interfacing functions specific to the FX3 platform.
 ''' </summary>
 Public Class FX3Connection
-    Implements IRegInterface, IPinFcns, ISpi32Interface
+    Implements IRegInterface, IPinFcns, ISpi32Interface, IStreamEventProducer
 
 #Region "Interface Variable Declaration"
 
@@ -170,13 +171,16 @@ Public Class FX3Connection
     'Track if the trigger word read back should be included in a burst stream transaction
     Private m_StripBurstTriggerWord As Boolean
 
+    'Track which stream type is running
+    Private m_StreamType As StreamType
+
     'Events
 
     ''' <summary>
     ''' This event is raised when the active board is disconnected unexpectedly (IE unplugged)
     ''' </summary>
     ''' <param name="FX3SerialNum">Serial number of the board which was disconnected</param>
-    Event UnexpectedDisconnect(ByVal FX3SerialNum As String)
+    Public Event UnexpectedDisconnect(ByVal FX3SerialNum As String)
 
     ''' <summary>
     ''' This event is raised when the disconnect event for a board has finished, and it is reprogrammed with the ADI bootloader. This event only is triggered for boards
@@ -184,7 +188,17 @@ Public Class FX3Connection
     ''' </summary>
     ''' <param name="FX3SerialNum">Serial number of the board</param>
     ''' <param name="DisconnectTime">Time (in ms) elapsed between the disconnect call and board re-enumeration</param>
-    Event DisconnectFinished(ByVal FX3SerialNum As String, ByVal DisconnectTime As Integer)
+    Public Event DisconnectFinished(ByVal FX3SerialNum As String, ByVal DisconnectTime As Integer)
+
+    ''' <summary>
+    ''' This event is raised when there is a new buffer available from a buffered stream
+    ''' </summary>
+    Public Event NewBufferAvailable As IStreamEventProducer.NewBufferAvailableEventHandler Implements IStreamEventProducer.NewBufferAvailable
+
+    ''' <summary>
+    ''' This event is raised when a stream is finished
+    ''' </summary>
+    Public Event StreamFinished As IStreamEventProducer.StreamFinishedEventHandler Implements IStreamEventProducer.StreamFinished
 
 #End Region
 
@@ -249,7 +263,8 @@ Public Class FX3Connection
         m_StreamMutex = New Mutex()
         m_TotalBuffersToRead = 0
         m_numBadFrames = 0
-        m_StreamTimeout = 5
+        m_StreamTimeout = 10
+        m_StreamType = StreamType.None
 
         'Initialize control endpoint mutex
         m_ControlMutex = New Mutex()
@@ -932,9 +947,10 @@ Public Class FX3Connection
         m_streamTimeoutTimer.Restart()
 
         'Wait for a buffer to be available and dequeue
-        While (Not validData) And (m_streamTimeoutTimer.ElapsedMilliseconds < m_StreamTimeout * 1000)
-            validData = m_StreamData.TryDequeue(buffer)
-        End While
+        'While (Not validData) And (m_streamTimeoutTimer.ElapsedMilliseconds < m_StreamTimeout * 1000)
+        '    validData = m_StreamData.TryDequeue(buffer)
+        'End While
+        m_StreamData.TryDequeue(buffer)
         Return buffer
     End Function
 

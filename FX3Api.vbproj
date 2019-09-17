@@ -158,6 +158,12 @@
   <ItemGroup>
     <EmbeddedResource Include="bin\CurrentURL.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\StreamDataLogger\StreamDataLogger.vbproj">
+      <Project>{6c4fda58-8972-43a9-9452-d76e54f8f0fb}</Project>
+      <Name>StreamDataLogger</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /Y "$(ProjectDir)\bin\Debug\FX3Api.dll" "$(ProjectDir)\Resources\FX3Api.dll"
