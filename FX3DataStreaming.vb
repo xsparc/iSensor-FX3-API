@@ -155,13 +155,13 @@ Partial Class FX3Connection
         'Buffer to store command data
         Dim buf(3) As Byte
 
+        'Stop the stream manager thread
+        m_StreamThreadRunning = False
+
         'Configure the endpoint
         ConfigureControlEndpoint(USBCommands.ADI_STREAM_BURST_DATA, False)
         m_ActiveFX3.ControlEndPt.Value = 0
         m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_STOP_CMD
-
-        'Stop the stream manager thread
-        m_StreamThreadRunning = False
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 2000) Then
@@ -286,10 +286,13 @@ Partial Class FX3Connection
                         End If
                     End If
                 Next
-            Else
+            ElseIf m_StreamThreadRunning Then
                 Console.WriteLine("Transfer failed during burst stream. Error code: " + StreamingEndPt.LastError.ToString() + " (0x" + StreamingEndPt.LastError.ToString("X4") + ")")
                 StopBurstStream()
                 'Exit streaming mode if the transfer fails
+                Exit While
+            Else
+                'exiting due to cancel
                 Exit While
             End If
         End While
@@ -597,6 +600,9 @@ Partial Class FX3Connection
         'Buffer to hold command data
         Dim buf(3) As Byte
 
+        'Stop the stream manager thread
+        m_StreamThreadRunning = False
+
         'Configure the control endpoint
         ConfigureControlEndpoint(USBCommands.ADI_STREAM_REALTIME, False)
         m_ActiveFX3.ControlEndPt.Value = m_pinExit
@@ -606,10 +612,6 @@ Partial Class FX3Connection
         If Not XferControlData(buf, 4, 2000) Then
             Throw New FX3CommunicationException("ERROR: Timeout occurred while stopping a real time stream")
         End If
-
-        'Stop the stream manager thread
-        m_StreamThreadRunning = False
-
     End Sub
 
     Private Sub RealTimeStreamingDone()
@@ -727,10 +729,13 @@ Partial Class FX3Connection
                         End If
                     End If
                 Next
-            Else
+            ElseIf m_StreamThreadRunning Then
                 'Exit streaming mode if the transfer fails
                 Console.WriteLine("Transfer failed during AdCMXL real time stream. Error code: " + StreamingEndPt.LastError.ToString() + " (0x" + StreamingEndPt.LastError.ToString("X4") + ")")
                 StopRealTimeStreaming()
+                Exit While
+            Else
+                'exiting due to cancel
                 Exit While
             End If
         End While

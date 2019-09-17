@@ -152,6 +152,9 @@ Partial Class FX3Connection
         Dim buf(3) As Byte
         Dim status As UInteger
 
+        'send stop stream command to thread
+        m_StreamThreadRunning = False
+
         'Configure the control endpoint
         ConfigureControlEndpoint(USBCommands.ADI_TRANSFER_STREAM, False)
         m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_STOP_CMD
@@ -411,10 +414,13 @@ Partial Class FX3Connection
                         End If
                     End If
                 Next
-            Else
+            ElseIf m_StreamThreadRunning Then
                 'Exit for a failed data transfer
                 Console.WriteLine("Transfer failed during transfer stream. Error code: " + StreamingEndPt.LastError.ToString() + " (0x" + StreamingEndPt.LastError.ToString("X4") + ")")
                 ISpi32Interface_StopStream()
+                Exit While
+            Else
+                'exit due to stream cancel
                 Exit While
             End If
         End While
