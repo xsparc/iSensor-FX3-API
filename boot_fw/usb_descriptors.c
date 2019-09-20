@@ -86,24 +86,49 @@ unsigned char gbLangIDDesc[] =
 /* Standard Manufacturer String Descriptor */
 unsigned char gbManufactureDesc[] =
 {
-    0x10,                           /* Descriptor Size */
+    0x1E,                           /* Descriptor Size */
     0x03,                           /* Device Descriptor Type */
-    'C',0x00,
-    'y',0x00,
-    'p',0x00,
-    'r',0x00,
+    'A',0x00,
+    'n',0x00,
+    'a',0x00,
+    'l',0x00,
+    'o',0x00,
+    'g',0x00,
+    ' ',0x00,
+    'D',0x00,
     'e',0x00,
-    's',0x00,
+    'v',0x00,
+    'i',0x00,
+    'c',0x00,
+    'e',0x00,
     's',0x00
 };
 
 unsigned char gbProductDesc[] =
 {
-    0x08,                           /* Descriptor Size */
+    0x2C,                           /* Descriptor Size */
     0x03,                           /* Device Descriptor Type */
     'F',0x00,
     'X',0x00,
-    '3',0x00
+    '3',0x00,
+    ' ',0x00,
+    'B',0x00,
+    'o',0x00,
+    'o',0x00,
+    't',0x00,
+    'l',0x00,
+    'o',0x00,
+    'a',0x00,
+    'd',0x00,
+    'e',0x00,
+    'r',0x00,
+    ' ',0x00,
+    'v',0x00,
+    '1',0x00,
+    '.',0x00,
+    '0',0x00,
+    '.',0x00,
+    '0',0x00
 };
 
 unsigned char gbSerialNumDesc [] = 
