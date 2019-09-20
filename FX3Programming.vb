@@ -563,7 +563,29 @@ Partial Class FX3Connection
         For Each item As USBDevice In m_usbList
             'Program any device that enumerates as a stock FX3
             If String.Equals(item.FriendlyName, CypressBootloaderName) Then
+                ProgramFlashFirmware(item)
+            ElseIf String.Equals(item.FriendlyName, ADIBootloaderName) Then
+                'Reflash any bootloader device which has an older version than the current
+                Dim programBootloader As Boolean = False
+                Try
+                    'get board version from product descriptor
+                    Dim boardVersionStr As String = item.Product.Substring(item.Product.IndexOf("v") + 1)
+                    Dim myVersion As Version = Version.Parse(m_BootloaderVersion)
+                    Dim boardVersion As Version = Version.Parse(boardVersionStr)
+                    programBootloader = (myVersion > boardVersion)
+                Catch ex As Exception
+                    programBootloader = True
+                End Try
+                If programBootloader Then
+                    ProgramFlashFirmware(item)
+                End If
+            ElseIf String.Equals(item.FriendlyName, ApplicationName) Then
+                'Dont need to do anything for application board
+            ElseIf item.FriendlyName = FlashProgrammerName Then
+                'add to program list
                 BootloaderQueue.Add(item)
+            Else
+                ProgramFlashFirmware(item)
             End If
         Next
     End Sub
@@ -583,12 +605,10 @@ Partial Class FX3Connection
             selectedBoard = BootloaderQueue.Take()
             'Program the indicated board (in cypress bootloader mode)
             Try
+                'Program the bootloader
                 ProgramBootloader(selectedBoard)
             Catch ex As FX3ProgrammingException
                 'Don't need to do anything
-                'This can be caused when a second instance of the FX3Connection generates a race condition
-                System.Threading.Thread.Sleep(1000)
-                RefreshDeviceList()
             End Try
 
         End While
@@ -605,17 +625,27 @@ Partial Class FX3Connection
         Dim flashStatus As FX3_FWDWNLOAD_ERROR_CODE = FX3_FWDWNLOAD_ERROR_CODE.SUCCESS
 
         'Check that the cypress bootloader is currently running
-        If Not SelectedBoard.IsBootLoaderRunning Then
-            Throw New FX3ProgrammingException("ERROR: Selected FX3 is not in bootloader mode. Please reset the FX3.")
+        If Not SelectedBoard.FriendlyName = FlashProgrammerName Then
+            Throw New FX3ProgrammingException("ERROR: Selected FX3 is not in flash programmer mode.")
         End If
 
-        'Attempt to program the board
-        flashStatus = SelectedBoard.DownloadFw(BlinkFirmwarePath, FX3_FWDWNLOAD_MEDIA_TYPE.RAM)
+        'Attempt to program the board flash
+        flashStatus = SelectedBoard.DownloadFw(BootloaderPath, FX3_FWDWNLOAD_MEDIA_TYPE.I2CE2PROM)
 
         'Validate the flash status
         If Not flashStatus = FX3_FWDWNLOAD_ERROR_CODE.SUCCESS Then
             Throw New FX3ProgrammingException("ERROR: Bootloader download failed with code " + flashStatus.ToString())
         End If
+
+        'Send board reboot command
+        Dim buf(3) As Byte
+        SelectedBoard.ControlEndPt.ReqCode = USBCommands.ADI_HARD_RESET
+        SelectedBoard.ControlEndPt.ReqType = CyConst.REQ_VENDOR
+        SelectedBoard.ControlEndPt.Target = CyConst.TGT_DEVICE
+        SelectedBoard.ControlEndPt.Value = 0
+        SelectedBoard.ControlEndPt.Index = 0
+        SelectedBoard.ControlEndPt.Direction = CyConst.DIR_TO_DEVICE
+        SelectedBoard.ControlEndPt.XferData(buf, 4)
 
     End Sub
 
@@ -642,6 +672,11 @@ Partial Class FX3Connection
             Throw New FX3ProgrammingException("ERROR: Application firmware download failed with code " + flashStatus.ToString())
         End If
 
+    End Sub
+
+    Private Sub ProgramFlashFirmware(SelectedBoard As CyFX3Device)
+        'Attempt to program the board
+        SelectedBoard.DownloadFw(FlashProgrammerPath, FX3_FWDWNLOAD_MEDIA_TYPE.RAM)
     End Sub
 
     ''' <summary>
@@ -698,7 +733,7 @@ Partial Class FX3Connection
     ''' Set/get the blink firmware .img file used for multi-board identification
     ''' </summary>
     ''' <returns>A string representing the path to the firmware on the user machine</returns>
-    Public Property BlinkFirmwarePath As String
+    Public Property BootloaderPath As String
         Get
             Return m_BlinkFirmwarePath
         End Get
@@ -708,6 +743,26 @@ Partial Class FX3Connection
                 m_BlinkFirmwarePath = value
             Else
                 Throw New FX3ConfigurationException("ERROR: Invalid bootloader path provided: " + value)
+            End If
+            'set the version based on the image
+            m_BootloaderVersion = GetBootloaderVersion(value)
+        End Set
+    End Property
+
+    ''' <summary>
+    ''' Path to the programmer firmware which is loaded in RAM to allow flashing the EEPROM.
+    ''' </summary>
+    ''' <returns></returns>
+    Public Property FlashProgrammerPath As String
+        Get
+            Return m_FlashProgrammerPath
+        End Get
+        Set(value As String)
+            'Setter checks that the path is valid before setting
+            If isFirmwarePathValid(value) Then
+                m_FlashProgrammerPath = value
+            Else
+                Throw New FX3ConfigurationException("ERROR: Invalid programmer firmware path provided: " + value)
             End If
         End Set
     End Property
@@ -1038,6 +1093,37 @@ Partial Class FX3Connection
 #End Region
 
 #Region "FX3 Bootloader Functions"
+
+    ''' <summary>
+    ''' Read bootloader image and pull the version number
+    ''' </summary>
+    ''' <param name="Path">Path to the image</param>
+    ''' <returns>The version image string</returns>
+    Private Function GetBootloaderVersion(Path As String) As String
+        Dim bootloaderVersion As String = ""
+        Dim file As String
+        Try
+            file = IO.File.ReadAllText(Path)
+        Catch ex As Exception
+            Return ""
+        End Try
+
+        file = file.Replace(Convert.ToChar(0), "")
+
+        'search for version
+        Dim index As Integer = 0
+        Dim pattern As String = "FX3 Bootloader v"
+
+        index = file.IndexOf(pattern)
+
+        If index = -1 Then
+            Return ""
+        End If
+
+        index = index + pattern.Count()
+        Return file.Substring(index, 5)
+
+    End Function
 
     ''' <summary>
     ''' BOOTLOADER FW: Blink the on-board LED

@@ -32,6 +32,9 @@ Public Class FX3Connection
     'Friendly name for the ADI Application Firmware
     Private Const ApplicationName As String = "Analog Devices iSensor FX3 Demonstration Platform"
 
+    'Friendly name for flash programmer
+    Private Const FlashProgrammerName As String = "Cypress FX3 USB BootProgrammer Device"
+
     'Timeout (in ms) for programming a board with the application firmware
     Private Const ProgrammingTimeout As Integer = 10000
 
@@ -96,8 +99,14 @@ Public Class FX3Connection
     'Member variable to track firmware path
     Private m_FirmwarePath As String = "PathNotSet"
 
-    'Member variable to track blink firmware path
+    'Member variable to track bootloader path
     Private m_BlinkFirmwarePath As String = "PathNotSet"
+
+    'Track flash programmer path
+    Private m_FlashProgrammerPath As String = "PathNotSet"
+
+    'Bootloader version
+    Private m_BootloaderVersion As String = "1.0.0"
 
     'Data ready polarity
     Private m_DrPolarity As Boolean = True
@@ -209,9 +218,10 @@ Public Class FX3Connection
     ''' connected boards with the ADI bootloader.
     ''' </summary>
     ''' <param name="FX3FirmwarePath">The path to the FX3 application firmware image file.</param>
-    ''' <param name="FX3BlinkFirmwarePath">The path to the ADI FX3 bootloader image file.</param>
+    ''' <param name="FX3BootloaderPath">The path to the ADI FX3 bootloader image file.</param>
+    ''' <param name="FX3ProgrammerPath">The path to the flash programmer application image file.</param>
     ''' <param name="SensorType">The sensor type. Valid inputs are IMU and ADcmXL. Default is IMU.</param>
-    Public Sub New(ByVal FX3FirmwarePath As String, ByVal FX3BlinkFirmwarePath As String, Optional ByVal SensorType As DeviceType = DeviceType.IMU)
+    Public Sub New(FX3FirmwarePath As String, FX3BootloaderPath As String, FX3ProgrammerPath As String, Optional SensorType As DeviceType = DeviceType.IMU)
 
         'Store sensor type in a local variable
         m_sensorType = SensorType
@@ -220,7 +230,10 @@ Public Class FX3Connection
         FirmwarePath = FX3FirmwarePath
 
         'Set the ADI bootloader firmware path
-        BlinkFirmwarePath = FX3BlinkFirmwarePath
+        BootloaderPath = FX3BootloaderPath
+
+        'Set the bootloader programmer path
+        FlashProgrammerPath = FX3ProgrammerPath
 
         'Initialize default values for the interface and look for connected boards
         SetDefaultValues(m_sensorType)
@@ -244,7 +257,7 @@ Public Class FX3Connection
     ''' Sets the default values for the interface. Used in constructor and after FX3 reset.
     ''' </summary>
     ''' <param name="SensorType">Parameter to specify default device SPI settings. Valid options are IMU and ADcmXL</param>
-    Private Sub SetDefaultValues(ByVal SensorType As DeviceType)
+    Private Sub SetDefaultValues(SensorType As DeviceType)
 
         'Set the default SPI config
         m_FX3SPIConfig = New FX3SPIConfig(SensorType)

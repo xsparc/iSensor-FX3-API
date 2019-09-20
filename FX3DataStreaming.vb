@@ -75,6 +75,9 @@ Partial Class FX3Connection
         RaiseEvent NewBufferAvailable(m_StreamData.Count())
     End Sub
 
+    ''' <summary>
+    ''' Cancel a any running stream
+    ''' </summary>
     Public Sub CancelStreamAsync() Implements IStreamEventProducer.CancelStreamAsync
         StopStream()
     End Sub
