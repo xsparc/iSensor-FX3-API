@@ -397,7 +397,7 @@ Public Class FX3SPIConfig
             DataReadyPinFX3GPIO = 4
         Else
             'Automotive IMU with iSensorAutomotiveSpi protocol
-            ClockFrequency = 15000000
+            ClockFrequency = 4000000
             WordLength = 32
             m_StallTime = 10
             DUTType = DUTType.IMU
