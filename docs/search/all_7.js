@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['halfclockdelay',['HalfClockDelay',['../struct_bit_bang_spi_conf.html#a335922f2b1e25bb608be01bda1996072',1,'BitBangSpiConf']]]
+  ['halfclockdelay',['HalfClockDelay',['../struct_bit_bang_spi_conf.html#aae8ae7df3bdd475689dfcbbcea52c260',1,'BitBangSpiConf']]]
 ];
