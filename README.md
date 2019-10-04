@@ -22,7 +22,7 @@ Design files for a breakout board designed to adapt the Explorer Kit's pins to a
 
 ## Jumper Configuration
 
-The Explorer Kit requires four jumpers to be installed such that the interface library is able to properly detect the Explorer Kit. The jumpers also enable an onboard, 3.3V regulator and set the FX3 GPIO logic. The image below shows where the jumpers must be installed.
+The Explorer Kit requires two jumpers to be installed to operate correctly. Jumpers J2 and J3 enable an onboard 3.3V regulator and set the correct power domain. Jumper J4 must be open to allow booting from flash. Circled jumpers (J2 and J3) in the image below should be populated, while the uncircled jumpers (J4 and J5) should be left open.
 
  ![FX3 Jumper Locations](hardware/pictures/JumperLocations.jpg)
 
@@ -30,11 +30,11 @@ The Explorer Kit requires four jumpers to be installed such that the interface l
 
 #### Firmware Environment
 
-This repository includes an eclipse `.project` file that enables easily importing the necessary code and resources into the Cypress EZ USB Suite environment. The Cypress EZ USB Suite IDE can be found on Cypress' website [here](https://www.cypress.com/documentation/software-and-drivers/ez-usb-fx3-software-development-kit). Once downloaded and installed, open the `Cypress EZ USB Suite`, Select `File -> Import -> Existing Project Into Workplace` and select the `.project` file in this repository
+This repository includes an eclipse `.project` file for each firmware which enables easily importing the necessary code and resources into the Cypress EZ USB Suite environment. The Cypress EZ USB Suite IDE can be found on Cypress' website [here](https://www.cypress.com/documentation/software-and-drivers/ez-usb-fx3-software-development-kit). Once downloaded and installed, open the `Cypress EZ USB Suite`, Select `File -> Import -> Existing Project Into Workplace` and select the `.project` file in this repository
 
 #### .NET Environment
 
-This firmware relies heavily on the accompanying FX3 API to implement many timing-sensitive vendor commands, data transfers, etc. It is *highly* recommended that the same firmware and interface versions be used. Additional details on setting up the API development and example application environments can be found in their respective repositories. 
+This firmware relies heavily on the accompanying FX3 API to implement many timing-sensitive vendor commands, data transfers, etc. As of v1.0.4, the firmware version number must match the FX3 API version number for any application to function. Additional details on setting up the API development and example application environments can be found in their respective repositories. 
 
 ## Drivers
 
@@ -42,7 +42,7 @@ As of v1.0.6, custom, signed, Analog Devices drivers must be used to communicate
 
 ## Supporting Repositories
 
-The two repositories listed below were developed alongside this firmware and provide an easy way to implement iSensor FX3 Firmware features in a .NET application. It is *highly* recommended that the FX3 Firmware and API versions match!
+The two repositories listed below were developed alongside this firmware and provide an easy way to implement iSensor FX3 Firmware features in a .NET application.
 
 1. [iSensor FX3 API](https://github.com/juchong/iSensor-FX3-API)
 
