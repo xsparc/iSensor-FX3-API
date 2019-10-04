@@ -78,9 +78,9 @@ Partial Class FX3Connection
     ''' numCaptures times per data ready condition being met. It captures data from numBuffers data ready signals. If DrActive is set to false, all the
     ''' transfers are performed asynchronously. The total number of SPI transfers is WriteData.Count()*numCaptures*numBuffers.
     ''' 
-    ''' The following code snippet would perform 400 total SPI transfers, across 100 data ready conditions. 
+    ''' The following pseduo-code snippet would perform 400 total SPI transfers, across 100 data ready conditions. 
     ''' 
-    ''' MOSI = (&H1234, &H5678)
+    ''' MOSI = {0x1234, 0x5678}
     ''' myISpi32.DrActive = True
     ''' MISO = myISpi32.TransferArray(MOSI, 2, 100)
     ''' 

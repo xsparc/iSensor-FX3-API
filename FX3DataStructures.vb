@@ -185,6 +185,15 @@ Public Enum DUTType
     IMU
 End Enum
 
+''' <summary>
+''' Enum for DUT power supply modes
+''' </summary>
+Public Enum PowerSupply
+    Off = 0
+    On3_3Volts = 1
+    On5_0Volts = 2
+End Enum
+
 #End Region
 
 #Region "BitBang SPI Config Class"
