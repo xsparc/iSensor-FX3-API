@@ -327,9 +327,9 @@ void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, Bit
 
 		/* Update counters (approx. 50ns) */
 		tempCnt++;
-		bytePosition = 7 - tempCnt;
 		byteCounter += (tempCnt >> 3);
 		tempCnt &= 0x7;
+		bytePosition = 7 - tempCnt;
 	}
 
 	/* Wait for CS lag delay */
