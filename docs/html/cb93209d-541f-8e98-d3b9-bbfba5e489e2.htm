@@ -125,7 +125,23 @@
  number of SPI words transfered is WriteData.Count() * numCaptures.
  If DrActive is set to true, the transfer should wait until a data ready condition (determined by DrPin and DrPolarity) is true, and
  then perform all SPI transfers. If DrActive is false it is performed asynchronously.
- </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubmethod.gif" alt="Public method" title="Public method" /></td><td><a href="18232515-7333-a5a2-063b-02223610fd44.htm">TransferArray(IEnumerable<span id="LST6278874C_23"></span><script type="text/javascript">AddLanguageSpecificTextSet("LST6278874C_23?cs=&lt;|vb=(Of |cpp=&lt;|fs=&lt;'|nu=(");</script>UInt32<span id="LST6278874C_24"></span><script type="text/javascript">AddLanguageSpecificTextSet("LST6278874C_24?cs=&gt;|vb=)|cpp=&gt;|fs=&gt;|nu=)");</script>, UInt32, UInt32)</a></td><td /></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubmethod.gif" alt="Public method" title="Public method" /></td><td><a href="4e574267-34de-9f80-0cc0-dddf0a93d40d.htm">WaitForBoard</a></td><td><div class="summary">
+ </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubmethod.gif" alt="Public method" title="Public method" /></td><td><a href="18232515-7333-a5a2-063b-02223610fd44.htm">TransferArray(IEnumerable<span id="LST6278874C_23"></span><script type="text/javascript">AddLanguageSpecificTextSet("LST6278874C_23?cs=&lt;|vb=(Of |cpp=&lt;|fs=&lt;'|nu=(");</script>UInt32<span id="LST6278874C_24"></span><script type="text/javascript">AddLanguageSpecificTextSet("LST6278874C_24?cs=&gt;|vb=)|cpp=&gt;|fs=&gt;|nu=)");</script>, UInt32, UInt32)</a></td><td><div class="summary">
+ This function performs an array bi-directional SPI transfer. If DrActive is set to true, this overload transfers all the data in WriteData
+ numCaptures times per data ready condition being met. It captures data from numBuffers data ready signals. If DrActive is set to false, all the
+ transfers are performed asynchronously. The total number of SPI transfers is WriteData.Count()*numCaptures*numBuffers.
+ 
+ The following pseduo-code snippet would perform 400 total SPI transfers, across 100 data ready conditions. 
+ 
+ MOSI = {0x1234, 0x5678}
+ myISpi32.DrActive = True
+ MISO = myISpi32.TransferArray(MOSI, 2, 100)
+ 
+ During the transfers, the SPI bus would look like the following:
+ 
+ MOSI: ---(0x1234)---(0x5678)---(0x1234)---(0x5678)-----------------(0x1234)---(0x5678)---(0x1234)---(0x5678)--...-----(0x1234)-----(0x5678)-----(0x1234)-----(0x5678)--
+ MISO:----MISO(0)----MISO(1)----MISO(2)----MISO(3)------------------MISO(4)----MISO(5)----MISO(6)----MISO(7)---...-----MISO(196)----MISO(197)----MISO(198)----MISO(199)-
+ DR:   ___|¯¯¯|_____________________________________________________|¯¯¯|______________________________________..._____|¯¯¯|____________________________________________
+ </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubmethod.gif" alt="Public method" title="Public method" /></td><td><a href="4e574267-34de-9f80-0cc0-dddf0a93d40d.htm">WaitForBoard</a></td><td><div class="summary">
  This function is used to wait for an FX3 to be programmed with the ADI bootloader. In general, the programming model would go as follows,
  to connect and program the first board attached:
  

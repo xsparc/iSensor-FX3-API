@@ -148,6 +148,7 @@
   <HelpKINode Title="FX3Api.FX3SPIConfig class" Url="html/8e72f395-0ddd-51f7-906f-74fb7c11ea45.htm" />
   <HelpKINode Title="FX3Api.PinList class" Url="html/444c4859-5384-fa00-cb9d-f46332154db8.htm" />
   <HelpKINode Title="FX3Api.PinPWMInfo class" Url="html/e31bf2a8-b37c-c3e5-a5ae-f2095cf377d3.htm" />
+  <HelpKINode Title="FX3Api.PowerSupply enumeration" Url="html/6ef0c282-3708-3d2f-90f0-9bd342d15d2a.htm" />
   <HelpKINode Title="FX3Api.SpiChipselectControl enumeration" Url="html/9fbee395-4951-0907-af42-9fe9a28388a9.htm" />
   <HelpKINode Title="FX3Api.SpiLagLeadTime enumeration" Url="html/4f4a1f09-8752-eb16-d55b-5d0dbf56b772.htm" />
   <HelpKINode Title="FX3Api.StreamCommands enumeration" Url="html/d2139e79-c13d-ff58-4bcc-18a1d920e48b.htm" />
@@ -437,6 +438,9 @@
   <HelpKINode Title="None enumeration member" Url="html/8001ed3d-aab3-d9a9-516a-2fc3368c0259.htm" />
   <HelpKINode Title="NumFramesPurged property" Url="html/a9c441e2-05c5-4ede-a74f-2b657b158a9d.htm" />
   <HelpKINode Title="NumFramesSkipped property" Url="html/2b2df8a0-585e-e9f1-0379-38700b659b06.htm" />
+  <HelpKINode Title="Off enumeration member" Url="html/6ef0c282-3708-3d2f-90f0-9bd342d15d2a.htm" />
+  <HelpKINode Title="On3_3Volts enumeration member" Url="html/6ef0c282-3708-3d2f-90f0-9bd342d15d2a.htm" />
+  <HelpKINode Title="On5_0Volts enumeration member" Url="html/6ef0c282-3708-3d2f-90f0-9bd342d15d2a.htm" />
   <HelpKINode Title="PartType property" Url="html/5f8f4499-b516-fb23-7581-b621192fae71.htm" />
   <HelpKINode Title="pinConfig property" Url="html/51879030-37ab-bee4-b093-bd08a857ba4f.htm" />
   <HelpKINode Title="PinExit property" Url="html/339fcb41-1c0e-a687-552a-27bed02fcbd9.htm" />
@@ -466,6 +470,7 @@
   <HelpKINode Title="PinPWMInfo.RealFrequency property" Url="html/9d660b67-3b16-3eb1-0eda-5b3279228165.htm" />
   <HelpKINode Title="PinPWMInfo.ToString method" Url="html/228530e5-2a58-8c1b-5787-9b97a83ee0aa.htm" />
   <HelpKINode Title="PinStart property" Url="html/2de991c2-5a59-a394-9329-9e3a023b9669.htm" />
+  <HelpKINode Title="PowerSupply enumeration" Url="html/6ef0c282-3708-3d2f-90f0-9bd342d15d2a.htm" />
   <HelpKINode Title="PulseDrive method" Url="html/80d24cdc-deef-3180-0111-e36fa9384cf1.htm" />
   <HelpKINode Title="PulseWait method" Url="html/031dbd3e-7143-bcaf-b813-5366bd1ba351.htm" />
   <HelpKINode Title="PurgeBadFrameData method" Url="html/0744f798-2a6a-c364-49c1-0bd96c885021.htm" />
