@@ -395,7 +395,7 @@ CyU3PReturnStatus_t AdiBurstStreamWork()
 		interruptTriggered = CyFalse;
 		while(!interruptTriggered)
 		{
-			interruptTriggered = ((CyBool_t)(GPIO->lpp_gpio_intr0 & (1 << FX3State.DrPin)));
+			interruptTriggered = ((CyBool_t)(GPIO->lpp_gpio_intr0 & (1 << FX3State.DrPin)) || ((numBuffersRead == 0) && (GPIO->lpp_gpio_simple[FX3State.DrPin] & CY_U3P_LPP_GPIO_IN_VALUE)));
 		}
 	}
 
