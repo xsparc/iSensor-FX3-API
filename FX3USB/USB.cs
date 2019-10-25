@@ -3,6 +3,9 @@ using System.Runtime.InteropServices;
 
 namespace FX3USB
 {
+    /// <summary>
+    /// This class implements a safe version of the CyUSB.NET endpoint call XferData(buf, length)
+    /// </summary>
     public class USB
     {
         private static bool WaitForIO(System.IntPtr ovlapEvent, ref CyUSBEndPoint endpoint)

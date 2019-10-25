@@ -397,6 +397,8 @@
   <HelpKINode Title="FX3SPIConfig.TimerTickScaleFactor field" Url="html/d1bb2cf1-c63e-c161-fd9d-4ba5aead738c.htm" />
   <HelpKINode Title="FX3SPIConfig.WordLength field" Url="html/f7014575-856c-3a0a-e99d-0193b3739ed3.htm" />
   <HelpKINode Title="FX3TimerBlock property" Url="html/30816788-86f4-5b3f-84e5-a97d8e6cd497.htm" />
+  <HelpKINode Title="FX3USB namespace" Url="html/9f5142ef-eb7c-2e0f-5e80-8be7aac03e49.htm" />
+  <HelpKINode Title="FX3USB.USB class" Url="html/ed03a85e-e486-17af-6597-caf580baeb71.htm" />
   <HelpKINode Title="FX3_GPIO1 property" Url="html/96e1f5a9-b989-801a-8619-73a4375bd56d.htm" />
   <HelpKINode Title="FX3_GPIO2 property" Url="html/062bb664-caed-6c19-103e-9d678e13bcbd.htm" />
   <HelpKINode Title="FX3_GPIO3 property" Url="html/2cc932b7-d462-e090-2200-515781160808.htm" />
@@ -491,8 +493,8 @@
   <HelpKINode Title="ResetPin property" Url="html/323fa924-24da-f60d-2c4d-b0e63c274ee7.htm" />
   <HelpKINode Title="RestoreHardwareSpi method" Url="html/7bffc307-014c-a89b-8d5c-9978358c74bb.htm" />
   <HelpKINode Title="SCLK field" Url="html/bca90136-f9a9-b710-6290-c4e2455818c2.htm" />
-  <HelpKINode Title="SCLKFrequency property" Url="html/705196d0-12a4-0bd3-2faa-f275f3ce5943.htm" />
   <HelpKINode Title="SclkFrequency property" Url="html/6c81a4f6-5c6c-36a0-9c51-90450e3a156a.htm" />
+  <HelpKINode Title="SCLKFrequency property" Url="html/705196d0-12a4-0bd3-2faa-f275f3ce5943.htm" />
   <HelpKINode Title="SCLKHalfPeriodTicks field" Url="html/8b8fd904-046d-798e-6492-b3b786d4e65b.htm" />
   <HelpKINode Title="SensorType property" Url="html/9e341986-58e8-d7fe-7994-f5dc0f2913f7.htm" />
   <HelpKINode Title="SerialNumber property" Url="html/3f41ce39-2334-2b3b-5841-a7ba619ebe37.htm" />
@@ -544,6 +546,13 @@
   <HelpKINode Title="TriggerReg property" Url="html/4aa26a12-7224-2dfd-42c2-f305f6845318.htm" />
   <HelpKINode Title="UnexpectedDisconnect event" Url="html/fc16a835-4d83-3e8b-3239-995c79ad8e5a.htm" />
   <HelpKINode Title="Uptime property" Url="html/8bac1b60-641b-4bf7-1deb-eb9a14b14543.htm" />
+  <HelpKINode Title="USB class">
+    <HelpKINode Title="USB Class" Url="html/ed03a85e-e486-17af-6597-caf580baeb71.htm" />
+    <HelpKINode Title="constructor" Url="html/ea3c699a-157a-9660-49ae-7be09b893278.htm" />
+    <HelpKINode Title="methods" Url="html/817a57f9-cf91-cc06-3c77-437063680ce8.htm" />
+  </HelpKINode>
+  <HelpKINode Title="USB.USB constructor" Url="html/ea3c699a-157a-9660-49ae-7be09b893278.htm" />
+  <HelpKINode Title="USB.XferData method" Url="html/0ddc94a1-a7eb-1fdd-178b-0adec274ddec.htm" />
   <HelpKINode Title="USBCommands enumeration" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="VerboseMode property" Url="html/8f05fb6a-5a94-5db5-2577-8d320dfce4ec.htm" />
   <HelpKINode Title="VersionNumber field" Url="html/b28f2d65-6f98-eb0e-a4d1-6941660b9bd5.htm" />
@@ -554,4 +563,5 @@
   <HelpKINode Title="WordLength property" Url="html/fd51c3f2-6254-8d71-64a0-8e63d51b3cb5.htm" />
   <HelpKINode Title="WriteRegByte method" Url="html/7470aa78-1dd1-b34f-92bb-eb104bcc74b4.htm" />
   <HelpKINode Title="WriteRegWord method" Url="html/bd17d83e-656a-fb48-f222-fb658ea122a2.htm" />
+  <HelpKINode Title="XferData method" Url="html/0ddc94a1-a7eb-1fdd-178b-0adec274ddec.htm" />
 </HelpKI>
