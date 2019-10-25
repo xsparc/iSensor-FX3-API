@@ -19,8 +19,10 @@
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\Debug\</OutputPath>
     <DocumentationFile>FX3Api.xml</DocumentationFile>
-    <NoWarn>41999,42016,42017,42018,42019,42032,42036</NoWarn>
+    <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</NoWarn>
     <PlatformTarget>x86</PlatformTarget>
+    <WarningsAsErrors>
+    </WarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,9 +31,11 @@
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DocumentationFile>FX3Api.xml</DocumentationFile>
-    <NoWarn>41999,42016,42017,42018,42019,42032,42036</NoWarn>
+    <NoWarn>41999,42016,42017,42018,42019,42020,42021,42022,42032,42036</NoWarn>
     <PlatformTarget>x86</PlatformTarget>
     <RunCodeAnalysis>false</RunCodeAnalysis>
+    <WarningsAsErrors>
+    </WarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup>
     <OptionExplicit>On</OptionExplicit>
@@ -60,6 +64,9 @@
     </Reference>
     <Reference Include="FX3Api">
       <HintPath>Resources\FX3Api.dll</HintPath>
+    </Reference>
+    <Reference Include="FX3USB">
+      <HintPath>Resources\FX3USB.dll</HintPath>
     </Reference>
     <Reference Include="RegMapClasses">
       <HintPath>Resources\RegMapClasses.dll</HintPath>

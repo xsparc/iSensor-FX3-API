@@ -6,6 +6,7 @@
 Imports System.Collections.Concurrent
 Imports System.Threading
 Imports AdisApi
+Imports FX3USB
 Imports StreamDataLogger
 
 Partial Class FX3Connection
@@ -256,7 +257,7 @@ Partial Class FX3Connection
 
         While m_StreamThreadRunning
             'Configured transfer size bytes from the FX3
-            transferStatus = StreamingEndPt.XferData(buf, transferSize)
+            transferStatus = FX3USB.USB.XferData(buf, transferSize, StreamingEndPt)
             'Parse bytes into frames and add to m_StreamData if transaction was successful
             If transferStatus Then
                 For index = 0 To transferSize - 2 Step 2
@@ -494,7 +495,7 @@ Partial Class FX3Connection
 
         While m_StreamThreadRunning
             'Read data from FX3
-            validTransfer = StreamingEndPt.XferData(buf, transferSize)
+            validTransfer = USB.XferData(buf, transferSize, StreamingEndPt)
             'Check that the data was read correctly
             If validTransfer Then
                 'Build the output buffer
@@ -705,7 +706,7 @@ Partial Class FX3Connection
 
         While m_StreamThreadRunning
             'Pull 1024 bytes from the DUT
-            TransferStatus = StreamingEndPt.XferData(buf, transferSize)
+            TransferStatus = USB.XferData(buf, transferSize, StreamingEndPt)
             'Parse the 1024 bytes into frames and add to m_StreamData if transaction was successful
             If TransferStatus Then
                 For index = 0 To transferSize - 2 Step 2

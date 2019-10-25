@@ -23,7 +23,7 @@ Partial Class FX3Connection
             m_FX3SPIConfig.DrActive = value
             If m_FX3Connected Then
                 m_ActiveFX3.ControlEndPt.Index = 12
-                m_ActiveFX3.ControlEndPt.Value = m_FX3SPIConfig.DrActive
+                m_ActiveFX3.ControlEndPt.Value = CUShort(m_FX3SPIConfig.DrActive)
                 ConfigureSPI()
             End If
         End Set
@@ -35,7 +35,7 @@ Partial Class FX3Connection
     ''' <returns>The number of burst read registers.</returns>
     Public Property BurstMode As UShort Implements IRegInterface.BurstMode
         Get
-            Return m_burstMode
+            Return CUShort(m_burstMode)
         End Get
         Set(ByVal value As UShort)
             m_burstMode = value
@@ -118,7 +118,7 @@ Partial Class FX3Connection
         'Set the write bit for each address that has data (likely a page write)
         For Each item In addrData
             If Not item.data Is Nothing Then
-                item.addr = item.addr Or &H80
+                item.addr = item.addr Or &H80UI
             End If
         Next
 
@@ -165,7 +165,7 @@ Partial Class FX3Connection
             End If
             'Update progress every percent
             If reportProgress Then
-                progress = (GetNumBuffersRead * 100) / numBuffers
+                progress = CInt((GetNumBuffersRead * 100) / numBuffers)
                 If progress > oldProgress Then
                     worker.ReportProgress(progress)
                     oldProgress = progress

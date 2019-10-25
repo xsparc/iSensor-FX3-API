@@ -7,6 +7,7 @@ Imports System.Collections.Concurrent
 Imports System.ComponentModel
 Imports System.Threading
 Imports AdisApi
+Imports FX3USB
 
 Partial Class FX3Connection
 
@@ -392,7 +393,7 @@ Partial Class FX3Connection
 
         While m_StreamThreadRunning
             'Read data from FX3
-            validTransfer = StreamingEndPt.XferData(buf, transferSize)
+            validTransfer = USB.XferData(buf, transferSize, StreamingEndPt)
             'Check that the data was read correctly
             If validTransfer Then
                 For bufIndex = 0 To (BytesPerUsbBuffer - 3) Step 4
