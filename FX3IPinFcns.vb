@@ -33,7 +33,7 @@ Partial Class FX3Connection
         End If
 
         'Find ticks and rollover
-        ticksDouble = pperiod * MsToTimerTicks
+        ticksDouble = (pperiod / 1000) * m_FX3SPIConfig.SecondsToTimerTicks
         timerRollovers = CUInt(Math.Floor(ticksDouble / UInt32.MaxValue))
         timerTicks = CUInt(ticksDouble Mod UInt32.MaxValue)
 
@@ -119,7 +119,7 @@ Partial Class FX3Connection
         'Sleep on PC side if delay is too large (approx. 7 minutes)
         delayOverflow = False
         delayScaled = delayInMs
-        If delayInMs > (UInt32.MaxValue / MsToTimerTicks) Then
+        If delayInMs > (UInt32.MaxValue / (m_FX3SPIConfig.SecondsToTimerTicks / 1000)) Then
             delayOverflow = True
             Threading.Thread.Sleep(delayInMs)
             delayScaled = 0
@@ -134,7 +134,7 @@ Partial Class FX3Connection
 
         'Calculate number of timer rollovers
         Dim totalTimeout As ULong
-        totalTimeout = CULng(timeoutInMs) * MsToTimerTicks
+        totalTimeout = (CULng(timeoutInMs) * (m_FX3SPIConfig.SecondsToTimerTicks / 1000))
         timeoutRollovers = Math.Floor(totalTimeout / UInt32.MaxValue)
         timeoutTicks = totalTimeout Mod UInt32.MaxValue
 
@@ -201,7 +201,7 @@ Partial Class FX3Connection
 
         'Scale the time waited to MS
         convertedTime = Convert.ToDouble(totalTicks)
-        convertedTime = Math.Round(convertedTime / MsToTimerTicks, 3)
+        convertedTime = Math.Round((1000 * convertedTime) / m_FX3SPIConfig.SecondsToTimerTicks, 3)
 
         'Return the actual time waited
         Return convertedTime
@@ -392,7 +392,7 @@ Partial Class FX3Connection
         buf(2) = polarity
 
         'Calculate the timeout values
-        timeoutLng = timeoutInMs * m_FX3SPIConfig.TimerTickScaleFactor
+        timeoutLng = timeoutInMs * (m_FX3SPIConfig.SecondsToTimerTicks / 1000)
 
         timeoutRollovers = Math.Floor(timeoutLng / UInt32.MaxValue)
         timeoutTicks = timeoutLng Mod UInt32.MaxValue
@@ -443,11 +443,11 @@ Partial Class FX3Connection
         totalTicks += timerTicks
 
         'Find one period time
-        period = totalTicks / m_FX3SPIConfig.TimerTickScaleFactor
+        period = totalTicks / m_FX3SPIConfig.SecondsToTimerTicks
         period = period / numPeriods
 
         'Convert ticks to freq
-        freq = 1000 / period
+        freq = 1 / period
 
         'If the transfer failed return infinity
         If Not transferStatus Then
@@ -526,7 +526,7 @@ Partial Class FX3Connection
 
         'If the timeout is too large (greater than one timer period) set to 0 -> no timeout on firmware
         FX3Timeout = Timeout
-        If Timeout > (UInt32.MaxValue / m_FX3SPIConfig.TimerTickScaleFactor) Then
+        If Timeout > ((UInt32.MaxValue / m_FX3SPIConfig.SecondsToTimerTicks) * 1000) Then
             FX3Timeout = 0
         End If
 
@@ -646,7 +646,7 @@ Partial Class FX3Connection
 
         'If the timeout is too large (greater than one timer period) set to 0 -> no timeout on firmware
         FX3Timeout = Timeout
-        If Timeout > (UInt32.MaxValue / m_FX3SPIConfig.TimerTickScaleFactor) Then
+        If Timeout > ((UInt32.MaxValue / m_FX3SPIConfig.SecondsToTimerTicks) * 1000) Then
             FX3Timeout = 0
         End If
 
@@ -761,8 +761,8 @@ Partial Class FX3Connection
         'Calculate the needed period and threshold value for the given setting
         Dim period, threshold As UInt32
 
-        'The base clock is 201.6MHz (403.2MHz / 2)
-        Dim baseClock As Double = 201600000
+        'The base clock is 201.6MHz (403.2MHz / 2) 'tweaked to 201.5677MHz
+        Dim baseClock As Double = 201567700
 
         period = Convert.ToUInt32(baseClock / Frequency) - 1
         threshold = Convert.ToUInt32((baseClock / Frequency) * DutyCycle)

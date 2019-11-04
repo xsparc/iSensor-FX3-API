@@ -280,7 +280,7 @@ Public Class FX3SPIConfig
     Public DUTType As DUTType
     Public DrActive As Boolean
     Public DrPolarity As Boolean
-    Public TimerTickScaleFactor As UInt32
+    Public SecondsToTimerTicks As UInt32
 
     'Private variables for general use
     Private SclkPeriod As Double
@@ -386,7 +386,6 @@ Public Class FX3SPIConfig
         ChipSelectLagTime = SpiLagLeadTime.SPI_SSN_LAG_LEAD_ONE_CLK
         ChipSelectLeadTime = SpiLagLeadTime.SPI_SSN_LAG_LEAD_ONE_CLK
         IsLSBFirst = False
-        TimerTickScaleFactor = 10078
         DrPolarity = True
         DrActive = False
 

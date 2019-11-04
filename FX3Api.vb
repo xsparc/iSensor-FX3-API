@@ -41,9 +41,6 @@ Public Class FX3Connection
     'Delay (in ms) in polling the cypress USB driver for new devices connected
     Private Const DeviceListDelay As Integer = 200
 
-    'Set the timer tick to MS multiplier
-    Private Const MsToTimerTicks As Integer = 10078
-
     'Maximum register list size supported (bytes)
     Private Const MaxRegListSize As Integer = 1000
 
@@ -610,7 +607,7 @@ Public Class FX3Connection
     ''' <returns></returns>
     Public ReadOnly Property TimerTickScaleFactor As UInteger
         Get
-            Return m_FX3SPIConfig.TimerTickScaleFactor
+            Return m_FX3SPIConfig.SecondsToTimerTicks
         End Get
     End Property
 
@@ -683,7 +680,7 @@ Public Class FX3Connection
 
         'Get timer tick scale factor from buf 19 - 22
         'Note: the timer tick setting in read-only, so there is no accompanying write function
-        returnConfig.TimerTickScaleFactor = BitConverter.ToUInt32(buf, 19)
+        returnConfig.SecondsToTimerTicks = BitConverter.ToUInt32(buf, 19)
 
         Return returnConfig
 
@@ -753,6 +750,9 @@ Public Class FX3Connection
         If Not boardConfig.DrPolarity = m_FX3SPIConfig.DrPolarity Then
             DrPolarity = m_FX3SPIConfig.DrPolarity
         End If
+
+        'Load the ticks to seconds scale factor from the firmware
+        m_FX3SPIConfig.SecondsToTimerTicks = boardConfig.SecondsToTimerTicks
 
     End Sub
 
