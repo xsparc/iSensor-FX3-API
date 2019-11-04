@@ -392,9 +392,9 @@
   <HelpKINode Title="FX3SPIConfig.FX3SPIConfig constructor" Url="html/cbf9b1ea-2871-abb8-9413-4923ced36a3f.htm" />
   <HelpKINode Title="FX3SPIConfig.IsLSBFirst field" Url="html/89da7013-d887-6e84-3a09-fbfc42385b72.htm" />
   <HelpKINode Title="FX3SPIConfig.SCLKFrequency property" Url="html/705196d0-12a4-0bd3-2faa-f275f3ce5943.htm" />
+  <HelpKINode Title="FX3SPIConfig.SecondsToTimerTicks field" Url="html/e336c5ce-fc50-16cc-aa46-21cd4e3927ef.htm" />
   <HelpKINode Title="FX3SPIConfig.StallCycles property" Url="html/624d233b-cfd0-0dd2-3357-bd3ef59bcee0.htm" />
   <HelpKINode Title="FX3SPIConfig.StallTime property" Url="html/12609f8f-e0ff-3c77-fc9c-82c83b66ae5d.htm" />
-  <HelpKINode Title="FX3SPIConfig.TimerTickScaleFactor field" Url="html/d1bb2cf1-c63e-c161-fd9d-4ba5aead738c.htm" />
   <HelpKINode Title="FX3SPIConfig.WordLength field" Url="html/f7014575-856c-3a0a-e99d-0193b3739ed3.htm" />
   <HelpKINode Title="FX3TimerBlock property" Url="html/30816788-86f4-5b3f-84e5-a97d8e6cd497.htm" />
   <HelpKINode Title="FX3USB namespace" Url="html/9f5142ef-eb7c-2e0f-5e80-8be7aac03e49.htm" />
@@ -493,9 +493,10 @@
   <HelpKINode Title="ResetPin property" Url="html/323fa924-24da-f60d-2c4d-b0e63c274ee7.htm" />
   <HelpKINode Title="RestoreHardwareSpi method" Url="html/7bffc307-014c-a89b-8d5c-9978358c74bb.htm" />
   <HelpKINode Title="SCLK field" Url="html/bca90136-f9a9-b710-6290-c4e2455818c2.htm" />
-  <HelpKINode Title="SclkFrequency property" Url="html/6c81a4f6-5c6c-36a0-9c51-90450e3a156a.htm" />
   <HelpKINode Title="SCLKFrequency property" Url="html/705196d0-12a4-0bd3-2faa-f275f3ce5943.htm" />
+  <HelpKINode Title="SclkFrequency property" Url="html/6c81a4f6-5c6c-36a0-9c51-90450e3a156a.htm" />
   <HelpKINode Title="SCLKHalfPeriodTicks field" Url="html/8b8fd904-046d-798e-6492-b3b786d4e65b.htm" />
+  <HelpKINode Title="SecondsToTimerTicks field" Url="html/e336c5ce-fc50-16cc-aa46-21cd4e3927ef.htm" />
   <HelpKINode Title="SensorType property" Url="html/9e341986-58e8-d7fe-7994-f5dc0f2913f7.htm" />
   <HelpKINode Title="SerialNumber property" Url="html/3f41ce39-2334-2b3b-5841-a7ba619ebe37.htm" />
   <HelpKINode Title="SetBitBangSpiFreq method" Url="html/0827146d-d21a-6502-c57a-bf27a387aab1.htm" />
@@ -533,7 +534,6 @@
   <HelpKINode Title="StreamTimeoutSeconds property" Url="html/6888ab0a-2da7-f276-76d9-b5d69e4ff964.htm" />
   <HelpKINode Title="StreamType enumeration" Url="html/8001ed3d-aab3-d9a9-516a-2fc3368c0259.htm" />
   <HelpKINode Title="StripBurstTriggerWord property" Url="html/78a17f1f-02bb-6de4-5bb5-a84bf81c6d02.htm" />
-  <HelpKINode Title="TimerTickScaleFactor field" Url="html/d1bb2cf1-c63e-c161-fd9d-4ba5aead738c.htm" />
   <HelpKINode Title="TimerTickScaleFactor property" Url="html/f4d99a00-12bd-256d-c74b-743c2a3e3cfb.htm" />
   <HelpKINode Title="ToString method">
     <HelpKINode Title="FX3ApiInfo.ToString Method " Url="html/8b1cd4ac-7e43-9b82-d924-52e115e2029b.htm" />
