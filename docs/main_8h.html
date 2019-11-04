@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.1.3-pub</span>
+   &#160;<span id="projectnumber">v2.1.4-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -170,7 +170,9 @@ Macros</h2></td></tr>
 <tr class="separator:ae2cae78d6ffaeb70b824cdcf4851eee4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa24753293e05408a3c51c892547d4841"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#aa24753293e05408a3c51c892547d4841">ADI_RESET_SPI</a>&#160;&#160;&#160;(0xCE)</td></tr>
 <tr class="separator:aa24753293e05408a3c51c892547d4841"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a42e00fdbd5af84e095a80b2e2d4df1dd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a42e00fdbd5af84e095a80b2e2d4df1dd">MS_TO_TICKS_MULT</a>&#160;&#160;&#160;(10078)</td></tr>
+<tr class="memitem:af448b0cfb701dcf75f04dceccd0302cf"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#af448b0cfb701dcf75f04dceccd0302cf">S_TO_TICKS_MULT</a>&#160;&#160;&#160;(10078400)</td></tr>
+<tr class="separator:af448b0cfb701dcf75f04dceccd0302cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42e00fdbd5af84e095a80b2e2d4df1dd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a42e00fdbd5af84e095a80b2e2d4df1dd">MS_TO_TICKS_MULT</a>&#160;&#160;&#160;<a class="el" href="main_8h.html#af448b0cfb701dcf75f04dceccd0302cf">S_TO_TICKS_MULT</a>	/ 1000</td></tr>
 <tr class="separator:a42e00fdbd5af84e095a80b2e2d4df1dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b6136776fe6c8498a8a7da63bdb8db0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a5b6136776fe6c8498a8a7da63bdb8db0">ADI_GENERIC_STALL_OFFSET</a>&#160;&#160;&#160;(90)</td></tr>
 <tr class="separator:a5b6136776fe6c8498a8a7da63bdb8db0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -786,11 +788,26 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define MS_TO_TICKS_MULT&#160;&#160;&#160;(10078)</td>
+          <td class="memname">#define MS_TO_TICKS_MULT&#160;&#160;&#160;<a class="el" href="main_8h.html#af448b0cfb701dcf75f04dceccd0302cf">S_TO_TICKS_MULT</a>	/ 1000</td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p>Conversion factor from clock ticks to milliseconds on GPIO timer </p>
+
+</div>
+</div>
+<a id="af448b0cfb701dcf75f04dceccd0302cf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af448b0cfb701dcf75f04dceccd0302cf">&#9670;&nbsp;</a></span>S_TO_TICKS_MULT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define S_TO_TICKS_MULT&#160;&#160;&#160;(10078400)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Conversion factor from clock ticks to seconds on GPIO timer (avoids some error) </p>
 
 </div>
 </div>
