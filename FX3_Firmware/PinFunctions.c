@@ -1005,10 +1005,10 @@ CyU3PReturnStatus_t AdiMeasurePinFreq()
 		exitCondition = timeoutOccurred || (periodCount >= numPeriods);
 	}
 
-	//add 2.4us to current time (fudge factor, calibrated using DSLogic Pro)
-	if(currentTime < (0xFFFFFFFF - 24))
+	//add 0.8us to current time (fudge factor, calibrated using DSLogic Pro)
+	if(currentTime < (0xFFFFFFFF - 8))
 	{
-		currentTime = currentTime + 24;
+		currentTime = currentTime + 8;
 	}
 	else
 	{

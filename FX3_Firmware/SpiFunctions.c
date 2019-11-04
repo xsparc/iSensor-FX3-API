@@ -641,10 +641,10 @@ CyU3PReturnStatus_t AdiGetSpiSettings()
 	USBBuffer[16] = (CyBool_t) FX3State.DrPolarity;
 	USBBuffer[17] = FX3State.DrPin & 0xFF;
 	USBBuffer[18] = (FX3State.DrPin & 0xFF00) >> 8;
-	USBBuffer[19] = MS_TO_TICKS_MULT & 0xFF;
-	USBBuffer[20] = (MS_TO_TICKS_MULT & 0xFF00) >> 8;
-	USBBuffer[21] = (MS_TO_TICKS_MULT & 0xFF0000) >> 16;
-	USBBuffer[22] = (MS_TO_TICKS_MULT & 0xFF000000) >> 24;
+	USBBuffer[19] = S_TO_TICKS_MULT & 0xFF;
+	USBBuffer[20] = (S_TO_TICKS_MULT & 0xFF00) >> 8;
+	USBBuffer[21] = (S_TO_TICKS_MULT & 0xFF0000) >> 16;
+	USBBuffer[22] = (S_TO_TICKS_MULT & 0xFF000000) >> 24;
 	status = CyU3PUsbSendEP0Data (23, USBBuffer);
 	return status;
 }
