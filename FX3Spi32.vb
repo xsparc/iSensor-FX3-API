@@ -124,7 +124,7 @@ Partial Class FX3Connection
         m_StreamMutex.WaitOne()
 
         For transferCount As Integer = 0 To numTransfers - 1
-            validTransfer = StreamingEndPt.XferData(buf, transferSize)
+            validTransfer = USB.XferData(buf, transferSize, StreamingEndPt)
             If validTransfer Then
                 For byteCount As Integer = 0 To BytesPerUsbBuffer - 4 Step 4
                     MISOData.Add(BitConverter.ToUInt32(buf, byteCount))

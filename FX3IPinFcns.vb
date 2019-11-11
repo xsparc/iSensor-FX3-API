@@ -5,6 +5,7 @@
 '               implement the IPinFcns interface defined in the AdisApi.
 
 Imports AdisApi
+Imports FX3USB
 
 Partial Class FX3Connection
 
@@ -60,8 +61,11 @@ Partial Class FX3Connection
         'Function should block until end of pin drive
         System.Threading.Thread.Sleep(pperiod)
 
+        'Clear buffer
+        Array.Clear(buf, 0, buf.Length)
+
         'Wait for the status to be returned over BULK-In
-        If Not DataInEndPt.XferData(buf, 4) Then
+        If Not USB.XferData(buf, 4, DataInEndPt) Then
             Throw New FX3CommunicationException("ERROR: Transfer from FX3 after pulse drive failed")
         End If
 
@@ -159,13 +163,16 @@ Partial Class FX3Connection
             Throw New FX3CommunicationException("ERROR: Control Endpoint transfer timed out")
         End If
 
+        'Clear buffer
+        Array.Clear(buf, 0, buf.Length)
+
         'Start bulk transfer
         transferStatus = False
         If totalTime = 0 Then
-            transferStatus = DataInEndPt.XferData(buf, 12)
+            transferStatus = USB.XferData(buf, 12, DataInEndPt)
         Else
             While ((Not transferStatus) And (timeoutTimer.ElapsedMilliseconds() < totalTime))
-                transferStatus = DataInEndPt.XferData(buf, 12)
+                transferStatus = USB.XferData(buf, 12, DataInEndPt)
             End While
         End If
 
@@ -185,7 +192,7 @@ Partial Class FX3Connection
         'Read status from the buffer and throw exception for bad status
         status = BitConverter.ToUInt32(buf, 0)
         If Not status = 0 Then
-            Throw New FX3BadStatusException("ERROR: Failed to configure PulseWait pin as input, error code: " + status.ToString("X4"))
+            Throw New FX3BadStatusException("ERROR: Failed to configure PulseWait pin FX3 GPIO" + pin.pinConfig.ToString() + " as input, error code: 0x" + status.ToString("X"))
         End If
 
         'Read current time
@@ -420,13 +427,16 @@ Partial Class FX3Connection
             Throw New FX3CommunicationException("ERROR: DR frequency read timed out")
         End If
 
+        'Clear buffer
+        Array.Clear(buf, 0, buf.Length)
+
         'Start bulk transfer
         transferStatus = False
         If timeoutInMs = 0 Then
-            transferStatus = DataInEndPt.XferData(buf, 12)
+            transferStatus = USB.XferData(buf, 12, DataInEndPt)
         Else
             While ((Not transferStatus) And (timeoutTimer.ElapsedMilliseconds() < timeoutInMs))
-                transferStatus = DataInEndPt.XferData(buf, 12)
+                transferStatus = USB.XferData(buf, 12, DataInEndPt)
             End While
         End If
 
@@ -561,13 +571,16 @@ Partial Class FX3Connection
             Throw New FX3CommunicationException("ERROR: Control Endpoint transfer timed out")
         End If
 
+        'Clear buffer
+        Array.Clear(buf, 0, buf.Length)
+
         'Start bulk transfer
         transferStatus = False
         If Timeout = 0 Then
-            transferStatus = DataInEndPt.XferData(buf, 16)
+            transferStatus = USB.XferData(buf, 16, DataInEndPt)
         Else
             While ((Not transferStatus) And (timeoutTimer.ElapsedMilliseconds() < Timeout))
-                transferStatus = DataInEndPt.XferData(buf, 16)
+                transferStatus = USB.XferData(buf, 16, DataInEndPt)
             End While
         End If
 
@@ -675,13 +688,16 @@ Partial Class FX3Connection
             Throw New FX3CommunicationException("ERROR: Control Endpoint transfer timed out")
         End If
 
+        'Clear buffer
+        Array.Clear(buf, 0, buf.Length)
+
         'Start bulk transfer
         transferStatus = False
         If Timeout = 0 Then
-            transferStatus = DataInEndPt.XferData(buf, 16)
+            transferStatus = USB.XferData(buf, 16, DataInEndPt)
         Else
             While ((Not transferStatus) And (timeoutTimer.ElapsedMilliseconds() < Timeout))
-                transferStatus = DataInEndPt.XferData(buf, 16)
+                transferStatus = USB.XferData(buf, 16, DataInEndPt)
             End While
         End If
 

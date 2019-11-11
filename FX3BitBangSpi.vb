@@ -3,6 +3,8 @@
 'Date:          08/27/2019
 'Description:   This file contains all the interfacing functions for the FX3 SPI bitbang capabilities.
 
+Imports FX3USB
+
 Partial Class FX3Connection
 
     ''' <summary>
@@ -80,7 +82,7 @@ Partial Class FX3Connection
         Dim resultBuf(bytesPerTransfer * NumTransfers - 1) As Byte
         While ((Not transferStatus) And (timeoutTimer.ElapsedMilliseconds() < TimeoutInMs))
             len = bytesPerTransfer * NumTransfers
-            transferStatus = DataInEndPt.XferData(resultBuf, len)
+            transferStatus = USB.XferData(resultBuf, len, DataInEndPt)
         End While
         timeoutTimer.Stop()
 

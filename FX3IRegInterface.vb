@@ -6,6 +6,7 @@
 
 Imports System.ComponentModel
 Imports AdisApi
+Imports FX3USB
 
 Partial Class FX3Connection
 
@@ -392,7 +393,7 @@ Partial Class FX3Connection
         'Read data back from the streaming endpoint and build the output array
         While resultBuffer.Count() < WordsToRead
             'Read data from FX3
-            validTransfer = StreamingEndPt.XferData(buf, transferSize)
+            validTransfer = USB.XferData(buf, transferSize, StreamingEndPt)
             'Check that the data was read correctly
             If validTransfer Then
                 For bufIndex As Integer = 0 To bytesPerUSBBuffer - 2 Step 2

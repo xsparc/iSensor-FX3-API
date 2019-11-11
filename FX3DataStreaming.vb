@@ -257,7 +257,7 @@ Partial Class FX3Connection
 
         While m_StreamThreadRunning
             'Configured transfer size bytes from the FX3
-            transferStatus = FX3USB.USB.XferData(buf, transferSize, StreamingEndPt)
+            transferStatus = USB.XferData(buf, transferSize, StreamingEndPt)
             'Parse bytes into frames and add to m_StreamData if transaction was successful
             If transferStatus Then
                 For index = 0 To transferSize - 2 Step 2
