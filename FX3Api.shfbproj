@@ -36,7 +36,7 @@
     <NamespaceSummaries>
       <NamespaceSummaryItem name="(global)" isDocumented="False" />
 <NamespaceSummaryItem name="FX3Api" isDocumented="True">Documentation for the iSensor FX3 Demonstartion Platform public .NET API</NamespaceSummaryItem>
-<NamespaceSummaryItem name="FX3USB" isDocumented="True" /></NamespaceSummaries>
+<NamespaceSummaryItem name="FX3USB" isDocumented="True">An implementation of XferData (provided by CYUSB) which properly pins the internal buffers used. This prevents heap corruption due to errant garbage collection.</NamespaceSummaryItem></NamespaceSummaries>
     <VisibleItems>ExplicitInterfaceImplementations, InheritedMembers, InheritedFrameworkMembers, Protected, ProtectedInternalAsProtected, NonBrowsable</VisibleItems>
     <HelpTitle>Analog Devices iSensor FX3 API Documentation</HelpTitle>
     <HelpFileVersion>1.0.0.0</HelpFileVersion>
