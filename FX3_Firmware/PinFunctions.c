@@ -648,6 +648,12 @@ CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength)
 		currentTime = 0xFFFFFFFF;
 	}
 
+	/* Catch potential out of bounds status code */
+	if(status > CY_U3P_ERROR_MEDIA_FAILURE)
+	{
+		status = CY_U3P_ERROR_NOT_SUPPORTED;
+	}
+
 	//Return pulse wait data over ChannelToPC
 	BulkBuffer[0] = status & 0xFF;
 	BulkBuffer[1] = (status & 0xFF00) >> 8;
