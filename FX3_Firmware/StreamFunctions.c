@@ -228,6 +228,9 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	//Disable VBUS ISR
 	CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
 
+	//Clear all interrupt flags
+	CyU3PVicClearInt();
+
 	//Make sure the BUSY pin is configured as input (DIO2)
 	CyU3PGpioSimpleConfig_t gpioConfig;
 	gpioConfig.outValue = CyFalse;
@@ -254,7 +257,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	CyU3PDmaChannelConfig_t dmaConfig;
 	CyU3PMemSet ((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
 	dmaConfig.size 				= FX3State.UsbBufferSize;
-	dmaConfig.count 			= 16;
+	dmaConfig.count 			= 64;
 	dmaConfig.prodSckId 		= CY_U3P_LPP_SOCKET_SPI_PROD;
 	dmaConfig.consSckId 		= CY_U3P_UIB_SOCKET_CONS_1;
 	dmaConfig.dmaMode 			= CY_U3P_DMA_MODE_BYTE;
@@ -438,7 +441,9 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	AdiSetSpiWordLength(8);
 
 	/* Print the stream state */
+#ifdef VERBOSE_MODE
 	AdiPrintStreamState();
+#endif
 
 	//Set infinite DMA transfer on streaming channel
 	CyU3PDmaChannelSetXfer(&StreamingChannel, 0);

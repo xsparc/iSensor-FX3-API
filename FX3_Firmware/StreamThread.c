@@ -50,8 +50,16 @@ void AdiStreamThreadEntry(uint32_t input)
 		//Wait indefinitely for any flag to be set
 		if (CyU3PEventGet (&EventHandler, eventMask, CYU3P_EVENT_OR_CLEAR, &eventFlag, CYU3P_WAIT_FOREVER) == CY_U3P_SUCCESS)
 		{
+			/* Real-time (ADcmXL) stream case */
+			if (eventFlag & ADI_RT_STREAM_ENABLE)
+			{
+				AdiRealTimeStreamWork();
+#ifdef VERBOSE_MODE
+				CyU3PDebugPrint (4, "Finished real time stream work\r\n");
+#endif
+			}
 			/* Transfer stream case */
-			if(eventFlag & ADI_TRANSFER_STREAM_ENABLE)
+			else if(eventFlag & ADI_TRANSFER_STREAM_ENABLE)
 			{
 				AdiTransferStreamWork();
 #ifdef VERBOSE_MODE
@@ -64,14 +72,6 @@ void AdiStreamThreadEntry(uint32_t input)
 				AdiGenericStreamWork();
 #ifdef VERBOSE_MODE
 				CyU3PDebugPrint (4, "Finished generic stream work\r\n");
-#endif
-			}
-			/* Real-time (ADcmXL) stream case */
-			else if (eventFlag & ADI_RT_STREAM_ENABLE)
-			{
-				AdiRealTimeStreamWork();
-#ifdef VERBOSE_MODE
-				CyU3PDebugPrint (4, "Finished real time stream work\r\n");
 #endif
 			}
 			/* Burst stream case */
@@ -89,7 +89,7 @@ void AdiStreamThreadEntry(uint32_t input)
 			}
 		}
         /* Allow other ready threads to run. */
-        CyU3PThreadRelinquish ();
+        CyU3PThreadRelinquish();
 	}
 }
 
@@ -357,7 +357,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamWork()
 		//increment the frame counter
 		numFramesCaptured++;
 		//Reset real-time data capture thread flag
-		CyU3PEventSet (&EventHandler, ADI_RT_STREAM_ENABLE, CYU3P_EVENT_OR);
+		CyU3PEventSet(&EventHandler, ADI_RT_STREAM_ENABLE, CYU3P_EVENT_OR);
 	}
 	return status;
 }
