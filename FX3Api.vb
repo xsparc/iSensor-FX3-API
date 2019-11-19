@@ -180,6 +180,12 @@ Public Class FX3Connection
     'Track which stream type is running
     Private m_StreamType As StreamType
 
+    'watchdog timeout period
+    Private m_WatchdogTime As Integer
+
+    'watchdog enable
+    Private m_WatchdogEnable As Boolean
+
     'Events
 
     ''' <summary>
@@ -288,11 +294,15 @@ Public Class FX3Connection
         'Set the PWM pin list
         m_PinPwmInfoList = New PinList
 
-        'set bitbang spi config
+        'set bit bang SPI config
         m_BitBangSpi = New BitBangSpiConfig(False)
 
-        'strip trigger word readback by default
+        'strip trigger word read back by default
         m_StripBurstTriggerWord = True
+
+        'set watchdog parameters
+        m_WatchdogEnable = True
+        m_WatchdogTime = 10
 
     End Sub
 
@@ -562,7 +572,7 @@ Public Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' The Data Ready polarity for streaming mode.
+    ''' The Data Ready polarity for streaming mode (index 11)
     ''' </summary>
     ''' <returns>The data ready polarity, as a boolean (True - low to high, False - high to low)</returns>
     Public Property DrPolarity As Boolean
@@ -797,6 +807,65 @@ Public Class FX3Connection
 #Region "FX3 Other Functions"
 
     'The functions in this region are not a part of the IDutInterface, and are specific to the FX3 board
+
+    ''' <summary>
+    ''' Set the FX3 firmware watchdog timeout period (in seconds). If the watchdog is triggered the FX3 will reset.
+    ''' </summary>
+    ''' <returns></returns>
+    Public Property WatchdogTimeoutSeconds As Integer
+        Get
+            Return m_WatchdogTime
+        End Get
+        Set(value As Integer)
+            If value < 5 Then
+                Throw New FX3ConfigurationException("ERROR: Invalid watchdog timeout period - must be at least 5 seconds")
+            End If
+            If value > Int16.MaxValue Then
+                Throw New FX3ConfigurationException("ERROR: Invalid watchdog timeout period")
+            End If
+            m_WatchdogTime = value
+            UpdateWatchdog()
+        End Set
+    End Property
+
+    ''' <summary>
+    ''' Enable or disable the FX3 firmware watchdog.
+    ''' </summary>
+    ''' <returns></returns>
+    Public Property WatchdogEnable As Boolean
+        Get
+            Return m_WatchdogEnable
+        End Get
+        Set(value As Boolean)
+            m_WatchdogEnable = value
+            UpdateWatchdog()
+        End Set
+    End Property
+
+    Private Sub UpdateWatchdog()
+
+        'configure the control endpoint
+        ConfigureControlEndpoint(USBCommands.ADI_SET_SPI_CONFIG, True)
+
+        If m_WatchdogEnable Then
+            'enable watchdog (index = 14)
+            FX3ControlEndPt.Index = 14
+            FX3ControlEndPt.Value = m_WatchdogTime
+        Else
+            'disable watchdog (index = 15)
+            FX3ControlEndPt.Index = 15
+            FX3ControlEndPt.Value = m_WatchdogTime
+        End If
+
+        'Create buffer for transfer
+        Dim buf(3) As Byte
+
+        'Transfer data from the FX3
+        If Not XferControlData(buf, 4, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer for watchdog configuration failed.")
+        End If
+
+    End Sub
 
     ''' <summary>
     ''' Gets the current status code from the FX3.
