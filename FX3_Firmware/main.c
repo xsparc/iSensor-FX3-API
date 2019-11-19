@@ -62,6 +62,10 @@ CyU3PEvent EventHandler;
 /** ADI GPIO event structure */
 CyU3PEvent GpioHandler;
 
+/** Watchdog timer called by RTOS to clear watchdog */
+CyU3PTimer WatchdogTimer;
+
+
 /*
  * DMA Channel Definitions
  */
@@ -623,6 +627,40 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
         }
     }
     return isHandled;
+}
+
+
+/**
+  * @brief Configures the watchdog timer based on the current board state
+  *
+  * @return void
+ **/
+void AdiConfigureWatchdog()
+{
+	/* configure the watchdog */
+	CyU3PSysWatchDogConfigure(FX3State.WatchDogEnabled, FX3State.WatchDogPeriodMs);
+
+	if(FX3State.WatchDogEnabled)
+	{
+		uint32_t clearPeriod = FX3State.WatchDogPeriodMs - 2000;
+		CyU3PTimerCreate(&WatchdogTimer, WatchDogTimerCb, 0, clearPeriod, clearPeriod, 1);
+	}
+	else
+	{
+		CyU3PTimerDestroy(&WatchdogTimer);
+	}
+}
+
+/**
+  * @brief callback function to clear the watchdog timer. Should not be called directly.
+  *
+  * @param nParam Callback argument, unused here.
+  *
+  * @return void
+ **/
+void WatchDogTimerCb (uint32_t nParam)
+{
+	CyU3PSysWatchDogClear();
 }
 
 /**

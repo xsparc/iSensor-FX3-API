@@ -67,6 +67,8 @@ void AdiBulkEndpointHandler(CyU3PUsbEpEvtType evType,CyU3PUSBSpeed_t usbSpeed, u
 void AdiUSBEventHandler(CyU3PUsbEventType_t evtype, uint16_t evdata);
 CyBool_t AdiLPMRequestHandler(CyU3PUsbLinkPowerMode link_mode);
 void AdiGPIOEventHandler(uint8_t gpioId);
+void AdiConfigureWatchdog();
+void WatchDogTimerCb (uint32_t nParam);
 
 /** Enum for the available part (DUT) types */
 typedef enum PartTye
@@ -117,6 +119,13 @@ typedef struct BoardState
 
 	/** Track data ready polarity (True = trigger on rising edge, False = trigger on falling edge) */
 	CyBool_t DrPolarity;
+
+	/** Track if the watchdog timer is enabled */
+	CyBool_t WatchDogEnabled;
+
+	/** Track the watchdog timer period (ms) */
+	uint32_t WatchDogPeriodMs;
+
 }BoardState;
 
 /** Struct to store the current data stream state information */
