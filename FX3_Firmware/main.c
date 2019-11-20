@@ -13,7 +13,7 @@
   * @date		8/1/2019
   * @author		A. Nolan (alex.nolan@analog.com)
   * @author 	J. Chong (juan.chong@analog.com)
-  * @version 	2.1.5-pub
+  * @version 	2.1.6-pub
   * @brief		Entry point and setup functions for the Analog Devices iSensor FX3 Demonstration Platform firmware.
  **/
 
@@ -62,9 +62,8 @@ CyU3PEvent EventHandler;
 /** ADI GPIO event structure */
 CyU3PEvent GpioHandler;
 
-/** Watchdog timer called by RTOS to clear watchdog */
+/** Watchdog callback called by RTOS to clear watchdog */
 CyU3PTimer WatchdogTimer;
-
 
 /*
  * DMA Channel Definitions
@@ -103,7 +102,7 @@ CyU3PDmaBuffer_t SpiDmaBuffer;
  */
 
 /** Constant firmware ID string. Manually updated when building new firmware. */
-const uint8_t FirmwareID[32] __attribute__((aligned(32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '2', '.', '1', '.', '5', '-','P','U','B',' ', '\0' };
+const uint8_t FirmwareID[32] __attribute__((aligned(32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '2', '.', '1', '.', '6', '-','P','U','B',' ', '\0' };
 
 /** FX3 unique serial number. Set at runtime */
 char serial_number[] __attribute__((aligned(32))) = {'0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00};
@@ -637,17 +636,44 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
  **/
 void AdiConfigureWatchdog()
 {
+    CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+
 	/* configure the watchdog */
 	CyU3PSysWatchDogConfigure(FX3State.WatchDogEnabled, FX3State.WatchDogPeriodMs);
 
+	/* Calculate watchdog ticks */
+	FX3State.WatchDogTicks = FX3State.WatchDogPeriodMs * 33;
+
 	if(FX3State.WatchDogEnabled)
 	{
-		uint32_t clearPeriod = FX3State.WatchDogPeriodMs - 2000;
-		CyU3PTimerCreate(&WatchdogTimer, WatchDogTimerCb, 0, clearPeriod, clearPeriod, 1);
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "Enabling Watchdog Timer, period %d ms\r\n", FX3State.WatchDogPeriodMs);
+#endif
+		/* Calculate the watchdog clear period - 5 seconds less than the watchdog timeout */
+		uint32_t clearPeriod = FX3State.WatchDogPeriodMs - 5000;
+
+		/* Destroy existing watchdog timer */
+		CyU3PTimerDestroy(&WatchdogTimer);
+
+		/* Create new watchdog timer with the correct parameters */
+		status = CyU3PTimerCreate(&WatchdogTimer, WatchDogTimerCb, 0, clearPeriod, clearPeriod, CYU3P_AUTO_ACTIVATE);
+		if(status != CY_U3P_SUCCESS)
+		{
+			CyU3PDebugPrint (4, "ERROR: Failed to configure watchdog timer callback, disabling watchdog functionality\r\n");
+			CyU3PSysWatchDogConfigure(CyFalse, FX3State.WatchDogPeriodMs);
+		}
 	}
 	else
 	{
-		CyU3PTimerDestroy(&WatchdogTimer);
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "Disabling Watchdog Timer\r\n");
+#endif
+		/* destroy timer */
+		status = CyU3PTimerDestroy(&WatchdogTimer);
+		if(status != CY_U3P_SUCCESS)
+		{
+			CyU3PDebugPrint (4, "ERROR: Failed to destroy watchdog timer\r\n");
+		}
 	}
 }
 
@@ -658,9 +684,14 @@ void AdiConfigureWatchdog()
   *
   * @return void
  **/
-void WatchDogTimerCb (uint32_t nParam)
+void WatchDogTimerCb(uint32_t nParam)
 {
-	CyU3PSysWatchDogClear();
+	/* Reset the watchdog timer to the full period length */
+	if (FX3State.WatchDogTicks & 0x01)
+		FX3State.WatchDogTicks--;
+	else
+		FX3State.WatchDogTicks++;
+	GCTLAON->watchdog_timer0 = FX3State.WatchDogTicks;
 }
 
 /**

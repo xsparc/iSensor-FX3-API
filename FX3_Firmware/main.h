@@ -126,6 +126,9 @@ typedef struct BoardState
 	/** Track the watchdog timer period (ms) */
 	uint32_t WatchDogPeriodMs;
 
+	/** Track the watchdog timer ticks */
+	uint32_t WatchDogTicks;
+
 }BoardState;
 
 /** Struct to store the current data stream state information */
