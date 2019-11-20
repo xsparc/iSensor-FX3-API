@@ -817,8 +817,8 @@ Public Class FX3Connection
             Return m_WatchdogTime
         End Get
         Set(value As Integer)
-            If value < 5 Then
-                Throw New FX3ConfigurationException("ERROR: Invalid watchdog timeout period - must be at least 5 seconds")
+            If value < 10 Then
+                Throw New FX3ConfigurationException("ERROR: Invalid watchdog timeout period - must be at least 10 seconds")
             End If
             If value > Int16.MaxValue Then
                 Throw New FX3ConfigurationException("ERROR: Invalid watchdog timeout period")
