@@ -335,6 +335,8 @@
   <HelpKINode Title="FX3Connection.UnexpectedDisconnectEventHandler delegate" Url="html/534755e7-b798-0a28-046c-c2eb459477b7.htm" />
   <HelpKINode Title="FX3Connection.WaitForBoard method" Url="html/4e574267-34de-9f80-0cc0-dddf0a93d40d.htm" />
   <HelpKINode Title="FX3Connection.WaitForStreamCompletion method" Url="html/4409394c-b943-ddef-8f45-8843d985cd84.htm" />
+  <HelpKINode Title="FX3Connection.WatchdogEnable property" Url="html/008456cb-b07c-24a6-8027-076d87d43fdc.htm" />
+  <HelpKINode Title="FX3Connection.WatchdogTimeoutSeconds property" Url="html/53fc52a6-d722-566b-8128-e528ceba524b.htm" />
   <HelpKINode Title="FX3Connection.WordCount property" Url="html/af129f70-ec8e-ba83-dba9-84003867000c.htm" />
   <HelpKINode Title="FX3Connection.WordLength property" Url="html/fd51c3f2-6254-8d71-64a0-8e63d51b3cb5.htm" />
   <HelpKINode Title="FX3Connection.WriteRegByte method" Url="html/7470aa78-1dd1-b34f-92bb-eb104bcc74b4.htm" />
@@ -558,6 +560,8 @@
   <HelpKINode Title="VersionNumber field" Url="html/b28f2d65-6f98-eb0e-a4d1-6941660b9bd5.htm" />
   <HelpKINode Title="WaitForBoard method" Url="html/4e574267-34de-9f80-0cc0-dddf0a93d40d.htm" />
   <HelpKINode Title="WaitForStreamCompletion method" Url="html/4409394c-b943-ddef-8f45-8843d985cd84.htm" />
+  <HelpKINode Title="WatchdogEnable property" Url="html/008456cb-b07c-24a6-8027-076d87d43fdc.htm" />
+  <HelpKINode Title="WatchdogTimeoutSeconds property" Url="html/53fc52a6-d722-566b-8128-e528ceba524b.htm" />
   <HelpKINode Title="WordCount property" Url="html/af129f70-ec8e-ba83-dba9-84003867000c.htm" />
   <HelpKINode Title="WordLength field" Url="html/f7014575-856c-3a0a-e99d-0193b3739ed3.htm" />
   <HelpKINode Title="WordLength property" Url="html/fd51c3f2-6254-8d71-64a0-8e63d51b3cb5.htm" />
