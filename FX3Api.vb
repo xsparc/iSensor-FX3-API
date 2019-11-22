@@ -302,7 +302,7 @@ Public Class FX3Connection
 
         'set watchdog parameters
         m_WatchdogEnable = True
-        m_WatchdogTime = 10
+        m_WatchdogTime = 20
 
     End Sub
 
