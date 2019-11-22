@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.1.5-pub</span>
+   &#160;<span id="projectnumber">v2.1.6-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -95,6 +95,12 @@ Data Fields</h2></td></tr>
 <tr class="separator:a51305008a16d1d905a3847d9fe1fb2f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1fdbb2bb76b06d88615778e033a5073c"><td class="memItemLeft" align="right" valign="top">CyBool_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_board_state.html#a1fdbb2bb76b06d88615778e033a5073c">DrPolarity</a></td></tr>
 <tr class="separator:a1fdbb2bb76b06d88615778e033a5073c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab088ef1de521bab22818bf4d00addf9"><td class="memItemLeft" align="right" valign="top">CyBool_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_board_state.html#aab088ef1de521bab22818bf4d00addf9">WatchDogEnabled</a></td></tr>
+<tr class="separator:aab088ef1de521bab22818bf4d00addf9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2bca4fcdf76d06297a44cb6f31e02eb4"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_board_state.html#a2bca4fcdf76d06297a44cb6f31e02eb4">WatchDogPeriodMs</a></td></tr>
+<tr class="separator:a2bca4fcdf76d06297a44cb6f31e02eb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a68c0f33ee25d0d5d303c417e522dbcfb"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_board_state.html#a68c0f33ee25d0d5d303c417e522dbcfb">WatchDogTicks</a></td></tr>
+<tr class="separator:a68c0f33ee25d0d5d303c417e522dbcfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Struct to store the current board state (SPI config, USB speed, etc) </p>
@@ -246,6 +252,51 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Track the USB buffer size for the current USB speed setting </p>
+
+</div>
+</div>
+<a id="aab088ef1de521bab22818bf4d00addf9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aab088ef1de521bab22818bf4d00addf9">&#9670;&nbsp;</a></span>WatchDogEnabled</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">CyBool_t WatchDogEnabled</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Track if the watchdog timer is enabled </p>
+
+</div>
+</div>
+<a id="a2bca4fcdf76d06297a44cb6f31e02eb4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2bca4fcdf76d06297a44cb6f31e02eb4">&#9670;&nbsp;</a></span>WatchDogPeriodMs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t WatchDogPeriodMs</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Track the watchdog timer period (ms) </p>
+
+</div>
+</div>
+<a id="a68c0f33ee25d0d5d303c417e522dbcfb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a68c0f33ee25d0d5d303c417e522dbcfb">&#9670;&nbsp;</a></span>WatchDogTicks</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t WatchDogTicks</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Track the watchdog timer ticks </p>
 
 </div>
 </div>

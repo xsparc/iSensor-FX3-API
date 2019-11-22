@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.1.5-pub</span>
+   &#160;<span id="projectnumber">v2.1.6-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -254,6 +254,12 @@ Functions</h2></td></tr>
 <tr class="memitem:a0012feb7c1973f17875ca9c3458462bf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a0012feb7c1973f17875ca9c3458462bf">AdiGPIOEventHandler</a> (uint8_t gpioId)</td></tr>
 <tr class="memdesc:a0012feb7c1973f17875ca9c3458462bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function handles GPIO interrupts and sets the appropriate flag in GpioHandler.  <a href="#a0012feb7c1973f17875ca9c3458462bf">More...</a><br /></td></tr>
 <tr class="separator:a0012feb7c1973f17875ca9c3458462bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a324389c2f4332af32ea49f7b0f4741e2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a324389c2f4332af32ea49f7b0f4741e2">AdiConfigureWatchdog</a> ()</td></tr>
+<tr class="memdesc:a324389c2f4332af32ea49f7b0f4741e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configures the watchdog timer based on the current board state.  <a href="#a324389c2f4332af32ea49f7b0f4741e2">More...</a><br /></td></tr>
+<tr class="separator:a324389c2f4332af32ea49f7b0f4741e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac35c3eb65841e099b5fe70875656d5bc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#ac35c3eb65841e099b5fe70875656d5bc">WatchDogTimerCb</a> (uint32_t nParam)</td></tr>
+<tr class="memdesc:ac35c3eb65841e099b5fe70875656d5bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">callback function to clear the watchdog timer. Should not be called directly.  <a href="#ac35c3eb65841e099b5fe70875656d5bc">More...</a><br /></td></tr>
+<tr class="separator:ac35c3eb65841e099b5fe70875656d5bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -992,6 +998,26 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 </div>
 </div>
+<a id="a324389c2f4332af32ea49f7b0f4741e2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a324389c2f4332af32ea49f7b0f4741e2">&#9670;&nbsp;</a></span>AdiConfigureWatchdog()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void AdiConfigureWatchdog </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Configures the watchdog timer based on the current board state. </p>
+<dl class="section return"><dt>Returns</dt><dd>void </dd></dl>
+
+</div>
+</div>
 <a id="a9a66ed1cd4bddfaee4a19ede70f94cc1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9a66ed1cd4bddfaee4a19ede70f94cc1">&#9670;&nbsp;</a></span>AdiControlEndpointHandler()</h2>
 
@@ -1118,6 +1144,33 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
   </dd>
 </dl>
 <p>This function handles USB events by calling start/stop functions to manage the ADI application. </p>
+
+</div>
+</div>
+<a id="ac35c3eb65841e099b5fe70875656d5bc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac35c3eb65841e099b5fe70875656d5bc">&#9670;&nbsp;</a></span>WatchDogTimerCb()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void WatchDogTimerCb </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>nParam</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>callback function to clear the watchdog timer. Should not be called directly. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">nParam</td><td>Callback argument, unused here.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>void </dd></dl>
 
 </div>
 </div>
