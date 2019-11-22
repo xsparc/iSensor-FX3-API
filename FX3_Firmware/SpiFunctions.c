@@ -821,6 +821,20 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 #endif
 		break;
 
+	case 14:
+		//enable watchdog
+		FX3State.WatchDogEnabled = CyTrue;
+		FX3State.WatchDogPeriodMs = 1000 * value;
+		AdiConfigureWatchdog();
+		break;
+
+	case 15:
+		//disable watchdog
+		FX3State.WatchDogEnabled = CyFalse;
+		FX3State.WatchDogPeriodMs = 1000 * value;
+		AdiConfigureWatchdog();
+		break;
+
 	default:
 		//Invalid Command
 		isHandled = CyFalse;
