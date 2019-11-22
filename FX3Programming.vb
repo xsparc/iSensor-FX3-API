@@ -146,9 +146,13 @@ Partial Class FX3Connection
         'Make sure that the board SPI parameters match current setting
         WriteBoardSpiParameters()
 
+        'set up watchdog
+        UpdateWatchdog()
+
         'Set the board info
         m_ActiveFX3Info = New FX3Board(FX3SerialNumber, DateTime.Now)
         m_ActiveFX3Info.SetFirmwareVersion(GetFirmwareID())
+
         'Get the verbose mode setting
         GetBoardStatus(verboseMode)
         m_ActiveFX3Info.SetVerboseMode(verboseMode)
