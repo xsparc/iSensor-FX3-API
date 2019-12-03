@@ -744,7 +744,7 @@ Partial Class FX3Connection
     ''' <param name="Frequency">The desired PWM frequency, in Hz. Valid values are in the range of 0.05Hz (0.05) - 10MHz (10000000.0)</param>
     ''' <param name="DutyCycle">The PWM duty cycle. Valid values are in the range 0.0 - 1.0. To achieve a "clock" signal set the duty cycle to 0.5</param>
     ''' <param name="Pin">The pin to configure as a PWM signal.</param>
-    Public Sub StartPWM(ByVal Frequency As Double, ByVal DutyCycle As Double, ByVal Pin As IPinObject)
+    Public Sub StartPWM(Frequency As Double,  DutyCycle As Double,  Pin As IPinObject)
 
         'Check that pin is an fx3pin
         If Not IsFX3Pin(Pin) Then
@@ -828,7 +828,7 @@ Partial Class FX3Connection
     ''' <summary>
     ''' This function call disables the PWM output from the FX3 and returns the pin to a tri-stated mode.
     ''' </summary>
-    Public Sub StopPWM(ByVal Pin As IPinObject)
+    Public Sub StopPWM(Pin As IPinObject)
 
         'Exit if the pin isn't acting as a PWM
         If Not isPWMPin(Pin) Then
@@ -866,7 +866,7 @@ Partial Class FX3Connection
     ''' </summary>
     ''' <param name="Pin">The pin to check. Must be an FX3PinObject pin</param>
     ''' <returns>True if the pin is configured as a PWM pin, false otherwise</returns>
-    Public Function isPWMPin(ByVal Pin As IPinObject) As Boolean
+    Public Function isPWMPin(Pin As IPinObject) As Boolean
 
         'Check that its an FX3 pin
         If Not IsFX3Pin(Pin) Then
@@ -892,7 +892,7 @@ Partial Class FX3Connection
     ''' </summary>
     ''' <param name="Pin">The pin to check</param>
     ''' <returns>True if Pin is an FX3 pin, false if not</returns>
-    Private Function IsFX3Pin(ByVal Pin As IPinObject) As Boolean
+    Private Function IsFX3Pin(Pin As IPinObject) As Boolean
         Dim validPin As Boolean = False
         'Check the toString overload and type
         If Pin.ToString().Substring(0, 3) = "FX3" And (Pin.GetType() = GetType(FX3PinObject)) Then

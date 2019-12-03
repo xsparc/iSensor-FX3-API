@@ -40,7 +40,7 @@ Public Class FX3ConfigurationException : Inherits FX3Exception
     ''' Create a new exception with a specified message
     ''' </summary>
     ''' <param name="message">The message to pass with the exception</param>
-    Public Sub New(ByVal message As String)
+    Public Sub New(message As String)
         MyBase.New(message)
     End Sub
 
@@ -49,7 +49,7 @@ Public Class FX3ConfigurationException : Inherits FX3Exception
     ''' </summary>
     ''' <param name="message">The message to pass with the exception</param>
     ''' <param name="innerException">The lower level exception to pass up</param>
-    Public Sub New(ByVal message As String, ByVal innerException As System.Exception)
+    Public Sub New(message As String,  innerException As System.Exception)
         MyBase.New(message, innerException)
     End Sub
 End Class
@@ -71,7 +71,7 @@ Public Class FX3CommunicationException : Inherits FX3Exception
     ''' Create a new exception with a specified message
     ''' </summary>
     ''' <param name="message">The message to pass with the exception</param>
-    Public Sub New(ByVal message As String)
+    Public Sub New(message As String)
         MyBase.New(message)
     End Sub
 
@@ -80,7 +80,7 @@ Public Class FX3CommunicationException : Inherits FX3Exception
     ''' </summary>
     ''' <param name="message">The message to pass with the exception</param>
     ''' <param name="innerException">The lower level exception to pass up</param>
-    Public Sub New(ByVal message As String, ByVal innerException As System.Exception)
+    Public Sub New(message As String,  innerException As System.Exception)
         MyBase.New(message, innerException)
     End Sub
 End Class
@@ -103,7 +103,7 @@ Public Class FX3BadStatusException : Inherits FX3Exception
     ''' Create a new exception with a specified message
     ''' </summary>
     ''' <param name="message">The message to pass with the exception</param>
-    Public Sub New(ByVal message As String)
+    Public Sub New(message As String)
         MyBase.New(message)
     End Sub
 
@@ -112,7 +112,7 @@ Public Class FX3BadStatusException : Inherits FX3Exception
     ''' </summary>
     ''' <param name="message">The message to pass with the exception</param>
     ''' <param name="innerException">The lower level exception to pass up</param>
-    Public Sub New(ByVal message As String, ByVal innerException As System.Exception)
+    Public Sub New(message As String,  innerException As System.Exception)
         MyBase.New(message, innerException)
     End Sub
 End Class
@@ -134,7 +134,7 @@ Public Class FX3ProgrammingException : Inherits FX3Exception
     ''' Create a new exception with a specified message
     ''' </summary>
     ''' <param name="message">The message to pass with the exception</param>
-    Public Sub New(ByVal message As String)
+    Public Sub New(message As String)
         MyBase.New(message)
     End Sub
 
@@ -143,7 +143,7 @@ Public Class FX3ProgrammingException : Inherits FX3Exception
     ''' </summary>
     ''' <param name="message">The message to pass with the exception</param>
     ''' <param name="innerException">The lower level exception to pass up</param>
-    Public Sub New(ByVal message As String, ByVal innerException As System.Exception)
+    Public Sub New(message As String,  innerException As System.Exception)
         MyBase.New(message, innerException)
     End Sub
 End Class
@@ -165,7 +165,7 @@ Public Class FX3Exception : Inherits System.Exception
     ''' Create a new exception with a specified message
     ''' </summary>
     ''' <param name="message">The message to pass with the exception</param>
-    Public Sub New(ByVal message As String)
+    Public Sub New(message As String)
         MyBase.New(message)
     End Sub
 
@@ -174,7 +174,7 @@ Public Class FX3Exception : Inherits System.Exception
     ''' </summary>
     ''' <param name="message">The message to pass with the exception</param>
     ''' <param name="innerException">The lower level exception to pass up</param>
-    Public Sub New(ByVal message As String, ByVal innerException As System.Exception)
+    Public Sub New(message As String,  innerException As System.Exception)
         MyBase.New(message, innerException)
     End Sub
 End Class

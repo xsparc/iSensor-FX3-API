@@ -105,7 +105,7 @@ Partial Class FX3Connection
     ''' Function to start a burst read using the BurstStreamManager
     ''' </summary>
     ''' <param name="numBuffers">The number of buffers to read in the stream operation</param>
-    Private Sub StartBurstStream(ByVal numBuffers As UInteger)
+    Private Sub StartBurstStream(numBuffers As UInteger)
 
         'Buffer to store command data
         Dim buf(8) As Byte
@@ -553,7 +553,7 @@ Partial Class FX3Connection
     ''' <summary>
     ''' This function starts real time streaming on the ADcmXLx021 (interface and FX3). Specifying pin exit is optional and must be 0 (disabled) or 1 (enabled)
     ''' </summary>
-    Public Sub StartRealTimeStreaming(ByVal numFrames As UInteger)
+    Public Sub StartRealTimeStreaming(numFrames As UInteger)
 
         'Buffer to store command data
         Dim buf(4) As Byte

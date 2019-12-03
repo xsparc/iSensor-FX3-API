@@ -18,7 +18,7 @@ Partial Class FX3Connection
         Get
             Return m_CrcFirstIndex
         End Get
-        Set(ByVal value As Integer)
+        Set(value As Integer)
             m_CrcFirstIndex = value
         End Set
     End Property
@@ -34,7 +34,7 @@ Partial Class FX3Connection
         Get
             Return m_CrcLastIndex
         End Get
-        Set(ByVal value As Integer)
+        Set(value As Integer)
             m_CrcLastIndex = value
         End Set
     End Property
@@ -50,7 +50,7 @@ Partial Class FX3Connection
         Get
             Return m_CrcResultIndex
         End Get
-        Set(ByVal value As Integer)
+        Set(value As Integer)
             m_CrcResultIndex = value
         End Set
     End Property
@@ -66,7 +66,7 @@ Partial Class FX3Connection
         Get
             Return m_WordCount
         End Get
-        Set(ByVal value As Integer)
+        Set(value As Integer)
             ' Validate and that we have a valid UShort value, as we must convert to UShort for SPI object.  
             If value < 1 Or value > UShort.MaxValue Then
                 Throw New ArgumentException("WordCount must be between 1 and " & UShort.MaxValue.ToString() & ".")
@@ -86,7 +86,7 @@ Partial Class FX3Connection
         Get
             Return m_TriggerReg
         End Get
-        Set(ByVal value As RegClass)
+        Set(value As RegClass)
             m_TriggerReg = value
         End Set
     End Property

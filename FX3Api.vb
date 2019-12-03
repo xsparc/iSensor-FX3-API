@@ -192,7 +192,7 @@ Public Class FX3Connection
     ''' This event is raised when the active board is disconnected unexpectedly (IE unplugged)
     ''' </summary>
     ''' <param name="FX3SerialNum">Serial number of the board which was disconnected</param>
-    Public Event UnexpectedDisconnect(ByVal FX3SerialNum As String)
+    Public Event UnexpectedDisconnect(FX3SerialNum As String)
 
     ''' <summary>
     ''' This event is raised when the disconnect event for a board has finished, and it is reprogrammed with the ADI bootloader. This event only is triggered for boards
@@ -200,7 +200,7 @@ Public Class FX3Connection
     ''' </summary>
     ''' <param name="FX3SerialNum">Serial number of the board</param>
     ''' <param name="DisconnectTime">Time (in ms) elapsed between the disconnect call and board re-enumeration</param>
-    Public Event DisconnectFinished(ByVal FX3SerialNum As String, ByVal DisconnectTime As Integer)
+    Public Event DisconnectFinished(FX3SerialNum As String, DisconnectTime As Integer)
 
     ''' <summary>
     ''' This event is raised when there is a new buffer available from a buffered stream
@@ -409,7 +409,7 @@ Public Class FX3Connection
     ''' <summary>
     ''' Property to get or set the FX3 SPI controller chip select setting. Should be left on hardware control, changing modes will likely cause unexpected behavior.
     ''' Reqcode:   B2
-    ''' Value:     Desired setting ( as SpiChipselectControl )
+    ''' Value:     Desired setting (as SpiChipselectControl )
     ''' Index:     4  
     ''' Length:    4
     ''' Data:      None
@@ -432,7 +432,7 @@ Public Class FX3Connection
     ''' <summary>
     ''' The number of SPI clock cycles before the SPI transaction that chip select is toggled to active.
     ''' Reqcode:   B2
-    ''' Value:     Desired Setting ( as SpiLagLeadTime )
+    ''' Value:     Desired Setting (as SpiLagLeadTime )
     ''' Index:     5 
     ''' Length:    4
     ''' Data:      None
@@ -455,7 +455,7 @@ Public Class FX3Connection
     ''' <summary>
     ''' The number of SPI clock cycles after the transaction ends that chip select is toggled to idle.
     ''' Reqcode:   B2
-    ''' Value:     Desired Setting ( as SpiLagLeadTime )
+    ''' Value:     Desired Setting (as SpiLagLeadTime )
     ''' Index:     6 
     ''' Length:    4
     ''' Data:      None
@@ -770,7 +770,7 @@ Public Class FX3Connection
     ''' Function which performs the SPI configuration option based on the current control endpoint setting
     ''' </summary>
     ''' <param name="clockFrequency">The SPI clock frequency, if it needs to be set</param>
-    Private Sub ConfigureSPI(Optional ByVal clockFrequency As Integer = 0)
+    Private Sub ConfigureSPI(Optional clockFrequency As Integer = 0)
 
         'Create buffer for transfer
         Dim buf(3) As Byte

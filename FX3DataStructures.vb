@@ -377,7 +377,7 @@ Public Class FX3SPIConfig
     ''' Class Constructor, sets reasonable default values for IMU and ADcmXL devices
     ''' </summary>
     ''' <param name="SensorType">Optional parameter to specify default device SPI settings. Valid options are IMU and ADcmXL</param>
-    Public Sub New(Optional ByVal SensorType As DeviceType = DeviceType.IMU)
+    Public Sub New(Optional SensorType As DeviceType = DeviceType.IMU)
         'Set the properties true for all devices
         Cpol = True
         Cpha = True
@@ -749,8 +749,9 @@ Public Class FX3Board
     Private m_firmwareVersion As String
     Private m_versionNumber As String
     Private m_verboseMode As Boolean
+    Private m_bootloaderVersion As String
 
-    Public Sub New(ByVal SerialNumber As String, ByVal BootTime As DateTime)
+    Public Sub New(SerialNumber As String, BootTime As DateTime)
 
         'set the serial number string
         m_SerialNumber = SerialNumber
@@ -770,7 +771,8 @@ Public Class FX3Board
     ''' </summary>
     ''' <returns></returns>
     Public Overrides Function ToString() As String
-        Return "Firmware Version: " + FirmwareVersion + Environment.NewLine + "Serial Number: " + SerialNumber + Environment.NewLine + "Debug Mode: " + VerboseMode.ToString() + Environment.NewLine + "Uptime: " + Uptime.ToString() + "ms"
+        Return "Firmware Version: " + FirmwareVersion + Environment.NewLine + "Serial Number: " + SerialNumber + Environment.NewLine + "Debug Mode: " + VerboseMode.ToString() +
+            Environment.NewLine + "Uptime: " + Uptime.ToString() + "ms" + Environment.NewLine + "Bootloader Version: " + BootloaderVersion
     End Function
 
     ''' <summary>
@@ -826,10 +828,20 @@ Public Class FX3Board
     End Property
 
     ''' <summary>
+    ''' Get the FX3 bootloader version. This is a second stage bootloader which is stored on the I2C EEPROM
+    ''' </summary>
+    ''' <returns>The bootloader version, as a string</returns>
+    Public ReadOnly Property BootloaderVersion As String
+        Get
+            Return m_bootloaderVersion
+        End Get
+    End Property
+
+    ''' <summary>
     ''' Set the firmware version. Is friend so as to not be accessible to outside classes.
     ''' </summary>
     ''' <param name="FirmwareVersion">The firmware version to set, as a string</param>
-    Friend Sub SetFirmwareVersion(ByVal FirmwareVersion As String)
+    Friend Sub SetFirmwareVersion(FirmwareVersion As String)
         If IsNothing(FirmwareVersion) Or FirmwareVersion = "" Then
             Throw New FX3ConfigurationException("Error: Bad firmware version number")
         End If
@@ -844,6 +856,14 @@ Public Class FX3Board
     ''' <param name="isVerbose">If the board is in verbose mode or not</param>
     Friend Sub SetVerboseMode(isVerbose As Boolean)
         m_verboseMode = isVerbose
+    End Sub
+
+    ''' <summary>
+    ''' Sets the bootloader version
+    ''' </summary>
+    ''' <param name="BootloaderVersion">The current bootloader version</param>
+    Friend Sub SetBootloaderVersion(BootloaderVersion As String)
+        m_bootloaderVersion = BootloaderVersion
     End Sub
 
 End Class

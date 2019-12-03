@@ -18,7 +18,7 @@ Partial Class FX3Connection
     ''' with the ADI bootloader.
     ''' </summary>
     ''' <param name="FX3SerialNumber">Serial number of the device being connected to.</param>
-    Public Sub Connect(ByVal FX3SerialNumber As String)
+    Public Sub Connect(FX3SerialNumber As String)
 
         Dim tempHandle As CyUSBDevice = Nothing
         Dim boardProgrammed As Boolean = False
@@ -152,6 +152,7 @@ Partial Class FX3Connection
         'Set the board info
         m_ActiveFX3Info = New FX3Board(FX3SerialNumber, DateTime.Now)
         m_ActiveFX3Info.SetFirmwareVersion(GetFirmwareID())
+        m_ActiveFX3Info.SetBootloaderVersion(m_BootloaderVersion)
 
         'Get the verbose mode setting
         GetBoardStatus(verboseMode)
@@ -236,7 +237,7 @@ Partial Class FX3Connection
     ''' </summary>
     ''' <param name="TimeoutInSeconds">The timeout to wait for a board to connect, in seconds</param>
     ''' <returns>If there is a board available (false indicates timeout occurred)</returns>
-    Public Function WaitForBoard(ByVal TimeoutInSeconds As Integer) As Boolean
+    Public Function WaitForBoard(TimeoutInSeconds As Integer) As Boolean
         Dim boardattached As Boolean = False
         Dim originalFrame As DispatcherFrame
         Dim tempThread As Thread
@@ -427,7 +428,7 @@ Partial Class FX3Connection
     ''' </summary>
     ''' <param name="sender"></param>
     ''' <param name="e"></param>
-    Private Sub usbDevices_DeviceAttached(ByVal sender As Object, ByVal e As EventArgs)
+    Private Sub usbDevices_DeviceAttached(sender As Object, e As EventArgs)
 
         'Parse the event data
         Dim usbEvent As USBEventArgs = TryCast(e, USBEventArgs)
@@ -443,7 +444,7 @@ Partial Class FX3Connection
     ''' </summary>
     ''' <param name="sender"></param>
     ''' <param name="e"></param>
-    Private Sub usbDevices_DeviceRemoved(ByVal sender As Object, ByVal e As EventArgs)
+    Private Sub usbDevices_DeviceRemoved(sender As Object, e As EventArgs)
 
         'Parse event data and handle
         Dim usbEvent As USBEventArgs = TryCast(e, USBEventArgs)
@@ -457,7 +458,7 @@ Partial Class FX3Connection
     ''' interface state to prevent application lockup from accessing a disconnected board.
     ''' </summary>
     ''' <param name="usbEvent">The event to handle</param>
-    Private Sub CheckDisconnectEvent(ByVal usbEvent As USBEventArgs)
+    Private Sub CheckDisconnectEvent(usbEvent As USBEventArgs)
 
         If IsNothing(m_ActiveFX3) Then
             'If the active board is set to nothing then this was an "expected" disconnect event
@@ -487,7 +488,7 @@ Partial Class FX3Connection
     ''' event flow (rather than blocking in a disconnect call).
     ''' </summary>
     ''' <param name="usbEvent">The event to handle</param>
-    Private Sub CheckConnectEvent(ByVal usbEvent As USBEventArgs)
+    Private Sub CheckConnectEvent(usbEvent As USBEventArgs)
 
         'Check if the board which reconnected is the one being programmed
         If usbEvent.SerialNum = m_ActiveFX3SN And Not IsNothing(m_ActiveFX3SN) Then
@@ -623,7 +624,7 @@ Partial Class FX3Connection
     ''' This function programs the bootloader of a single board
     ''' </summary>
     ''' <param name="selectedBoard">The handle for the FX3 board to be programmed with the ADI bootloader firmware</param>
-    Private Sub ProgramBootloader(ByVal SelectedBoard As CyFX3Device)
+    Private Sub ProgramBootloader(SelectedBoard As CyFX3Device)
 
         'Programming status
         Dim flashStatus As FX3_FWDWNLOAD_ERROR_CODE = FX3_FWDWNLOAD_ERROR_CODE.SUCCESS
@@ -657,7 +658,7 @@ Partial Class FX3Connection
     ''' This function programs a single board running the ADI bootloader with the ADI application firmware.
     ''' </summary>
     ''' <param name="selectedBoard">The handle for the board to be programmed with the ADI application firmware</param>
-    Private Sub ProgramAppFirmware(ByVal selectedBoard As CyFX3Device)
+    Private Sub ProgramAppFirmware(selectedBoard As CyFX3Device)
 
         'If the board programmed successfully
         Dim boardProgrammed As Boolean = False
@@ -803,7 +804,7 @@ Partial Class FX3Connection
     ''' Send a reset command to the FX3 firmware. This command works for either the application or bootloader firmware.
     ''' </summary>
     ''' <param name="BoardHandle">Handle of the board to be reset.</param>
-    Private Sub ResetFX3Firmware(ByVal BoardHandle As CyFX3Device)
+    Private Sub ResetFX3Firmware(BoardHandle As CyFX3Device)
 
         'Sub assumes the board has firmware loaded on it that will respond to reset commands
         Dim buf(3) As Byte
@@ -878,7 +879,7 @@ Partial Class FX3Connection
     ''' <param name="NumBytes">The number of bytes to transfer</param>
     ''' <param name="Timeout">The timeout time (in milliseconds)</param>
     ''' <returns>Returns a boolean indicating if the transfer timed out or not</returns>
-    Private Function XferControlData(ByRef Buf As Byte(), ByVal NumBytes As Integer, ByVal Timeout As Integer) As Boolean
+    Private Function XferControlData(ByRef Buf As Byte(), NumBytes As Integer, Timeout As Integer) As Boolean
 
         Dim startTime As New Stopwatch
         Dim validTransfer As Boolean = True
@@ -919,7 +920,7 @@ Partial Class FX3Connection
     ''' </summary>
     ''' <param name="Reqcode">The vendor command reqcode to provide</param>
     ''' <param name="toDevice">Whether the transaction is DIR_TO_DEVICE (true) or DIR_FROM_DEVICE(false)</param>
-    Private Sub ConfigureControlEndpoint(ByVal ReqCode As UInt16, ByVal ToDevice As Boolean)
+    Private Sub ConfigureControlEndpoint(ReqCode As UInt16, ToDevice As Boolean)
 
         'Validate inputs
         If IsNothing(m_ActiveFX3) Then
@@ -1133,7 +1134,7 @@ Partial Class FX3Connection
     ''' BOOTLOADER FW: Blink the on-board LED
     ''' </summary>
     ''' <param name="SerialNumber">Serial number of the selected board</param>
-    Public Sub BootloaderBlinkLED(ByVal SerialNumber As String)
+    Public Sub BootloaderBlinkLED(SerialNumber As String)
 
         'Sub assumes the board has firmware loaded on it that will respond to reset commands
         Dim buf(3) As Byte
@@ -1179,7 +1180,7 @@ Partial Class FX3Connection
     ''' BOOTLOADER FW: Turn off the LED
     ''' </summary>
     ''' <param name="SerialNumber">Serial number of the selected board</param>
-    Public Sub BootloaderTurnOffLED(ByVal SerialNumber As String)
+    Public Sub BootloaderTurnOffLED(SerialNumber As String)
 
         'Sub assumes the board has firmware loaded on it that will respond to reset commands
         Dim buf(3) As Byte
@@ -1225,7 +1226,7 @@ Partial Class FX3Connection
     ''' BOOTLOADER FW: Turn on the LED
     ''' </summary>
     ''' <param name="SerialNumber">Serial number of the selected board</param>
-    Public Sub BootloaderTurnOnLED(ByVal SerialNumber As String)
+    Public Sub BootloaderTurnOnLED(SerialNumber As String)
 
         'Sub assumes the board has firmware loaded on it that will respond to reset commands
         Dim buf(3) As Byte

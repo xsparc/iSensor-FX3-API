@@ -38,7 +38,7 @@ Partial Class FX3Connection
         Get
             Return CUShort(m_burstMode)
         End Get
-        Set(ByVal value As UShort)
+        Set(value As UShort)
             m_burstMode = value
         End Set
     End Property
