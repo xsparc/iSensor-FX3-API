@@ -1077,7 +1077,7 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  </summary>
  <returns>The number of boards running the application firmware which were reset</returns>
 </member>
-<member name="M:FX3Api.FX3Connection.isFirmwarePathValid(System.String@)">
+<member name="M:FX3Api.FX3Connection.IsFirmwarePathValid(System.String@)">
  <summary>
  Checks to see if a provided firmware path is valid. Throws exception if it is not.
  </summary>

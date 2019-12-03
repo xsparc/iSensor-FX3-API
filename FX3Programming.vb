@@ -726,7 +726,7 @@ Partial Class FX3Connection
         End Get
         Set(value As String)
             'Setter checks that the path is valid before setting
-            If isFirmwarePathValid(value) Then
+            If IsFirmwarePathValid(value) Then
                 m_FirmwarePath = value
             Else
                 Throw New FX3ConfigurationException("ERROR: Invalid application firmware path provided: " + value)
@@ -744,7 +744,7 @@ Partial Class FX3Connection
         End Get
         Set(value As String)
             'Setter checks that the path is valid before setting
-            If isFirmwarePathValid(value) Then
+            If IsFirmwarePathValid(value) Then
                 m_BlinkFirmwarePath = value
             Else
                 Throw New FX3ConfigurationException("ERROR: Invalid bootloader path provided: " + value)
@@ -764,7 +764,7 @@ Partial Class FX3Connection
         End Get
         Set(value As String)
             'Setter checks that the path is valid before setting
-            If isFirmwarePathValid(value) Then
+            If IsFirmwarePathValid(value) Then
                 m_FlashProgrammerPath = value
             Else
                 Throw New FX3ConfigurationException("ERROR: Invalid programmer firmware path provided: " + value)
@@ -850,7 +850,7 @@ Partial Class FX3Connection
     ''' </summary>
     ''' <param name="Path">The firmware path to check</param>
     ''' <returns>A boolean indicating if the firmware path is valid</returns>
-    Private Function isFirmwarePathValid(ByRef Path As String) As Boolean
+    Private Function IsFirmwarePathValid(ByRef Path As String) As Boolean
 
         'Check file path length
         If Not Path.Length > 4 Then

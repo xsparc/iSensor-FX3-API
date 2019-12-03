@@ -80,6 +80,7 @@
   <HelpKINode Title="BootloaderPath property" Url="html/2086190f-f48c-3691-57a8-debd1d1b0254.htm" />
   <HelpKINode Title="BootloaderTurnOffLED method" Url="html/d8ed82c3-e676-2b11-9f04-2d4f7f73c8b8.htm" />
   <HelpKINode Title="BootloaderTurnOnLED method" Url="html/5a7529d1-fb20-b1af-c740-b705d3c5af4e.htm" />
+  <HelpKINode Title="BootloaderVersion property" Url="html/9c5339b7-203f-5576-b57d-e1ac5269aa4f.htm" />
   <HelpKINode Title="BufferAvailable property" Url="html/e92c6a5d-4828-2487-991e-571f4dc99e61.htm" />
   <HelpKINode Title="BuildDateTime field" Url="html/65e52223-6400-4b8d-112b-919f05b7609f.htm" />
   <HelpKINode Title="BurstMode property" Url="html/7984a80e-023d-e96f-f8dd-9df74751fd4c.htm" />
@@ -185,6 +186,7 @@
     <HelpKINode Title="methods" Url="html/f6ad139e-66a6-f854-28eb-8f5d724a3a53.htm" />
     <HelpKINode Title="properties" Url="html/a4b9a618-2b91-0200-d220-948bf4f30d79.htm" />
   </HelpKINode>
+  <HelpKINode Title="FX3Board.BootloaderVersion property" Url="html/9c5339b7-203f-5576-b57d-e1ac5269aa4f.htm" />
   <HelpKINode Title="FX3Board.FirmwareVersion property" Url="html/225dcc56-f369-8603-2410-5ebddd55ed57.htm" />
   <HelpKINode Title="FX3Board.FirmwareVersionNumber property" Url="html/4b918f9c-ba4b-897c-60b0-517727af6954.htm" />
   <HelpKINode Title="FX3Board.FX3Board constructor" Url="html/769997b7-1a4f-08d1-64ec-3ebd734eeb85.htm" />
@@ -495,8 +497,8 @@
   <HelpKINode Title="ResetPin property" Url="html/323fa924-24da-f60d-2c4d-b0e63c274ee7.htm" />
   <HelpKINode Title="RestoreHardwareSpi method" Url="html/7bffc307-014c-a89b-8d5c-9978358c74bb.htm" />
   <HelpKINode Title="SCLK field" Url="html/bca90136-f9a9-b710-6290-c4e2455818c2.htm" />
-  <HelpKINode Title="SclkFrequency property" Url="html/6c81a4f6-5c6c-36a0-9c51-90450e3a156a.htm" />
   <HelpKINode Title="SCLKFrequency property" Url="html/705196d0-12a4-0bd3-2faa-f275f3ce5943.htm" />
+  <HelpKINode Title="SclkFrequency property" Url="html/6c81a4f6-5c6c-36a0-9c51-90450e3a156a.htm" />
   <HelpKINode Title="SCLKHalfPeriodTicks field" Url="html/8b8fd904-046d-798e-6492-b3b786d4e65b.htm" />
   <HelpKINode Title="SecondsToTimerTicks field" Url="html/e336c5ce-fc50-16cc-aa46-21cd4e3927ef.htm" />
   <HelpKINode Title="SensorType property" Url="html/9e341986-58e8-d7fe-7994-f5dc0f2913f7.htm" />
