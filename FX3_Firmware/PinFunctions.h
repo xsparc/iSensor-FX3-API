@@ -22,6 +22,14 @@
 /* Include the main header file */
 #include "main.h"
 
+/** Enum of possible DUT voltages */
+typedef enum DutVoltage
+{
+	Off = 0,
+	On3_3Volts = 1,
+	On5_0Volts = 2
+}DutVoltage;
+
 /* Function definitions */
 CyU3PReturnStatus_t AdiPulseDrive();
 CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength);
@@ -34,9 +42,9 @@ uint32_t AdiMStoTicks(uint32_t desiredStallTime);
 CyU3PReturnStatus_t AdiSleepForMicroSeconds(uint32_t numMicroSeconds);
 CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM);
 CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength);
+CyU3PReturnStatus_t AdiSetDutSupply(DutVoltage SupplyMode);
 CyU3PReturnStatus_t AdiConfigurePinInterrupt(uint16_t pin, CyBool_t polarity);
 uint32_t AdiReadTimerRegValue();
-
 
 /*
  * GPIO Pin mapping definitions
@@ -68,6 +76,10 @@ uint32_t AdiReadTimerRegValue();
 
 /** General purpose FX3 GPIO 4. This GPIO shares a complex GPIO block with DIO1. Mapped to GPIO 12 */
 #define FX3_PIN_GPIO4							(0x12)
+
+/** Control pins for power management circuit */
+#define ADI_3_3V_EN								(33)
+#define ADI_5V_EN 								(34)
 
 /*
  * ADI GPIO Event Handler Definitions

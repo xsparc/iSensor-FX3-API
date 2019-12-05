@@ -13,7 +13,7 @@
   * @date		8/1/2019
   * @author		A. Nolan (alex.nolan@analog.com)
   * @author 	J. Chong (juan.chong@analog.com)
-  * @version 	2.2.0-pub
+  * @version 	2.3.0-pub
   * @brief		Entry point and setup functions for the Analog Devices iSensor FX3 Demonstration Platform firmware.
  **/
 
@@ -102,7 +102,7 @@ CyU3PDmaBuffer_t SpiDmaBuffer;
  */
 
 /** Constant firmware ID string. Manually updated when building new firmware. */
-const uint8_t FirmwareID[32] __attribute__((aligned(32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '2', '.', '2', '.', '0', '-','P','U','B',' ', '\0' };
+const uint8_t FirmwareID[32] __attribute__((aligned(32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '2', '.', '3', '.', '0', '-','P','U','B',' ', '\0' };
 
 /** FX3 unique serial number. Set at runtime */
 char serial_number[] __attribute__((aligned(32))) = {'0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00};
@@ -371,6 +371,22 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	isHandled = CyTrue;
             	break;
 
+            /* Vendor command to set the DUT supply voltage */
+            case ADI_SET_DUT_SUPPLY:
+            	/* Set the handled flag to true */
+            	isHandled = CyTrue;
+            	/* parse voltage from vendor request */
+            	DutVoltage voltage = wValue;
+            	/* Set the voltage */
+            	status = AdiSetDutSupply(voltage);
+            	/* Return the status code */
+            	USBBuffer[0] = status & 0xFF;
+            	USBBuffer[1] = (status & 0xFF00) >> 8;
+            	USBBuffer[2] = (status & 0xFF0000) >> 16;
+            	USBBuffer[3] = (status & 0xFF000000) >> 24;
+            	CyU3PUsbSendEP0Data (wLength, USBBuffer);
+            	break;
+
             //Get the current status of the FX3
             case ADI_GET_STATUS:
             	/* Return the status in bytes 0-3 */
@@ -579,46 +595,6 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             }
         }
 
-        /* TODO: Implement the CLEAR_FEATURE request to clean up the ADI application.
-         *
-         * CLEAR_FEATURE request for endpoint is always passed to the setup callback
-         * regardless of the enumeration model used. When a clear feature is received,
-         * the previous transfer has to be flushed and cleaned up. This is done at the
-         * protocol level. Since this is just a loopback operation, there is no higher
-         * level protocol. So flush the EP memory and reset the DMA channel associated
-         * with it. If there are more than one EP associated with the channel reset both
-         * the EPs. The endpoint stall and toggle / sequence number is also expected to be
-         * reset. Return CyFalse to make the library clear the stall and reset the endpoint
-         * toggle. Or invoke the CyU3PUsbStall (ep, CyFalse, CyTrue) and return CyTrue.
-         * Here we are clearing the stall.
-        if ((bTarget == CY_U3P_USB_TARGET_ENDPT) && (bRequest == CY_U3P_USB_SC_CLEAR_FEATURE)
-                && (wValue == CY_U3P_USBX_FS_EP_HALT))
-        {
-            if ((wIndex == CY_FX_EP_PRODUCER) || (wIndex == CY_FX_EP_CONSUMER))
-            {
-                if (glIsApplnActive)
-                {
-                    CyU3PUsbSetEpNak (CY_FX_EP_PRODUCER, CyTrue);
-                    CyU3PUsbSetEpNak (CY_FX_EP_CONSUMER, CyTrue);
-                    CyU3PBusyWait (125);
-
-                    CyU3PDmaChannelReset (&glChHandleBulkLp);
-                    CyU3PUsbFlushEp (CY_FX_EP_PRODUCER);
-                    CyU3PUsbFlushEp (CY_FX_EP_CONSUMER);
-                    CyU3PUsbResetEp (CY_FX_EP_PRODUCER);
-                    CyU3PUsbResetEp (CY_FX_EP_CONSUMER);
-                    CyU3PDmaChannelSetXfer (&glChHandleBulkLp, CY_FX_BULKLP_DMA_TX_SIZE);
-                    CyU3PUsbStall (wIndex, CyFalse, CyTrue);
-
-                    CyU3PUsbSetEpNak (CY_FX_EP_PRODUCER, CyFalse);
-                    CyU3PUsbSetEpNak (CY_FX_EP_CONSUMER, CyFalse);
-
-                    CyU3PUsbAckSetup ();
-                    isHandled = CyTrue;
-                }
-            }
-        } */
-
         //If there was an error return false to stall the request
         if (status != CY_U3P_SUCCESS)
         {
@@ -630,7 +606,11 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 
 
 /**
-  * @brief Configures the watchdog timer based on the current board state
+  * @brief Configures the FX3 watchdog timer based on the current board state.
+  *
+  * The watchdog is cleared by a software timer managed in the threadX RTOS. The clear interval is set to 5 seconds
+  * less than the watchtog period. If the watchdog timer elapses without being reset (software is locked up) then the
+  * FX3 firmware undergoes a hard reset and will reboot onto the second stage bootloader.
   *
   * @return void
  **/
@@ -1241,6 +1221,20 @@ void AdiAppStart (void)
     	CyU3PDebugPrint (4, "Configuring the ChannelToPC DMA failed, Error Code = 0x%x\r\n", status);
     	AdiAppErrorHandler(status);
     }
+
+    /* Enable 3.3V power supply by driving 5V pin high, then 3.3V pin low */
+	CyU3PDeviceGpioOverride(ADI_5V_EN, CyTrue);
+	CyU3PDeviceGpioOverride(ADI_3_3V_EN, CyTrue);
+	CyU3PMemSet ((uint8_t *)&gpioConfig, 0, sizeof (gpioConfig));
+	gpioConfig.outValue = CyTrue;
+	gpioConfig.inputEn = CyFalse;
+	gpioConfig.driveLowEn = CyTrue;
+	gpioConfig.driveHighEn = CyTrue;
+	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+	status = CyU3PGpioSetSimpleConfig(ADI_5V_EN, &gpioConfig);
+	gpioConfig.outValue = CyFalse;
+	status = CyU3PGpioSetSimpleConfig(ADI_3_3V_EN, &gpioConfig);
+
     /* Set app active flag */
     FX3State.AppActive = CyTrue;
 

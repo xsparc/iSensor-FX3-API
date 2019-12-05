@@ -679,6 +679,74 @@ CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength)
 }
 
 /**
+  * @brief This function configures the DUT supply voltage.
+  *
+  * This function sets the control pins on the LTC1470 power switch IC. This IC allows software to
+  * power cycle a DUT or give it 3.3V/5V to Vdd. This feature only works on the in-house ADI iSensors
+  * FX3 Eval board. It does not function on the iSensor FX3 Eval board based on the Cypress Explorer kit.
+  *
+  * @param SupplyMode The DUT Voltage to set (Off, 3.3V, 5V)
+  *
+  * @returns A status code indicating the success of the functions.
+ **/
+CyU3PReturnStatus_t AdiSetDutSupply(DutVoltage SupplyMode)
+{
+	CyU3PReturnStatus_t status0, status1 = CY_U3P_SUCCESS;
+	CyU3PGpioSimpleConfig_t gpioConfig;
+
+	/* Set base config values */
+	gpioConfig.outValue = CyTrue;
+	gpioConfig.inputEn = CyFalse;
+	gpioConfig.driveLowEn = CyTrue;
+	gpioConfig.driveHighEn = CyTrue;
+	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+
+#ifdef VERBOSE_MODE
+	CyU3PDebugPrint (4, "Setting power supply mode %d\r\n", SupplyMode);
+#endif
+
+	/* Check the DutVoltage value */
+	switch(SupplyMode)
+	{
+	case Off:
+		/* Set both high */
+		status0 = CyU3PGpioSetSimpleConfig(ADI_5V_EN, &gpioConfig);
+		status1 = CyU3PGpioSetSimpleConfig(ADI_3_3V_EN, &gpioConfig);
+		break;
+
+	case On3_3Volts:
+		/* Set 5V high, 3.3V low */
+		status0 = CyU3PGpioSetSimpleConfig(ADI_5V_EN, &gpioConfig);
+		gpioConfig.outValue = CyFalse;
+		status1 = CyU3PGpioSetSimpleConfig(ADI_3_3V_EN, &gpioConfig);
+		break;
+
+	case On5_0Volts:
+		/* Set 3.3V high, 5V low */
+		status1 = CyU3PGpioSetSimpleConfig(ADI_3_3V_EN, &gpioConfig);
+		gpioConfig.outValue = CyFalse;
+		status0 = CyU3PGpioSetSimpleConfig(ADI_5V_EN, &gpioConfig);
+		break;
+
+	default:
+		/* Set both high to turn off power supply */
+		status0 = CyU3PGpioSetSimpleConfig(ADI_5V_EN, &gpioConfig);
+		status1 = CyU3PGpioSetSimpleConfig(ADI_3_3V_EN, &gpioConfig);
+		/* Return invalid argument */
+		CyU3PDebugPrint (4, "Error: Invalid power supply mode selected: %d\r\n", SupplyMode);
+		return CY_U3P_ERROR_BAD_ARGUMENT;
+	}
+
+	/* Determine return code */
+	if(status0)
+		return status0;
+	else if(status1)
+		return status1;
+	else
+		return CY_U3P_SUCCESS;
+}
+
+/**
   * @brief This function configures the specified pin as an output and drives it with the desired value.
   *
   * @param pinNumber The GPIO index of the pin to be set

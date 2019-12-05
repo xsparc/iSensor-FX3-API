@@ -196,6 +196,9 @@ typedef struct StreamState
 /** Soft-reset the FX3 firmware (don't return to bootloader mode) */
 #define ADI_WARM_RESET							(0xB6)
 
+/** Set the DUT supply voltage (only works on ADI FX3 boards) */
+#define ADI_SET_DUT_SUPPLY  					(0xB7)
+
 /** Start/stop a generic data stream */
 #define ADI_STREAM_GENERIC_DATA					(0xC0)
 
