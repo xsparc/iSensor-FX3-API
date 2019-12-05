@@ -57,8 +57,8 @@
 #include "gctlaon_regs.h"
 
 //Initialization and configuration functions.
-void AdiAppStart (void);
-void AdiAppStop (void);
+void AdiAppStart();
+void AdiAppStop();
 void AdiAppErrorHandler (CyU3PReturnStatus_t status);
 
 /* Event Handlers */

@@ -31,7 +31,7 @@ extern uint8_t USBBuffer[];
 /**
   * @brief The entry point function for the StreamThread. Handles all streaming data captures.
   *
-  * @param input Unused input required by the thread manager
+  * @param input Unused input required by the RTOS thread manager
   *
   * This function runs in its own thread and handles real-time, burst, generic, and transfer streaming processes.
   * Either type of stream can be kicked off by executing the appropriate set-up routine and then
@@ -47,7 +47,7 @@ void AdiStreamThreadEntry(uint32_t input)
 
 	for (;;)
 	{
-		//Wait indefinitely for any flag to be set
+		/* Wait indefinitely for any flag to be set */
 		if (CyU3PEventGet (&EventHandler, eventMask, CYU3P_EVENT_OR_CLEAR, &eventFlag, CYU3P_WAIT_FOREVER) == CY_U3P_SUCCESS)
 		{
 			/* Real-time (ADcmXL) stream case */
@@ -132,14 +132,14 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 		MISOPtr = StreamChannelBuffer.buffer;
 	}
 
-	//Wait for DR if enabled
+	/* Wait for DR if enabled */
 	if (FX3State.DrActive)
 	{
-		//Clear GPIO interrupts
+		/* Clear GPIO interrupts */
 		GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
-		//Loop until interrupt is triggered
+		/* Loop until interrupt is triggered */
 		while(!(GPIO->lpp_gpio_intr0 & (1 << FX3State.DrPin)));
-		//Clear GPIO interrupt bit
+		/* Clear GPIO interrupt bit */
 		GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
 	}
 
@@ -151,26 +151,27 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 
 		/* Transmit the first words without reading back */
 		CyU3PSpiTransmitWords(MOSIPtr, 2);
+
 		/* Increment the MOSI pointer*/
 		MOSIPtr += 2;
 
-		//Set the timer to 0
+		/* Set the timer value to 0 */
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
-		//clear interrupt flag
+		/* clear interrupt flag */
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
 
-		//iterate through the rest of the register list
+		/* Iterate through the rest of the register list */
 		for(regIndex = 0; regIndex < (StreamThreadState.TransferByteLength - 8); regIndex += 2)
 		{
-			//Wait for the complex GPIO timer to reach the stall time
+			/* Wait for the complex GPIO timer to reach the stall time */
 			while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
 
-			//transfer words
+			/* transfer words */
 			status = CyU3PSpiTransferWords(MOSIPtr, 2, MISOPtr, 2);
 
-			//Set the pin timer to 0
+			/* Set the pin timer to 0 */
 			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
-			//clear interrupt flag
+			/* clear interrupt flag */
 			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
 
 			/* If check if a readback is needed for the last transfer */
@@ -186,12 +187,12 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 				}
 			}
 
-			//Update counters
+			/* Update counters */
 			MOSIPtr += 2;
 			MISOPtr += 2;
 			byteCounter += 2;
 
-			//Check if a transmission is needed
+			/* Check if a transmission is needed */
 			if (byteCounter >= (StreamThreadState.BytesPerUsbPacket - 1))
 			{
 				status = CyU3PDmaChannelCommitBuffer (&StreamingChannel, FX3State.UsbBufferSize, 0);
@@ -210,20 +211,20 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 			}
 		}
 
-		//Wait for the complex GPIO timer to reach the stall time
+		/* Wait for the complex GPIO timer to reach the stall time */
 		while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
 
-		//Set the pin timer to 0
+		/* Set the pin timer to 0 */
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
-		//clear interrupt flag
+		/* Clear interrupt flag */
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
 
 	}
 
-	//Check to see if we've captured enough buffers or if we were asked to stop data capture early
+	/* Check to see if we've captured enough buffers or if we were asked to stop data capture early */
 	if ((numBuffersRead >= (StreamThreadState.NumBuffers - 1)) || KillStreamEarly)
 	{
-		//Reset values
+		/* Reset values */
 		numBuffersRead = 0;
 		/* Signal getting a new buffer */
 		MISOPtr = 0;
@@ -240,24 +241,24 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 			byteCounter = 0;
 		}
 
-		//Clear GPIO interrupts
+		/* Clear GPIO interrupts */
 		GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
 
-		//Clear timer interrupt
+		/* Clear timer interrupt */
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
 
-		//update the threshold and period
+		/* Update the threshold and period */
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold = 0xFFFFFFFF;
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = 0xFFFFFFFF;
 
-		//Disable interrupts
+		/* Disable interrupts */
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= ~(CY_U3P_LPP_GPIO_INTRMODE_MASK);
 
 #ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "Exiting stream thread, %d generic stream buffers read.\r\n", numBuffersRead + 1);
 #endif
 
-		//Set stream done flag if kill early event was processed (otherwise must be explicitly invoked by FX3 API)
+		/* Set stream done flag if kill early event was processed (otherwise must be explicitly invoked by FX3 API) */
 		if(KillStreamEarly)
 		{
 			CyU3PEventSet (&EventHandler, ADI_GENERIC_STREAM_DONE, CYU3P_EVENT_OR);
@@ -265,55 +266,58 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 	}
 	else
 	{
-		//Increment buffer counter
+		/* Increment buffer counter */
 		numBuffersRead++;
-		//Wait for the complex GPIO timer to reach the stall time if no data ready
+		/* Wait for the complex GPIO timer to reach the stall time if no data ready */
 		if(!FX3State.DrActive)
 		{
 			while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
 		}
-		//Reset flag
+		/* Reset flag */
 		CyU3PEventSet (&EventHandler, ADI_GENERIC_STREAM_ENABLE, CYU3P_EVENT_OR);
 	}
 	return status;
 }
 
 /**
-  * @brief This is the worker function for the real time stream.
+  * @brief This is the worker function for the ADcmXL real time stream.
   *
   * @return A status code representing the success of the real time stream operation.
+  *
+  * The operation of this function is very similar to the Burst Stream function. This implementation
+  * is slightly more stream lined to allow for the very tight tolerances on the ADcmXL3021 stream modes.
  **/
 CyU3PReturnStatus_t AdiRealTimeStreamWork()
 {
 	CyU3PReturnStatus_t status;
 	CyBool_t interruptTriggered;
 
-	/* Static variables persist through function calls, are initialized to 0*/
+	/* Static variables persist through function calls, are initialized to 0 */
 	static uint32_t numFramesCaptured;
 
-	//Clear GPIO interrupts
+	/* Clear GPIO interrupts */
 	GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
-	//Wait for GPIO interrupt flag to be set and pin to be positive (interrupt configured for positive edge)
+	/* Wait for GPIO interrupt flag to be set and pin to be positive (interrupt configured for positive edge) */
 	interruptTriggered = CyFalse;
 	while(!interruptTriggered)
 	{
 		interruptTriggered = ((CyBool_t)(GPIO->lpp_gpio_intr0 & (1 << FX3State.DrPin)) && (CyBool_t)(GPIO->lpp_gpio_simple[FX3State.DrPin] & CY_U3P_LPP_GPIO_IN_VALUE));
 	}
 
-	//Set the config for DMA mode
+	/* Set the config for DMA mode */
 	SPI->lpp_spi_config |= CY_U3P_LPP_SPI_DMA_MODE;
 
-	//Set the Tx/Rx count
+	/* Set the Tx/Rx count */
 	SPI->lpp_spi_tx_byte_count = 0;
 	SPI->lpp_spi_rx_byte_count = StreamThreadState.BytesPerFrame;
 
-	//Enable Rx and Tx as required
+	/* Enable Rx and Tx as required */
 	SPI->lpp_spi_config |= CY_U3P_LPP_SPI_RX_ENABLE;
 
-	//Enable the SPI block
+	/* Enable the SPI block */
 	SPI->lpp_spi_config |= CY_U3P_LPP_SPI_ENABLE;
 
-	//Wait for transfer to finish
+	/* Wait for transfer to finish */
 	status = CyU3PSpiWaitForBlockXfer(CyTrue);
 
 	if (status != CY_U3P_SUCCESS)
@@ -321,18 +325,18 @@ CyU3PReturnStatus_t AdiRealTimeStreamWork()
 		CyU3PDebugPrint (4, "Waiting for SPI DMA block xfer to finish failed!, error code: 0x%x\r\n", status);
 	}
 
-	//Check that we haven't captured the desired number of frames or were asked to kill the thread early
+	/* Check that we haven't captured the desired number of frames or were asked to kill the thread early */
 	if((numFramesCaptured >= (StreamThreadState.NumRealTimeCaptures - 1)) || KillStreamEarly)
 	{
-		//Disable SPI DMA transfer
+		/* Disable SPI DMA transfer */
 		status = CyU3PSpiDisableBlockXfer(CyTrue, CyTrue);
 		if(status != CY_U3P_SUCCESS)
 		{
 			CyU3PDebugPrint (4, "Disabling block transfer failed!, error code = 0x%x\r\n", status);
 		}
-		//Clear GPIO interrupts
+		/* Clear GPIO interrupts */
 		GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
-		//Send whatever is in the buffer over to the PC
+		/* Send whatever is in the buffer over to the PC */
 		status = CyU3PDmaChannelSetWrapUp(&StreamingChannel);
 		if(status != CY_U3P_SUCCESS)
 		{
@@ -343,10 +347,10 @@ CyU3PReturnStatus_t AdiRealTimeStreamWork()
 		CyU3PDebugPrint (4, "Exiting stream thread, %d real time frames read.\r\n", numFramesCaptured + 1);
 #endif
 
-		//Reset frame counter
+		/* Reset frame counter */
 		numFramesCaptured = 0;
 
-		//Set stream done flag if kill early event was processed (otherwise must be explicitly invoked by FX3 API)
+		/* Set stream done flag if kill early event was processed (otherwise must be explicitly invoked by FX3 API) */
 		if(KillStreamEarly)
 		{
 			CyU3PEventSet(&EventHandler, ADI_RT_STREAM_DONE, CYU3P_EVENT_OR);
@@ -354,9 +358,9 @@ CyU3PReturnStatus_t AdiRealTimeStreamWork()
 	}
 	else
 	{
-		//increment the frame counter
+		/* Increment the frame counter */
 		numFramesCaptured++;
-		//Reset real-time data capture thread flag
+		/* Reset real-time data capture thread flag */
 		CyU3PEventSet(&EventHandler, ADI_RT_STREAM_ENABLE, CYU3P_EVENT_OR);
 	}
 	return status;
@@ -367,8 +371,9 @@ CyU3PReturnStatus_t AdiRealTimeStreamWork()
   *
   * @return A status code representing the success of the burst stream operation.
   *
-  * This function performs all the SPI and USB transfers for a single burst in IMU or
-  * machine health burst mode.
+  * This function performs all the SPI and USB transfers for a single burst in IMU
+  * burst mode. It can be configured to transfer an arbitrary number of bytes in a single
+  * SPI transaction, with optional data ready triggering.
  **/
 CyU3PReturnStatus_t AdiBurstStreamWork()
 {
@@ -448,7 +453,7 @@ CyU3PReturnStatus_t AdiBurstStreamWork()
 		/* Reset frame counter */
 		numBuffersRead = 0;
 
-		//Set stream done flag if kill early event was processed (otherwise must be explicitly invoked by FX3 API)
+		/* Set stream done flag if kill early event was processed (otherwise must be explicitly invoked by FX3 API) */
 		if(KillStreamEarly)
 		{
 			CyU3PEventSet(&EventHandler, ADI_BURST_STREAM_DONE, CYU3P_EVENT_OR);
@@ -468,6 +473,9 @@ CyU3PReturnStatus_t AdiBurstStreamWork()
   * @brief This is the worker function for the transfer stream.
   *
   * @return A status code representing the success of the transfer stream operation.
+  *
+  * Transfer stream is used to implement protocol agnostic SPI transfers. This is useful for sensors which
+  * implement a non-standard SPI protocol (CRC/Metadata/Weird bit lengths, etc)
  **/
 CyU3PReturnStatus_t AdiTransferStreamWork()
 {
@@ -518,20 +526,20 @@ CyU3PReturnStatus_t AdiTransferStreamWork()
 	/* Check the number of bytes per SPI transfer */
 	bytesPerSpiTransfer = FX3State.SpiConfig.wordLen >> 3;
 
-	//Wait for DR if enabled
+	/* Wait for DR if enabled */
 	if (FX3State.DrActive)
 	{
-		//Clear GPIO interrupts
+		/* Clear GPIO interrupts */
 		GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
-		//Loop until interrupt is triggered
+		/* Loop until interrupt is triggered */
 		while(!(GPIO->lpp_gpio_intr0 & (1 << FX3State.DrPin)));
-		//Clear GPIO interrupt bit
+		/* Clear GPIO interrupt bit */
 		GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
 	}
 
-	//Set the pin timer to 0
+	/* Set the pin timer to 0 */
 	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
-	//clear interrupt flag
+	/* clear interrupt flag */
 	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
 
 	for(captureCount = 0; captureCount < StreamThreadState.NumCaptures; captureCount++)
@@ -554,12 +562,12 @@ CyU3PReturnStatus_t AdiTransferStreamWork()
 			/* clear timer interrupt flag */
 			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
 
-			//Update counters / pointers
+			/* Update counters and buffer pointers */
 			bufPtr += bytesPerSpiTransfer;
 			byteCounter += bytesPerSpiTransfer;
 			MOSIData += bytesPerSpiTransfer;
 
-			//Check if a transmission is needed
+			/* Check if a transmission is needed */
 			if (byteCounter >= (StreamThreadState.BytesPerUsbPacket - 1))
 			{
 #ifdef VERBOSE_MODE
@@ -582,7 +590,7 @@ CyU3PReturnStatus_t AdiTransferStreamWork()
 		}
 	}
 
-	//Check to see if we've captured enough buffers or if we were asked to stop data capture early
+	/* Check to see if we've captured enough buffers or if we were asked to stop data capture early */
 	if ((numBuffersRead >= (StreamThreadState.NumBuffers - 1)) || KillStreamEarly)
 	{
 
@@ -590,7 +598,7 @@ CyU3PReturnStatus_t AdiTransferStreamWork()
 		CyU3PDebugPrint (4, "Exiting stream thread, %d transfer stream buffers read.\r\n", numBuffersRead + 1);
 #endif
 
-		//Reset values
+		/* Reset values */
 		numBuffersRead = 0;
 		/* Signal getting a new buffer */
 		bufPtr = 0;
@@ -604,20 +612,20 @@ CyU3PReturnStatus_t AdiTransferStreamWork()
 			byteCounter = 0;
 		}
 
-		//Clear GPIO interrupts
+		/* Clear GPIO interrupts */
 		GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
 
-		//Clear timer interrupt
+		/* Clear timer interrupt */
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
 
-		//update the threshold and period
+		/* Update the threshold and period */
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold = 0xFFFFFFFF;
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = 0xFFFFFFFF;
 
-		//Disable interrupts
+		/* Disable interrupts */
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= ~(CY_U3P_LPP_GPIO_INTRMODE_MASK);
 
-		//Set stream done flag if kill early event was processed (otherwise must be explicitly invoked by FX3 API)
+		/* Set stream done flag if kill early event was processed (otherwise must be explicitly invoked by FX3 API) */
 		if(KillStreamEarly)
 		{
 			CyU3PEventSet (&EventHandler, ADI_TRANSFER_STREAM_DONE, CYU3P_EVENT_OR);
@@ -625,14 +633,14 @@ CyU3PReturnStatus_t AdiTransferStreamWork()
 	}
 	else
 	{
-		//Increment buffer counter
+		/* Increment buffer counter */
 		numBuffersRead++;
-		//Wait for the complex GPIO timer to reach the stall time if no data ready
+		/* Wait for the complex GPIO timer to reach the stall time if no data ready */
 		if(!FX3State.DrActive)
 		{
 			while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
 		}
-		//Reset flag
+		/* Reset flag */
 		CyU3PEventSet (&EventHandler, ADI_TRANSFER_STREAM_ENABLE, CYU3P_EVENT_OR);
 	}
 	return status;

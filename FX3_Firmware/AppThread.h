@@ -24,8 +24,8 @@
 
 /* Function definitions */
 void AdiAppThreadEntry(uint32_t input);
-void AdiDebugInit(void);
-void AdiAppInit(void);
+void AdiDebugInit();
+void AdiAppInit();
 
 /** AppThread allocated stack size (2KB) */
 #define APPTHREAD_STACK        					(0x0800)

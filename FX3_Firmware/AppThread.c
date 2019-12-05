@@ -27,9 +27,13 @@ extern char serial_number[];
   *
   * This function is called as part of the main application thread startup process.
   * The debug prints are routed to the UART and can be seen using a UART console
-  * running at 115200 baud rate. The UART Tx and Rx must be connected to DQ30 and DQ31.
+  * running at 115200 baud rate. The UART Tx and Rx must be connected to DQ30 and DQ31
+  * on the Cypress FX3 Explorer board. On the ADI iSensor FX3 Board (small board), the
+  * Rx and Tx are connected to pins 5 and 6 on the second 12 pin header.
+  *
+  * @returns void
  **/
-void AdiDebugInit(void)
+void AdiDebugInit()
 {
     CyU3PUartConfig_t uartConfig;
     CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -86,9 +90,11 @@ void AdiDebugInit(void)
   *
   * This function is called as part of the main application thread (AppThread) startup
   * process when the ThreadX RTOS first boots. This function also retrieves the unique
-  * FX3 serial number.
+  * FX3 serial number from the EFUSE array.
+  *
+  * @returns void
  **/
-void AdiAppInit (void)
+void AdiAppInit ()
 {
     CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
@@ -101,7 +107,7 @@ void AdiAppInit (void)
 	CyU3PReadDeviceRegisters(EFUSE_DIE_ID, 2, die_id);
 	for (int i = 0; i < 2; i++)
 	{
-		//Access via the USB descriptor
+		/* Access via the USB descriptor */
 		CyFxUSBSerialNumDesc[i*16+ 2] = hex_digit[(die_id[1-i] >> 28) & 0xF];
 		CyFxUSBSerialNumDesc[i*16+ 4] = hex_digit[(die_id[1-i] >> 24) & 0xF];
 		CyFxUSBSerialNumDesc[i*16+ 6] = hex_digit[(die_id[1-i] >> 20) & 0xF];
@@ -111,7 +117,7 @@ void AdiAppInit (void)
 		CyFxUSBSerialNumDesc[i*16+14] = hex_digit[(die_id[1-i] >>  4) & 0xF];
 		CyFxUSBSerialNumDesc[i*16+16] = hex_digit[(die_id[1-i] >>  0) & 0xF];
 
-		//Access via a vendor command
+		/* Access via a vendor command */
 		serial_number[i*16+ 0] = hex_digit[(die_id[1-i] >> 28) & 0xF];
 		serial_number[i*16+ 2] = hex_digit[(die_id[1-i] >> 24) & 0xF];
 		serial_number[i*16+ 4] = hex_digit[(die_id[1-i] >> 20) & 0xF];
@@ -245,13 +251,15 @@ void AdiAppInit (void)
 }
 
 /**
-  * @brief This is the entry point for the main application thread.
+  * @brief This is the entry point for the primary iSensors firmware application thread.
   *
   * @param input Unused input argument required by the thread manager
   *
-  * @return A status code indicating the success of the function.
+  * @return void
   *
   * This function performs device initialization and then handles streaming start/stop commands for the various streaming methods.
+  * The actual work done for the streaming is performed in the StreamThread - seperating the two allows for better control and
+  * responsiveness to cancellation commands.
  **/
 void AdiAppThreadEntry (uint32_t input)
 {
@@ -271,14 +279,14 @@ void AdiAppThreadEntry (uint32_t input)
     uint32_t eventFlag;
 
     /* Initialize UART debugging */
-    AdiDebugInit ();
+    AdiDebugInit();
 
     /* Initialize the ADI application */
-    AdiAppInit ();
+    AdiAppInit();
 
     for (;;)
     {
-    	//Wait for event handler flags to occur and handle them
+    	/* Wait for event handler flags to occur and handle them */
     	if (CyU3PEventGet(&EventHandler, eventMask, CYU3P_EVENT_OR_CLEAR, &eventFlag, CYU3P_WAIT_FOREVER) == CY_U3P_SUCCESS)
     	{
     		/*Handle transfer stream commands */
@@ -304,7 +312,7 @@ void AdiAppThreadEntry (uint32_t input)
 #endif
 			}
 
-			//Handle real-time stream commands
+			/* Handle real-time stream commands */
 			if (eventFlag & ADI_RT_STREAM_START)
 			{
 				AdiRealTimeStreamStart();
@@ -327,7 +335,7 @@ void AdiAppThreadEntry (uint32_t input)
 #endif
 			}
 
-			//Handle generic data stream commands
+			/* Handle generic data stream commands */
 			if (eventFlag & ADI_GENERIC_STREAM_START)
 			{
 				AdiGenericStreamStart();
@@ -350,7 +358,7 @@ void AdiAppThreadEntry (uint32_t input)
 #endif
 			}
 
-			//Handle burst data stream commands
+			/* Handle burst data stream commands */
 			if (eventFlag & ADI_BURST_STREAM_START)
 			{
 				AdiBurstStreamStart();
@@ -375,6 +383,6 @@ void AdiAppThreadEntry (uint32_t input)
 
     	}
         /* Allow other ready threads to run. */
-        CyU3PThreadRelinquish ();
+        CyU3PThreadRelinquish();
     }
 }

@@ -32,8 +32,10 @@ extern CyU3PDmaChannel ChannelToPC;
   * @return A status code indicating the success of the setConfig call after re-initialization.
   *
   * This function can be used to restore hardware SPI functionality after overriding the SPI pins
-  * to act as a bitbanged SPI port. This function can be called before or after the SPI controller
-  * has been initialized without causing problems.
+  * to act as a bit-banged SPI port. This function can be called before or after the SPI controller
+  * has been initialized without causing problems. This function may cause erroneous toggles on the
+  * SPI lines during the initialization process - be careful to ensure that the connected DUT is not
+  * particularly sensitive to extra toggles.
  **/
 CyU3PReturnStatus_t AdiRestartSpi()
 {
@@ -57,7 +59,9 @@ CyU3PReturnStatus_t AdiRestartSpi()
   * @returns A status code indicating the success of the SPI bitbang operation.
   *
   * This function requires all data to have been retrieved from the control endpoint before being
-  * called.
+  * called. It parses all the parameters about the current bit bang SPI operation to perform from
+  * the transaction. The pins/timing/config is sent from the FX3 API to the firmware with each
+  * bitbang SPI transaction.
  **/
 CyU3PReturnStatus_t AdiBitBangSpiHandler()
 {
@@ -152,6 +156,8 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
   * @brief Configures all pins and timers needed to bitbang a SPI connection.
   *
   * @param config A structure containing all the relevant bit banged SPI configuration parameters.
+  *
+  * @returns A status code indicating the success of the bitbang SPI setup process.
  **/
 CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 {
@@ -348,7 +354,11 @@ void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, Bit
 /**
   * @brief This function parses the SPI control registers into an easier to work with config struct.
   *
-  * @return The current SPI config, as set in the hardware.
+  * @return The current SPI config, as set in the SPI controller hardware.
+  *
+  * This function can be used to ensure synchronization between the SPI controller and the SPI
+  * settings in firmware, without having to perform a SPI controller reset operation. Resetting
+  * the SPI controller can cause undesired effects on the SPI lines.
  **/
 CyU3PSpiConfig_t AdiGetSpiConfig()
 {
@@ -377,6 +387,10 @@ CyU3PSpiConfig_t AdiGetSpiConfig()
 
 /**
   * @brief Prints a given SPI config over the UART debug port.
+  *
+  * @param config The SPI config structure to print out.
+  *
+  * @returns void
  **/
 void AdiPrintSpiConfig(CyU3PSpiConfig_t config)
 {
@@ -409,16 +423,16 @@ CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData)
 	uint8_t readBuffer[4];
 	uint32_t transferSize;
 
-	//populate the writebuffer
+	/* populate the writebuffer */
 	writeBuffer[0] = writeData & 0xFF;
 	writeBuffer[1] = (writeData & 0xFF00) >> 8;
 	writeBuffer[2] = (writeData & 0xFF0000) >> 16;
 	writeBuffer[3] = (writeData & 0xFF000000) >> 24;
 
-	//Calculate number of bytes to transfer
+	/* Calculate number of bytes to transfer */
 	transferSize = FX3State.SpiConfig.wordLen / 8;
 
-	//perform SPI transfer
+	/* perform SPI transfer */
 	status = CyU3PSpiTransferWords(writeBuffer, transferSize, readBuffer, transferSize);
 
 	/* Send status and data back via control endpoint */
@@ -432,6 +446,7 @@ CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData)
 	USBBuffer[7] = readBuffer[3];
 	CyU3PUsbSendEP0Data (8, USBBuffer);
 
+	/* Return status code  */
 	return status;
 }
 
@@ -493,6 +508,10 @@ CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr)
   * @param data The byte of data to write to the address
   *
   * @return A status code indicating the success of the function.
+  *
+  * This function uses  the standard iSensor SPI protocol to issue a write command.
+  * For the standard iSensor SPI parts, a write is performed in a single 16 bit command,
+  * where the first bit clocked out is the write bit (high) followed by the address and data.
  **/
 CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data)
 {
@@ -505,7 +524,6 @@ CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data)
 	if (status != CY_U3P_SUCCESS)
 	{
         CyU3PDebugPrint (4, "Error! CyU3PSpiTransmitWords failed! Status code 0x%x\r\n", status);
-        //AdiAppErrorHandler (status);
 	}
 	/* Send write status over the control endpoint */
 	USBBuffer[0] = status & 0xFF;
@@ -544,6 +562,8 @@ void AdiSetSpiWordLength(uint8_t wordLength)
 
 /**
   * @brief Waits for the SPI controller busy bit to be not set
+  *
+  * @returns void
  **/
 void AdiWaitForSpiNotBusy()
 {
@@ -561,7 +581,6 @@ void AdiWaitForSpiNotBusy()
   *
   * It is a copy of the private CyU3PSpiResetFifo() function which bypasses some input sanitization which the Cypress
   * libraries perform. This is required due to our high-speed, register-initiated transfers.
-  *
  **/
 CyU3PReturnStatus_t AdiSpiResetFifo(CyBool_t isTx, CyBool_t isRx)
 {
@@ -621,7 +640,7 @@ CyU3PReturnStatus_t AdiGetSpiSettings()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint8_t USBBuffer[23];
-	//Clock first
+	/* Clock first */
 	USBBuffer[0] = FX3State.SpiConfig.clock & 0xFF;
 	USBBuffer[1] = (FX3State.SpiConfig.clock & 0xFF00) >> 8;
 	USBBuffer[2] = (FX3State.SpiConfig.clock & 0xFF0000) >> 16;
@@ -673,10 +692,10 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 	switch(index)
 	{
 	case 0:
-		//Clock setting
+		/* Clock setting */
 		if(length != 4)
 		{
-			//Reasonable Default if data frame isn't set properly
+			/* Reasonable Default if data frame isn't set properly */
 			FX3State.SpiConfig.clock = 2000000;
 		}
 		else
@@ -694,7 +713,7 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 		break;
 
 	case 1:
-		//cpol
+		/* cpol */
 		FX3State.SpiConfig.cpol = (CyBool_t) value;
 		status = CyU3PSpiSetConfig (&FX3State.SpiConfig, NULL);
 #ifdef VERBOSE_MODE
@@ -703,7 +722,7 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 		break;
 
 	case 2:
-		//cpha
+		/* cpha */
 		FX3State.SpiConfig.cpha = (CyBool_t) value;
 		status = CyU3PSpiSetConfig (&FX3State.SpiConfig, NULL);
 #ifdef VERBOSE_MODE
@@ -712,7 +731,7 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 		break;
 
 	case 3:
-		//Chip Select Polarity
+		/* Chip Select Polarity */
 		FX3State.SpiConfig.ssnPol = (CyBool_t) value;
 		status = CyU3PSpiSetConfig (&FX3State.SpiConfig, NULL);
 #ifdef VERBOSE_MODE
@@ -721,7 +740,7 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 		break;
 
 	case 4:
-		//Chip Select Control
+		/* Chip Select Control */
 		FX3State.SpiConfig.ssnCtrl = (CyU3PSpiSsnCtrl_t) value;
 		status = CyU3PSpiSetConfig (&FX3State.SpiConfig, NULL);
 #ifdef VERBOSE_MODE
@@ -730,7 +749,7 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 		break;
 
 	case 5:
-		//Lead Time
+		/* Lead Time */
 		FX3State.SpiConfig.leadTime = (CyU3PSpiSsnLagLead_t) value;
 		status = CyU3PSpiSetConfig (&FX3State.SpiConfig, NULL);
 #ifdef VERBOSE_MODE
@@ -739,7 +758,7 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 		break;
 
 	case 6:
-		//Lag Time
+		/* Lag Time */
 		FX3State.SpiConfig.lagTime = (CyU3PSpiSsnLagLead_t) value;
 		status = CyU3PSpiSetConfig (&FX3State.SpiConfig, NULL);
 #ifdef VERBOSE_MODE
@@ -748,7 +767,7 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 		break;
 
 	case 7:
-		//Is LSB First
+		/* Is LSB First */
 		FX3State.SpiConfig.isLsbFirst = (CyBool_t) value;
 		status = CyU3PSpiSetConfig (&FX3State.SpiConfig, NULL);
 #ifdef VERBOSE_MODE
@@ -757,7 +776,7 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 		break;
 
 	case 8:
-		//Word Length
+		/* Word Length */
 		FX3State.SpiConfig.wordLen = value & 0xFF;
 		status = CyU3PSpiSetConfig (&FX3State.SpiConfig, NULL);
 #ifdef VERBOSE_MODE
@@ -766,7 +785,7 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 		break;
 
 	case 9:
-		//Stall time in ticks (received in ticks from the PC, each tick = 1us)
+		/* Stall time in ticks (received in ticks from the PC, each tick = 1us) */
 		FX3State.StallTime = value;
 #ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "stallTime = %d\r\n", value);
@@ -774,21 +793,26 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 		break;
 
 	case 10:
-		//DUT type
+		/* DUT type */
 		FX3State.DutType = value;
 		switch(FX3State.DutType)
 		{
 		case ADcmXL3021:
-			StreamThreadState.BytesPerFrame = 200; /* (32 word x 3 axis) + 4 word status/counter/etc */
+			/* (32 word x 3 axis) + 4 word status/counter/etc */
+			StreamThreadState.BytesPerFrame = 200;
 			break;
 		case ADcmXL2021:
-			StreamThreadState.BytesPerFrame = 152; /* (32 word x 2 axis) + 8 word padding + 4 word status/counter/etc */
+			/* (32 word x 2 axis) + 8 word padding + 4 word status/counter/etc */
+			StreamThreadState.BytesPerFrame = 152;
 			break;
 		case ADcmXL1021:
-			StreamThreadState.BytesPerFrame = 88; /* 32 word + 8 word padding + 4 word status/counter/etc */
+			/* 32 word + 8 word padding + 4 word status/counter/etc */
+			StreamThreadState.BytesPerFrame = 88;
 			break;
 		case Other:
+			/* Falls into default case */
 		default:
+			/* Default to  3021 - shouldn't reach here during normal operation */
 			StreamThreadState.BytesPerFrame = 200;
 			break;
 		}
@@ -798,7 +822,7 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 		break;
 
 	case 11:
-		//DR polarity
+		/* DR polarity */
 		FX3State.DrPolarity = (CyBool_t) value;
 #ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "DrPolarity = %d\r\n", value);
@@ -806,7 +830,7 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 		break;
 
 	case 12:
-		//DR active
+		/* DR active */
 		FX3State.DrActive = (CyBool_t) value;
 #ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "DrActive = %d\r\n", value);
@@ -814,7 +838,7 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 		break;
 
 	case 13:
-		//Ready pin
+		/* Ready pin */
 		FX3State.DrPin = value;
 #ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "DrPin = %d\r\n", value);
@@ -822,21 +846,21 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 		break;
 
 	case 14:
-		//enable watchdog
+		/* enable watchdog */
 		FX3State.WatchDogEnabled = CyTrue;
 		FX3State.WatchDogPeriodMs = 1000 * value;
 		AdiConfigureWatchdog();
 		break;
 
 	case 15:
-		//disable watchdog
+		/* disable watchdog */
 		FX3State.WatchDogEnabled = CyFalse;
 		FX3State.WatchDogPeriodMs = 1000 * value;
 		AdiConfigureWatchdog();
 		break;
 
 	default:
-		//Invalid Command
+		/* Invalid Command */
 		isHandled = CyFalse;
 #ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "ERROR: Invalid SPI config command!\r\n");
@@ -844,7 +868,7 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 		break;
 	}
 
-	//Check that the configuration was successful
+	/* Check that the configuration was successful */
 	if(status != CY_U3P_SUCCESS)
 	{
 		isHandled = CyFalse;
