@@ -62,6 +62,9 @@ Public Enum USBCommands
     ' Soft-reset the FX3 firmware (don't return to bootloader mode)
     ADI_WARM_RESET = &HB6
 
+    'Set the DUT supply voltage (only works on ADI FX3 boards)
+    ADI_SET_DUT_SUPPLY = &HB7
+
     'Start/stop a generic data stream
     ADI_STREAM_GENERIC_DATA = &HC0
 
@@ -186,9 +189,10 @@ Public Enum DUTType
 End Enum
 
 ''' <summary>
-''' Enum for DUT power supply modes
+''' Enum for DUT power supply modes. These power supply modes are only available on the ADI in-house
+''' FX3 Demonstration platform.
 ''' </summary>
-Public Enum PowerSupply
+Public Enum DutVoltage
     Off = 0
     On3_3Volts = 1
     On5_0Volts = 2

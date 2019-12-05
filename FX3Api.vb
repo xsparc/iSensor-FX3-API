@@ -186,6 +186,9 @@ Public Class FX3Connection
     'watchdog enable
     Private m_WatchdogEnable As Boolean
 
+    'Track the supply mode
+    Private m_DutSupplyMode As DutVoltage
+
     'Events
 
     ''' <summary>
@@ -303,6 +306,8 @@ Public Class FX3Connection
         'set watchdog parameters
         m_WatchdogEnable = True
         m_WatchdogTime = 20
+
+        m_DutSupplyMode = DutVoltage.On3_3Volts
 
     End Sub
 
@@ -839,6 +844,39 @@ Public Class FX3Connection
         Set(value As Boolean)
             m_WatchdogEnable = value
             UpdateWatchdog()
+        End Set
+    End Property
+
+    ''' <summary>
+    ''' Get or set the DUT supply mode on the FX3. Available options are regulated 3.3V, USB 5V, and off. This feature is only available on the 
+    ''' ADI in-house iSensor FX3 eval platform, not the platform based on the Cypress Explorer kit.
+    ''' </summary>
+    ''' <returns>The DUT supply voltage setting</returns>
+    Public Property DutSupplyMode As DutVoltage
+        Get
+            Return m_DutSupplyMode
+        End Get
+        Set(value As DutVoltage)
+            ConfigureControlEndpoint(USBCommands.ADI_SET_DUT_SUPPLY, False)
+            FX3ControlEndPt.Index = 0
+            FX3ControlEndPt.Value = value
+
+            'Create buffer for transfer
+            Dim buf(3) As Byte
+
+            'Transfer data from the FX3
+            If Not XferControlData(buf, 4, 2000) Then
+                Throw New FX3CommunicationException("ERROR: Setting DUT supply mode failed.")
+            End If
+
+            'parse status
+            Dim status As UInteger = BitConverter.ToUInt32(buf, 0)
+
+            'check that status is a success
+            If status <> 0 Then
+                Throw New FX3BadStatusException("ERROR: Bad status code after power supply set. Error code: 0x" + status.ToString("X4"))
+            End If
+            m_DutSupplyMode = value
         End Set
     End Property
 
