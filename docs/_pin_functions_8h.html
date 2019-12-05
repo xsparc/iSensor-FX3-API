@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.2.0-pub</span>
+   &#160;<span id="projectnumber">v2.3.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -70,6 +70,8 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#define-members">Macros</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">PinFunctions.h File Reference</div>  </div>
@@ -102,6 +104,11 @@ Macros</h2></td></tr>
 <tr class="separator:adce3aa6299162cccf3643bf04980e7a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2562d55c82a3ce2fa1f31434829de22"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#ab2562d55c82a3ce2fa1f31434829de22">FX3_PIN_GPIO4</a>&#160;&#160;&#160;(0x12)</td></tr>
 <tr class="separator:ab2562d55c82a3ce2fa1f31434829de22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9847b1f106094a417ad607b8a4f1c9e8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#a9847b1f106094a417ad607b8a4f1c9e8">ADI_3_3V_EN</a>&#160;&#160;&#160;(33)</td></tr>
+<tr class="separator:a9847b1f106094a417ad607b8a4f1c9e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9c3d116e268dbddffbe012e61a45db2"><td class="memItemLeft" align="right" valign="top"><a id="ac9c3d116e268dbddffbe012e61a45db2"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>ADI_5V_EN</b>&#160;&#160;&#160;(34)</td></tr>
+<tr class="separator:ac9c3d116e268dbddffbe012e61a45db2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa6623739db18d9bb2dee91102002687e"><td class="memItemLeft" align="right" valign="top"><a id="aa6623739db18d9bb2dee91102002687e"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>ADI_DIO1_INTERRUPT_FLAG</b>&#160;&#160;&#160;(1 &lt;&lt; 0)</td></tr>
 <tr class="separator:aa6623739db18d9bb2dee91102002687e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -124,13 +131,26 @@ Macros</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>ADI_DIO7_INTERRUPT_FLAG</b>&#160;&#160;&#160;(1 &lt;&lt; 6)</td></tr>
 <tr class="separator:a179752353c23079d0a8520b8549802b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:aed2da54ac9e8665a3674c9f74bfe2ec3"><td class="memItemLeft" align="right" valign="top">typedef enum <a class="el" href="_pin_functions_8h.html#ad59527647b27d713cbb6009f201e0cd6">DutVoltage</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#aed2da54ac9e8665a3674c9f74bfe2ec3">DutVoltage</a></td></tr>
+<tr class="separator:aed2da54ac9e8665a3674c9f74bfe2ec3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:ad59527647b27d713cbb6009f201e0cd6"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#ad59527647b27d713cbb6009f201e0cd6">DutVoltage</a> { <b>Off</b> = 0, 
+<b>On3_3Volts</b> = 1, 
+<b>On5_0Volts</b> = 2
+ }</td></tr>
+<tr class="separator:ad59527647b27d713cbb6009f201e0cd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:aeb362851b7a8aaed044318ffb040ecd1"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#aeb362851b7a8aaed044318ffb040ecd1">AdiPulseDrive</a> ()</td></tr>
 <tr class="memdesc:aeb362851b7a8aaed044318ffb040ecd1"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function drives a GPIO pin for a specified number of milliseconds, then returns it to the starting polarity.  <a href="#aeb362851b7a8aaed044318ffb040ecd1">More...</a><br /></td></tr>
 <tr class="separator:aeb362851b7a8aaed044318ffb040ecd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6d45b48894730356608880d0850cb452"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#a6d45b48894730356608880d0850cb452">AdiPulseWait</a> (uint16_t transferLength)</td></tr>
-<tr class="memdesc:a6d45b48894730356608880d0850cb452"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function waits for a pin to reach a selected logic level. The PulseWait parameters are passed in the USB buffer.  <a href="#a6d45b48894730356608880d0850cb452">More...</a><br /></td></tr>
+<tr class="memdesc:a6d45b48894730356608880d0850cb452"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function waits for a pin to reach a selected logic level. The PulseWait parameters are passed in the USB buffer, and are retrieved with a call to GetEP0Data.  <a href="#a6d45b48894730356608880d0850cb452">More...</a><br /></td></tr>
 <tr class="separator:a6d45b48894730356608880d0850cb452"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aefc8f76636a3cadcb3d0f4121bfeb154"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#aefc8f76636a3cadcb3d0f4121bfeb154">AdiSetPin</a> (uint16_t pinNumber, CyBool_t polarity)</td></tr>
 <tr class="memdesc:aefc8f76636a3cadcb3d0f4121bfeb154"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function configures the specified pin as an output and drives it with the desired value.  <a href="#aefc8f76636a3cadcb3d0f4121bfeb154">More...</a><br /></td></tr>
@@ -154,11 +174,14 @@ Functions</h2></td></tr>
 <tr class="memdesc:a4191f362f953cee5a7ad6170349760c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function blocks thread execution for a specified number of microseconds.  <a href="#a4191f362f953cee5a7ad6170349760c0">More...</a><br /></td></tr>
 <tr class="separator:a4191f362f953cee5a7ad6170349760c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a90e2e0a316ab7aa9e42e0ddab3ab8668"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#a90e2e0a316ab7aa9e42e0ddab3ab8668">AdiConfigurePWM</a> (CyBool_t EnablePWM)</td></tr>
-<tr class="memdesc:a90e2e0a316ab7aa9e42e0ddab3ab8668"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function configures the FX3 PWM (enable or disable).  <a href="#a90e2e0a316ab7aa9e42e0ddab3ab8668">More...</a><br /></td></tr>
+<tr class="memdesc:a90e2e0a316ab7aa9e42e0ddab3ab8668"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function configures the FX3 PWM outputs (enable or disable).  <a href="#a90e2e0a316ab7aa9e42e0ddab3ab8668">More...</a><br /></td></tr>
 <tr class="separator:a90e2e0a316ab7aa9e42e0ddab3ab8668"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2b44440abc8a978f29eb87e5fc609dda"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#a2b44440abc8a978f29eb87e5fc609dda">AdiMeasureBusyPulse</a> (uint16_t transferLength)</td></tr>
 <tr class="memdesc:a2b44440abc8a978f29eb87e5fc609dda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets a user configurable trigger condition and then measures the following GPIO pulse.  <a href="#a2b44440abc8a978f29eb87e5fc609dda">More...</a><br /></td></tr>
 <tr class="separator:a2b44440abc8a978f29eb87e5fc609dda"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abee5cedbbf5f529f17f4b504b6f7937c"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#abee5cedbbf5f529f17f4b504b6f7937c">AdiSetDutSupply</a> (<a class="el" href="_pin_functions_8h.html#ad59527647b27d713cbb6009f201e0cd6">DutVoltage</a> SupplyMode)</td></tr>
+<tr class="memdesc:abee5cedbbf5f529f17f4b504b6f7937c"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function configures the DUT supply voltage.  <a href="#abee5cedbbf5f529f17f4b504b6f7937c">More...</a><br /></td></tr>
+<tr class="separator:abee5cedbbf5f529f17f4b504b6f7937c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa3c19cd7624851187c6343b9990de817"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#aa3c19cd7624851187c6343b9990de817">AdiConfigurePinInterrupt</a> (uint16_t pin, CyBool_t polarity)</td></tr>
 <tr class="memdesc:aa3c19cd7624851187c6343b9990de817"><td class="mdescLeft">&#160;</td><td class="mdescRight">configures the selected pin as an interrupt with edge triggering based on polarity  <a href="#aa3c19cd7624851187c6343b9990de817">More...</a><br /></td></tr>
 <tr class="separator:aa3c19cd7624851187c6343b9990de817"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -176,6 +199,21 @@ Functions</h2></td></tr>
 <dd>
 J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+'@an'+'al'+'og.'+'co'+'m'; return false;">juan.<span style="display: none;">.nosp@m.</span>chon<span style="display: none;">.nosp@m.</span>g@ana<span style="display: none;">.nosp@m.</span>log.<span style="display: none;">.nosp@m.</span>com</a>) </dd></dl>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="a9847b1f106094a417ad607b8a4f1c9e8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9847b1f106094a417ad607b8a4f1c9e8">&#9670;&nbsp;</a></span>ADI_3_3V_EN</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_3_3V_EN&#160;&#160;&#160;(33)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Control pins for power management circuit </p>
+
+</div>
+</div>
 <a id="a2ab9984d811852fc981d8d948d386878"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2ab9984d811852fc981d8d948d386878">&#9670;&nbsp;</a></span>ADI_PIN_DIO1</h2>
 
@@ -311,6 +349,38 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 </div>
 </div>
+<h2 class="groupheader">Typedef Documentation</h2>
+<a id="aed2da54ac9e8665a3674c9f74bfe2ec3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aed2da54ac9e8665a3674c9f74bfe2ec3">&#9670;&nbsp;</a></span>DutVoltage</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef enum <a class="el" href="_pin_functions_8h.html#ad59527647b27d713cbb6009f201e0cd6">DutVoltage</a> <a class="el" href="_pin_functions_8h.html#ad59527647b27d713cbb6009f201e0cd6">DutVoltage</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Enum of possible DUT voltages </p>
+
+</div>
+</div>
+<h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="ad59527647b27d713cbb6009f201e0cd6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad59527647b27d713cbb6009f201e0cd6">&#9670;&nbsp;</a></span>DutVoltage</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="_pin_functions_8h.html#ad59527647b27d713cbb6009f201e0cd6">DutVoltage</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Enum of possible DUT voltages </p>
+
+</div>
+</div>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="aa3c19cd7624851187c6343b9990de817"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa3c19cd7624851187c6343b9990de817">&#9670;&nbsp;</a></span>AdiConfigurePinInterrupt()</h2>
@@ -346,7 +416,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The succes of the pin configuration operation. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The success of the pin configuration operation. </dd></dl>
 
 </div>
 </div>
@@ -366,14 +436,15 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
       </table>
 </div><div class="memdoc">
 
-<p>This function configures the FX3 PWM (enable or disable). </p>
+<p>This function configures the FX3 PWM outputs (enable or disable). </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">EnablePWM</td><td>If the PWM should be enabled or disabled.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the function. The pin number, threshold value, and period are provided in the USBBuffer, and are calculated in the FX3Api. This avoids any potential math/rounding errors. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the function.</dd></dl>
+<p>The pin number, threshold value, and period are provided in the USBBuffer, and are calculated in the FX3Api. This mitigates any potential math/rounding errors. The PWM pins are driven by a 100MHz clock. The output is artificially capped at 10MHz. </p>
 
 </div>
 </div>
@@ -401,7 +472,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the measure pulse operation</dd></dl>
-<p>This function is approx. microsecond accurate. It can be used for timing measurements which require a high degree of accuracy since it avoids the overhead of having a USB transaction (200us) between the initial trigger condition and the pulse measurement. </p>
+<p>This function is approx. microsecond accurate. It can be used for timing measurements which require a high degree of accuracy since it avoids the overhead of having a USB transaction (200us) between the initial trigger condition and the pulse measurement. This function is primarily intended for use with the ADcmXL series of condition monitoring modules. </p>
 
 </div>
 </div>
@@ -472,12 +543,12 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 <p>This function handles Pin read control end point requests. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">pin</td><td>The GPIO pin number of the pin to read</td></tr>
+    <tr><td class="paramname">pin</td><td>The GPIO matrix number of the pin to read</td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The success of the pin read operation</dd></dl>
-<p>It reads the value of a specified GPIO pin, and sends that value over the control endpoint, along with the pin read status. </p>
+<p>This function reads the value of a specified GPIO pin, and sends that value over the control endpoint to the host PC. The pin read status is also attached. </p>
 
 </div>
 </div>
@@ -498,7 +569,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 <p>This function drives a GPIO pin for a specified number of milliseconds, then returns it to the starting polarity. </p>
 <dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the function.</dd></dl>
-<p>If the selected GPIO pin is not configured as an output, this function configures the pin. If you want the pin to stay at a given logic level, use <a class="el" href="_pin_functions_8c.html#aefc8f76636a3cadcb3d0f4121bfeb154" title="This function configures the specified pin as an output and drives it with the desired value.">AdiSetPin()</a> instead. pin: The GPIO pin number to drive polarity: The polarity of the pin (True - High, False - Low) driveTime: The number of milliseconds to drive the pin for </p>
+<p>If the selected GPIO pin is not configured as an output, this function configures the pin. If you want the pin to stay at a given logic level, use <a class="el" href="_pin_functions_8c.html#aefc8f76636a3cadcb3d0f4121bfeb154" title="This function configures the specified pin as an output and drives it with the desired value.">AdiSetPin()</a> instead. The arguments to this function are passed in through USBBuffer. pin: The GPIO pin number to drive polarity: The polarity of the pin (True - High, False - Low) driveTime: The number of milliseconds to drive the pin for </p>
 
 </div>
 </div>
@@ -518,10 +589,10 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
       </table>
 </div><div class="memdoc">
 
-<p>This function waits for a pin to reach a selected logic level. The PulseWait parameters are passed in the USB buffer. </p>
+<p>This function waits for a pin to reach a selected logic level. The PulseWait parameters are passed in the USB buffer, and are retrieved with a call to GetEP0Data. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">transferLength</td><td>How many bytes to read from the USBBuffer</td></tr>
+    <tr><td class="paramname">transferLength</td><td>How many bytes to read from the USBBuffer.</td></tr>
   </table>
   </dd>
 </dl>
@@ -546,7 +617,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 </div><div class="memdoc">
 
 <p>Reads the current value of the 10MHz timer (32 bit) </p>
-<dl class="section return"><dt>Returns</dt><dd>The timer value </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The number of elapsed timer ticks </dd></dl>
 
 </div>
 </div>
@@ -568,6 +639,34 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 <p>Reads the current value from the complex GPIO timer and then sends the value over the control endpoint. </p>
 <dl class="section return"><dt>Returns</dt><dd>The success of the timer read operation.</dd></dl>
 <p>This function handles timer read control endpoint requests specifically. May be changed to return the actual timer value eventually. </p>
+
+</div>
+</div>
+<a id="abee5cedbbf5f529f17f4b504b6f7937c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abee5cedbbf5f529f17f4b504b6f7937c">&#9670;&nbsp;</a></span>AdiSetDutSupply()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">CyU3PReturnStatus_t AdiSetDutSupply </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="_pin_functions_8h.html#ad59527647b27d713cbb6009f201e0cd6">DutVoltage</a>&#160;</td>
+          <td class="paramname"><em>SupplyMode</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This function configures the DUT supply voltage. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">SupplyMode</td><td>The DUT Voltage to set (Off, 3.3V, 5V)</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the functions.</dd></dl>
+<p>This function sets the control pins on the LTC1470 power switch IC. This IC allows software to power cycle a DUT or give it 3.3V/5V to Vdd. This feature only works on the in-house ADI iSensors FX3 Eval board. It does not function on the iSensor FX3 Eval board based on the Cypress Explorer kit. </p>
 
 </div>
 </div>
@@ -605,7 +704,8 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the function. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the pin set operation.</dd></dl>
+<p>Take care when using this function. If a valid GPIO which has not been configured as an output is selected, that pin will be forced to act as an output. This will cause pins which have functionality beyond just a simple GPIO can lose that functionality (e.g. UART Debug, SPI, etc). </p>
 
 </div>
 </div>
@@ -628,7 +728,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 <p>This function blocks thread execution for a specified number of microseconds. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">numMicroSeconds</td><td>The number of microseconds to stall for</td></tr>
+    <tr><td class="paramname">numMicroSeconds</td><td>The number of microseconds to stall for.</td></tr>
   </table>
   </dd>
 </dl>
@@ -677,7 +777,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the function. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the pin wait function. </dd></dl>
 
 </div>
 </div>

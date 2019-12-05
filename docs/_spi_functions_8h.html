@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.2.0-pub</span>
+   &#160;<span id="projectnumber">v2.3.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -116,16 +116,14 @@ Functions</h2></td></tr>
 <tr class="memitem:ada9219b41ae6d89a54e2d37696c64a6b"><td class="memItemLeft" align="right" valign="top">CyU3PSpiConfig_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#ada9219b41ae6d89a54e2d37696c64a6b">AdiGetSpiConfig</a> ()</td></tr>
 <tr class="memdesc:ada9219b41ae6d89a54e2d37696c64a6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function parses the SPI control registers into an easier to work with config struct.  <a href="#ada9219b41ae6d89a54e2d37696c64a6b">More...</a><br /></td></tr>
 <tr class="separator:ada9219b41ae6d89a54e2d37696c64a6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a46d5ab32e1256b10aa2f6e2c7ebede7a"><td class="memItemLeft" align="right" valign="top"><a id="a46d5ab32e1256b10aa2f6e2c7ebede7a"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a46d5ab32e1256b10aa2f6e2c7ebede7a">AdiWaitForSpiNotBusy</a> ()</td></tr>
-<tr class="memdesc:a46d5ab32e1256b10aa2f6e2c7ebede7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Waits for the SPI controller busy bit to be not set. <br /></td></tr>
+<tr class="memitem:a46d5ab32e1256b10aa2f6e2c7ebede7a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a46d5ab32e1256b10aa2f6e2c7ebede7a">AdiWaitForSpiNotBusy</a> ()</td></tr>
+<tr class="memdesc:a46d5ab32e1256b10aa2f6e2c7ebede7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Waits for the SPI controller busy bit to be not set.  <a href="#a46d5ab32e1256b10aa2f6e2c7ebede7a">More...</a><br /></td></tr>
 <tr class="separator:a46d5ab32e1256b10aa2f6e2c7ebede7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a46fad4317c94479eaf852e5b22ea4d2a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a46fad4317c94479eaf852e5b22ea4d2a">AdiSetSpiWordLength</a> (uint8_t wordLength)</td></tr>
 <tr class="memdesc:a46fad4317c94479eaf852e5b22ea4d2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the SPI controller word length (4 - 32 bits)  <a href="#a46fad4317c94479eaf852e5b22ea4d2a">More...</a><br /></td></tr>
 <tr class="separator:a46fad4317c94479eaf852e5b22ea4d2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a91b6e4f6710b6e1c9f7eee02eb6613ca"><td class="memItemLeft" align="right" valign="top"><a id="a91b6e4f6710b6e1c9f7eee02eb6613ca"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a91b6e4f6710b6e1c9f7eee02eb6613ca">AdiPrintSpiConfig</a> (CyU3PSpiConfig_t config)</td></tr>
-<tr class="memdesc:a91b6e4f6710b6e1c9f7eee02eb6613ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints a given SPI config over the UART debug port. <br /></td></tr>
+<tr class="memitem:a91b6e4f6710b6e1c9f7eee02eb6613ca"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a91b6e4f6710b6e1c9f7eee02eb6613ca">AdiPrintSpiConfig</a> (CyU3PSpiConfig_t config)</td></tr>
+<tr class="memdesc:a91b6e4f6710b6e1c9f7eee02eb6613ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints a given SPI config over the UART debug port.  <a href="#a91b6e4f6710b6e1c9f7eee02eb6613ca">More...</a><br /></td></tr>
 <tr class="separator:a91b6e4f6710b6e1c9f7eee02eb6613ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a72c5344f6d7ce3000731bd79737be26d"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a72c5344f6d7ce3000731bd79737be26d">AdiRestartSpi</a> ()</td></tr>
 <tr class="memdesc:a72c5344f6d7ce3000731bd79737be26d"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function restarts the SPI controller.  <a href="#a72c5344f6d7ce3000731bd79737be26d">More...</a><br /></td></tr>
@@ -195,7 +193,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 <p>This function handles bit bang SPI requests from the control endpoint. </p>
 <dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the SPI bitbang operation.</dd></dl>
-<p>This function requires all data to have been retrieved from the control endpoint before being called. </p>
+<p>This function requires all data to have been retrieved from the control endpoint before being called. It parses all the parameters about the current bit bang SPI operation to perform from the transaction. The pins/timing/config is sent from the FX3 API to the firmware with each bitbang SPI transaction. </p>
 
 </div>
 </div>
@@ -218,10 +216,11 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 <p>Configures all pins and timers needed to bitbang a SPI connection. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">config</td><td>A structure containing all the relevant bit banged SPI configuration parameters. </td></tr>
+    <tr><td class="paramname">config</td><td>A structure containing all the relevant bit banged SPI configuration parameters.</td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the bitbang SPI setup process. </dd></dl>
 
 </div>
 </div>
@@ -293,7 +292,8 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 </div><div class="memdoc">
 
 <p>This function parses the SPI control registers into an easier to work with config struct. </p>
-<dl class="section return"><dt>Returns</dt><dd>The current SPI config, as set in the hardware. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The current SPI config, as set in the SPI controller hardware.</dd></dl>
+<p>This function can be used to ensure synchronization between the SPI controller and the SPI settings in firmware, without having to perform a SPI controller reset operation. Resetting the SPI controller can cause undesired effects on the SPI lines. </p>
 
 </div>
 </div>
@@ -315,6 +315,33 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 <p>This function handles vendor commands to get the current SPI configuration from the FX3. </p>
 <dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the function.</dd></dl>
 <p>This function allows the FX3 API to verify that the FX3 board has the same SPI settings as the current FX3 connection instance. The current configuration is sent to the PC via EP0. </p>
+
+</div>
+</div>
+<a id="a91b6e4f6710b6e1c9f7eee02eb6613ca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a91b6e4f6710b6e1c9f7eee02eb6613ca">&#9670;&nbsp;</a></span>AdiPrintSpiConfig()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void AdiPrintSpiConfig </td>
+          <td>(</td>
+          <td class="paramtype">CyU3PSpiConfig_t&#160;</td>
+          <td class="paramname"><em>config</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Prints a given SPI config over the UART debug port. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">config</td><td>The SPI config structure to print out.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>void </dd></dl>
 
 </div>
 </div>
@@ -363,7 +390,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 <p>This function restarts the SPI controller. </p>
 <dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the setConfig call after re-initialization.</dd></dl>
-<p>This function can be used to restore hardware SPI functionality after overriding the SPI pins to act as a bitbanged SPI port. This function can be called before or after the SPI controller has been initialized without causing problems. </p>
+<p>This function can be used to restore hardware SPI functionality after overriding the SPI pins to act as a bit-banged SPI port. This function can be called before or after the SPI controller has been initialized without causing problems. This function may cause erroneous toggles on the SPI lines during the initialization process - be careful to ensure that the connected DUT is not particularly sensitive to extra toggles. </p>
 
 </div>
 </div>
@@ -507,6 +534,26 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 </div>
 </div>
+<a id="a46d5ab32e1256b10aa2f6e2c7ebede7a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a46d5ab32e1256b10aa2f6e2c7ebede7a">&#9670;&nbsp;</a></span>AdiWaitForSpiNotBusy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void AdiWaitForSpiNotBusy </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Waits for the SPI controller busy bit to be not set. </p>
+<dl class="section return"><dt>Returns</dt><dd>void </dd></dl>
+
+</div>
+</div>
 <a id="a09c91fa11a171844d59e40a4d0fee7cf"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a09c91fa11a171844d59e40a4d0fee7cf">&#9670;&nbsp;</a></span>AdiWriteRegByte()</h2>
 
@@ -541,7 +588,8 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the function. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the function.</dd></dl>
+<p>This function uses the standard iSensor SPI protocol to issue a write command. For the standard iSensor SPI parts, a write is performed in a single 16 bit command, where the first bit clocked out is the write bit (high) followed by the address and data. </p>
 
 </div>
 </div>

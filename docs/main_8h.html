@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.2.0-pub</span>
+   &#160;<span id="projectnumber">v2.3.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -134,6 +134,8 @@ Macros</h2></td></tr>
 <tr class="separator:a6d8ef9026f95a3802d49e38cc133181b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2f131b432af3707cc8d9601d45081aaf"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a2f131b432af3707cc8d9601d45081aaf">ADI_WARM_RESET</a>&#160;&#160;&#160;(0xB6)</td></tr>
 <tr class="separator:a2f131b432af3707cc8d9601d45081aaf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a576429aa702fb7490b040dafba9b1d32"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a576429aa702fb7490b040dafba9b1d32">ADI_SET_DUT_SUPPLY</a>&#160;&#160;&#160;(0xB7)</td></tr>
+<tr class="separator:a576429aa702fb7490b040dafba9b1d32"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8fc405264f6aacc6ed668631491f2377"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a8fc405264f6aacc6ed668631491f2377">ADI_STREAM_GENERIC_DATA</a>&#160;&#160;&#160;(0xC0)</td></tr>
 <tr class="separator:a8fc405264f6aacc6ed668631491f2377"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a69f4a6d00e582d4a94d43710aa0bf5bd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a69f4a6d00e582d4a94d43710aa0bf5bd">ADI_STREAM_BURST_DATA</a>&#160;&#160;&#160;(0xC1)</td></tr>
@@ -230,12 +232,12 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a00bb89374f141bb56e8fbe0958c4741e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a00bb89374f141bb56e8fbe0958c4741e">AdiAppStart</a> (void)</td></tr>
-<tr class="memdesc:a00bb89374f141bb56e8fbe0958c4741e"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function sets up the necessary resources to start the ADI application.  <a href="#a00bb89374f141bb56e8fbe0958c4741e">More...</a><br /></td></tr>
-<tr class="separator:a00bb89374f141bb56e8fbe0958c4741e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab6b6b32c2f262cfcb0de14859d4e1059"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#ab6b6b32c2f262cfcb0de14859d4e1059">AdiAppStop</a> (void)</td></tr>
-<tr class="memdesc:ab6b6b32c2f262cfcb0de14859d4e1059"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function is called to shut down the application.  <a href="#ab6b6b32c2f262cfcb0de14859d4e1059">More...</a><br /></td></tr>
-<tr class="separator:ab6b6b32c2f262cfcb0de14859d4e1059"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97ef5f1f7dd70bdb654bd2e0ed215a8e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a97ef5f1f7dd70bdb654bd2e0ed215a8e">AdiAppStart</a> ()</td></tr>
+<tr class="memdesc:a97ef5f1f7dd70bdb654bd2e0ed215a8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function sets up the necessary resources to start the ADI application.  <a href="#a97ef5f1f7dd70bdb654bd2e0ed215a8e">More...</a><br /></td></tr>
+<tr class="separator:a97ef5f1f7dd70bdb654bd2e0ed215a8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a802d56f1d4d6c6e069d5bed2d01c2fbd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a802d56f1d4d6c6e069d5bed2d01c2fbd">AdiAppStop</a> ()</td></tr>
+<tr class="memdesc:a802d56f1d4d6c6e069d5bed2d01c2fbd"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function is called to shut down the application.  <a href="#a802d56f1d4d6c6e069d5bed2d01c2fbd">More...</a><br /></td></tr>
+<tr class="separator:a802d56f1d4d6c6e069d5bed2d01c2fbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4759bbcdd7e9e2d77fc72f1b1ed12c1a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a4759bbcdd7e9e2d77fc72f1b1ed12c1a">AdiAppErrorHandler</a> (CyU3PReturnStatus_t status)</td></tr>
 <tr class="memdesc:a4759bbcdd7e9e2d77fc72f1b1ed12c1a"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function handles critical errors generated by the ADI application.  <a href="#a4759bbcdd7e9e2d77fc72f1b1ed12c1a">More...</a><br /></td></tr>
 <tr class="separator:a4759bbcdd7e9e2d77fc72f1b1ed12c1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -255,10 +257,10 @@ Functions</h2></td></tr>
 <tr class="memdesc:a0012feb7c1973f17875ca9c3458462bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function handles GPIO interrupts and sets the appropriate flag in GpioHandler.  <a href="#a0012feb7c1973f17875ca9c3458462bf">More...</a><br /></td></tr>
 <tr class="separator:a0012feb7c1973f17875ca9c3458462bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a324389c2f4332af32ea49f7b0f4741e2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a324389c2f4332af32ea49f7b0f4741e2">AdiConfigureWatchdog</a> ()</td></tr>
-<tr class="memdesc:a324389c2f4332af32ea49f7b0f4741e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configures the watchdog timer based on the current board state.  <a href="#a324389c2f4332af32ea49f7b0f4741e2">More...</a><br /></td></tr>
+<tr class="memdesc:a324389c2f4332af32ea49f7b0f4741e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configures the FX3 watchdog timer based on the current board state.  <a href="#a324389c2f4332af32ea49f7b0f4741e2">More...</a><br /></td></tr>
 <tr class="separator:a324389c2f4332af32ea49f7b0f4741e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac35c3eb65841e099b5fe70875656d5bc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#ac35c3eb65841e099b5fe70875656d5bc">WatchDogTimerCb</a> (uint32_t nParam)</td></tr>
-<tr class="memdesc:ac35c3eb65841e099b5fe70875656d5bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">callback function to clear the watchdog timer. Should not be called directly.  <a href="#ac35c3eb65841e099b5fe70875656d5bc">More...</a><br /></td></tr>
+<tr class="memdesc:ac35c3eb65841e099b5fe70875656d5bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Timer callback function to clear the watchdog timer. Should not be called directly.  <a href="#ac35c3eb65841e099b5fe70875656d5bc">More...</a><br /></td></tr>
 <tr class="separator:ac35c3eb65841e099b5fe70875656d5bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
@@ -592,6 +594,21 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 </div>
 </div>
+<a id="a576429aa702fb7490b040dafba9b1d32"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a576429aa702fb7490b040dafba9b1d32">&#9670;&nbsp;</a></span>ADI_SET_DUT_SUPPLY</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_SET_DUT_SUPPLY&#160;&#160;&#160;(0xB7)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set the DUT supply voltage (only works on ADI FX3 boards) </p>
+
+</div>
+</div>
 <a id="ab35b88995d2f9112a0a3073f285eeef7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab35b88995d2f9112a0a3073f285eeef7">&#9670;&nbsp;</a></span>ADI_SET_PIN</h2>
 
@@ -907,12 +924,19 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 </div><div class="memdoc">
 
 <p>This function handles critical errors generated by the ADI application. </p>
-<p>At the moment this function handles errors by printing an error message to the UART console and looping indefinitely. In the future it might be prudent to do something more intelligent here based on the specific error condition. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">status</td><td>The error code which corresponds with the fatal error encountered during startup.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>void</dd></dl>
+<p>This function prints the error message to the debug console, waits five seconds, and performs a hard reset. Performing the hard reset will clear the SRAM and reboot the FX3 into the second stage iSensors FX3 bootloader. Could probably do something more intelligent, but at least this approach will not lock up the FX3 after a failed boot. </p>
 
 </div>
 </div>
-<a id="a00bb89374f141bb56e8fbe0958c4741e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a00bb89374f141bb56e8fbe0958c4741e">&#9670;&nbsp;</a></span>AdiAppStart()</h2>
+<a id="a97ef5f1f7dd70bdb654bd2e0ed215a8e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a97ef5f1f7dd70bdb654bd2e0ed215a8e">&#9670;&nbsp;</a></span>AdiAppStart()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -920,7 +944,6 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
         <tr>
           <td class="memname">void AdiAppStart </td>
           <td>(</td>
-          <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
@@ -928,12 +951,13 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 </div><div class="memdoc">
 
 <p>This function sets up the necessary resources to start the ADI application. </p>
-<p>It configures all GPIO and timers used by the firmware, as well as the USB endpoints, DMA controller, and SPI hardware. </p>
+<dl class="section return"><dt>Returns</dt><dd>void</dd></dl>
+<p>The application startup process configures all GPIO and timers used by the firmware, as well as the USB endpoints, DMA controller, and SPI hardware. After all configuration is performed, the AppActive flag is set to true. </p>
 
 </div>
 </div>
-<a id="ab6b6b32c2f262cfcb0de14859d4e1059"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab6b6b32c2f262cfcb0de14859d4e1059">&#9670;&nbsp;</a></span>AdiAppStop()</h2>
+<a id="a802d56f1d4d6c6e069d5bed2d01c2fbd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a802d56f1d4d6c6e069d5bed2d01c2fbd">&#9670;&nbsp;</a></span>AdiAppStop()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -941,7 +965,6 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
         <tr>
           <td class="memname">void AdiAppStop </td>
           <td>(</td>
-          <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
@@ -949,6 +972,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 </div><div class="memdoc">
 
 <p>This function is called to shut down the application. </p>
+<dl class="section return"><dt>Returns</dt><dd>void</dd></dl>
 <p>This function cleans up the resources used by the ADI application and prepares them for the next run. </p>
 
 </div>
@@ -1013,8 +1037,9 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
       </table>
 </div><div class="memdoc">
 
-<p>Configures the watchdog timer based on the current board state. </p>
-<dl class="section return"><dt>Returns</dt><dd>void </dd></dl>
+<p>Configures the FX3 watchdog timer based on the current board state. </p>
+<dl class="section return"><dt>Returns</dt><dd>void</dd></dl>
+<p>The watchdog is cleared by a software timer managed in the threadX RTOS. The clear interval is set to 5 seconds less than the watchdog period. If the watchdog timer elapses without being reset (software is locked up) then the FX3 firmware undergoes a hard reset and will reboot onto the second stage bootloader. This will cause an UnexpectedReset event to be raised in the running instance of the FX3Connection (if the FX3 board is connected). </p>
 
 </div>
 </div>
@@ -1047,12 +1072,13 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 <p>This function handles events generated by the control endpoint. All vendor requests are handled in this function. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">setupdat0</td><td>The first set of setup data</td></tr>
-    <tr><td class="paramname">setupdat1</td><td>The second set of setup data</td></tr>
+    <tr><td class="paramname">setupdat0</td><td>The first set of setup data. Contains of the request and value fields.</td></tr>
+    <tr><td class="paramname">setupdat1</td><td>The second set of setup data. Contains the index and length fields.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A boolean indicating if the control endpoint event was handled properly. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A boolean indicating if the control endpoint event was handled properly.</dd></dl>
+<p>This function handles all USB events generated by the control endpoint. For the iSensor FX3 firmware, these events are a set of custom vendor commands. These vendor commands must be issued by the host PC. To ensure consistent behavior, all vendor commands should be issued using a function call in the FX3API. </p>
 
 </div>
 </div>
@@ -1075,10 +1101,12 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 <p>This function handles GPIO interrupts and sets the appropriate flag in GpioHandler. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">gpioId</td><td>The pin number of the pin which generated the interrupt </td></tr>
+    <tr><td class="paramname">gpioId</td><td>The pin number of the pin which generated the interrupt</td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>void</dd></dl>
+<p>This function is called by the RTOS whenever the GPIO interrupt vector is enabled and a GPIO interrupt is received. Instead of performing any work in this function, to improve system responsiveness, this function sets an RTOS event flag, to be handled by the application thread. </p>
 
 </div>
 </div>
@@ -1163,14 +1191,15 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
       </table>
 </div><div class="memdoc">
 
-<p>callback function to clear the watchdog timer. Should not be called directly. </p>
+<p>Timer callback function to clear the watchdog timer. Should not be called directly. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">nParam</td><td>Callback argument, unused here.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>void </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>void</dd></dl>
+<p>This function is called periodically by the RTOS to reset the watchdog timer. If this function is not called, then the FX3 will be rebooted onto the second stage bootloader. </p>
 
 </div>
 </div>

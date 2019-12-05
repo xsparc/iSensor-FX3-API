@@ -5,8 +5,8 @@ var indexSectionsWithContent =
   2: "amps",
   3: "abcfmsuw",
   4: "abcdefghkmnprstuw",
-  5: "bps",
-  6: "p",
+  5: "bdps",
+  6: "dp",
   7: "ao",
   8: "abcfms",
   9: "ai"

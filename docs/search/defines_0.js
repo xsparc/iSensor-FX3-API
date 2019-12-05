@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['adi_5f3_5f3v_5fen',['ADI_3_3V_EN',['../_pin_functions_8h.html#a9847b1f106094a417ad607b8a4f1c9e8',1,'PinFunctions.h']]],
   ['adi_5fbitbang_5fspi',['ADI_BITBANG_SPI',['../main_8h.html#ae2cae78d6ffaeb70b824cdcf4851eee4',1,'main.h']]],
   ['adi_5fburst_5fstream_5fdone',['ADI_BURST_STREAM_DONE',['../_app_thread_8h.html#aba5c1bf8a07cc4510973f5b96faa942d',1,'AppThread.h']]],
   ['adi_5fburst_5fstream_5fenable',['ADI_BURST_STREAM_ENABLE',['../_app_thread_8h.html#a5f40211711dd1ce21d407ac5ea72ca02',1,'AppThread.h']]],
@@ -37,6 +38,7 @@ var searchData=
   ['adi_5frt_5fstream_5fstart',['ADI_RT_STREAM_START',['../_app_thread_8h.html#aea4d697ce8044fce01e790ee4b2d03bc',1,'AppThread.h']]],
   ['adi_5frt_5fstream_5fstop',['ADI_RT_STREAM_STOP',['../_app_thread_8h.html#a66affb1c16c635f51667c4db2b9d2934',1,'AppThread.h']]],
   ['adi_5fserial_5fnumber_5fcheck',['ADI_SERIAL_NUMBER_CHECK',['../main_8h.html#a6d8ef9026f95a3802d49e38cc133181b',1,'main.h']]],
+  ['adi_5fset_5fdut_5fsupply',['ADI_SET_DUT_SUPPLY',['../main_8h.html#a576429aa702fb7490b040dafba9b1d32',1,'main.h']]],
   ['adi_5fset_5fpin',['ADI_SET_PIN',['../main_8h.html#ab35b88995d2f9112a0a3073f285eeef7',1,'main.h']]],
   ['adi_5fset_5fspi_5fconfig',['ADI_SET_SPI_CONFIG',['../main_8h.html#a74849bb9c15b9affe6ea95e289f2ee2b',1,'main.h']]],
   ['adi_5fstream_5fburst_5fdata',['ADI_STREAM_BURST_DATA',['../main_8h.html#a69f4a6d00e582d4a94d43710aa0bf5bd',1,'main.h']]],

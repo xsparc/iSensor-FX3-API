@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.2.0-pub</span>
+   &#160;<span id="projectnumber">v2.3.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -270,8 +270,8 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 </div><div class="memdoc">
 
 <p>This function prints all the stream state variables to the terminal if VERBOSE_MODE is defined. </p>
-<dl class="section return"><dt>Returns</dt><dd>A status code indicating if the print occurred (returns false if VERBOSE_MODE is not defined)</dd></dl>
-<p>This function prints a significant amount of data, and as such is fairly slow in VERBOSE_MODE </p>
+<dl class="section return"><dt>Returns</dt><dd>A status code indicating if the print occurred (returns false if VERBOSE_MODE is not defined).</dd></dl>
+<p>This function prints a significant amount of data, and as such is fairly slow in VERBOSE_MODE. The return value of this function can be used to determine if the running application firmware is set to verbose mode. </p>
 
 </div>
 </div>
@@ -334,7 +334,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 <p>This function sets a flag to notify the streaming thread that the user requested to cancel streaming. </p>
 <dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the function.</dd></dl>
-<p>This function can be used to stop any stream operation. The variable KillStreamEarly is defined as volatile to prevent any compiler optimizations. </p>
+<p>This function can be used to stop any stream operation. The variable KillStreamEarly is defined as volatile to prevent any compiler optimizations which may remove it. </p>
 
 </div>
 </div>
@@ -375,7 +375,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 </div><div class="memdoc">
 
 <p>Starts a protocol agnostic SPI transfer stream. </p>
-<dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the stream start.</dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the transfer stream start.</dd></dl>
 <p>This is used to implement the ISpi32Interface. The stream info is read in from EP0 into the USBBuffer. This includes stream parameters and the MOSI data. </p>
 
 </div>
