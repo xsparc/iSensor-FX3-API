@@ -154,6 +154,9 @@ Partial Class FX3Connection
         m_ActiveFX3Info.SetFirmwareVersion(GetFirmwareID())
         m_ActiveFX3Info.SetBootloaderVersion(m_BootloaderVersion)
 
+        'Set the application firmware boot time
+        SetBootTimeStamp()
+
         'Get the verbose mode setting
         GetBoardStatus(verboseMode)
         m_ActiveFX3Info.SetVerboseMode(verboseMode)

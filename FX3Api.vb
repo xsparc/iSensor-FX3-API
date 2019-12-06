@@ -905,6 +905,10 @@ Public Class FX3Connection
 
     End Sub
 
+    ''' <summary>
+    ''' Get the firmware build date and time
+    ''' </summary>
+    ''' <returns></returns>
     Private Function GetFirmwareBuildDate() As String
         ConfigureControlEndpoint(USBCommands.ADI_GET_BUILD_DATE, False)
         Dim buf(19) As Byte
@@ -920,6 +924,27 @@ Public Class FX3Connection
         Return buildDate
 
     End Function
+
+    ''' <summary>
+    ''' Set the boot unix timestamp in the FX3 application firmware
+    ''' </summary>
+    Private Sub SetBootTimeStamp()
+        Dim time As UInteger = (DateTime.UtcNow - #1/1/1970#).TotalSeconds
+        Dim buf(3) As Byte
+        buf(0) = time And &HFF
+        buf(1) = (time And &HFF00) >> 8
+        buf(2) = (time And &HFF0000) >> 16
+        buf(3) = (time And &HFF000000) >> 24
+
+        'set up control endpoint
+        ConfigureControlEndpoint(USBCommands.ADI_SET_BOOT_TIME, True)
+
+        'Transfer data
+        If Not XferControlData(buf, 4, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Setting boot time failed")
+        End If
+
+    End Sub
 
     ''' <summary>
     ''' Gets the current status code from the FX3.

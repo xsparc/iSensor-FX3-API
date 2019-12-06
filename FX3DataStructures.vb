@@ -68,6 +68,9 @@ Public Enum USBCommands
     'Get build date / time
     ADI_GET_BUILD_DATE = &HB8
 
+    'Set the boot time code
+    ADI_SET_BOOT_TIME = &HB9
+
     'Start/stop a generic data stream
     ADI_STREAM_GENERIC_DATA = &HC0
 

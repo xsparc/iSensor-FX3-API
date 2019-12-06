@@ -267,6 +267,17 @@ FX3Api
  </summary>
  <returns>The DUT supply voltage setting</returns>
 </member>
+<member name="M:FX3Api.FX3Connection.GetFirmwareBuildDate">
+ <summary>
+ Get the firmware build date and time
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:FX3Api.FX3Connection.SetBootTimeStamp">
+ <summary>
+ Set the boot unix timestamp in the FX3 application firmware
+ </summary>
+</member>
 <member name="M:FX3Api.FX3Connection.GetBoardStatus(System.Boolean@)">
  <summary>
  Gets the current status code from the FX3.
