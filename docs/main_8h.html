@@ -136,6 +136,10 @@ Macros</h2></td></tr>
 <tr class="separator:a2f131b432af3707cc8d9601d45081aaf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a576429aa702fb7490b040dafba9b1d32"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a576429aa702fb7490b040dafba9b1d32">ADI_SET_DUT_SUPPLY</a>&#160;&#160;&#160;(0xB7)</td></tr>
 <tr class="separator:a576429aa702fb7490b040dafba9b1d32"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76e46990f3dfdc78d749a1feda40123a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a76e46990f3dfdc78d749a1feda40123a">ADI_GET_BUILD_DATE</a>&#160;&#160;&#160;(0xB8)</td></tr>
+<tr class="separator:a76e46990f3dfdc78d749a1feda40123a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d910293813eb7d7a591d7822a5a376f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a7d910293813eb7d7a591d7822a5a376f">ADI_SET_BOOT_TIME</a>&#160;&#160;&#160;(0xB9)</td></tr>
+<tr class="separator:a7d910293813eb7d7a591d7822a5a376f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8fc405264f6aacc6ed668631491f2377"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a8fc405264f6aacc6ed668631491f2377">ADI_STREAM_GENERIC_DATA</a>&#160;&#160;&#160;(0xC0)</td></tr>
 <tr class="separator:a8fc405264f6aacc6ed668631491f2377"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a69f4a6d00e582d4a94d43710aa0bf5bd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a69f4a6d00e582d4a94d43710aa0bf5bd">ADI_STREAM_BURST_DATA</a>&#160;&#160;&#160;(0xC1)</td></tr>
@@ -262,6 +266,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ac35c3eb65841e099b5fe70875656d5bc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#ac35c3eb65841e099b5fe70875656d5bc">WatchDogTimerCb</a> (uint32_t nParam)</td></tr>
 <tr class="memdesc:ac35c3eb65841e099b5fe70875656d5bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Timer callback function to clear the watchdog timer. Should not be called directly.  <a href="#ac35c3eb65841e099b5fe70875656d5bc">More...</a><br /></td></tr>
 <tr class="separator:ac35c3eb65841e099b5fe70875656d5bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbef4a5a3f1c49fde1046e1cd1de4089"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#afbef4a5a3f1c49fde1046e1cd1de4089">AdiGetBuildDate</a> (uint8_t *outBuf)</td></tr>
+<tr class="memdesc:afbef4a5a3f1c49fde1046e1cd1de4089"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the firmware build date, followed by the build time.  <a href="#afbef4a5a3f1c49fde1046e1cd1de4089">More...</a><br /></td></tr>
+<tr class="separator:afbef4a5a3f1c49fde1046e1cd1de4089"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -381,6 +388,21 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
       </table>
 </div><div class="memdoc">
 <p>Offset to take away from the timer period for generic stream stall time. In 10MHz timer ticks </p>
+
+</div>
+</div>
+<a id="a76e46990f3dfdc78d749a1feda40123a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a76e46990f3dfdc78d749a1feda40123a">&#9670;&nbsp;</a></span>ADI_GET_BUILD_DATE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_GET_BUILD_DATE&#160;&#160;&#160;(0xB8)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Get firmware build date / time </p>
 
 </div>
 </div>
@@ -591,6 +613,21 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
       </table>
 </div><div class="memdoc">
 <p>Return the FX3 unique serial number </p>
+
+</div>
+</div>
+<a id="a7d910293813eb7d7a591d7822a5a376f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d910293813eb7d7a591d7822a5a376f">&#9670;&nbsp;</a></span>ADI_SET_BOOT_TIME</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_SET_BOOT_TIME&#160;&#160;&#160;(0xB9)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set the boot time code </p>
 
 </div>
 </div>
@@ -1079,6 +1116,33 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A boolean indicating if the control endpoint event was handled properly.</dd></dl>
 <p>This function handles all USB events generated by the control endpoint. For the iSensor FX3 firmware, these events are a set of custom vendor commands. These vendor commands must be issued by the host PC. To ensure consistent behavior, all vendor commands should be issued using a function call in the FX3API. </p>
+
+</div>
+</div>
+<a id="afbef4a5a3f1c49fde1046e1cd1de4089"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afbef4a5a3f1c49fde1046e1cd1de4089">&#9670;&nbsp;</a></span>AdiGetBuildDate()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void AdiGetBuildDate </td>
+          <td>(</td>
+          <td class="paramtype">uint8_t *&#160;</td>
+          <td class="paramname"><em>outBuf</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Gets the firmware build date, followed by the build time. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">outBuf</td><td>Char array which build date/time is placed into</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>void </dd></dl>
 
 </div>
 </div>
