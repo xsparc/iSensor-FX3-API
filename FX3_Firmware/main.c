@@ -102,7 +102,7 @@ CyU3PDmaBuffer_t SpiDmaBuffer;
  */
 
 /** Constant firmware ID string. Manually updated when building new firmware. */
-const uint8_t FirmwareID[32] __attribute__((aligned(32))) = { 'A', 'D', 'I', ' ', 'F', 'X', '3', ' ', 'R', 'E', 'V', ' ', '2', '.', '3', '.', '0', '-','P','U','B',' ', '\0' };
+const uint8_t FirmwareID[32] __attribute__((aligned(32))) = "ADI FX3 REV 2.3.0-PUB\0";
 
 /** FX3 unique serial number. Set at runtime */
 char serial_number[] __attribute__((aligned(32))) = {'0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00};
@@ -253,6 +253,18 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
         	/* Write single byte for IRegInterface */
         	case ADI_WRITE_BYTE:
         		AdiWriteRegByte(wIndex, wValue & 0xFF);
+        		break;
+
+        	/* Set the application boot time */
+        	case ADI_SET_BOOT_TIME:
+        		status = CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+        		FX3State.BootTime = USBBuffer[0];
+        		FX3State.BootTime |= (USBBuffer[1] << 8);
+        		FX3State.BootTime |= (USBBuffer[2] << 16);
+        		FX3State.BootTime |= (USBBuffer[3] << 24);
+#ifdef VERBOSE_MODE
+            	CyU3PDebugPrint (4, "Boot Time Stamp: %d\r\n", FX3State.BootTime);
+#endif
         		break;
 
         	/* Pulse drive for a specified amount of time */

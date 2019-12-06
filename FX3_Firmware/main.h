@@ -132,6 +132,9 @@ typedef struct BoardState
 	/** Track the watchdog timer ticks */
 	uint32_t WatchDogTicks;
 
+	/** Store the Unix Timestamp for the boot time. Used for error logging */
+	uint32_t BootTime;
+
 }BoardState;
 
 /** Struct to store the current data stream state information */
@@ -204,6 +207,9 @@ typedef struct StreamState
 
 /** Get firmware build date / time */
 #define ADI_GET_BUILD_DATE 						(0xB8)
+
+/** Set the boot time code */
+#define ADI_SET_BOOT_TIME 						(0xB9)
 
 /** Start/stop a generic data stream */
 #define ADI_STREAM_GENERIC_DATA					(0xC0)
