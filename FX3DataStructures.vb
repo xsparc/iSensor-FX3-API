@@ -65,6 +65,9 @@ Public Enum USBCommands
     'Set the DUT supply voltage (only works on ADI FX3 boards)
     ADI_SET_DUT_SUPPLY = &HB7
 
+    'Get build date / time
+    ADI_GET_BUILD_DATE = &HB8
+
     'Start/stop a generic data stream
     ADI_STREAM_GENERIC_DATA = &HC0
 
@@ -754,6 +757,7 @@ Public Class FX3Board
     Private m_versionNumber As String
     Private m_verboseMode As Boolean
     Private m_bootloaderVersion As String
+    Private m_buildDateTime As String
 
     Public Sub New(SerialNumber As String, BootTime As DateTime)
 
@@ -775,8 +779,9 @@ Public Class FX3Board
     ''' </summary>
     ''' <returns></returns>
     Public Overrides Function ToString() As String
-        Return "Firmware Version: " + FirmwareVersion + Environment.NewLine + "Serial Number: " + SerialNumber + Environment.NewLine + "Debug Mode: " + VerboseMode.ToString() +
-            Environment.NewLine + "Uptime: " + Uptime.ToString() + "ms" + Environment.NewLine + "Bootloader Version: " + BootloaderVersion
+        Return "Firmware Version: " + FirmwareVersion + Environment.NewLine + "Build Date and Time: " + BuildDateTime + Environment.NewLine +
+            "Serial Number: " + SerialNumber + Environment.NewLine + "Debug Mode: " + VerboseMode.ToString() + Environment.NewLine +
+            "Uptime: " + Uptime.ToString() + "ms" + Environment.NewLine + "Bootloader Version: " + BootloaderVersion
     End Function
 
     ''' <summary>
@@ -786,6 +791,16 @@ Public Class FX3Board
     Public ReadOnly Property Uptime As Long
         Get
             Return CLng(DateTime.Now.Subtract(m_bootTime).TotalMilliseconds)
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' Gets the date and time the FX3 application firmware was compiled.
+    ''' </summary>
+    ''' <returns>The date time string</returns>
+    Public ReadOnly Property BuildDateTime As String
+        Get
+            Return m_buildDateTime
         End Get
     End Property
 
@@ -868,6 +883,14 @@ Public Class FX3Board
     ''' <param name="BootloaderVersion">The current bootloader version</param>
     Friend Sub SetBootloaderVersion(BootloaderVersion As String)
         m_bootloaderVersion = BootloaderVersion
+    End Sub
+
+    ''' <summary>
+    ''' Set the Date/time string after connecting
+    ''' </summary>
+    ''' <param name="DateTime"></param>
+    Friend Sub SetDateTime(DateTime As String)
+        m_buildDateTime = DateTime
     End Sub
 
 End Class

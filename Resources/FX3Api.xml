@@ -1530,6 +1530,12 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  </summary>
  <returns>The board uptime, in ms, as a long</returns>
 </member>
+<member name="P:FX3Api.FX3Board.BuildDateTime">
+ <summary>
+ Gets the date and time the FX3 application firmware was compiled.
+ </summary>
+ <returns>The date time string</returns>
+</member>
 <member name="P:FX3Api.FX3Board.SerialNumber">
  <summary>
  Read-only property to get the active FX3 serial number
@@ -1579,6 +1585,12 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  Sets the bootloader version
  </summary>
  <param name="BootloaderVersion">The current bootloader version</param>
+</member>
+<member name="M:FX3Api.FX3Board.SetDateTime(System.String)">
+ <summary>
+ Set the Date/time string after connecting
+ </summary>
+ <param name="DateTime"></param>
 </member>
 <member name="T:FX3Api.FX3ConfigurationException">
  <summary>

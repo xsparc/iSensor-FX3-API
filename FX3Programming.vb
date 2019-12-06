@@ -158,6 +158,9 @@ Partial Class FX3Connection
         GetBoardStatus(verboseMode)
         m_ActiveFX3Info.SetVerboseMode(verboseMode)
 
+        'get the firmware build date/time
+        m_ActiveFX3Info.SetDateTime(GetFirmwareBuildDate())
+
         'Verify that the FX3 firmware version matches the API firmware version
         apiVersion = GetFX3ApiInfo.VersionNumber
         If Not apiVersion.Equals(m_ActiveFX3Info.FirmwareVersionNumber, StringComparison.OrdinalIgnoreCase) Then

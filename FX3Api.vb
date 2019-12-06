@@ -905,6 +905,22 @@ Public Class FX3Connection
 
     End Sub
 
+    Private Function GetFirmwareBuildDate() As String
+        ConfigureControlEndpoint(USBCommands.ADI_GET_BUILD_DATE, False)
+        Dim buf(19) As Byte
+
+        'Transfer data from the FX3
+        If Not XferControlData(buf, 20, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer to get firmware build date/time failed.")
+        End If
+
+        'parse result
+        Dim buildDate As String = System.Text.Encoding.UTF8.GetString(buf)
+
+        Return buildDate
+
+    End Function
+
     ''' <summary>
     ''' Gets the current status code from the FX3.
     ''' </summary>
