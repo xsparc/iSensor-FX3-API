@@ -67,8 +67,11 @@ void AdiBulkEndpointHandler(CyU3PUsbEpEvtType evType,CyU3PUSBSpeed_t usbSpeed, u
 void AdiUSBEventHandler(CyU3PUsbEventType_t evtype, uint16_t evdata);
 CyBool_t AdiLPMRequestHandler(CyU3PUsbLinkPowerMode link_mode);
 void AdiGPIOEventHandler(uint8_t gpioId);
+
+/* Misc functions */
 void AdiConfigureWatchdog();
 void WatchDogTimerCb (uint32_t nParam);
+void AdiGetBuildDate(uint8_t * outBuf);
 
 /** Enum for the available part (DUT) types */
 typedef enum PartTye
@@ -198,6 +201,9 @@ typedef struct StreamState
 
 /** Set the DUT supply voltage (only works on ADI FX3 boards) */
 #define ADI_SET_DUT_SUPPLY  					(0xB7)
+
+/** Get firmware build date / time */
+#define ADI_GET_BUILD_DATE 						(0xB8)
 
 /** Start/stop a generic data stream */
 #define ADI_STREAM_GENERIC_DATA					(0xC0)

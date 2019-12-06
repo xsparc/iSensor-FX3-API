@@ -309,6 +309,12 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	}
                 break;
 
+            case ADI_GET_BUILD_DATE:
+            	AdiGetBuildDate(USBBuffer);
+            	CyU3PUsbSendEP0Data (wLength, USBBuffer);
+            	isHandled = CyTrue;
+            	break;
+
             /* Hard-reset the FX3 firmware (return to bootloader mode) */
             case ADI_HARD_RESET:
             	CyU3PUsbAckSetup();
@@ -679,6 +685,32 @@ void WatchDogTimerCb(uint32_t nParam)
 	else
 		FX3State.WatchDogTicks++;
 	GCTLAON->watchdog_timer0 = FX3State.WatchDogTicks;
+}
+
+/**
+  * @brief Gets the firmware build date, followed by the build time
+  *
+  * @param outBuf Char array which build date/time is placed into
+  *
+  * @return void
+ **/
+void AdiGetBuildDate(uint8_t * outBuf)
+{
+	uint8_t date[11] = __DATE__;
+	uint8_t time[8] = __TIME__;
+	uint32_t index = 0;
+	/* Assign date */
+	for(index = 0; index < 11; index++)
+	{
+		outBuf[index] = date[index];
+	}
+	outBuf[11] = ' ';
+	/* Assign time */
+	for(index = 12; index < 20; index++)
+	{
+		outBuf[index] = time[index - 12];
+	}
+	outBuf[20] = '\0';
 }
 
 /**
