@@ -553,6 +553,7 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint16_t bytesRead;
+	uint16_t triggerLength;
 
 	/* Disable VBUS ISR */
 	CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
@@ -582,24 +583,24 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	}
 
 	/* Get the number of buffers, trigger word, and transfer length from the control endpoint */
-	CyU3PUsbGetEP0Data(8, USBBuffer, &bytesRead);
+	CyU3PUsbGetEP0Data(StreamThreadState.TransferWordLength, USBBuffer, &bytesRead);
 	if(status != CY_U3P_SUCCESS)
 	{
 		CyU3PDebugPrint (4, "Failed to get EP0 data!, error code = 0x%x\r\n", status);
 		AdiAppErrorHandler(status);
 	}
+
+	/* Parse number of buffers */
 	StreamThreadState.NumBuffers = USBBuffer[0];
-	StreamThreadState.NumBuffers += (USBBuffer[1] << 8);
-	StreamThreadState.NumBuffers += (USBBuffer[2] << 16);
-	StreamThreadState.NumBuffers += (USBBuffer[3] << 24);
+	StreamThreadState.NumBuffers |= (USBBuffer[1] << 8);
+	StreamThreadState.NumBuffers |= (USBBuffer[2] << 16);
+	StreamThreadState.NumBuffers |= (USBBuffer[3] << 24);
 
-	/* Get number of words to capture per transfer (minus the trigger word) */
-	StreamThreadState.TransferWordLength = USBBuffer[6];
-	StreamThreadState.TransferWordLength += (USBBuffer[7] << 8);
-
-	/* Calculate the total number of bytes to transfer and add the trigger word */
-	/* We're going to overwrite the first two bytes with the trigger word, so make the burst length 2 bytes larger */
-	StreamThreadState.TransferByteLength = (StreamThreadState.TransferWordLength * 2) + 2;
+	/* Parse transfer byte length */
+	StreamThreadState.TransferByteLength = USBBuffer[4];
+	StreamThreadState.TransferByteLength |= (USBBuffer[5] << 8);
+	StreamThreadState.TransferByteLength |= (USBBuffer[6] << 16);
+	StreamThreadState.TransferByteLength |= (USBBuffer[7] << 24);
 
 	/* Set regList memory to correct length plus trigger word */
 	StreamThreadState.RegList = CyU3PDmaBufferAlloc(sizeof(uint8_t) * StreamThreadState.TransferByteLength);
@@ -607,9 +608,14 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	/* Clear (zero) contents of regList memory. Burst transfers are DNC, so we're sending zeros */
 	CyU3PMemSet(StreamThreadState.RegList, 0, sizeof(uint8_t) * StreamThreadState.TransferByteLength);
 
+	/* Calculate trigger length (USB transfer length - header size) */
+	triggerLength = bytesRead - 8;
+	CyU3PDebugPrint (4, "transferByteLength:  %d\r\n", triggerLength);
 	/* Append burst trigger word to the first two bytes of regList */
-	StreamThreadState.RegList[0] = USBBuffer[4];
-	StreamThreadState.RegList[1] = USBBuffer[5];
+	for(int i = 0; i< triggerLength; i++)
+	{
+		StreamThreadState.RegList[i] = USBBuffer[i + 8];
+	}
 
 	/* Calculate the required memory block (in bytes) to be a multiple of 16 */
 	uint16_t remainder = StreamThreadState.TransferByteLength % 16;
@@ -628,7 +634,6 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	 CyU3PDebugPrint (4, "burstTriggerLower:  %d\r\n", StreamThreadState.RegList[1]);
 	 CyU3PDebugPrint (4, "roundedTransferLength:  %d\r\n", StreamThreadState.RoundedByteTransferLength);
 	 CyU3PDebugPrint (4, "transferByteLength:  %d\r\n", StreamThreadState.TransferByteLength);
-	 CyU3PDebugPrint (4, "transferWordLength:  %d\r\n", StreamThreadState.TransferWordLength);
 	 CyU3PDebugPrint (4, "numBuffers:  %d\r\n", StreamThreadState.NumBuffers);
 #endif
 

@@ -461,6 +461,8 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	switch(wIndex)
             	{
             	case ADI_STREAM_START_CMD:
+            		/* Set USB transfer length */
+            		StreamThreadState.TransferWordLength = wLength;
             		/* Set event handler */
             		status = CyU3PEventSet(&EventHandler, ADI_BURST_STREAM_START, CYU3P_EVENT_OR);
             		break;
