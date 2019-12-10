@@ -13,7 +13,7 @@
   * @date		8/1/2019
   * @author		A. Nolan (alex.nolan@analog.com)
   * @author 	J. Chong (juan.chong@analog.com)
-  * @version 	2.3.0-pub
+  * @version 	2.3.1-pub
   * @brief		Entry point and setup functions for the Analog Devices iSensor FX3 Demonstration Platform firmware.
  **/
 
@@ -102,7 +102,7 @@ CyU3PDmaBuffer_t SpiDmaBuffer;
  */
 
 /** Constant firmware ID string. Manually updated when building new firmware. */
-const uint8_t FirmwareID[32] __attribute__((aligned(32))) = "ADI FX3 REV 2.3.0-PUB\0";
+const uint8_t FirmwareID[32] __attribute__((aligned(32))) = "ADI FX3 REV 2.3.1-PUB\0";
 
 /** FX3 unique serial number. Set at runtime */
 char serial_number[] __attribute__((aligned(32))) = {'0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00};

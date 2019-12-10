@@ -610,7 +610,7 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 
 	/* Calculate trigger length (USB transfer length - header size) */
 	triggerLength = bytesRead - 8;
-	CyU3PDebugPrint (4, "transferByteLength:  %d\r\n", triggerLength);
+
 	/* Append burst trigger word to the first two bytes of regList */
 	for(int i = 0; i< triggerLength; i++)
 	{
