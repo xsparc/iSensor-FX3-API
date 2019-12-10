@@ -105,10 +105,10 @@ Partial Class FX3Connection
     ''' Function to start a burst read using the BurstStreamManager
     ''' </summary>
     ''' <param name="numBuffers">The number of buffers to read in the stream operation</param>
-    Private Sub StartBurstStream(numBuffers As UInteger)
+    Private Sub StartBurstStream(numBuffers As UInteger, burstTrigger As IEnumerable(Of Byte))
 
         'Buffer to store command data
-        Dim buf(8) As Byte
+        Dim buf(burstTrigger.Count + 7) As Byte
 
         'Send number of buffers to read
         buf(0) = numBuffers And &HFF
@@ -116,13 +116,16 @@ Partial Class FX3Connection
         buf(2) = (numBuffers And &HFF0000) >> 16
         buf(3) = (numBuffers And &HFF000000) >> 24
 
-        'Send word to trigger burst
-        buf(4) = (m_TriggerReg.Address And &HFF)
-        buf(5) = (m_TriggerReg.Address And &HFF00) >> 8
+        'Send number of words to capture in a single burst
+        buf(4) = (BurstByteCount And &HFF)
+        buf(5) = (BurstByteCount And &HFF00) >> 8
+        buf(6) = (BurstByteCount And &HFF0000) >> 16
+        buf(7) = (BurstByteCount And &HFF000000) >> 24
 
-        'Send number of words to capture
-        buf(6) = (m_WordCount And &HFF)
-        buf(7) = (m_WordCount And &HFF00) >> 8
+        'Send burst trigger
+        For i As Integer = 0 To burstTrigger.Count() - 1
+            buf(i + 8) = burstTrigger(i)
+        Next
 
         'Reinitialize the thread safe queue
         m_StreamData = New ConcurrentQueue(Of UShort())
@@ -132,7 +135,7 @@ Partial Class FX3Connection
         m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_START_CMD 'Start stream
 
         'Send start stream command to the DUT
-        If Not XferControlData(buf, 8, 2000) Then
+        If Not XferControlData(buf, buf.Length, 2000) Then
             Throw New FX3CommunicationException("ERROR: Timeout occurred while starting burst stream")
         End If
 
@@ -243,7 +246,7 @@ Partial Class FX3Connection
         End If
 
         'Determine the frame length (in bytes) based on configured word count plus trigger word
-        frameLength = (m_WordCount * 2) + 2
+        frameLength = BurstByteCount
 
         'Wait for previous stream thread to exit, if any
         m_StreamThreadRunning = False
