@@ -150,10 +150,7 @@ Partial Class FX3Connection
                 StartGenericStream(addrData, numCaptures, numBuffers)
             Else
                 'Burst stream manager implementation
-                Dim burstTrigger As New List(Of Byte)
-                burstTrigger.Add(TriggerReg.Address And &HFF)
-                burstTrigger.Add((TriggerReg.Address And &HFF00) >> 8)
-                StartBurstStream(numBuffers, burstTrigger)
+                StartBurstStream(numBuffers, BurstMOSIData)
             End If
         End If
 

@@ -105,7 +105,7 @@ Partial Class FX3Connection
     ''' Function to start a burst read using the BurstStreamManager
     ''' </summary>
     ''' <param name="numBuffers">The number of buffers to read in the stream operation</param>
-    Private Sub StartBurstStream(numBuffers As UInteger, burstTrigger As IEnumerable(Of Byte))
+    Public Sub StartBurstStream(numBuffers As UInteger, burstTrigger As IEnumerable(Of Byte))
 
         'Buffer to store command data
         Dim buf(burstTrigger.Count + 7) As Byte

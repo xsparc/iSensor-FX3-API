@@ -463,6 +463,13 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  <returns></returns>
  <remarks></remarks>
 </member>
+<member name="P:FX3Api.FX3Connection.BurstMOSIData">
+ <summary>
+ Data to transmit on the MOSI line during a burst read operation. Is overwriten if
+ you set the trigger reg, since trigger reg is given priority.
+ </summary>
+ <returns></returns>
+</member>
 <member name="M:FX3Api.FX3Connection.ClearBurstMode">
  <summary>
  Takes interface out of burst mode by setting BurstMode to zero.

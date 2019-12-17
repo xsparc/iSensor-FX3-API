@@ -102,9 +102,29 @@ Partial Class FX3Connection
         End Get
         Set(value As RegClass)
             m_TriggerReg = value
+            'Set up the MOSI data
+            Dim burstMosi As List(Of Byte) = New List(Of Byte)
+            burstMosi.Add(TriggerReg.Address And &HFF)
+            burstMosi.Add((TriggerReg.Address And &HFF00) >> 8)
+            m_burstMOSIData = burstMosi.ToArray()
         End Set
     End Property
     Private m_TriggerReg As RegClass
+
+    ''' <summary>
+    ''' Data to transmit on the MOSI line during a burst read operation. Is overwriten if
+    ''' you set the trigger reg, since trigger reg is given priority.
+    ''' </summary>
+    ''' <returns></returns>
+    Public Property BurstMOSIData As Byte()
+        Get
+            Return m_burstMOSIData
+        End Get
+        Set(value As Byte())
+            m_burstMOSIData = value
+        End Set
+    End Property
+    Private m_burstMOSIData As Byte()
 
     ''' <summary>
     ''' Takes interface out of burst mode by setting BurstMode to zero.
