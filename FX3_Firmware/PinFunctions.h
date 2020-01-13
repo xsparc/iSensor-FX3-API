@@ -78,20 +78,26 @@ CyU3PReturnStatus_t AdiMeasurePinDelay(uint16_t transferLength);
 /** General purpose FX3 GPIO 4. This GPIO shares a complex GPIO block with DIO1. Mapped to GPIO 12 */
 #define FX3_PIN_GPIO4							(0x12)
 
-/** Control pins for power management circuit */
+/** Control pins for power management circuit. 3.3V enable pin */
 #define ADI_3_3V_EN								(33)
+
+/** Control pins for power management circuit. 5V enable pin */
 #define ADI_5V_EN 								(34)
 
 /*
  * ADI GPIO Event Handler Definitions
  */
 
+/** Event flag indicating a GPIO interrupt has triggered on DIO1 */
 #define ADI_DIO1_INTERRUPT_FLAG					(1 << 0)
+
+/** Event flag indicating a GPIO interrupt has triggered on DIO2 */
 #define ADI_DIO2_INTERRUPT_FLAG					(1 << 1)
+
+/** Event flag indicating a GPIO interrupt has triggered on DIO3 */
 #define ADI_DIO3_INTERRUPT_FLAG					(1 << 2)
+
+/** Event flag indicating a GPIO interrupt has triggered on DIO4 */
 #define ADI_DIO4_INTERRUPT_FLAG					(1 << 3)
-#define ADI_DIO5_INTERRUPT_FLAG					(1 << 4)
-#define ADI_DIO6_INTERRUPT_FLAG					(1 << 5)
-#define ADI_DIO7_INTERRUPT_FLAG					(1 << 6)
 
 #endif
