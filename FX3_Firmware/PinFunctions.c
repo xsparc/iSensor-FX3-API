@@ -27,6 +27,167 @@ extern CyU3PDmaChannel ChannelToPC;
 extern CyU3PEvent GpioHandler;
 
 /**
+  * @brief Measures the delay from a trigger pin edge (sync) to a busy pin edge.
+  *
+  * @param transferLength The amount of data (in bytes) to read from the USB buffer
+  *
+  * @return A status code indicating the success of the pin delay measure operation
+  *
+  * This function is approx. microsecond accurate. It can be used for timing measurements which
+  * require a high degree of accuracy since it avoids the overhead of having a USB transaction (200us)
+  * between the initial pin drive condition and the pulse measurement. This function is primarily
+  * intended to be used for measuring the latency between a sync edge and data ready toggle on the
+  * ADIS IMU series of products.
+ **/
+CyU3PReturnStatus_t AdiMeasurePinDelay(uint16_t transferLength)
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+	uint16_t *bytesRead = 0;
+	uint16_t busyPin, triggerPin;
+	CyBool_t busyInitialValue, busyCurrentValue, triggerDrivePolarity, validPin, exitCondition;
+	uint32_t currentTime, lastTime, timeout, rollOverCount;
+	CyU3PGpioSimpleConfig_t gpioConfig;
+
+	/* Read config data into USBBuffer */
+	status = CyU3PUsbGetEP0Data(transferLength, USBBuffer, bytesRead);
+
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Error! Failed to read data from control endpoint.\r\n");
+		return CY_U3P_ERROR_INVALID_SEQUENCE;
+	}
+
+	/* Parse config */
+	triggerPin = USBBuffer[0];
+	triggerPin = triggerPin + (USBBuffer[1] << 8);
+	triggerDrivePolarity = (CyBool_t) USBBuffer[2];
+	busyPin = USBBuffer[3];
+	busyPin = busyPin + (USBBuffer[4] << 8);
+	timeout = USBBuffer[5];
+	timeout = timeout + (USBBuffer[6] << 8);
+	timeout = timeout + (USBBuffer[7] << 16);
+	timeout = timeout + (USBBuffer[8] << 24);
+
+	/* Convert ms to timer ticks */
+	timeout = timeout * MS_TO_TICKS_MULT;
+
+	/* Check that busy pin specified is configured as input */
+	status = CyU3PGpioSimpleGetValue(busyPin, &busyInitialValue);
+	if(status != CY_U3P_SUCCESS)
+	{
+		/* If initial pin read fails try and configure as input */
+		gpioConfig.outValue = CyFalse;
+		gpioConfig.inputEn = CyTrue;
+		gpioConfig.driveLowEn = CyFalse;
+		gpioConfig.driveHighEn = CyFalse;
+		gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+		status = CyU3PGpioSetSimpleConfig(busyPin, &gpioConfig);
+
+		/* get the pin value again after configuring */
+		status = CyU3PGpioSimpleGetValue(busyPin, &busyInitialValue);
+
+		/* If pin setup not successful skip wait operation and return -1 */
+		if(status != CY_U3P_SUCCESS)
+		{
+			validPin = CyFalse;
+		}
+	}
+
+	/* Drive trigger pin to drive polarity */
+	gpioConfig.outValue = triggerDrivePolarity;
+	gpioConfig.inputEn = CyFalse;
+	gpioConfig.driveLowEn = CyTrue;
+	gpioConfig.driveHighEn = CyTrue;
+	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+	status = CyU3PGpioSetSimpleConfig(triggerPin, &gpioConfig);
+
+	/* Reset the pin timer register to 0 */
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+	/* Disable interrupts on the timer pin */
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= ~(CY_U3P_LPP_GPIO_INTRMODE_MASK);
+	/* Set the pin timer period to 0xFFFFFFFF; */
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = 0xFFFFFFFF;
+
+	lastTime = 0;
+	currentTime = 0;
+	rollOverCount = 0;
+	exitCondition = CyFalse;
+
+	/* Begin wait operation (for edge transition on busy pin)*/
+	if(validPin)
+	{
+		while(!exitCondition)
+		{
+			/* Store previous time */
+			lastTime = currentTime;
+
+			/* Set the pin config for sample now mode */
+			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (FX3State.TimerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
+			/* wait for sample to finish */
+			while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
+			/* read timer value */
+			currentTime = GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
+
+			/* Read the pin value */
+			busyCurrentValue = ((GPIO->lpp_gpio_simple[busyPin] & CY_U3P_LPP_GPIO_IN_VALUE) >> 1);
+
+			/* Check if rollover occurred */
+			if(currentTime < lastTime)
+			{
+				rollOverCount++;
+			}
+
+			/* update the exit condition */
+			exitCondition = (busyCurrentValue != busyInitialValue);
+			if(timeout)
+			{
+				exitCondition |= (currentTime >= timeout);
+			}
+		}
+	}
+
+	/*Restore trigger pin GPIO value*/
+	if(triggerDrivePolarity)
+		CyU3PGpioSetValue(triggerPin, CyFalse);
+	else
+		CyU3PGpioSetValue(triggerPin, CyTrue);
+
+	/*Add 0.5us (calibrated using DSLogic Pro)*/
+	if(currentTime < (0xFFFFFFFF - 5))
+	{
+		currentTime = currentTime + 5;
+	}
+	else
+	{
+		currentTime = 0;
+		rollOverCount++;
+	}
+
+	/* Return pulse wait data over ChannelToPC */
+	BulkBuffer[0] = status & 0xFF;
+	BulkBuffer[1] = (status & 0xFF00) >> 8;
+	BulkBuffer[2] = (status & 0xFF0000) >> 16;
+	BulkBuffer[3] = (status & 0xFF000000) >> 24;
+	BulkBuffer[4] = currentTime & 0xFF;
+	BulkBuffer[5] = (currentTime & 0xFF00) >> 8;
+	BulkBuffer[6] = (currentTime & 0xFF0000) >> 16;
+	BulkBuffer[7] = (currentTime & 0xFF000000) >> 24;
+	BulkBuffer[8] = rollOverCount & 0xFF;
+	BulkBuffer[9] = (rollOverCount & 0xFF00) >> 8;
+	BulkBuffer[10] = (rollOverCount & 0xFF0000) >> 16;
+	BulkBuffer[11] = (rollOverCount & 0xFF000000) >> 24;
+
+	ManualDMABuffer.buffer = BulkBuffer;
+	ManualDMABuffer.size = sizeof(BulkBuffer);
+	ManualDMABuffer.count = 12;
+
+	/* Send the data to PC */
+	CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
+
+	return status;
+}
+
+/**
   * @brief Sets a user configurable trigger condition and then measures the following GPIO pulse.
   *
   * @param transferLength The amount of data (in bytes) to read from the USB buffer
@@ -97,29 +258,15 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 		/* parse the trigger specific data and trigger */
 		if(SpiTriggerMode)
 		{
-			uint16_t RegAddr, RegValue;
-			uint8_t spiBuf[2];
+			/* Get the SPI trigger word count */
+			uint16_t SpiTriggerWordCount = USBBuffer[8];
+			SpiTriggerWordCount += (USBBuffer[9] << 8);
 
-			/* parse register address */
-			RegAddr = USBBuffer[8];
-			RegAddr = RegAddr + (USBBuffer[9] << 8);
+			/* Set the SPI buffer */
+			uint8_t * spiBuf = USBBuffer + 10;
 
-			/* parse register write value */
-			RegValue = USBBuffer[10];
-			RegValue = RegValue + (USBBuffer[11] << 8);
-
-			/* transmit addr and least significant byte of SpiValue */
-			spiBuf[0] = RegAddr | 0x80;
-			spiBuf[1] = RegValue & 0xFF;
-			CyU3PSpiTransmitWords(spiBuf, 2);
-
-			/* wait for stall */
-			AdiSleepForMicroSeconds(FX3State.StallTime);
-
-			/* transmit (addr + 1) and most significant byte of SpiValue */
-			spiBuf[0] = (RegAddr + 1) | 0x80;
-			spiBuf[1] = (RegValue & 0xFF00) >> 8;
-			CyU3PSpiTransmitWords(spiBuf, 2);
+			/* Transmit the SPI words */
+			CyU3PSpiTransmitWords(spiBuf, SpiTriggerWordCount);
 		}
 		else
 		{

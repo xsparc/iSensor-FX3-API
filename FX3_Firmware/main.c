@@ -13,7 +13,7 @@
   * @date		8/1/2019
   * @author		A. Nolan (alex.nolan@analog.com)
   * @author 	J. Chong (juan.chong@analog.com)
-  * @version 	2.3.1-pub
+  * @version 	2.4.0-pub
   * @brief		Entry point and setup functions for the Analog Devices iSensor FX3 Demonstration Platform firmware.
  **/
 
@@ -102,7 +102,7 @@ CyU3PDmaBuffer_t SpiDmaBuffer;
  */
 
 /** Constant firmware ID string. Manually updated when building new firmware. */
-const uint8_t FirmwareID[32] __attribute__((aligned(32))) = "ADI FX3 REV 2.3.1-PUB\0";
+const uint8_t FirmwareID[32] __attribute__((aligned(32))) = "ADI FX3 REV 2.4.0-PUB\0";
 
 /** FX3 unique serial number. Set at runtime */
 char serial_number[] __attribute__((aligned(32))) = {'0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00};
@@ -368,6 +368,15 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	}
             	break;
 
+            /* Measure pin delay */
+            case ADI_PIN_DELAY_MEASURE:
+            	status = AdiMeasurePinDelay(wLength);
+            	if (status != CY_U3P_SUCCESS)
+            	{
+            		isHandled = CyFalse;
+            	}
+            	break;
+
             /* Read the current SPI config */
             case ADI_READ_SPI_CONFIG:
             	status = AdiGetSpiSettings();
@@ -384,11 +393,6 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	{
             		isHandled = CyFalse;
             	}
-            	break;
-
-            /* Command to do nothing. Might remove, this isn't really used at all */
-            case ADI_NULL_COMMAND:
-            	isHandled = CyTrue;
             	break;
 
             /* Vendor command to set the DUT supply voltage */
@@ -585,6 +589,10 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	CyU3PUsbSendEP0Data (wLength, USBBuffer);
             	break;
 
+			/* Command to do nothing. Might remove, this isn't really used at all */
+			case ADI_NULL_COMMAND:
+				isHandled = CyTrue;
+				break;
 
             default:
                 /* This is an unknown request */

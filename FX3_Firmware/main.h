@@ -235,6 +235,9 @@ typedef struct StreamState
 /** Return the pulse frequency (data ready) on a user-specified pin */
 #define ADI_MEASURE_DR	 						(0xC8)
 
+/** Measure the propagation time from a sync edge tto data ready edge */
+#define ADI_PIN_DELAY_MEASURE					(0xCF)
+
 /** Start/stop a real-time stream */
 #define ADI_STREAM_REALTIME						(0xD0)
 

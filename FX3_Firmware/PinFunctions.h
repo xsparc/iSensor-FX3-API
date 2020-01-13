@@ -45,6 +45,7 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength);
 CyU3PReturnStatus_t AdiSetDutSupply(DutVoltage SupplyMode);
 CyU3PReturnStatus_t AdiConfigurePinInterrupt(uint16_t pin, CyBool_t polarity);
 uint32_t AdiReadTimerRegValue();
+CyU3PReturnStatus_t AdiMeasurePinDelay(uint16_t transferLength);
 
 /*
  * GPIO Pin mapping definitions
