@@ -1,12 +1,17 @@
 var searchData=
 [
   ['adi_5f3_5f3v_5fen',['ADI_3_3V_EN',['../_pin_functions_8h.html#a9847b1f106094a417ad607b8a4f1c9e8',1,'PinFunctions.h']]],
+  ['adi_5f5v_5fen',['ADI_5V_EN',['../_pin_functions_8h.html#ac9c3d116e268dbddffbe012e61a45db2',1,'PinFunctions.h']]],
   ['adi_5fbitbang_5fspi',['ADI_BITBANG_SPI',['../main_8h.html#ae2cae78d6ffaeb70b824cdcf4851eee4',1,'main.h']]],
   ['adi_5fburst_5fstream_5fdone',['ADI_BURST_STREAM_DONE',['../_app_thread_8h.html#aba5c1bf8a07cc4510973f5b96faa942d',1,'AppThread.h']]],
   ['adi_5fburst_5fstream_5fenable',['ADI_BURST_STREAM_ENABLE',['../_app_thread_8h.html#a5f40211711dd1ce21d407ac5ea72ca02',1,'AppThread.h']]],
   ['adi_5fburst_5fstream_5fstart',['ADI_BURST_STREAM_START',['../_app_thread_8h.html#a41565af9ae5da9913e1be17cd8533b8d',1,'AppThread.h']]],
   ['adi_5fburst_5fstream_5fstop',['ADI_BURST_STREAM_STOP',['../_app_thread_8h.html#a840de8d90fc5b9de7ce8785e0aca295e',1,'AppThread.h']]],
   ['adi_5fbusy_5fmeasure',['ADI_BUSY_MEASURE',['../main_8h.html#aaa8716486c7b369e67094ad0b88f3007',1,'main.h']]],
+  ['adi_5fdio1_5finterrupt_5fflag',['ADI_DIO1_INTERRUPT_FLAG',['../_pin_functions_8h.html#aa6623739db18d9bb2dee91102002687e',1,'PinFunctions.h']]],
+  ['adi_5fdio2_5finterrupt_5fflag',['ADI_DIO2_INTERRUPT_FLAG',['../_pin_functions_8h.html#a5b2321dce1d306560877d54bda1c19a0',1,'PinFunctions.h']]],
+  ['adi_5fdio3_5finterrupt_5fflag',['ADI_DIO3_INTERRUPT_FLAG',['../_pin_functions_8h.html#aad0da2ba7487746561f15d2383c9083d',1,'PinFunctions.h']]],
+  ['adi_5fdio4_5finterrupt_5fflag',['ADI_DIO4_INTERRUPT_FLAG',['../_pin_functions_8h.html#ae6dbbb69850e7bd4622536969ec3b336',1,'PinFunctions.h']]],
   ['adi_5ffirmware_5fid_5fcheck',['ADI_FIRMWARE_ID_CHECK',['../main_8h.html#a386c5f7f4999ca865cf45f1fa983cbcc',1,'main.h']]],
   ['adi_5ffrom_5fpc_5fendpoint',['ADI_FROM_PC_ENDPOINT',['../main_8h.html#afcccb969576e63dcc7a9c705fd60eff0',1,'main.h']]],
   ['adi_5fgeneric_5fstall_5foffset',['ADI_GENERIC_STALL_OFFSET',['../main_8h.html#a5b6136776fe6c8498a8a7da63bdb8db0',1,'main.h']]],
