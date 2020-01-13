@@ -16,7 +16,7 @@ Partial Class FX3Connection
     ''' </summary>
     ''' <param name="pin">The FX3PinObject for the pin to drive</param>
     ''' <param name="polarity">The level to drive the pin to. 1 - high, 0 - low</param>
-    ''' <param name="pperiod">The time to drive the pin for, in ms</param>
+    ''' <param name="pperiod">The time to drive the pin for, in ms. Minimum of 3us.</param>
     ''' <param name="mode">Not implemented</param>
     Public Sub PulseDrive(pin As IPinObject, polarity As UInteger, pperiod As Double, mode As UInteger) Implements IPinFcns.PulseDrive
 
@@ -32,6 +32,12 @@ Partial Class FX3Connection
         If isPWMPin(pin) Then
             Throw New FX3ConfigurationException("ERROR: The selected pin is currently configured to drive a PWM signal. Please call StopPWM(pin) before interfacing with the pin further")
         End If
+
+        'compensate for 2.8us period mis-alignment in the firmware
+        If pperiod < 0.003 Then
+            Throw New FX3ConfigurationException("ERROR: Invalid PulseDrive period. Minimum possible drive time is 3 microseconds")
+        End If
+        pperiod = pperiod - 0.0028
 
         'Find ticks and rollover
         ticksDouble = (pperiod / 1000) * m_FX3SPIConfig.SecondsToTimerTicks
