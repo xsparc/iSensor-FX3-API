@@ -20,6 +20,12 @@
  * where <install> is the Cypress software installation root directory path.
  */
 
+/**
+  * @file		gctlaon_regs.h
+  * @author		Cypress Semiconductor
+  * @brief		Global Control Always-On registers for the EZ-USB FX3 Device.
+ **/
+
 #ifndef _INCLUDED_GCTLAON_REGS_H_
 #define _INCLUDED_GCTLAON_REGS_H_
 

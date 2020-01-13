@@ -1,5 +1,5 @@
 /**
-  * Copyright (c) Analog Devices Inc, 2018 - 2019
+  * Copyright (c) Analog Devices Inc, 2018 - 2020
   * All Rights Reserved.
   * 
   * THIS SOFTWARE UTILIZES LIBRARIES DEVELOPED
