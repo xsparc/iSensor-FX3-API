@@ -21,6 +21,7 @@ var searchData=
   ['adi_5fmeasure_5fdr',['ADI_MEASURE_DR',['../main_8h.html#a20e972be6f5404730e99f895caa7f4cb',1,'main.h']]],
   ['adi_5fmicroseconds_5fsleep_5foffset',['ADI_MICROSECONDS_SLEEP_OFFSET',['../main_8h.html#aecdd1268af31c6b2ec5340f6ae8ca6da',1,'main.h']]],
   ['adi_5fnull_5fcommand',['ADI_NULL_COMMAND',['../main_8h.html#adf3f0666dbbe314c115d9025dced7cf6',1,'main.h']]],
+  ['adi_5fpin_5fdelay_5fmeasure',['ADI_PIN_DELAY_MEASURE',['../main_8h.html#adc7e56790c4f87ee72baf266e9666170',1,'main.h']]],
   ['adi_5fpin_5fdio1',['ADI_PIN_DIO1',['../_pin_functions_8h.html#a2ab9984d811852fc981d8d948d386878',1,'PinFunctions.h']]],
   ['adi_5fpin_5fdio2',['ADI_PIN_DIO2',['../_pin_functions_8h.html#aac786347b5739ab0b238fe9f3535b651',1,'PinFunctions.h']]],
   ['adi_5fpin_5fdio3',['ADI_PIN_DIO3',['../_pin_functions_8h.html#a0d69667dcaebc8379c3bc790140cdfc1',1,'PinFunctions.h']]],

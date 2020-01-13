@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.3.0-pub</span>
+   &#160;<span id="projectnumber">v2.4.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -82,6 +82,9 @@ $(function() {
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a0a74bae6a0d231d72f6c4f88f31ed982"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8c.html#a0a74bae6a0d231d72f6c4f88f31ed982">AdiMeasurePinDelay</a> (uint16_t transferLength)</td></tr>
+<tr class="memdesc:a0a74bae6a0d231d72f6c4f88f31ed982"><td class="mdescLeft">&#160;</td><td class="mdescRight">Measures the delay from a trigger pin edge (sync) to a busy pin edge.  <a href="#a0a74bae6a0d231d72f6c4f88f31ed982">More...</a><br /></td></tr>
+<tr class="separator:a0a74bae6a0d231d72f6c4f88f31ed982"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2b44440abc8a978f29eb87e5fc609dda"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8c.html#a2b44440abc8a978f29eb87e5fc609dda">AdiMeasureBusyPulse</a> (uint16_t transferLength)</td></tr>
 <tr class="memdesc:a2b44440abc8a978f29eb87e5fc609dda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets a user configurable trigger condition and then measures the following GPIO pulse.  <a href="#a2b44440abc8a978f29eb87e5fc609dda">More...</a><br /></td></tr>
 <tr class="separator:a2b44440abc8a978f29eb87e5fc609dda"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -243,6 +246,34 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the measure pulse operation</dd></dl>
 <p>This function is approx. microsecond accurate. It can be used for timing measurements which require a high degree of accuracy since it avoids the overhead of having a USB transaction (200us) between the initial trigger condition and the pulse measurement. This function is primarily intended for use with the ADcmXL series of condition monitoring modules. </p>
+
+</div>
+</div>
+<a id="a0a74bae6a0d231d72f6c4f88f31ed982"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0a74bae6a0d231d72f6c4f88f31ed982">&#9670;&nbsp;</a></span>AdiMeasurePinDelay()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">CyU3PReturnStatus_t AdiMeasurePinDelay </td>
+          <td>(</td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>transferLength</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Measures the delay from a trigger pin edge (sync) to a busy pin edge. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">transferLength</td><td>The amount of data (in bytes) to read from the USB buffer</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the pin delay measure operation</dd></dl>
+<p>This function is approx. microsecond accurate. It can be used for timing measurements which require a high degree of accuracy since it avoids the overhead of having a USB transaction (200us) between the initial pin drive condition and the pulse measurement. This function is primarily intended to be used for measuring the latency between a sync edge and data ready toggle on the ADIS IMU series of products. </p>
 
 </div>
 </div>
