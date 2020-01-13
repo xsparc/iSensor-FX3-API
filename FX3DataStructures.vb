@@ -113,6 +113,9 @@ Public Enum USBCommands
     'Reset the SPI controller
     ADI_RESET_SPI = &HCE
 
+    'pin delay measure
+    ADI_PIN_DELAY_MEASURE = &HCF
+
     'Start/stop a real-time stream
     ADI_STREAM_REALTIME = &HD0
 
