@@ -450,6 +450,7 @@
   <HelpKINode Title="IsLSBFirst field" Url="html/89da7013-d887-6e84-3a09-fbfc42385b72.htm" />
   <HelpKINode Title="IsLSBFirst property" Url="html/f37c14dd-441b-f398-e41c-1f80b6033194.htm" />
   <HelpKINode Title="isPWMPin method" Url="html/fe7d19f7-40da-11f1-de8d-42c07116628f.htm" />
+  <HelpKINode Title="LegacyIMU enumeration member" Url="html/a664dc00-67b0-e1cf-2c27-cb6c9cf0cba5.htm" />
   <HelpKINode Title="MeasureBusyPulse method" Url="html/b416fddf-98f9-01ef-1d88-f71bce9cf5e2.htm" />
   <HelpKINode Title="MeasurePinDelay method" Url="html/a3e67348-5853-6f1c-97d8-3e79b9328142.htm" />
   <HelpKINode Title="MeasurePinFreq method" Url="html/3aa1bf05-a720-4f7e-df82-790e8b584f4f.htm" />
