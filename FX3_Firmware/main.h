@@ -86,7 +86,10 @@ typedef enum PartTye
     ADcmXL3021,
 
     /** 3 Other DUTs (IMU) */
-    Other
+    IMU,
+
+    /** 4 Legacy IMU family (ADIS16448, etc) */
+    LegacyIMU
 
 }PartType;
 

@@ -809,7 +809,8 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 			/* 32 word + 8 word padding + 4 word status/counter/etc */
 			StreamThreadState.BytesPerFrame = 88;
 			break;
-		case Other:
+		case IMU:
+		case LegacyIMU:
 			/* Falls into default case */
 		default:
 			/* Default to  3021 - shouldn't reach here during normal operation */
