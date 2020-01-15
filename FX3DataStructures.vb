@@ -188,13 +188,14 @@ Public Enum SpiLagLeadTime
 End Enum
 
 ''' <summary>
-''' Enum of the possible DUT types for the ADcmXLx021
+''' Enum of the possible iSensors DUT types
 ''' </summary>
 Public Enum DUTType
     ADcmXL1021 = 0
     ADcmXL2021
     ADcmXL3021
     IMU
+    LegacyIMU
 End Enum
 
 ''' <summary>
