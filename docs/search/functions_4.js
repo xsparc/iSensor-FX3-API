@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['main',['main',['../main_8c.html#a840291bc02cba5474a4cb46a9b9566fe',1,'main.c']]]
+  ['getfx3boardtype',['GetFX3BoardType',['../main_8c.html#a7774dffb535ccfdcea7557e9adcedec6',1,'GetFX3BoardType():&#160;main.c'],['../main_8h.html#a7774dffb535ccfdcea7557e9adcedec6',1,'GetFX3BoardType():&#160;main.c']]]
 ];

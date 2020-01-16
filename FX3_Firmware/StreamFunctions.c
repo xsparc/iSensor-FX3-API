@@ -22,12 +22,16 @@
 extern CyU3PEvent EventHandler;
 extern CyU3PDmaChannel StreamingChannel;
 extern CyU3PDmaChannel MemoryToSPI;
-extern uint8_t USBBuffer[];
-extern uint8_t BulkBuffer[];
 extern CyU3PDmaBuffer_t SpiDmaBuffer;
 extern BoardState FX3State;
 extern volatile CyBool_t KillStreamEarly;
 extern StreamState StreamThreadState;
+
+/** Global USB Buffer (Control Endpoint) */
+extern uint8_t USBBuffer[4096];
+
+/** Global USB Buffer (Bulk Endpoints) */
+extern uint8_t BulkBuffer[12288];
 
 /**
   * @brief This function sets a flag to notify the streaming thread that the user requested to cancel streaming.

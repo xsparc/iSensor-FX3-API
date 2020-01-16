@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['usbbuffer',['USBBuffer',['../main_8c.html#aae2dfaf6e49d51d401e281fbdf83d874',1,'main.c']]]
+  ['serial_5fnumber',['serial_number',['../main_8c.html#af944fb7c8896fdcd7f0d7d00f06fb329',1,'main.c']]]
 ];

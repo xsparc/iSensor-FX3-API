@@ -20,6 +20,8 @@
 
 /* Tell the compiler where to find the needed globals */
 extern CyU3PEvent EventHandler;
+
+/** Global char buffer to store unique FX3 serial number */
 extern char serial_number[];
 
 /**

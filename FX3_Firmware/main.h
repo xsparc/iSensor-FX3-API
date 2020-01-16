@@ -325,7 +325,9 @@ typedef struct StreamState
 
 /** Complex GPIO assigned as a timer input */
 #define ADI_TIMER_PIN							(0x8)
-#define ADI_TIMER_PIN_INDEX						(0x0) //ADI_TIMER_PIN % 8
+
+/** COmplex GPIO index for the timer input (ADI_TIMER_PIN % 8) */
+#define ADI_TIMER_PIN_INDEX						(0x0)
 
 /*
  * Endpoint Related Defines
@@ -358,16 +360,6 @@ typedef struct StreamState
 
 /** FX3 GPIO weak pull up control register (upper 32 bits) */
 #define GCTL_WPU_CFG_UPPR						 (*(uvint32_t *)(0xE0051020 + 0x4))
-
-/*
- * Error handling location defines
- */
-#define ERROR_GENERAL_INIT						1
-#define ERROR_CACHE_CONTROL						2
-#define ERROR_PIN_INIT							3
-#define ERROR_GPIO_MATRIX						4
-#define ERROR_THREAD_START						5
-#define ERROR_OTHER								0
 
 /*
  * USB Descriptor buffers

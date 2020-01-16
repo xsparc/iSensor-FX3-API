@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.4.1-pub</span>
+   &#160;<span id="projectnumber">v2.5.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -113,6 +113,8 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_f_x3_pin_map.html">FX3PinMap</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_board_state.html">BoardState</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_stream_state.html">StreamState</a></td></tr>
@@ -140,6 +142,8 @@ Macros</h2></td></tr>
 <tr class="separator:a76e46990f3dfdc78d749a1feda40123a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7d910293813eb7d7a591d7822a5a376f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a7d910293813eb7d7a591d7822a5a376f">ADI_SET_BOOT_TIME</a>&#160;&#160;&#160;(0xB9)</td></tr>
 <tr class="separator:a7d910293813eb7d7a591d7822a5a376f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af0f432cbcea77e40a9c6493762099fb8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#af0f432cbcea77e40a9c6493762099fb8">ADI_GET_BOARD_TYPE</a>&#160;&#160;&#160;(0xBA)</td></tr>
+<tr class="separator:af0f432cbcea77e40a9c6493762099fb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8fc405264f6aacc6ed668631491f2377"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a8fc405264f6aacc6ed668631491f2377">ADI_STREAM_GENERIC_DATA</a>&#160;&#160;&#160;(0xC0)</td></tr>
 <tr class="separator:a8fc405264f6aacc6ed668631491f2377"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a69f4a6d00e582d4a94d43710aa0bf5bd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a69f4a6d00e582d4a94d43710aa0bf5bd">ADI_STREAM_BURST_DATA</a>&#160;&#160;&#160;(0xC1)</td></tr>
@@ -162,6 +166,8 @@ Macros</h2></td></tr>
 <tr class="separator:adf024a014c19b5f3e8775b4eeb1c8c2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adf3f0666dbbe314c115d9025dced7cf6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#adf3f0666dbbe314c115d9025dced7cf6">ADI_NULL_COMMAND</a>&#160;&#160;&#160;(0xD1)</td></tr>
 <tr class="separator:adf3f0666dbbe314c115d9025dced7cf6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a92122aea2f49f7163aeb9c2a3a3fdce1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a92122aea2f49f7163aeb9c2a3a3fdce1">ADI_SET_PIN_RESISTOR</a>&#160;&#160;&#160;(0xD2)</td></tr>
+<tr class="separator:a92122aea2f49f7163aeb9c2a3a3fdce1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abf1db43c662adf543f1bb9cedbd063ea"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#abf1db43c662adf543f1bb9cedbd063ea">ADI_READ_BYTES</a>&#160;&#160;&#160;(0xF0)</td></tr>
 <tr class="separator:abf1db43c662adf543f1bb9cedbd063ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad203d16933de846ac4d367f437bd4965"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#ad203d16933de846ac4d367f437bd4965">ADI_WRITE_BYTE</a>&#160;&#160;&#160;(0xF1)</td></tr>
@@ -188,8 +194,7 @@ Macros</h2></td></tr>
 <tr class="separator:aecdd1268af31c6b2ec5340f6ae8ca6da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab0ef8204dae6c6ae26cbeb72d0ebec67"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#ab0ef8204dae6c6ae26cbeb72d0ebec67">ADI_TIMER_PIN</a>&#160;&#160;&#160;(0x8)</td></tr>
 <tr class="separator:ab0ef8204dae6c6ae26cbeb72d0ebec67"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9422d5962152028e0f240088325a42de"><td class="memItemLeft" align="right" valign="top"><a id="a9422d5962152028e0f240088325a42de"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>ADI_TIMER_PIN_INDEX</b>&#160;&#160;&#160;(0x0)</td></tr>
+<tr class="memitem:a9422d5962152028e0f240088325a42de"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a9422d5962152028e0f240088325a42de">ADI_TIMER_PIN_INDEX</a>&#160;&#160;&#160;(0x0)</td></tr>
 <tr class="separator:a9422d5962152028e0f240088325a42de"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6336391fa504c15c2eb6a066d14b9d48"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a6336391fa504c15c2eb6a066d14b9d48">ADI_STREAMING_ENDPOINT</a>&#160;&#160;&#160;(0x81)</td></tr>
 <tr class="separator:a6336391fa504c15c2eb6a066d14b9d48"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -199,29 +204,23 @@ Macros</h2></td></tr>
 <tr class="separator:a546c94be05a9bae7c25a1855fbbf3fd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab12f852dbefaa3efed59479ca1910b10"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#ab12f852dbefaa3efed59479ca1910b10">CY_FX_BULK_BURST</a>&#160;&#160;&#160;(8)</td></tr>
 <tr class="separator:ab12f852dbefaa3efed59479ca1910b10"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f0ff7eaa87fe6723bdf8b755fea03f6"><td class="memItemLeft" align="right" valign="top"><a id="a9f0ff7eaa87fe6723bdf8b755fea03f6"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>ERROR_GENERAL_INIT</b>&#160;&#160;&#160;1</td></tr>
-<tr class="separator:a9f0ff7eaa87fe6723bdf8b755fea03f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a685efe5a73fcce4ae10cadcddb9426ad"><td class="memItemLeft" align="right" valign="top"><a id="a685efe5a73fcce4ae10cadcddb9426ad"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>ERROR_CACHE_CONTROL</b>&#160;&#160;&#160;2</td></tr>
-<tr class="separator:a685efe5a73fcce4ae10cadcddb9426ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aecf79c7450c374691b712b4181e17905"><td class="memItemLeft" align="right" valign="top"><a id="aecf79c7450c374691b712b4181e17905"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>ERROR_PIN_INIT</b>&#160;&#160;&#160;3</td></tr>
-<tr class="separator:aecf79c7450c374691b712b4181e17905"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4de1acca30f45ff075e2f24dbb25148e"><td class="memItemLeft" align="right" valign="top"><a id="a4de1acca30f45ff075e2f24dbb25148e"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>ERROR_GPIO_MATRIX</b>&#160;&#160;&#160;4</td></tr>
-<tr class="separator:a4de1acca30f45ff075e2f24dbb25148e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a519d46c2934e3e4fc6286b5a7bd78b50"><td class="memItemLeft" align="right" valign="top"><a id="a519d46c2934e3e4fc6286b5a7bd78b50"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>ERROR_THREAD_START</b>&#160;&#160;&#160;5</td></tr>
-<tr class="separator:a519d46c2934e3e4fc6286b5a7bd78b50"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae6d06e8e0444954de0f75237572abf5a"><td class="memItemLeft" align="right" valign="top"><a id="ae6d06e8e0444954de0f75237572abf5a"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>ERROR_OTHER</b>&#160;&#160;&#160;0</td></tr>
-<tr class="separator:ae6d06e8e0444954de0f75237572abf5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4a3950b07b30762726aad98adbb4253"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#ad4a3950b07b30762726aad98adbb4253">GCTL_WPD_CFG</a>&#160;&#160;&#160;(*(uvint32_t *)(0xE0051028))</td></tr>
+<tr class="separator:ad4a3950b07b30762726aad98adbb4253"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a061a9bc60ed5dfe4edd16fca5eaebf30"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a061a9bc60ed5dfe4edd16fca5eaebf30">GCTL_WPD_CFG_UPPR</a>&#160;&#160;&#160;(*(uvint32_t *)(0xE0051028 + 0x4))</td></tr>
+<tr class="separator:a061a9bc60ed5dfe4edd16fca5eaebf30"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0fac5b796fc50777f7b12839b5c4e3ad"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a0fac5b796fc50777f7b12839b5c4e3ad">GCTL_WPU_CFG</a>&#160;&#160;&#160;(*(uvint32_t *)(0xE0051020))</td></tr>
+<tr class="separator:a0fac5b796fc50777f7b12839b5c4e3ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abde403a842e07c5ce4d65fe027b01dff"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#abde403a842e07c5ce4d65fe027b01dff">GCTL_WPU_CFG_UPPR</a>&#160;&#160;&#160;(*(uvint32_t *)(0xE0051020 + 0x4))</td></tr>
+<tr class="separator:abde403a842e07c5ce4d65fe027b01dff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
+<tr class="memitem:a092853ab57043b793be016a00193fdb7"><td class="memItemLeft" align="right" valign="top">typedef enum <a class="el" href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54">FX3BoardType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a092853ab57043b793be016a00193fdb7">FX3BoardType</a></td></tr>
+<tr class="separator:a092853ab57043b793be016a00193fdb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a84c3341ee9255c2714d904190f38559e"><td class="memItemLeft" align="right" valign="top">typedef enum <a class="el" href="main_8h.html#aa9d2dbcc17573220271f7d1bd532213d">PartTye</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a84c3341ee9255c2714d904190f38559e">PartType</a></td></tr>
 <tr class="separator:a84c3341ee9255c2714d904190f38559e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c07ffb2debb7fcc21d01387a5a86198"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_f_x3_pin_map.html">FX3PinMap</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a3c07ffb2debb7fcc21d01387a5a86198">FX3PinMap</a></td></tr>
+<tr class="separator:a3c07ffb2debb7fcc21d01387a5a86198"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a276ba3fa12d3373c2e4e1db2ea3a70e7"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_board_state.html">BoardState</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a276ba3fa12d3373c2e4e1db2ea3a70e7">BoardState</a></td></tr>
 <tr class="separator:a276ba3fa12d3373c2e4e1db2ea3a70e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a38a24bf6934ff03f0ffdd12f78809a06"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="struct_stream_state.html">StreamState</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a38a24bf6934ff03f0ffdd12f78809a06">StreamState</a></td></tr>
@@ -229,6 +228,10 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
+<tr class="memitem:a5d0d41db1886fb75e6a09e4b74cdbc54"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54">FX3BoardType</a> { <a class="el" href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54a6fd1f5e42997c298e2f8de97ab435ac4">iSensorFX3Board</a> = 0, 
+<a class="el" href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54a060e1c60a58050eb2c766be3cfc4e58a">CypressFX3Board</a>
+ }</td></tr>
+<tr class="separator:a5d0d41db1886fb75e6a09e4b74cdbc54"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa9d2dbcc17573220271f7d1bd532213d"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#aa9d2dbcc17573220271f7d1bd532213d">PartTye</a> { <br />
 &#160;&#160;<a class="el" href="main_8h.html#aa9d2dbcc17573220271f7d1bd532213dad7e28a5d16840ed03a446de495370027">ADcmXL1021</a> = 0, 
 <a class="el" href="main_8h.html#aa9d2dbcc17573220271f7d1bd532213da177874cc98b0c4f48524ce3d33c91b8a">ADcmXL2021</a>, 
@@ -275,6 +278,12 @@ Functions</h2></td></tr>
 <tr class="memitem:afbef4a5a3f1c49fde1046e1cd1de4089"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#afbef4a5a3f1c49fde1046e1cd1de4089">AdiGetBuildDate</a> (uint8_t *outBuf)</td></tr>
 <tr class="memdesc:afbef4a5a3f1c49fde1046e1cd1de4089"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the firmware build date, followed by the build time.  <a href="#afbef4a5a3f1c49fde1046e1cd1de4089">More...</a><br /></td></tr>
 <tr class="separator:afbef4a5a3f1c49fde1046e1cd1de4089"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae104145e5f2fc019be8b33b214ad593d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#ae104145e5f2fc019be8b33b214ad593d">AdiGetBoardPinInfo</a> (uint8_t *outBuf)</td></tr>
+<tr class="memdesc:ae104145e5f2fc019be8b33b214ad593d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the programmed board type and pin mapping info.  <a href="#ae104145e5f2fc019be8b33b214ad593d">More...</a><br /></td></tr>
+<tr class="separator:ae104145e5f2fc019be8b33b214ad593d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7774dffb535ccfdcea7557e9adcedec6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54">FX3BoardType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a7774dffb535ccfdcea7557e9adcedec6">GetFX3BoardType</a> ()</td></tr>
+<tr class="memdesc:a7774dffb535ccfdcea7557e9adcedec6"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function determines the type of the connected FX3 board.  <a href="#a7774dffb535ccfdcea7557e9adcedec6">More...</a><br /></td></tr>
+<tr class="separator:a7774dffb535ccfdcea7557e9adcedec6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -394,6 +403,21 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
       </table>
 </div><div class="memdoc">
 <p>Offset to take away from the timer period for generic stream stall time. In 10MHz timer ticks </p>
+
+</div>
+</div>
+<a id="af0f432cbcea77e40a9c6493762099fb8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af0f432cbcea77e40a9c6493762099fb8">&#9670;&nbsp;</a></span>ADI_GET_BOARD_TYPE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_GET_BOARD_TYPE&#160;&#160;&#160;(0xBA)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Get the type of the programmed board </p>
 
 </div>
 </div>
@@ -682,6 +706,21 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 </div>
 </div>
+<a id="a92122aea2f49f7163aeb9c2a3a3fdce1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a92122aea2f49f7163aeb9c2a3a3fdce1">&#9670;&nbsp;</a></span>ADI_SET_PIN_RESISTOR</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_SET_PIN_RESISTOR&#160;&#160;&#160;(0xD2)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set GPIO resistor pull up or pull down </p>
+
+</div>
+</div>
 <a id="a74849bb9c15b9affe6ea95e289f2ee2b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a74849bb9c15b9affe6ea95e289f2ee2b">&#9670;&nbsp;</a></span>ADI_SET_SPI_CONFIG</h2>
 
@@ -769,6 +808,21 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
       </table>
 </div><div class="memdoc">
 <p>Complex GPIO assigned as a timer input </p>
+
+</div>
+</div>
+<a id="a9422d5962152028e0f240088325a42de"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9422d5962152028e0f240088325a42de">&#9670;&nbsp;</a></span>ADI_TIMER_PIN_INDEX</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_TIMER_PIN_INDEX&#160;&#160;&#160;(0x0)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>COmplex GPIO index for the timer input (ADI_TIMER_PIN % 8) </p>
 
 </div>
 </div>
@@ -862,6 +916,66 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 </div>
 </div>
+<a id="ad4a3950b07b30762726aad98adbb4253"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad4a3950b07b30762726aad98adbb4253">&#9670;&nbsp;</a></span>GCTL_WPD_CFG</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define GCTL_WPD_CFG&#160;&#160;&#160;(*(uvint32_t *)(0xE0051028))</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>FX3 GPIO weak pull down control register (lower 32 bits) </p>
+
+</div>
+</div>
+<a id="a061a9bc60ed5dfe4edd16fca5eaebf30"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a061a9bc60ed5dfe4edd16fca5eaebf30">&#9670;&nbsp;</a></span>GCTL_WPD_CFG_UPPR</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define GCTL_WPD_CFG_UPPR&#160;&#160;&#160;(*(uvint32_t *)(0xE0051028 + 0x4))</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>FX3 GPIO weak pull down control register (upper 32 bits) </p>
+
+</div>
+</div>
+<a id="a0fac5b796fc50777f7b12839b5c4e3ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0fac5b796fc50777f7b12839b5c4e3ad">&#9670;&nbsp;</a></span>GCTL_WPU_CFG</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define GCTL_WPU_CFG&#160;&#160;&#160;(*(uvint32_t *)(0xE0051020))</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>FX3 GPIO weak pull up control register (lower 32 bits) </p>
+
+</div>
+</div>
+<a id="abde403a842e07c5ce4d65fe027b01dff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abde403a842e07c5ce4d65fe027b01dff">&#9670;&nbsp;</a></span>GCTL_WPU_CFG_UPPR</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define GCTL_WPU_CFG_UPPR&#160;&#160;&#160;(*(uvint32_t *)(0xE0051020 + 0x4))</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>FX3 GPIO weak pull up control register (upper 32 bits) </p>
+
+</div>
+</div>
 <a id="a42e00fdbd5af84e095a80b2e2d4df1dd"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a42e00fdbd5af84e095a80b2e2d4df1dd">&#9670;&nbsp;</a></span>MS_TO_TICKS_MULT</h2>
 
@@ -908,6 +1022,36 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 </div>
 </div>
+<a id="a092853ab57043b793be016a00193fdb7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a092853ab57043b793be016a00193fdb7">&#9670;&nbsp;</a></span>FX3BoardType</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef enum <a class="el" href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54">FX3BoardType</a> <a class="el" href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54">FX3BoardType</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Enum for the available FX3 board types </p>
+
+</div>
+</div>
+<a id="a3c07ffb2debb7fcc21d01387a5a86198"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c07ffb2debb7fcc21d01387a5a86198">&#9670;&nbsp;</a></span>FX3PinMap</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef struct <a class="el" href="struct_f_x3_pin_map.html">FX3PinMap</a> <a class="el" href="struct_f_x3_pin_map.html">FX3PinMap</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Pin map for translating FX3 GPIO pins to iSensor eval board functional pins </p>
+
+</div>
+</div>
 <a id="a84c3341ee9255c2714d904190f38559e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a84c3341ee9255c2714d904190f38559e">&#9670;&nbsp;</a></span>PartType</h2>
 
@@ -939,6 +1083,27 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 </div>
 </div>
 <h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="a5d0d41db1886fb75e6a09e4b74cdbc54"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5d0d41db1886fb75e6a09e4b74cdbc54">&#9670;&nbsp;</a></span>FX3BoardType</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54">FX3BoardType</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Enum for the available FX3 board types </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a5d0d41db1886fb75e6a09e4b74cdbc54a6fd1f5e42997c298e2f8de97ab435ac4"></a>iSensorFX3Board&#160;</td><td class="fielddoc"><p>iSensor FX3 based eval board manufactured by Analog Devices </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a5d0d41db1886fb75e6a09e4b74cdbc54a060e1c60a58050eb2c766be3cfc4e58a"></a>CypressFX3Board&#160;</td><td class="fielddoc"><p>Cypress SuperSpeed Explorer kit board. Can be used with breakout board for iSensors connectors. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
 <a id="aa9d2dbcc17573220271f7d1bd532213d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa9d2dbcc17573220271f7d1bd532213d">&#9670;&nbsp;</a></span>PartTye</h2>
 
@@ -1138,7 +1303,35 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A boolean indicating if the control endpoint event was handled properly.</dd></dl>
-<p>This function handles all USB events generated by the control endpoint. For the iSensor FX3 firmware, these events are a set of custom vendor commands. These vendor commands must be issued by the host PC. To ensure consistent behavior, all vendor commands should be issued using a function call in the FX3API. </p>
+<p>This function handles all USB events generated by the control endpoint. For the iSensor FX3 firmware, these events are a set of custom vendor commands. These vendor commands must be issued by the host PC. To ensure consistent behavior, all vendor commands should be issued using a function call in the FX3API. The FX3 API manages the control endpoint parameters to ensure valid behavior in all cases. </p>
+
+</div>
+</div>
+<a id="ae104145e5f2fc019be8b33b214ad593d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae104145e5f2fc019be8b33b214ad593d">&#9670;&nbsp;</a></span>AdiGetBoardPinInfo()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void AdiGetBoardPinInfo </td>
+          <td>(</td>
+          <td class="paramtype">uint8_t *&#160;</td>
+          <td class="paramname"><em>outBuf</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Gets the programmed board type and pin mapping info. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">outBuf</td><td>Byte array which pin map and board type are placed into</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>void</dd></dl>
+<p>outBuf contains BoardType(4), ResetPin(2), DIO(2 each), GPIO(2 each). Total size of 4 + 2 + 8 + 8 = 22 bytes </p>
 
 </div>
 </div>
@@ -1259,6 +1452,27 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
   </dd>
 </dl>
 <p>This function handles USB events by calling start/stop functions to manage the ADI application. </p>
+
+</div>
+</div>
+<a id="a7774dffb535ccfdcea7557e9adcedec6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7774dffb535ccfdcea7557e9adcedec6">&#9670;&nbsp;</a></span>GetFX3BoardType()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54">FX3BoardType</a> GetFX3BoardType </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This function determines the type of the connected FX3 board. </p>
+<dl class="section return"><dt>Returns</dt><dd>The connected board type. This can be a Cypress Explorer kit or iSensor FX3 board</dd></dl>
+<p>This function works by taking advantage of peripheral differences between the Cypress SuperSpeed Explorer kit, and the iSensor FX3 eval board manufactured by Analog Devices. On the Cypress board, CTL0 is connected to the external SRAM enable, with a 10KOhm pull up resistor. On the ADI board, CTL0 is floating. By enabling a weak pull down on CTL0 and measuring the GPIO input, the connected board type can be determined. If CTL0 is low with the pull down enabled, then the board is determined to be an ADI FX3 board. If CTL0 is high, then it is a Cypress SuperSpeed Explorer Kit. </p>
 
 </div>
 </div>

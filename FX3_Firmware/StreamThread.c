@@ -26,7 +26,9 @@ extern CyU3PDmaBuffer_t SpiDmaBuffer;
 extern BoardState FX3State;
 extern volatile CyBool_t KillStreamEarly;
 extern StreamState StreamThreadState;
-extern uint8_t USBBuffer[];
+
+/** Global USB Buffer (Control Endpoint) */
+extern uint8_t USBBuffer[4096];
 
 /**
   * @brief The entry point function for the StreamThread. Handles all streaming data captures.

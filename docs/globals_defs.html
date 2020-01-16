@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.4.1-pub</span>
+   &#160;<span id="projectnumber">v2.5.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -124,6 +124,9 @@ $(function() {
 <li>ADI_GENERIC_STREAM_STOP
 : <a class="el" href="_app_thread_8h.html#a42032edda8102ff3abcef23b650defc5">AppThread.h</a>
 </li>
+<li>ADI_GET_BOARD_TYPE
+: <a class="el" href="main_8h.html#af0f432cbcea77e40a9c6493762099fb8">main.h</a>
+</li>
 <li>ADI_GET_BUILD_DATE
 : <a class="el" href="main_8h.html#a76e46990f3dfdc78d749a1feda40123a">main.h</a>
 </li>
@@ -147,21 +150,6 @@ $(function() {
 </li>
 <li>ADI_PIN_DELAY_MEASURE
 : <a class="el" href="main_8h.html#adc7e56790c4f87ee72baf266e9666170">main.h</a>
-</li>
-<li>ADI_PIN_DIO1
-: <a class="el" href="_pin_functions_8h.html#a2ab9984d811852fc981d8d948d386878">PinFunctions.h</a>
-</li>
-<li>ADI_PIN_DIO2
-: <a class="el" href="_pin_functions_8h.html#aac786347b5739ab0b238fe9f3535b651">PinFunctions.h</a>
-</li>
-<li>ADI_PIN_DIO3
-: <a class="el" href="_pin_functions_8h.html#a0d69667dcaebc8379c3bc790140cdfc1">PinFunctions.h</a>
-</li>
-<li>ADI_PIN_DIO4
-: <a class="el" href="_pin_functions_8h.html#a0edc38a5beff1487242a599b8b4bb669">PinFunctions.h</a>
-</li>
-<li>ADI_PIN_RESET
-: <a class="el" href="_pin_functions_8h.html#a98877783dddda42fb73327acca9d67a8">PinFunctions.h</a>
 </li>
 <li>ADI_PULSE_DRIVE
 : <a class="el" href="main_8h.html#a4240e62cbdb7f69530160d01fb9225ef">main.h</a>
@@ -211,6 +199,9 @@ $(function() {
 <li>ADI_SET_PIN
 : <a class="el" href="main_8h.html#ab35b88995d2f9112a0a3073f285eeef7">main.h</a>
 </li>
+<li>ADI_SET_PIN_RESISTOR
+: <a class="el" href="main_8h.html#a92122aea2f49f7163aeb9c2a3a3fdce1">main.h</a>
+</li>
 <li>ADI_SET_SPI_CONFIG
 : <a class="el" href="main_8h.html#a74849bb9c15b9affe6ea95e289f2ee2b">main.h</a>
 </li>
@@ -237,6 +228,9 @@ $(function() {
 </li>
 <li>ADI_TIMER_PIN
 : <a class="el" href="main_8h.html#ab0ef8204dae6c6ae26cbeb72d0ebec67">main.h</a>
+</li>
+<li>ADI_TIMER_PIN_INDEX
+: <a class="el" href="main_8h.html#a9422d5962152028e0f240088325a42de">main.h</a>
 </li>
 <li>ADI_TO_PC_ENDPOINT
 : <a class="el" href="main_8h.html#a546c94be05a9bae7c25a1855fbbf3fd2">main.h</a>
@@ -289,17 +283,33 @@ $(function() {
 
 
 <h3><a id="index_f"></a>- f -</h3><ul>
-<li>FX3_PIN_GPIO1
-: <a class="el" href="_pin_functions_8h.html#a08792973017b1744ad8675a145bc16d5">PinFunctions.h</a>
+<li>FX3_GPIO1_INTERRUPT_FLAG
+: <a class="el" href="_pin_functions_8h.html#a34a595fe8e0d6de8fb88f7b839461643">PinFunctions.h</a>
 </li>
-<li>FX3_PIN_GPIO2
-: <a class="el" href="_pin_functions_8h.html#a4c5a10336e26200a6798581428e23a1f">PinFunctions.h</a>
+<li>FX3_GPIO2_INTERRUPT_FLAG
+: <a class="el" href="_pin_functions_8h.html#a003559d8cba6db72c1a1822471c4e71b">PinFunctions.h</a>
 </li>
-<li>FX3_PIN_GPIO3
-: <a class="el" href="_pin_functions_8h.html#adce3aa6299162cccf3643bf04980e7a9">PinFunctions.h</a>
+<li>FX3_GPIO3_INTERRUPT_FLAG
+: <a class="el" href="_pin_functions_8h.html#a3225a92a6e6428137e57a1ad7bf01f0c">PinFunctions.h</a>
 </li>
-<li>FX3_PIN_GPIO4
-: <a class="el" href="_pin_functions_8h.html#ab2562d55c82a3ce2fa1f31434829de22">PinFunctions.h</a>
+<li>FX3_GPIO4_INTERRUPT_FLAG
+: <a class="el" href="_pin_functions_8h.html#ab6c888d970e058260b044ddfd7686107">PinFunctions.h</a>
+</li>
+</ul>
+
+
+<h3><a id="index_g"></a>- g -</h3><ul>
+<li>GCTL_WPD_CFG
+: <a class="el" href="main_8h.html#ad4a3950b07b30762726aad98adbb4253">main.h</a>
+</li>
+<li>GCTL_WPD_CFG_UPPR
+: <a class="el" href="main_8h.html#a061a9bc60ed5dfe4edd16fca5eaebf30">main.h</a>
+</li>
+<li>GCTL_WPU_CFG
+: <a class="el" href="main_8h.html#a0fac5b796fc50777f7b12839b5c4e3ad">main.h</a>
+</li>
+<li>GCTL_WPU_CFG_UPPR
+: <a class="el" href="main_8h.html#abde403a842e07c5ce4d65fe027b01dff">main.h</a>
 </li>
 </ul>
 

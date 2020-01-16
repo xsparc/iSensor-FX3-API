@@ -19,12 +19,16 @@
 #include "PinFunctions.h"
 
 /* Tell the compiler where to find the needed globals */
-extern uint8_t USBBuffer[4096];
-extern uint8_t BulkBuffer[12288];
 extern CyU3PDmaBuffer_t ManualDMABuffer;
 extern BoardState FX3State;
 extern CyU3PDmaChannel ChannelToPC;
 extern CyU3PEvent GpioHandler;
+
+/** Global USB Buffer (Control Endpoint) */
+extern uint8_t USBBuffer[4096];
+
+/** Global USB Buffer (Bulk Endpoints) */
+extern uint8_t BulkBuffer[12288];
 
 /**
   * @brief Configure GPIO input stage pull up / pull down resistor
@@ -130,6 +134,8 @@ CyBool_t AdiIsValidGPIO(uint16_t GpioId)
   * @brief Sends a function result to the PC via the ChannelToPC endpoint
   *
   * @param status The status code to place in the BulkEndpointBuffer (0 - 3)
+  *
+  * @param length The number of bytes to send to the PC over the bulk endpoint
   *
   * @return void
   *

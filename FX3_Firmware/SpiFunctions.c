@@ -19,12 +19,16 @@
 #include "SpiFunctions.h"
 
 /* Tell the compiler where to find the needed globals */
-extern uint8_t USBBuffer[4096];
-extern uint8_t BulkBuffer[12288];
 extern BoardState FX3State;
 extern StreamState StreamThreadState;
 extern CyU3PDmaBuffer_t ManualDMABuffer;
 extern CyU3PDmaChannel ChannelToPC;
+
+/** Global USB Buffer (Control Endpoint) */
+extern uint8_t USBBuffer[4096];
+
+/** Global USB Buffer (Bulk Endpoints) */
+extern uint8_t BulkBuffer[12288];
 
 /**
   * @brief This function restarts the SPI controller.

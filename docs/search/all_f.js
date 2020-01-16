@@ -2,7 +2,7 @@ var searchData=
 [
   ['s_5fto_5fticks_5fmult',['S_TO_TICKS_MULT',['../main_8h.html#af448b0cfb701dcf75f04dceccd0302cf',1,'main.h']]],
   ['sclk',['SCLK',['../struct_bit_bang_spi_conf.html#ae18c6643b3ea69e6c93f9a1f2c2a1e29',1,'BitBangSpiConf']]],
-  ['serial_5fnumber',['serial_number',['../main_8c.html#af944fb7c8896fdcd7f0d7d00f06fb329',1,'main.c']]],
+  ['serial_5fnumber',['serial_number',['../_app_thread_8c.html#aef75a5a8ae0f22711a396b4a41216fc1',1,'serial_number():&#160;AppThread.c'],['../main_8c.html#af944fb7c8896fdcd7f0d7d00f06fb329',1,'serial_number((aligned(32))):&#160;main.c']]],
   ['spiconfig',['SpiConfig',['../struct_board_state.html#aa6ad831cd8d7bcf3136e710f49f5f081',1,'BoardState']]],
   ['spidmabuffer',['SpiDmaBuffer',['../main_8c.html#aeed44eef5876251be24e1b418ea64590',1,'SpiDmaBuffer():&#160;main.c'],['../_stream_functions_8c.html#aeed44eef5876251be24e1b418ea64590',1,'SpiDmaBuffer():&#160;main.c'],['../_stream_thread_8c.html#aeed44eef5876251be24e1b418ea64590',1,'SpiDmaBuffer():&#160;main.c']]],
   ['spifunctions_2ec',['SpiFunctions.c',['../_spi_functions_8c.html',1,'']]],
