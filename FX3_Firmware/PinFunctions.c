@@ -37,6 +37,10 @@ extern CyU3PEvent GpioHandler;
  **/
 CyU3PReturnStatus_t AdiSetPinResistor(uint16_t pin, PinResistorSetting setting)
 {
+
+#ifdef VERBOSE_MODE
+	CyU3PDebugPrint (4, "Starting GPIO Resistor Config for pin: %d with setting: %d\r\n", pin, setting);
+#endif
 	/* Check that pin number is valid */
 	if(!AdiIsValidGPIO(pin))
 		return CY_U3P_ERROR_BAD_ARGUMENT;
