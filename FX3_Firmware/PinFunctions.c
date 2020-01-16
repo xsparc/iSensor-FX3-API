@@ -34,6 +34,9 @@ extern CyU3PEvent GpioHandler;
   * @param setting The PinResistorSetting to apply to the selected pin
   *
   * @return A status code indicating the success of the operation
+  *
+  * This function configures the "weak" pull up or pull down setting which the FX3 micro
+  * provides for each GPIO.
  **/
 CyU3PReturnStatus_t AdiSetPinResistor(uint16_t pin, PinResistorSetting setting)
 {
