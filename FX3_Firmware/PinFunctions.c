@@ -27,6 +27,61 @@ extern CyU3PDmaChannel ChannelToPC;
 extern CyU3PEvent GpioHandler;
 
 /**
+  * @brief Determines if a GPIO pin is valid for the FX3 Application firmware to set
+  *
+  * @param GpioId The GPIO matrix index for the pin to check
+  *
+  * @return A boolean indicating if the GPIO is valid or not.
+  *
+  * This function is called before all interfacing functions. This prevents invalid GPIO access,
+  * or unintended modifications to the power supply management pins.
+ **/
+CyBool_t AdiIsValidGPIO(uint16_t GpioId)
+{
+	/* return false for power management pins */
+	if(GpioId == ADI_3_3V_EN)
+		return CyFalse;
+
+	if(GpioId == ADI_5V_EN)
+		return CyFalse;
+
+	/* GPIO must be less than 64 */
+	if(GpioId > 63)
+		return CyFalse;
+
+	/* Else, should be good */
+	return CyTrue;
+}
+
+/**
+  * @brief Sends a function result to the PC via the ChannelToPC endpoint
+  *
+  * @param status The status code to place in the BulkEndpointBuffer (0 - 3)
+  *
+  * @return void
+  *
+  * This function is used to allow early returns out of long functions in the
+  * case where an invalid setting or operation is detected. Once this function
+  * is called, and the result sent to the PC, the function can be safely exited.
+ **/
+void AdiReturnBulkEndpointData(CyU3PReturnStatus_t status, uint16_t length)
+{
+	/* Load status to BulkBuffer */
+	BulkBuffer[0] = status & 0xFF;
+	BulkBuffer[1] = (status & 0xFF00) >> 8;
+	BulkBuffer[2] = (status & 0xFF0000) >> 16;
+	BulkBuffer[3] = (status & 0xFF000000) >> 24;
+
+	/* Configure manual DMA */
+	ManualDMABuffer.buffer = BulkBuffer;
+	ManualDMABuffer.size = sizeof(BulkBuffer);
+	ManualDMABuffer.count = length;
+
+	/* Send the data to PC */
+	CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
+}
+
+/**
   * @brief Measures the delay from a trigger pin edge (sync) to a busy pin edge.
   *
   * @param transferLength The amount of data (in bytes) to read from the USB buffer
@@ -44,7 +99,7 @@ CyU3PReturnStatus_t AdiMeasurePinDelay(uint16_t transferLength)
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint16_t *bytesRead = 0;
 	uint16_t busyPin, triggerPin;
-	CyBool_t busyInitialValue, busyCurrentValue, triggerDrivePolarity, validPin, exitCondition;
+	CyBool_t busyInitialValue, busyCurrentValue, triggerDrivePolarity, exitCondition;
 	uint32_t currentTime, lastTime, timeout, rollOverCount;
 	CyU3PGpioSimpleConfig_t gpioConfig;
 
@@ -89,7 +144,8 @@ CyU3PReturnStatus_t AdiMeasurePinDelay(uint16_t transferLength)
 		/* If pin setup not successful skip wait operation and return -1 */
 		if(status != CY_U3P_SUCCESS)
 		{
-			validPin = CyFalse;
+			AdiReturnBulkEndpointData(status, 12);
+			return status;
 		}
 	}
 
@@ -114,35 +170,32 @@ CyU3PReturnStatus_t AdiMeasurePinDelay(uint16_t transferLength)
 	exitCondition = CyFalse;
 
 	/* Begin wait operation (for edge transition on busy pin)*/
-	if(validPin)
+	while(!exitCondition)
 	{
-		while(!exitCondition)
+		/* Store previous time */
+		lastTime = currentTime;
+
+		/* Set the pin config for sample now mode */
+		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (FX3State.TimerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
+		/* wait for sample to finish */
+		while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
+		/* read timer value */
+		currentTime = GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
+
+		/* Read the pin value */
+		busyCurrentValue = ((GPIO->lpp_gpio_simple[busyPin] & CY_U3P_LPP_GPIO_IN_VALUE) >> 1);
+
+		/* Check if rollover occurred */
+		if(currentTime < lastTime)
 		{
-			/* Store previous time */
-			lastTime = currentTime;
+			rollOverCount++;
+		}
 
-			/* Set the pin config for sample now mode */
-			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (FX3State.TimerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
-			/* wait for sample to finish */
-			while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
-			/* read timer value */
-			currentTime = GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
-
-			/* Read the pin value */
-			busyCurrentValue = ((GPIO->lpp_gpio_simple[busyPin] & CY_U3P_LPP_GPIO_IN_VALUE) >> 1);
-
-			/* Check if rollover occurred */
-			if(currentTime < lastTime)
-			{
-				rollOverCount++;
-			}
-
-			/* update the exit condition */
-			exitCondition = (busyCurrentValue != busyInitialValue);
-			if(timeout)
-			{
-				exitCondition |= (currentTime >= timeout);
-			}
+		/* update the exit condition */
+		exitCondition = (busyCurrentValue != busyInitialValue);
+		if(timeout)
+		{
+			exitCondition |= (currentTime >= timeout);
 		}
 	}
 
@@ -163,11 +216,7 @@ CyU3PReturnStatus_t AdiMeasurePinDelay(uint16_t transferLength)
 		rollOverCount++;
 	}
 
-	/* Return pulse wait data over ChannelToPC */
-	BulkBuffer[0] = status & 0xFF;
-	BulkBuffer[1] = (status & 0xFF00) >> 8;
-	BulkBuffer[2] = (status & 0xFF0000) >> 16;
-	BulkBuffer[3] = (status & 0xFF000000) >> 24;
+	/* Populate bulk buffer with result */
 	BulkBuffer[4] = currentTime & 0xFF;
 	BulkBuffer[5] = (currentTime & 0xFF00) >> 8;
 	BulkBuffer[6] = (currentTime & 0xFF0000) >> 16;
@@ -177,12 +226,8 @@ CyU3PReturnStatus_t AdiMeasurePinDelay(uint16_t transferLength)
 	BulkBuffer[10] = (rollOverCount & 0xFF0000) >> 16;
 	BulkBuffer[11] = (rollOverCount & 0xFF000000) >> 24;
 
-	ManualDMABuffer.buffer = BulkBuffer;
-	ManualDMABuffer.size = sizeof(BulkBuffer);
-	ManualDMABuffer.count = 12;
-
-	/* Send the data to PC */
-	CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
+	/* Return pulse wait data over ChannelToPC */
+	AdiReturnBulkEndpointData(status, 12);
 
 	return status;
 }
