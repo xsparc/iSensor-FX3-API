@@ -280,6 +280,9 @@ typedef struct StreamState
 /** Do nothing (default case) */
 #define ADI_NULL_COMMAND						(0xD1)
 
+/** Set GPIO resistor pull up or pull down */
+#define ADI_SET_PIN_RESISTOR					(0xD2)
+
 /** Read a word at a specified address and return the data over the control endpoint */
 #define ADI_READ_BYTES							(0xF0)
 
@@ -344,11 +347,17 @@ typedef struct StreamState
  * FX3 control registers
  */
 
-/** FX3 GPIO weak pull down control register */
+/** FX3 GPIO weak pull down control register (lower 32 bits) */
 #define  GCTL_WPD_CFG                           (*(uvint32_t *)(0xE0051028))
 
-/** FX3 GPIO weak pull up control register */
+/** FX3 GPIO weak pull down control register (upper 32 bits) */
+#define  GCTL_WPD_CFG_UPPR                       (*(uvint32_t *)(0xE0051028 + 0x4))
+
+/** FX3 GPIO weak pull up control register (lower 32 bits) */
 #define GCTL_WPU_CFG							 (*(uvint32_t *)(0xE0051020))
+
+/** FX3 GPIO weak pull up control register (upper 32 bits) */
+#define GCTL_WPU_CFG_UPPR						 (*(uvint32_t *)(0xE0051020 + 0x4))
 
 /*
  * Error handling location defines

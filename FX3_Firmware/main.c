@@ -598,6 +598,16 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	CyU3PUsbSendEP0Data (wLength, USBBuffer);
             	break;
 
+            case ADI_SET_PIN_RESISTOR:
+            	status = AdiSetPinResistor(wIndex, wValue);
+				/* Return the status in bytes 0-3 */
+				USBBuffer[0] = status & 0xFF;
+				USBBuffer[1] = (status & 0xFF00) >> 8;
+				USBBuffer[2] = (status & 0xFF0000) >> 16;
+				USBBuffer[3] = (status & 0xFF000000) >> 24;
+				CyU3PUsbSendEP0Data (wLength, USBBuffer);
+            	break;
+
 			/* Command to do nothing. Might remove, this isn't really used at all */
 			case ADI_NULL_COMMAND:
 				isHandled = CyTrue;

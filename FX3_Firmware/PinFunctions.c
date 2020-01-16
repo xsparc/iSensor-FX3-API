@@ -27,6 +27,72 @@ extern CyU3PDmaChannel ChannelToPC;
 extern CyU3PEvent GpioHandler;
 
 /**
+  * @brief Configure GPIO input stage pull up / pull down resistor
+  *
+  * @param pin The GPIO matrix index for the pin to configure (0 - 63)
+  *
+  * @param setting The PinResistorSetting to apply to the selected pin
+  *
+  * @return A status code indicating the success of the operation
+ **/
+CyU3PReturnStatus_t AdiSetPinResistor(uint16_t pin, PinResistorSetting setting)
+{
+	/* Check that pin number is valid */
+	if(!AdiIsValidGPIO(pin))
+		return CY_U3P_ERROR_BAD_ARGUMENT;
+
+	/* If pin is in lower 32 bits */
+	if(pin < 32)
+	{
+		/* Clear pull up/down first */
+		GCTL_WPU_CFG &= ~(1 << pin);
+		GCTL_WPD_CFG &= ~(1 << pin);
+
+		/* Sleep 5us */
+		AdiSleepForMicroSeconds(5);
+
+		/* Apply setting */
+		if(setting == PullDown)
+		{
+			GCTL_WPD_CFG |= (1 << pin);
+		}
+		else if(setting == PullUp)
+		{
+			GCTL_WPU_CFG |= (1 << pin);
+		}
+	}
+	/* If pin is in upper 32 bits */
+	else
+	{
+		/* Offset the pin value by 32*/
+		pin = pin - 32;
+
+		/* Clear pull up/down first */
+		GCTL_WPU_CFG_UPPR &= ~(1 << pin);
+		GCTL_WPD_CFG_UPPR &= ~(1 << pin);
+
+		/* Sleep 5us */
+		AdiSleepForMicroSeconds(5);
+
+		/* Apply setting */
+		if(setting == PullDown)
+		{
+			GCTL_WPD_CFG_UPPR |= (1 << pin);
+		}
+		else if(setting == PullUp)
+		{
+			GCTL_WPU_CFG_UPPR |= (1 << pin);
+		}
+	}
+
+	/* Sleep 5us */
+	AdiSleepForMicroSeconds(5);
+
+	/* return success code */
+	return CY_U3P_SUCCESS;
+}
+
+/**
   * @brief Determines if a GPIO pin is valid for the FX3 Application firmware to set
   *
   * @param GpioId The GPIO matrix index for the pin to check
