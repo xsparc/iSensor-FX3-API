@@ -905,6 +905,13 @@ Public Class FX3Connection
             Return m_DutSupplyMode
         End Get
         Set(value As DutVoltage)
+
+            'Disable setting if not iSensor board
+            If m_ActiveFX3Info.BoardType <> FX3BoardType.iSensorFX3Board Then
+                Exit Property
+            End If
+
+            'set up control endpoint
             ConfigureControlEndpoint(USBCommands.ADI_SET_DUT_SUPPLY, False)
             FX3ControlEndPt.Index = 0
             FX3ControlEndPt.Value = value
