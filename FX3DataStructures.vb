@@ -37,11 +37,20 @@ Public Enum StreamCommands
 End Enum
 
 ''' <summary>
-''' Possible FX3 board types
+''' Possible FX3 board types. Used to differentiate iSensors FX3 board from Cypress Explorer kit.
 ''' </summary>
 Public Enum FX3BoardType
     iSensorFX3Board = 0
     CypressFX3Board = 1
+End Enum
+
+''' <summary>
+''' Setting for pull up / pull down resistors on FX3 GPIO.
+''' </summary>
+Public Enum FX3PinResistorSetting
+    None = 0
+    PullDown = 1
+    PullUp = 2
 End Enum
 
 ''' <summary>
@@ -130,8 +139,11 @@ Public Enum USBCommands
     'Start/stop a real-time stream
     ADI_STREAM_REALTIME = &HD0
 
-    'Do nothing (default case
+    'Do nothing (default case)
     ADI_NULL_COMMAND = &HD1
+
+    'Set GPIO resistor value
+    ADI_SET_PIN_RESISTOR = &HD2
 
     'Read a word at a specified address and return the data over the control endpoint
     ADI_READ_BYTES = &HF0
