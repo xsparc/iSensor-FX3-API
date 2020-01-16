@@ -86,7 +86,7 @@ typedef enum PartTye
 
 }PartType;
 
-/** Pin map for translating FX3 GPIO pins to iSensor eval board functional pins */
+/** @brief Pin map for translating FX3 GPIO pins to iSensor eval board functional pins */
 typedef struct FX3PinMap
 {
 	/** Reset pin, wired to the hardware reset on most iSensor products. Mapped to GPIO 0 */
@@ -117,7 +117,7 @@ typedef struct FX3PinMap
 	uint16_t FX3_PIN_GPIO4;
 }FX3PinMap;
 
-/** Struct to store the current board state (SPI config, USB speed, etc) */
+/** @brief Struct to store the current board state (SPI config, USB speed, etc) */
 typedef struct BoardState
 {
 	/** Track the SPI configuration */
@@ -170,7 +170,7 @@ typedef struct BoardState
 
 }BoardState;
 
-/** Struct to store the current data stream state information */
+/** @brief Struct to store the current data stream state information */
 typedef struct StreamState
 {
 	/** Track the number of bytes per real time frame */
