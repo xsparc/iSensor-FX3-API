@@ -57,7 +57,6 @@ CyU3PReturnStatus_t AdiRestartSpi();
 CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData);
 CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data);
 CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr);
-CyU3PReturnStatus_t AdiBulkByteTransfer(uint16_t numBytes, uint16_t bytesPerCapture);
 
 /* Bitbang SPI functions */
 void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, BitBangSpiConf config);

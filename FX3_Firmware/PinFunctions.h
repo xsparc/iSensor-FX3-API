@@ -30,6 +30,14 @@ typedef enum DutVoltage
 	On5_0Volts = 2
 }DutVoltage;
 
+/** Enum of pin resistor settings for GPIO pull up/down*/
+typedef enum PinResistorSetting
+{
+	None = 0,
+	PullDown = 1,
+	PullUp = 2
+}PinResistorSetting;
+
 /* Function definitions */
 CyU3PReturnStatus_t AdiPulseDrive();
 CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength);
@@ -47,6 +55,7 @@ CyU3PReturnStatus_t AdiConfigurePinInterrupt(uint16_t pin, CyBool_t polarity);
 uint32_t AdiReadTimerRegValue();
 CyU3PReturnStatus_t AdiMeasurePinDelay(uint16_t transferLength);
 CyBool_t AdiIsValidGPIO(uint16_t GpioId);
+CyU3PReturnStatus_t AdiSetPinResistor(uint16_t pin, PinResistorSetting setting);
 void AdiReturnBulkEndpointData(CyU3PReturnStatus_t status, uint16_t length);
 
 /*
