@@ -71,13 +71,13 @@
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="599b773f-2fa3-0c37-a0f4-ac4b6ddb0dc8.htm">CrcResultIndex</a></td><td><div class="summary">
  Gets or sets the index of the word that contains the CRC result.
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="bcfc08bd-bff7-ed18-25c4-cbe6cec2b520.htm">DIO1</a></td><td><div class="summary">
- Read-only property to get the DIO1 pin (mapped to GPIO 4 on FX3)
+ Read-only property to get the DIO1 pin
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="c26d9c4a-1b40-0d99-6147-850f68e42d46.htm">DIO2</a></td><td><div class="summary">
- Read-only property to get the DIO2 pin (mapped to GPIO 3 on FX3)
+ Read-only property to get the DIO2 pin
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="f8d610ef-1825-946b-9d14-c919c6ef64dc.htm">DIO3</a></td><td><div class="summary">
- Read-only property to get the DIO3 pin (mapped to GPIO 2 on FX3)
+ Read-only property to get the DIO3 pin
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="6e423e79-885c-e31b-111c-bc9da26d766d.htm">DIO4</a></td><td><div class="summary">
- Read-only property to get the DIO4 pin (mapped to GPIO 1 on FX3)
+ Read-only property to get the DIO4 pin
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="5ac2f594-9622-f092-574e-deaf6fee7f88.htm">DrActive</a></td><td><div class="summary">
  If the data ready is used for register reads
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="a4decb77-e564-6454-3fd5-dfaf67605d46.htm">DrPin</a></td><td><div class="summary">
@@ -86,22 +86,23 @@
  The Data Ready polarity for streaming mode (index 11)
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="cc15f68f-c3a9-b91f-2c7f-e48b41086422.htm">DutSupplyMode</a></td><td><div class="summary">
  Get or set the DUT supply mode on the FX3. Available options are regulated 3.3V, USB 5V, and off. This feature is only available on the 
- ADI in-house iSensor FX3 eval platform, not the platform based on the Cypress Explorer kit.
+ ADI in-house iSensor FX3 eval platform, not the platform based on the Cypress Explorer kit. If a Cypress Explorer kit is connected, the 
+ setter for this property will be disabled.
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="a9ae94f8-9c05-5ddf-c844-07c1fdd8801f.htm">FirmwarePath</a></td><td><div class="summary">
  The path to the firmware .img file. Needs to be set before the FX3 can be programmed
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="5fe03c8a-7331-43a0-a084-cab0c1c0d8ad.htm">FlashProgrammerPath</a></td><td><div class="summary">
  Path to the programmer firmware which is loaded in RAM to allow flashing the EEPROM.
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="96e1f5a9-b989-801a-8619-73a4375bd56d.htm">FX3_GPIO1</a></td><td><div class="summary">
- Read-only property to get the FX3_GPIO1 pin (mapped to GPIO 5 on FX3). This pin does not map to the standard iSensor breakout,
+ Read-only property to get the FX3_GPIO1 pin. This pin does not map to the standard iSensor breakout,
  and should be used for other general purpose interfacing.
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="062bb664-caed-6c19-103e-9d678e13bcbd.htm">FX3_GPIO2</a></td><td><div class="summary">
- Read-only property to get the FX3_GPIO2 pin (mapped to GPIO 6 on FX3). This pin does not map to the standard iSensor breakout,
+ Read-only property to get the FX3_GPIO2 pin. This pin does not map to the standard iSensor breakout,
  and should be used for other general purpose interfacing.
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="2cc932b7-d462-e090-2200-515781160808.htm">FX3_GPIO3</a></td><td><div class="summary">
- Read-only property to get the FX3_GPIO3 pin (mapped to GPIO 7 on FX3). This pin does not map to the standard iSensor breakout,
+ Read-only property to get the FX3_GPIO3 pin. This pin does not map to the standard iSensor breakout,
  and should be used for other general purpose interfacing.
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="69ddaf10-0a3f-c39c-a184-69ebc305ac3d.htm">FX3_GPIO4</a></td><td><div class="summary">
- Read-only property to get the FX3_GPIO4 pin (mapped to GPIO 12 on FX3). This pin does not map to the standard iSensor breakout,
+ Read-only property to get the FX3_GPIO4 pin. This pin does not map to the standard iSensor breakout,
  and should be used for other general purpose interfacing. This pin shares a complex GPIO block with DIO1. If DIO1 is being used
  as a clock source, via the StartPWM function, then this pin cannot be used as a clock source.
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="7b540c3d-26b6-4eab-f435-56fbbcbfb586.htm">FX3BoardAttached</a></td><td><div class="summary">
@@ -144,7 +145,7 @@
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="b401267a-f0c2-614d-2271-bd69d08e8727.htm">ReadyPin</a></td><td><div class="summary">
  Property to get or set the DUT data ready pin.
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="323fa924-24da-f60d-2c4d-b0e63c274ee7.htm">ResetPin</a></td><td><div class="summary">
- Read-only property to get the reset pin (mapped to GPIO 0 on FX3)
+ Read-only property to get the reset pin
  </div></td></tr><tr data="public;declared;notNetfw;"><td><img src="../icons/pubproperty.gif" alt="Public property" title="Public property" /></td><td><a href="6c81a4f6-5c6c-36a0-9c51-90450e3a156a.htm">SclkFrequency</a></td><td><div class="summary">
  Property to get or set the FX3 SPI clock frequency setting.
  Reqcode:   B2

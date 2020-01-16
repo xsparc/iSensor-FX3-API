@@ -897,7 +897,8 @@ Public Class FX3Connection
 
     ''' <summary>
     ''' Get or set the DUT supply mode on the FX3. Available options are regulated 3.3V, USB 5V, and off. This feature is only available on the 
-    ''' ADI in-house iSensor FX3 eval platform, not the platform based on the Cypress Explorer kit.
+    ''' ADI in-house iSensor FX3 eval platform, not the platform based on the Cypress Explorer kit. If a Cypress Explorer kit is connected, the 
+    ''' setter for this property will be disabled.
     ''' </summary>
     ''' <returns>The DUT supply voltage setting</returns>
     Public Property DutSupplyMode As DutVoltage

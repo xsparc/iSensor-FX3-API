@@ -24,6 +24,7 @@
   <HelpKINode Title="ADI_BUSY_MEASURE enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="ADI_FIRMWARE_ID_CHECK enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="ADI_FROM_PC_ENDPOINT enumeration member" Url="html/3858bc40-e306-6b88-e2ec-956c3ad36fbe.htm" />
+  <HelpKINode Title="ADI_GET_BOARD_TYPE enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="ADI_GET_BUILD_DATE enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="ADI_GET_STATUS enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="ADI_HARD_RESET enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
@@ -46,6 +47,7 @@
   <HelpKINode Title="ADI_SET_BOOT_TIME enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="ADI_SET_DUT_SUPPLY enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="ADI_SET_PIN enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
+  <HelpKINode Title="ADI_SET_PIN_RESISTOR enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="ADI_SET_SPI_CONFIG enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="ADI_STREAMING_ENDPOINT enumeration member" Url="html/3858bc40-e306-6b88-e2ec-956c3ad36fbe.htm" />
   <HelpKINode Title="ADI_STREAM_BURST_DATA enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
@@ -80,6 +82,7 @@
   <HelpKINode Title="BitBangSpiConfig.SCLK field" Url="html/bca90136-f9a9-b710-6290-c4e2455818c2.htm" />
   <HelpKINode Title="BitBangSpiConfig.SCLKHalfPeriodTicks field" Url="html/8b8fd904-046d-798e-6492-b3b786d4e65b.htm" />
   <HelpKINode Title="BitBangWriteRegByte method" Url="html/62a425f0-db94-2159-1733-d340d7551ad6.htm" />
+  <HelpKINode Title="BoardType property" Url="html/2f199188-2fc5-e2dd-1ebe-e38b7623e06d.htm" />
   <HelpKINode Title="BootloaderBlinkLED method" Url="html/36824e9a-6a88-3094-304a-90a377419241.htm" />
   <HelpKINode Title="BootloaderPath property" Url="html/2086190f-f48c-3691-57a8-debd1d1b0254.htm" />
   <HelpKINode Title="BootloaderTurnOffLED method" Url="html/d8ed82c3-e676-2b11-9f04-2d4f7f73c8b8.htm" />
@@ -115,6 +118,7 @@
   <HelpKINode Title="CS field" Url="html/7355ce14-34a2-c91e-f625-acce06d91e9f.htm" />
   <HelpKINode Title="CSLagTicks field" Url="html/454f6627-c6ee-f68f-3a23-39d70f66b8bd.htm" />
   <HelpKINode Title="CSLeadTicks field" Url="html/e53474ad-dbf4-d4c2-e846-34ebbf3ae6f5.htm" />
+  <HelpKINode Title="CypressFX3Board enumeration member" Url="html/7bbd69cb-7041-ec59-4c56-ec5da4661e1e.htm" />
   <HelpKINode Title="DataReadyPin property" Url="html/7bedeb2a-d22c-5e87-621c-9c13a23aae7e.htm" />
   <HelpKINode Title="DataReadyPinFX3GPIO property" Url="html/e3994d9d-fc1d-f923-64f3-9ce6f5276269.htm" />
   <HelpKINode Title="Description field" Url="html/6f172777-b7f7-0762-ea61-58bbb85a3f9c.htm" />
@@ -148,6 +152,7 @@
   <HelpKINode Title="FX3Api.FX3ApiInfo class" Url="html/e73f1e96-55a3-c723-22a1-efd6582404a4.htm" />
   <HelpKINode Title="FX3Api.FX3BadStatusException class" Url="html/5dd375f1-50eb-1d7e-73a9-0a185ee41c0a.htm" />
   <HelpKINode Title="FX3Api.FX3Board class" Url="html/5565446a-4c70-4e5a-6591-52d3eca41856.htm" />
+  <HelpKINode Title="FX3Api.FX3BoardType enumeration" Url="html/7bbd69cb-7041-ec59-4c56-ec5da4661e1e.htm" />
   <HelpKINode Title="FX3Api.FX3CommunicationException class" Url="html/dd5057dd-7816-3b3a-211a-096415fb4956.htm" />
   <HelpKINode Title="FX3Api.FX3ConfigurationException class" Url="html/938e543e-5eff-c25d-37dd-4a72bd232859.htm" />
   <HelpKINode Title="FX3Api.FX3Connection class" Url="html/8620563f-3f40-5410-ed4b-dfba03527986.htm" />
@@ -155,6 +160,7 @@
   <HelpKINode Title="FX3Api.FX3Connection.UnexpectedDisconnectEventHandler delegate" Url="html/534755e7-b798-0a28-046c-c2eb459477b7.htm" />
   <HelpKINode Title="FX3Api.FX3Exception class" Url="html/9d8abe8e-9f83-fc8c-e72e-e5a53c931a8a.htm" />
   <HelpKINode Title="FX3Api.FX3PinObject class" Url="html/437f623b-8fa7-178c-ff30-61bb68bb622f.htm" />
+  <HelpKINode Title="FX3Api.FX3PinResistorSetting enumeration" Url="html/43c2aa87-dcdc-3866-e332-9cb18194cbdc.htm" />
   <HelpKINode Title="FX3Api.FX3ProgrammingException class" Url="html/16a39d22-24a2-be91-e5cf-fa5ab779db9e.htm" />
   <HelpKINode Title="FX3Api.FX3SPIConfig class" Url="html/8e72f395-0ddd-51f7-906f-74fb7c11ea45.htm" />
   <HelpKINode Title="FX3Api.PinList class" Url="html/444c4859-5384-fa00-cb9d-f46332154db8.htm" />
@@ -195,6 +201,7 @@
     <HelpKINode Title="methods" Url="html/f6ad139e-66a6-f854-28eb-8f5d724a3a53.htm" />
     <HelpKINode Title="properties" Url="html/a4b9a618-2b91-0200-d220-948bf4f30d79.htm" />
   </HelpKINode>
+  <HelpKINode Title="FX3Board.BoardType property" Url="html/2f199188-2fc5-e2dd-1ebe-e38b7623e06d.htm" />
   <HelpKINode Title="FX3Board.BootloaderVersion property" Url="html/9c5339b7-203f-5576-b57d-e1ac5269aa4f.htm" />
   <HelpKINode Title="FX3Board.BuildDateTime property" Url="html/4f62f926-09c9-cd95-cd3e-27709125071a.htm" />
   <HelpKINode Title="FX3Board.FirmwareVersion property" Url="html/225dcc56-f369-8603-2410-5ebddd55ed57.htm" />
@@ -205,6 +212,7 @@
   <HelpKINode Title="FX3Board.Uptime property" Url="html/8bac1b60-641b-4bf7-1deb-eb9a14b14543.htm" />
   <HelpKINode Title="FX3Board.VerboseMode property" Url="html/8f05fb6a-5a94-5db5-2577-8d320dfce4ec.htm" />
   <HelpKINode Title="FX3BoardAttached property" Url="html/7b540c3d-26b6-4eab-f435-56fbbcbfb586.htm" />
+  <HelpKINode Title="FX3BoardType enumeration" Url="html/7bbd69cb-7041-ec59-4c56-ec5da4661e1e.htm" />
   <HelpKINode Title="FX3CodeRunningOnTarget method" Url="html/2ffc4023-b4c8-1c27-15c2-f34ecdcec13e.htm" />
   <HelpKINode Title="FX3CommunicationException class">
     <HelpKINode Title="FX3CommunicationException Class" Url="html/dd5057dd-7816-3b3a-211a-096415fb4956.htm" />
@@ -327,6 +335,7 @@
   <HelpKINode Title="FX3Connection.SensorType property" Url="html/9e341986-58e8-d7fe-7994-f5dc0f2913f7.htm" />
   <HelpKINode Title="FX3Connection.SetBitBangSpiFreq method" Url="html/0827146d-d21a-6502-c57a-bf27a387aab1.htm" />
   <HelpKINode Title="FX3Connection.SetPin method" Url="html/7c878496-b143-52d3-657e-ac23ead892db.htm" />
+  <HelpKINode Title="FX3Connection.SetPinResistorSetting method" Url="html/dd796022-2abc-efad-5a3e-4e7b657c01bb.htm" />
   <HelpKINode Title="FX3Connection.SetupBurstMode method" Url="html/464bda3e-6bf3-722c-dab0-7e60d8597bff.htm" />
   <HelpKINode Title="FX3Connection.StallTime property" Url="html/77c71401-7caa-1f28-a555-c44ae22ca6d4.htm" />
   <HelpKINode Title="FX3Connection.Start method" Url="html/dc818414-2c3c-b7d8-acf4-aa6a3bc9cebd.htm" />
@@ -382,6 +391,7 @@
   <HelpKINode Title="FX3PinObject.Invert property" Url="html/4fcc6d29-cd04-50cc-c5d2-b71d3063e938.htm" />
   <HelpKINode Title="FX3PinObject.pinConfig property" Url="html/51879030-37ab-bee4-b093-bd08a857ba4f.htm" />
   <HelpKINode Title="FX3PinObject.PinNumber property" Url="html/7f01c998-1701-500a-72e5-11b0cbc22f3d.htm" />
+  <HelpKINode Title="FX3PinResistorSetting enumeration" Url="html/43c2aa87-dcdc-3866-e332-9cb18194cbdc.htm" />
   <HelpKINode Title="FX3ProgrammingException class">
     <HelpKINode Title="FX3ProgrammingException Class" Url="html/16a39d22-24a2-be91-e5cf-fa5ab779db9e.htm" />
     <HelpKINode Title="constructor" Url="html/faa0ff5b-fb8a-f461-6561-109a5794c292.htm" />
@@ -447,6 +457,7 @@
     <HelpKINode Title="DUTType Enumeration" Url="html/a664dc00-67b0-e1cf-2c27-cb6c9cf0cba5.htm" />
   </HelpKINode>
   <HelpKINode Title="Invert property" Url="html/4fcc6d29-cd04-50cc-c5d2-b71d3063e938.htm" />
+  <HelpKINode Title="iSensorFX3Board enumeration member" Url="html/7bbd69cb-7041-ec59-4c56-ec5da4661e1e.htm" />
   <HelpKINode Title="IsLSBFirst field" Url="html/89da7013-d887-6e84-3a09-fbfc42385b72.htm" />
   <HelpKINode Title="IsLSBFirst property" Url="html/f37c14dd-441b-f398-e41c-1f80b6033194.htm" />
   <HelpKINode Title="isPWMPin method" Url="html/fe7d19f7-40da-11f1-de8d-42c07116628f.htm" />
@@ -458,7 +469,10 @@
   <HelpKINode Title="MOSI field" Url="html/8bfa6938-ce9b-e953-4679-2c5fa2fc7e49.htm" />
   <HelpKINode Title="Name field" Url="html/92cf4648-7b40-1610-bcd7-873ee7aa736f.htm" />
   <HelpKINode Title="NewBufferAvailable event" Url="html/68540fa1-0b29-2ca7-a29b-0be6ba9a71c8.htm" />
-  <HelpKINode Title="None enumeration member" Url="html/8001ed3d-aab3-d9a9-516a-2fc3368c0259.htm" />
+  <HelpKINode Title="None enumeration member">
+    <HelpKINode Title="FX3PinResistorSetting Enumeration" Url="html/43c2aa87-dcdc-3866-e332-9cb18194cbdc.htm" />
+    <HelpKINode Title="StreamType Enumeration" Url="html/8001ed3d-aab3-d9a9-516a-2fc3368c0259.htm" />
+  </HelpKINode>
   <HelpKINode Title="NumFramesPurged property" Url="html/a9c441e2-05c5-4ede-a74f-2b657b158a9d.htm" />
   <HelpKINode Title="NumFramesSkipped property" Url="html/2b2df8a0-585e-e9f1-0379-38700b659b06.htm" />
   <HelpKINode Title="Off enumeration member" Url="html/96d63ff4-ab0e-90ae-6261-7f4d7a4105d1.htm" />
@@ -493,6 +507,8 @@
   <HelpKINode Title="PinPWMInfo.RealFrequency property" Url="html/9d660b67-3b16-3eb1-0eda-5b3279228165.htm" />
   <HelpKINode Title="PinPWMInfo.ToString method" Url="html/228530e5-2a58-8c1b-5787-9b97a83ee0aa.htm" />
   <HelpKINode Title="PinStart property" Url="html/2de991c2-5a59-a394-9329-9e3a023b9669.htm" />
+  <HelpKINode Title="PullDown enumeration member" Url="html/43c2aa87-dcdc-3866-e332-9cb18194cbdc.htm" />
+  <HelpKINode Title="PullUp enumeration member" Url="html/43c2aa87-dcdc-3866-e332-9cb18194cbdc.htm" />
   <HelpKINode Title="PulseDrive method" Url="html/80d24cdc-deef-3180-0111-e36fa9384cf1.htm" />
   <HelpKINode Title="PulseWait method" Url="html/031dbd3e-7143-bcaf-b813-5366bd1ba351.htm" />
   <HelpKINode Title="PurgeBadFrameData method" Url="html/0744f798-2a6a-c364-49c1-0bd96c885021.htm" />
@@ -521,6 +537,7 @@
   <HelpKINode Title="SerialNumber property" Url="html/3f41ce39-2334-2b3b-5841-a7ba619ebe37.htm" />
   <HelpKINode Title="SetBitBangSpiFreq method" Url="html/0827146d-d21a-6502-c57a-bf27a387aab1.htm" />
   <HelpKINode Title="SetPin method" Url="html/7c878496-b143-52d3-657e-ac23ead892db.htm" />
+  <HelpKINode Title="SetPinResistorSetting method" Url="html/dd796022-2abc-efad-5a3e-4e7b657c01bb.htm" />
   <HelpKINode Title="SetupBurstMode method" Url="html/464bda3e-6bf3-722c-dab0-7e60d8597bff.htm" />
   <HelpKINode Title="SpiChipselectControl enumeration" Url="html/9fbee395-4951-0907-af42-9fe9a28388a9.htm" />
   <HelpKINode Title="SpiLagLeadTime enumeration" Url="html/4f4a1f09-8752-eb16-d55b-5d0dbf56b772.htm" />
