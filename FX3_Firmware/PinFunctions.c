@@ -126,6 +126,14 @@ CyU3PReturnStatus_t AdiMeasurePinDelay(uint16_t transferLength)
 	/* Convert ms to timer ticks */
 	timeout = timeout * MS_TO_TICKS_MULT;
 
+	/* Verify pins */
+	if(!AdiIsValidGPIO(busyPin) || !AdiIsValidGPIO(triggerPin))
+	{
+		status = CY_U3P_ERROR_BAD_ARGUMENT;
+		AdiReturnBulkEndpointData(status, 12);
+		return status;
+	}
+
 	/* Check that busy pin specified is configured as input */
 	status = CyU3PGpioSimpleGetValue(busyPin, &busyInitialValue);
 	if(status != CY_U3P_SUCCESS)
