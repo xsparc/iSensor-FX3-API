@@ -428,6 +428,7 @@ Public Class FX3SPIConfig
         IsLSBFirst = False
         DrPolarity = True
         DrActive = False
+        DataReadyPinFX3GPIO = 4
 
         If SensorType = DeviceType.ADcmXL Then
             'ADcmXL (machine health)
@@ -442,14 +443,12 @@ Public Class FX3SPIConfig
             WordLength = 16
             m_StallTime = 25
             DUTType = DUTType.IMU
-            DataReadyPinFX3GPIO = 4
         Else
             'Automotive IMU with iSensorAutomotiveSpi protocol
             ClockFrequency = 4000000
             WordLength = 32
             m_StallTime = 10
             DUTType = DUTType.IMU
-            DataReadyPinFX3GPIO = 4
         End If
 
     End Sub

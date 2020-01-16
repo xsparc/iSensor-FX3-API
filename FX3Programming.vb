@@ -143,9 +143,6 @@ Partial Class FX3Connection
             Throw New FX3Exception("ERROR: Unable to configure endpoints")
         End If
 
-        'Make sure that the board SPI parameters match current setting
-        WriteBoardSpiParameters()
-
         'set up watchdog
         UpdateWatchdog()
 
@@ -165,6 +162,9 @@ Partial Class FX3Connection
             'DIO2 for ADcmXL machine health products
             m_FX3SPIConfig.DataReadyPin = DIO2
         End If
+
+        'Make sure that the board SPI parameters match current setting
+        WriteBoardSpiParameters()
 
         'Set the application firmware boot time
         SetBootTimeStamp()
