@@ -56,22 +56,15 @@
 #include "spi_regs.h"
 #include "gctlaon_regs.h"
 
-//Initialization and configuration functions.
-void AdiAppStart();
-void AdiAppStop();
-void AdiAppErrorHandler (CyU3PReturnStatus_t status);
+/** Enum for the available FX3 board types */
+typedef enum FX3BoardType
+{
+	/** iSensor FX3 based eval board manufactured by Analog Devices */
+	iSensorFX3Board = 0,
 
-/* Event Handlers */
-CyBool_t AdiControlEndpointHandler(uint32_t setupdat0, uint32_t setupdat1);
-void AdiBulkEndpointHandler(CyU3PUsbEpEvtType evType,CyU3PUSBSpeed_t usbSpeed, uint8_t epNum);
-void AdiUSBEventHandler(CyU3PUsbEventType_t evtype, uint16_t evdata);
-CyBool_t AdiLPMRequestHandler(CyU3PUsbLinkPowerMode link_mode);
-void AdiGPIOEventHandler(uint8_t gpioId);
-
-/* Misc functions */
-void AdiConfigureWatchdog();
-void WatchDogTimerCb (uint32_t nParam);
-void AdiGetBuildDate(uint8_t * outBuf);
+	/** Cypress SuperSpeed Explorer kit board. Can be used with breakout board for iSensors connectors. */
+	CypressFX3Board
+}FX3BoardType;
 
 /** Enum for the available part (DUT) types */
 typedef enum PartTye
@@ -92,6 +85,37 @@ typedef enum PartTye
     LegacyIMU
 
 }PartType;
+
+/** Pin map for translating FX3 GPIO pins to iSensor eval board functional pins */
+typedef struct FX3PinMap
+{
+	/** Reset pin, wired to the hardware reset on most iSensor products. Mapped to GPIO 0 */
+	uint16_t ADI_PIN_RESET;
+
+	/** iSensors DIO1 pin, commonly used as data ready for IMUs. Mapped to GPIO 4 */
+	uint16_t ADI_PIN_DIO1;
+
+	/** iSensors DIO2 pin, used as BUSY(data ready) on ADcmXL devices. Mapped to GPIO 3 */
+	uint16_t ADI_PIN_DIO2;
+
+	/** iSensors DIO3 pin. Mapped to GPIO 2 */
+	uint16_t ADI_PIN_DIO3;
+
+	/** iSensors DIO4 pin. Mapped to GPIO 1 */
+	uint16_t ADI_PIN_DIO4;
+
+	/** General purpose FX3 GPIO 1. Used for triggering off external test equipment, etc. Mapped to GPIO 5 */
+	uint16_t FX3_PIN_GPIO1;
+
+	/** General purpose FX3 GPIO 2. Used for triggering off external test equipment, etc. Mapped to GPIO 6 */
+	uint16_t FX3_PIN_GPIO2;
+
+	/** General purpose FX3 GPIO 3. Used for triggering off external test equipment, etc. Mapped to GPIO 7 */
+	uint16_t FX3_PIN_GPIO3;
+
+	/** General purpose FX3 GPIO 4. This GPIO shares a complex GPIO block with DIO1. Mapped to GPIO 12 */
+	uint16_t FX3_PIN_GPIO4;
+}FX3PinMap;
 
 /** Struct to store the current board state (SPI config, USB speed, etc) */
 typedef struct BoardState
@@ -137,6 +161,12 @@ typedef struct BoardState
 
 	/** Store the Unix Timestamp for the boot time. Used for error logging */
 	uint32_t BootTime;
+
+	/** The board type of the currently programmed board */
+	FX3BoardType BoardType;
+
+	/** The pin map of the currently programmed board */
+	FX3PinMap PinMap;
 
 }BoardState;
 
@@ -213,6 +243,9 @@ typedef struct StreamState
 
 /** Set the boot time code */
 #define ADI_SET_BOOT_TIME 						(0xB9)
+
+/** Get the type of the programmed board */
+#define ADI_GET_BOARD_TYPE						(0xBA)
 
 /** Start/stop a generic data stream */
 #define ADI_STREAM_GENERIC_DATA					(0xC0)
@@ -308,6 +341,16 @@ typedef struct StreamState
 #define CY_FX_BULK_BURST               			(8)
 
 /*
+ * FX3 control registers
+ */
+
+/** FX3 GPIO weak pull down control register */
+#define  GCTL_WPD_CFG                           (*(uvint32_t *)(0xE0051028))
+
+/** FX3 GPIO weak pull up control register */
+#define GCTL_WPU_CFG							 (*(uvint32_t *)(0xE0051020))
+
+/*
  * Error handling location defines
  */
 #define ERROR_GENERAL_INIT						1
@@ -331,6 +374,25 @@ extern const uint8_t CyFxUSBStringLangIDDscr[];
 extern const uint8_t CyFxUSBManufactureDscr[];
 extern const uint8_t CyFxUSBProductDscr[];
 extern uint8_t CyFxUSBSerialNumDesc[];
+
+/* Initialization and configuration functions. */
+void AdiAppStart();
+void AdiAppStop();
+void AdiAppErrorHandler (CyU3PReturnStatus_t status);
+
+/* Event Handlers */
+CyBool_t AdiControlEndpointHandler(uint32_t setupdat0, uint32_t setupdat1);
+void AdiBulkEndpointHandler(CyU3PUsbEpEvtType evType,CyU3PUSBSpeed_t usbSpeed, uint8_t epNum);
+void AdiUSBEventHandler(CyU3PUsbEventType_t evtype, uint16_t evdata);
+CyBool_t AdiLPMRequestHandler(CyU3PUsbLinkPowerMode link_mode);
+void AdiGPIOEventHandler(uint8_t gpioId);
+
+/* Misc functions */
+void AdiConfigureWatchdog();
+void WatchDogTimerCb (uint32_t nParam);
+void AdiGetBuildDate(uint8_t * outBuf);
+void AdiGetBoardPinInfo(uint8_t * outBuf);
+FX3BoardType GetFX3BoardType();
 
 #include <cyu3externcend.h>
 
