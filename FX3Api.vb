@@ -825,6 +825,43 @@ Public Class FX3Connection
     'The functions in this region are not a part of the IDutInterface, and are specific to the FX3 board
 
     ''' <summary>
+    ''' Set the FX3 GPIO input stage pull up or pull down resistor setting. All FX3 GPIOs have a software configurable
+    ''' pull up / pull down resistor (10KOhm).
+    ''' </summary>
+    ''' <param name="Pin">The pin to set (FX3PinObject)</param>
+    ''' <param name="Setting">The pin resistor setting to apply</param>
+    Public Sub SetPinResistorSetting(Pin As IPinObject, Setting As FX3PinResistorSetting)
+
+        'status code from FX3
+        Dim status As UInteger
+
+        'Create buffer for transfer
+        Dim buf(3) As Byte
+
+        'validate pin
+        If Not IsFX3Pin(Pin) Then
+            Throw New FX3ConfigurationException("ERROR: FX3 pin functions must operate with FX3PinObjects")
+        End If
+
+        'configure the control endpoint
+        ConfigureControlEndpoint(USBCommands.ADI_SET_PIN_RESISTOR, False)
+        FX3ControlEndPt.Value = Setting And &HFFFF
+        FX3ControlEndPt.Index = (Pin.pinConfig And &HFFFF)
+
+        'Transfer data from the FX3
+        If Not XferControlData(buf, 4, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer for pin resistor setting configuration failed.")
+        End If
+
+        'parse status
+        status = BitConverter.ToUInt32(buf, 0)
+        If status <> 0 Then
+            Throw New FX3BadStatusException("ERROR: Bad status code after pin resistor set. Error code: 0x" + status.ToString("X4"))
+        End If
+
+    End Sub
+
+    ''' <summary>
     ''' Set the FX3 firmware watchdog timeout period (in seconds). If the watchdog is triggered the FX3 will reset.
     ''' </summary>
     ''' <returns></returns>

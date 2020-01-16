@@ -45,11 +45,14 @@ Public Enum FX3BoardType
 End Enum
 
 ''' <summary>
-''' Setting for pull up / pull down resistors on FX3 GPIO.
+''' Setting for pull up / pull down resistors on FX3 GPIO input stage.
 ''' </summary>
 Public Enum FX3PinResistorSetting
+    'Disable internal resistor on FX3 GPIO input stage
     None = 0
+    'Enable pull down resistor
     PullDown = 1
+    'Enable pull up resistor
     PullUp = 2
 End Enum
 
