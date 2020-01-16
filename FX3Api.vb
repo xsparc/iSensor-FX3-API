@@ -189,6 +189,17 @@ Public Class FX3Connection
     'Track the supply mode
     Private m_DutSupplyMode As DutVoltage
 
+    'FX3 Pin GPIO mapping
+    Private RESET_PIN As UShort = 10
+    Private DIO1_PIN As UShort = 3
+    Private DIO2_PIN As UShort = 2
+    Private DIO3_PIN As UShort = 1
+    Private DIO4_PIN As UShort = 0
+    Private FX3_GPIO1_PIN As UShort = 4
+    Private FX3_GPIO2_PIN As UShort = 5
+    Private FX3_GPIO3_PIN As UShort = 6
+    Private FX3_GPIO4_PIN As UShort = 12
+
     'Events
 
     ''' <summary>

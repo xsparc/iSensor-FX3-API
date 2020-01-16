@@ -154,6 +154,18 @@ Partial Class FX3Connection
         m_ActiveFX3Info.SetFirmwareVersion(GetFirmwareID())
         m_ActiveFX3Info.SetBootloaderVersion(m_BootloaderVersion)
 
+        'Get FX3 board type
+        GetFX3BoardType()
+
+        'Set up data ready pin (pin mapping occure in get board type)
+        If m_sensorType <> DeviceType.ADcmXL Then
+            'DIO1 for all IMU products
+            m_FX3SPIConfig.DataReadyPin = DIO1
+        Else
+            'DIO2 for ADcmXL machine health products
+            m_FX3SPIConfig.DataReadyPin = DIO2
+        End If
+
         'Set the application firmware boot time
         SetBootTimeStamp()
 
@@ -229,6 +241,39 @@ Partial Class FX3Connection
         Return boardFound
 
     End Function
+
+    ''' <summary>
+    ''' Get the FX3 board type from the connected firmware.
+    ''' </summary>
+    Private Sub GetFX3BoardType()
+
+        'exit if no board
+        If Not m_FX3Connected Then Exit Sub
+
+        'send get board type command
+        ConfigureControlEndpoint(USBCommands.ADI_GET_BOARD_TYPE, False)
+        Dim buf(21) As Byte
+
+        'Transfer data from the FX3
+        If Not XferControlData(buf, 22, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer to get firmware type and pin mapping failed.")
+        End If
+
+        'parse board type result
+        m_ActiveFX3Info.SetBoardType(BitConverter.ToUInt32(buf, 0))
+
+        'parse pin mapping
+        RESET_PIN = BitConverter.ToUInt16(buf, 4)
+        DIO1_PIN = BitConverter.ToUInt16(buf, 6)
+        DIO2_PIN = BitConverter.ToUInt16(buf, 8)
+        DIO3_PIN = BitConverter.ToUInt16(buf, 10)
+        DIO4_PIN = BitConverter.ToUInt16(buf, 12)
+        FX3_GPIO1_PIN = BitConverter.ToUInt16(buf, 14)
+        FX3_GPIO2_PIN = BitConverter.ToUInt16(buf, 16)
+        FX3_GPIO3_PIN = BitConverter.ToUInt16(buf, 18)
+        FX3_GPIO4_PIN = BitConverter.ToUInt16(buf, 20)
+
+    End Sub
 
     ''' <summary>
     ''' This function is used to wait for an FX3 to be programmed with the ADI bootloader. In general, the programming model would go as follows,

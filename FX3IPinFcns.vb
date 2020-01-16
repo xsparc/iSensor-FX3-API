@@ -20,7 +20,7 @@ Partial Class FX3Connection
     ''' <param name="mode">Not implemented</param>
     Public Sub PulseDrive(pin As IPinObject, polarity As UInteger, pperiod As Double, mode As UInteger) Implements IPinFcns.PulseDrive
 
-        'Send a vendor command to drive pin (returns immediately)
+        'Send a vendor command to driv               e pin (returns immediately)
         ConfigureControlEndpoint(USBCommands.ADI_PULSE_DRIVE, True)
         Dim buf(10) As Byte
         Dim status As UInteger
@@ -1020,97 +1020,97 @@ Partial Class FX3Connection
 #Region "Pin Properties"
 
     ''' <summary>
-    ''' Read-only property to get the reset pin (mapped to GPIO 0 on FX3)
+    ''' Read-only property to get the reset pin
     ''' </summary>
     ''' <returns>The reset pin, as an IPinObject</returns>
     Public ReadOnly Property ResetPin As IPinObject
         Get
-            Return New FX3PinObject(0)
+            Return New FX3PinObject(RESET_PIN)
         End Get
     End Property
 
     ''' <summary>
-    ''' Read-only property to get the DIO1 pin (mapped to GPIO 4 on FX3)
+    ''' Read-only property to get the DIO1 pin
     ''' </summary>
     ''' <returns>Returns the DIO1 pin, as an IPinObject</returns>
     Public ReadOnly Property DIO1 As IPinObject
         Get
-            Return New FX3PinObject(4)
+            Return New FX3PinObject(DIO1_PIN)
         End Get
     End Property
 
     ''' <summary>
-    ''' Read-only property to get the DIO2 pin (mapped to GPIO 3 on FX3)
+    ''' Read-only property to get the DIO2 pin
     ''' </summary>
     ''' <returns>Returns the DIO2 pin, as an IPinObject</returns>
     Public ReadOnly Property DIO2 As IPinObject
         Get
-            Return New FX3PinObject(3)
+            Return New FX3PinObject(DIO2_PIN)
         End Get
     End Property
 
     ''' <summary>
-    ''' Read-only property to get the DIO3 pin (mapped to GPIO 2 on FX3)
+    ''' Read-only property to get the DIO3 pin
     ''' </summary>
     ''' <returns>Returns the DIO3 pin, as an IPinObject</returns>
     Public ReadOnly Property DIO3 As IPinObject
         Get
-            Return New FX3PinObject(2)
+            Return New FX3PinObject(DIO3_PIN)
         End Get
     End Property
 
     ''' <summary>
-    ''' Read-only property to get the DIO4 pin (mapped to GPIO 1 on FX3)
+    ''' Read-only property to get the DIO4 pin
     ''' </summary>
     ''' <returns>Returns the DIO4 pin, as an IPinObject</returns>
     Public ReadOnly Property DIO4 As IPinObject
         Get
-            Return New FX3PinObject(1)
+            Return New FX3PinObject(DIO4_PIN)
         End Get
     End Property
 
     ''' <summary>
-    ''' Read-only property to get the FX3_GPIO1 pin (mapped to GPIO 5 on FX3). This pin does not map to the standard iSensor breakout,
+    ''' Read-only property to get the FX3_GPIO1 pin. This pin does not map to the standard iSensor breakout,
     ''' and should be used for other general purpose interfacing.
     ''' </summary>
     ''' <returns>Returns the GPIO pin, as an IPinObject</returns>
     Public ReadOnly Property FX3_GPIO1 As IPinObject
         Get
-            Return New FX3PinObject(5)
+            Return New FX3PinObject(FX3_GPIO1_PIN)
         End Get
     End Property
 
     ''' <summary>
-    ''' Read-only property to get the FX3_GPIO2 pin (mapped to GPIO 6 on FX3). This pin does not map to the standard iSensor breakout,
+    ''' Read-only property to get the FX3_GPIO2 pin. This pin does not map to the standard iSensor breakout,
     ''' and should be used for other general purpose interfacing.
     ''' </summary>
     ''' <returns>Returns the GPIO pin, as an IPinObject</returns>
     Public ReadOnly Property FX3_GPIO2 As IPinObject
         Get
-            Return New FX3PinObject(6)
+            Return New FX3PinObject(FX3_GPIO2_PIN)
         End Get
     End Property
 
     ''' <summary>
-    ''' Read-only property to get the FX3_GPIO3 pin (mapped to GPIO 7 on FX3). This pin does not map to the standard iSensor breakout,
+    ''' Read-only property to get the FX3_GPIO3 pin. This pin does not map to the standard iSensor breakout,
     ''' and should be used for other general purpose interfacing.
     ''' </summary>
     ''' <returns>Returns the GPIO pin, as an IPinObject</returns>
     Public ReadOnly Property FX3_GPIO3 As IPinObject
         Get
-            Return New FX3PinObject(7)
+            Return New FX3PinObject(FX3_GPIO3_PIN)
         End Get
     End Property
 
     ''' <summary>
-    ''' Read-only property to get the FX3_GPIO4 pin (mapped to GPIO 12 on FX3). This pin does not map to the standard iSensor breakout,
+    ''' Read-only property to get the FX3_GPIO4 pin. This pin does not map to the standard iSensor breakout,
     ''' and should be used for other general purpose interfacing. This pin shares a complex GPIO block with DIO1. If DIO1 is being used
     ''' as a clock source, via the StartPWM function, then this pin cannot be used as a clock source.
     ''' </summary>
     ''' <returns>Returns the GPIO pin, as an IPinObject</returns>
     Public ReadOnly Property FX3_GPIO4 As IPinObject
         Get
-            Return New FX3PinObject(12)
+            Return New FX3PinObject(FX3_GPIO4_PIN)
         End Get
     End Property
 
