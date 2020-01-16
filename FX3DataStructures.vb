@@ -37,6 +37,14 @@ Public Enum StreamCommands
 End Enum
 
 ''' <summary>
+''' Possible FX3 board types
+''' </summary>
+Public Enum FX3BoardType
+    iSensorFX3Board = 0
+    CypressFX3Board = 1
+End Enum
+
+''' <summary>
 ''' This enum lists all supported vendor commands for the FX3 firmware. The LED commands can only be used with the ADI bootloader firmware.
 ''' </summary>
 Public Enum USBCommands
@@ -70,6 +78,9 @@ Public Enum USBCommands
 
     'Set the boot time code
     ADI_SET_BOOT_TIME = &HB9
+
+    ' Get the type of the programmed board
+    ADI_GET_BOARD_TYPE = &HBA
 
     'Start/stop a generic data stream
     ADI_STREAM_GENERIC_DATA = &HC0
@@ -765,6 +776,7 @@ Public Class FX3Board
     Private m_verboseMode As Boolean
     Private m_bootloaderVersion As String
     Private m_buildDateTime As String
+    Private m_boardType As FX3BoardType
 
     Public Sub New(SerialNumber As String, BootTime As DateTime)
 
@@ -781,14 +793,24 @@ Public Class FX3Board
 
     'Public interfaces
 
+    Public ReadOnly Property BoardType As FX3BoardType
+        Get
+            Return m_boardType
+        End Get
+    End Property
+
     ''' <summary>
     ''' Override of the ToString function
     ''' </summary>
     ''' <returns></returns>
     Public Overrides Function ToString() As String
-        Return "Firmware Version: " + FirmwareVersion + Environment.NewLine + "Build Date and Time: " + BuildDateTime + Environment.NewLine +
-            "Serial Number: " + SerialNumber + Environment.NewLine + "Debug Mode: " + VerboseMode.ToString() + Environment.NewLine +
-            "Uptime: " + Uptime.ToString() + "ms" + Environment.NewLine + "Bootloader Version: " + BootloaderVersion
+        Return "Firmware Version: " + FirmwareVersion + Environment.NewLine +
+            "Board Type: " + [Enum].GetName(GetType(FX3BoardType), BoardType) + Environment.NewLine +
+            "Build Date and Time: " + BuildDateTime + Environment.NewLine +
+            "Serial Number: " + SerialNumber + Environment.NewLine +
+            "Debug Mode: " + VerboseMode.ToString() + Environment.NewLine +
+            "Uptime: " + Uptime.ToString() + "ms" + Environment.NewLine +
+            "Bootloader Version: " + BootloaderVersion
     End Function
 
     ''' <summary>
@@ -899,6 +921,11 @@ Public Class FX3Board
     Friend Sub SetDateTime(DateTime As String)
         m_buildDateTime = DateTime
     End Sub
+
+    Friend Sub SetBoardType(BoardType As FX3BoardType)
+        m_boardType = BoardType
+    End Sub
+
 
 End Class
 
