@@ -417,7 +417,7 @@ Public Class FX3SPIConfig
     ''' Class Constructor, sets reasonable default values for IMU and ADcmXL devices
     ''' </summary>
     ''' <param name="SensorType">Optional parameter to specify default device SPI settings. Valid options are IMU and ADcmXL</param>
-    Public Sub New(Optional SensorType As DeviceType = DeviceType.IMU)
+    Public Sub New(Optional SensorType As DeviceType = DeviceType.IMU, Optional BoardType As FX3BoardType = FX3BoardType.CypressFX3Board)
         'Set the properties true for all devices
         Cpol = True
         Cpha = True
@@ -429,6 +429,8 @@ Public Class FX3SPIConfig
         DrPolarity = True
         DrActive = False
         DataReadyPinFX3GPIO = 4
+        If BoardType = FX3BoardType.CypressFX3Board Then DataReadyPinFX3GPIO = 4
+        If BoardType = FX3BoardType.iSensorFX3Board Then DataReadyPinFX3GPIO = 5
 
         If SensorType = DeviceType.ADcmXL Then
             'ADcmXL (machine health)
@@ -436,7 +438,8 @@ Public Class FX3SPIConfig
             ClockFrequency = 14000000
             WordLength = 16
             DUTType = DUTType.ADcmXL3021
-            DataReadyPinFX3GPIO = 3
+            If BoardType = FX3BoardType.CypressFX3Board Then DataReadyPinFX3GPIO = 3
+            If BoardType = FX3BoardType.iSensorFX3Board Then DataReadyPinFX3GPIO = 4
         ElseIf SensorType = DeviceType.IMU Then
             'General IMU
             ClockFrequency = 2000000

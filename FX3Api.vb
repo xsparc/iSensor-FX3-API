@@ -1093,7 +1093,7 @@ Public Class FX3Connection
         Set(value As DeviceType)
             If m_sensorType <> value Then
                 m_sensorType = value
-                m_FX3SPIConfig = New FX3SPIConfig(m_sensorType)
+                m_FX3SPIConfig = New FX3SPIConfig(m_sensorType, m_ActiveFX3Info.BoardType)
                 WriteBoardSpiParameters()
             End If
         End Set
