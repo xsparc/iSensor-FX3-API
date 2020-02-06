@@ -509,16 +509,16 @@ Partial Class FX3Connection
                         Interlocked.Increment(m_FramesRead)
                         bufferBuilder.Clear()
                         numBuffersRead = numBuffersRead + 1
-                        'Exit for loop if total integer number of buffers for the USB packet have been read (ignore for case where its more than one packet per buffer)
-                        If (transferSize - bufIndex) < BytesPerBuffer And Not (BytesPerBuffer > transferSize) Then
-                            Exit For
-                        End If
                         'Finish the stream if the total number of buffers has been read
                         If numBuffersRead >= m_TotalBuffersToRead Then
                             'Stop the stream
                             GenericStreamDone()
                             'Exit the while loop
                             Exit While
+                        End If
+                        'Exit for loop if total integer number of buffers for the USB packet have been read (ignore for case where its more than one packet per buffer)
+                        If (transferSize - bufIndex) < BytesPerBuffer And Not (BytesPerBuffer > transferSize) Then
+                            Exit For
                         End If
                     End If
                 Next
