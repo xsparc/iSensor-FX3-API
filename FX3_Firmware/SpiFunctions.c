@@ -134,7 +134,8 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 			/* Transfer data */
 			AdiBitBangSpiTransfer(MOSIPtr, MISOPtr, bitsPerTransfer, config);
 			/* Wait for stall time */
-			CyFx3BusyWait(FX3State.StallTime - 2);
+			if(FX3State.StallTime > 2)
+				CyFx3BusyWait(FX3State.StallTime - 2);
 			/* Update buffer pointers */
 			MOSIPtr += bytesPerTransfer;
 			MISOPtr += bytesPerTransfer;
