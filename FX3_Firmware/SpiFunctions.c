@@ -30,6 +30,23 @@ extern uint8_t USBBuffer[4096];
 /** Global USB Buffer (Bulk Endpoints) */
 extern uint8_t BulkBuffer[12288];
 
+/** Pointer to bit bang SPI SCLK pin */
+uvint32_t *SCLKPin;
+
+/** Pointer to bit bang SPI CS pin */
+uvint32_t *CSPin;
+
+/** Pointer to bit bang SPI MISO pin */
+uvint32_t *MISOPin;
+
+/** Pointer to bit bang SPI MOSI pin */
+uvint32_t *MOSIPin;
+
+uint32_t highMask;
+uint32_t lowMask;
+uint32_t MOSIMask;
+uint32_t finalTime;
+
 /**
   * @brief This function restarts the SPI controller.
   *
@@ -75,6 +92,8 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 	uint32_t bitsPerTransfer;
 	uint32_t numTransfers;
 	uint32_t transferCounter;
+	uint32_t bitBangStallTime;
+	register uvint32_t cycleTimer;
 
 	/* Buffer pointers */
 	uint8_t * MOSIPtr;
@@ -93,14 +112,22 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 	config.CSLeadDelay |= (USBBuffer[9] << 8);
 	config.CSLagDelay = USBBuffer[10];
 	config.CSLagDelay |= (USBBuffer[11] << 8);
-	bitsPerTransfer = USBBuffer[12];
-	bitsPerTransfer |= (USBBuffer[13] << 8);
-	bitsPerTransfer |= (USBBuffer[14] << 16);
-	bitsPerTransfer |= (USBBuffer[15] << 24);
-	numTransfers = USBBuffer[16];
-	numTransfers |= (USBBuffer[17] << 8);
-	numTransfers |= (USBBuffer[18] << 16);
-	numTransfers |= (USBBuffer[19] << 24);
+	bitBangStallTime = USBBuffer[12];
+	bitBangStallTime |= (USBBuffer[13] << 8);
+	bitsPerTransfer = USBBuffer[14];
+	bitsPerTransfer |= (USBBuffer[15] << 8);
+	bitsPerTransfer |= (USBBuffer[16] << 16);
+	bitsPerTransfer |= (USBBuffer[17] << 24);
+	numTransfers = USBBuffer[18];
+	numTransfers |= (USBBuffer[19] << 8);
+	numTransfers |= (USBBuffer[20] << 16);
+	numTransfers |= (USBBuffer[21] << 24);
+
+	/* apply offset to stall */
+	if(bitBangStallTime > STALL_COUNT_OFFSET)
+		bitBangStallTime -= STALL_COUNT_OFFSET;
+	else
+		bitBangStallTime = 0;
 
 	/* Calculate bytes per transfer */
 	bytesPerTransfer = bitsPerTransfer >> 3;
@@ -133,12 +160,13 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 		{
 			/* Transfer data */
 			AdiBitBangSpiTransfer(MOSIPtr, MISOPtr, bitsPerTransfer, config);
-			/* Wait for stall time */
-			if(FX3State.StallTime > 2)
-				CyFx3BusyWait(FX3State.StallTime - 2);
 			/* Update buffer pointers */
 			MOSIPtr += bytesPerTransfer;
 			MISOPtr += bytesPerTransfer;
+			/* Wait for stall time */
+			cycleTimer = bitBangStallTime;
+			while(cycleTimer > 0)
+				cycleTimer--;
 		}
 	}
 
@@ -240,11 +268,23 @@ CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 		status = CyU3PGpioSetSimpleConfig(config.MISO, &gpioConfig);
 	}
 
-	/* Ensure 10MHz clock is operating in correct mode */
-	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= ~(CY_U3P_LPP_GPIO_INTRMODE_MASK);
+	/* Set pin pointers */
+	MOSIPin = &GPIO->lpp_gpio_simple[config.MOSI];
+	MISOPin = &GPIO->lpp_gpio_simple[config.MISO];
+	CSPin = &GPIO->lpp_gpio_simple[config.CS];
+	SCLKPin = &GPIO->lpp_gpio_simple[config.SCLK];
 
-	/* reset the timer register */
-	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+	/* Set the high and low masks (from SCLK initial value)*/
+	highMask = *SCLKPin;
+	highMask |= CY_U3P_LPP_GPIO_OUT_VALUE;
+	lowMask = highMask & ~CY_U3P_LPP_GPIO_OUT_VALUE;
+
+	/* Set the MOSI mask and clear output bit */
+	MOSIMask = *MOSIPin;
+	MOSIMask &= ~CY_U3P_LPP_GPIO_OUT_VALUE;
+
+	/* Calculate wait value for short half of period */
+	finalTime = config.HalfClockDelay + BITBANG_HALFCLOCK_OFFSET;
 
 	return status;
 }
@@ -266,39 +306,21 @@ CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, BitBangSpiConf config)
 {
 	/* Track the number of bits clocked */
-	uint32_t bitCounter, byteCounter, highMask, lowMask, MOSIMask, finalTime, tempCnt;
-	uint8_t bytePosition;
+	uint32_t bitCounter, byteCounter, tempCnt;
+	uint32_t bytePosition;
 	register uint32_t MISOValue;
 	register uvint32_t cycleTimer;
-	uvint32_t *SCLKPin, *CSPin, *MISOPin, *MOSIPin;
 
-	/* Set pin pointers */
-	MOSIPin = &GPIO->lpp_gpio_simple[config.MOSI];
-	MISOPin = &GPIO->lpp_gpio_simple[config.MISO];
-	CSPin = &GPIO->lpp_gpio_simple[config.CS];
-	SCLKPin = &GPIO->lpp_gpio_simple[config.SCLK];
-
-	/* Set the high and low masks (from SCLK initial value)*/
-	highMask = *SCLKPin;
-	highMask |= CY_U3P_LPP_GPIO_OUT_VALUE;
-	lowMask = highMask & ~CY_U3P_LPP_GPIO_OUT_VALUE;
-
-	/* Set the MOSI mask and clear output bit */
-	MOSIMask = *MOSIPin;
-	MOSIMask &= ~CY_U3P_LPP_GPIO_OUT_VALUE;
-
-	/* Calculate wait value for short half of period */
-	finalTime = config.HalfClockDelay + BITBANG_HALFCLOCK_OFFSET;
+	/* Reduce bit count by 1 (pseudo loop unrolling) */
+	BitCount--;
 
 	/* Drop chip select */
 	*CSPin = lowMask;
 
 	/* Wait for CS lead delay */
-	cycleTimer = 0;
-	while(cycleTimer < config.CSLeadDelay)
-	{
-		cycleTimer++;
-	}
+	cycleTimer = config.CSLeadDelay;
+	while(cycleTimer > 0)
+		cycleTimer--;
 
 	/* main transmission loop */
 	bytePosition = 7;
@@ -312,12 +334,10 @@ void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, Bit
 		/* Toggle SCLK low */
 		*SCLKPin = lowMask;
 
-		/* Wait HalfClock period */
-		cycleTimer = 0;
-		while(cycleTimer < finalTime)
-		{
-			cycleTimer++;
-		}
+		/* Wait HalfClock period (w/ added offset to make duty cycle 50%)*/
+		cycleTimer = finalTime;
+		while(cycleTimer > 0)
+			cycleTimer--;
 
 		/* Toggle SCLK high */
 		*SCLKPin = highMask;
@@ -327,14 +347,9 @@ void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, Bit
 		MISO[byteCounter] |= (MISOValue << bytePosition);
 
 		/* Wait HalfClock period */
-		if(config.HalfClockDelay)
-		{
-			cycleTimer = 0;
-			while(cycleTimer < config.HalfClockDelay)
-			{
-				cycleTimer++;
-			}
-		}
+		cycleTimer = config.HalfClockDelay;
+		while(cycleTimer > 0)
+			cycleTimer--;
 
 		/* Update counters (approx. 50ns) */
 		tempCnt++;
@@ -343,16 +358,35 @@ void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, Bit
 		bytePosition = 7 - tempCnt;
 	}
 
+	/* Perform last bit outside the loop to save some time */
+
+	/* Place output data bit on MOSI pin (approx. 150ns) */
+	*MOSIPin = MOSIMask | ((MOSI[byteCounter] >> bytePosition) & 0x1);
+
+	/* Toggle SCLK low */
+	*SCLKPin = lowMask;
+
+	/* Wait HalfClock period (w/ added offset to make duty cycle 50%)*/
+	cycleTimer = finalTime;
+	while(cycleTimer > 0)
+		cycleTimer--;
+
+	/* Toggle SCLK high */
+	*SCLKPin = highMask;
+
+	/* Sample MISO pin - just sampling takes 200ns */
+	MISOValue = (*MISOPin & CY_U3P_LPP_GPIO_IN_VALUE) >> 1;
+	MISO[byteCounter] |= (MISOValue << bytePosition);
+
 	/* Wait for CS lag delay */
-	cycleTimer = 0;
-	while(cycleTimer < config.CSLagDelay)
+	cycleTimer = config.CSLagDelay;
+	while(cycleTimer > 0)
 	{
-		cycleTimer++;
+		cycleTimer--;
 	}
 
 	/* Restore CS, SCLK, MOSI to high */
 	*CSPin = highMask;
-	*SCLKPin = highMask;
 	*MOSIPin = highMask;
 }
 
