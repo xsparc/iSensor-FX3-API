@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.5.2-pub</span>
+   &#160;<span id="projectnumber">v2.6.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -92,8 +92,10 @@ Data Structures</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a0871091ac711260182300d99d852b859"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a0871091ac711260182300d99d852b859">BITBANG_HALFCLOCK_OFFSET</a>&#160;&#160;&#160;11</td></tr>
+<tr class="memitem:a0871091ac711260182300d99d852b859"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a0871091ac711260182300d99d852b859">BITBANG_HALFCLOCK_OFFSET</a>&#160;&#160;&#160;8</td></tr>
 <tr class="separator:a0871091ac711260182300d99d852b859"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad28e6eae506528ecbccc2c5da8109977"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#ad28e6eae506528ecbccc2c5da8109977">STALL_COUNT_OFFSET</a>&#160;&#160;&#160;14</td></tr>
+<tr class="separator:ad28e6eae506528ecbccc2c5da8109977"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -164,11 +166,26 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define BITBANG_HALFCLOCK_OFFSET&#160;&#160;&#160;11</td>
+          <td class="memname">#define BITBANG_HALFCLOCK_OFFSET&#160;&#160;&#160;8</td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p>Offset to make the short side of the bitbang SPI match long side. Approx. 62ns per tick </p>
+
+</div>
+</div>
+<a id="ad28e6eae506528ecbccc2c5da8109977"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad28e6eae506528ecbccc2c5da8109977">&#9670;&nbsp;</a></span>STALL_COUNT_OFFSET</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define STALL_COUNT_OFFSET&#160;&#160;&#160;14</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Offset for bit bang stall time calc </p>
 
 </div>
 </div>

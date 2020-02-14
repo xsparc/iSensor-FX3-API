@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.5.2-pub</span>
+   &#160;<span id="projectnumber">v2.6.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -139,6 +139,22 @@ Variables</h2></td></tr>
 <tr class="separator:af61156727a983c3f2ebfd9ae0e5bac71"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9cdf81ae537b704b7df976b5b2d57706"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a9cdf81ae537b704b7df976b5b2d57706">BulkBuffer</a> [12288]</td></tr>
 <tr class="separator:a9cdf81ae537b704b7df976b5b2d57706"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4f6cad05c61dc040ccbd503afc20f1f"><td class="memItemLeft" align="right" valign="top">uvint32_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#ac4f6cad05c61dc040ccbd503afc20f1f">SCLKPin</a></td></tr>
+<tr class="separator:ac4f6cad05c61dc040ccbd503afc20f1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4098c51e1df2928fe2a9000630999615"><td class="memItemLeft" align="right" valign="top">uvint32_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a4098c51e1df2928fe2a9000630999615">CSPin</a></td></tr>
+<tr class="separator:a4098c51e1df2928fe2a9000630999615"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89791c056d4950993b754594c21f35ab"><td class="memItemLeft" align="right" valign="top">uvint32_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a89791c056d4950993b754594c21f35ab">MISOPin</a></td></tr>
+<tr class="separator:a89791c056d4950993b754594c21f35ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a659dc5f1844d8ec6e2746605d9fefe08"><td class="memItemLeft" align="right" valign="top">uvint32_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a659dc5f1844d8ec6e2746605d9fefe08">MOSIPin</a></td></tr>
+<tr class="separator:a659dc5f1844d8ec6e2746605d9fefe08"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f5779ac2868e133a5b3540ef1b6e844"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a3f5779ac2868e133a5b3540ef1b6e844">PinHighMask</a></td></tr>
+<tr class="separator:a3f5779ac2868e133a5b3540ef1b6e844"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a3f02833329ca1f4fe4da615136ebd7"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a8a3f02833329ca1f4fe4da615136ebd7">PinLowMask</a></td></tr>
+<tr class="separator:a8a3f02833329ca1f4fe4da615136ebd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48c4483a0a666667d0f0257e9cf2bdfa"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a48c4483a0a666667d0f0257e9cf2bdfa">MOSIMask</a></td></tr>
+<tr class="separator:a48c4483a0a666667d0f0257e9cf2bdfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c062728869f5d1364523836042c079b"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a1c062728869f5d1364523836042c079b">SCLKLowTime</a></td></tr>
+<tr class="separator:a1c062728869f5d1364523836042c079b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>This file contains all generic SPI read/write function implementations. </p>
@@ -598,6 +614,21 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 </div>
 </div>
+<a id="a4098c51e1df2928fe2a9000630999615"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4098c51e1df2928fe2a9000630999615">&#9670;&nbsp;</a></span>CSPin</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uvint32_t* CSPin</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Pointer to bit bang SPI CS pin </p>
+
+</div>
+</div>
 <a id="aadb5735a48942c795b3be33a17c14eb4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aadb5735a48942c795b3be33a17c14eb4">&#9670;&nbsp;</a></span>FX3State</h2>
 
@@ -625,6 +656,111 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
       </table>
 </div><div class="memdoc">
 <p>DMA buffer structure for output buffer </p>
+
+</div>
+</div>
+<a id="a89791c056d4950993b754594c21f35ab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a89791c056d4950993b754594c21f35ab">&#9670;&nbsp;</a></span>MISOPin</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uvint32_t* MISOPin</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Pointer to bit bang SPI MISO pin </p>
+
+</div>
+</div>
+<a id="a48c4483a0a666667d0f0257e9cf2bdfa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a48c4483a0a666667d0f0257e9cf2bdfa">&#9670;&nbsp;</a></span>MOSIMask</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t MOSIMask</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Mask for the MOSI pin </p>
+
+</div>
+</div>
+<a id="a659dc5f1844d8ec6e2746605d9fefe08"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a659dc5f1844d8ec6e2746605d9fefe08">&#9670;&nbsp;</a></span>MOSIPin</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uvint32_t* MOSIPin</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Pointer to bit bang SPI MOSI pin </p>
+
+</div>
+</div>
+<a id="a3f5779ac2868e133a5b3540ef1b6e844"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3f5779ac2868e133a5b3540ef1b6e844">&#9670;&nbsp;</a></span>PinHighMask</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t PinHighMask</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Mask to set GPIO pin high </p>
+
+</div>
+</div>
+<a id="a8a3f02833329ca1f4fe4da615136ebd7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8a3f02833329ca1f4fe4da615136ebd7">&#9670;&nbsp;</a></span>PinLowMask</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t PinLowMask</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Mask to set GPIO pin low </p>
+
+</div>
+</div>
+<a id="a1c062728869f5d1364523836042c079b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1c062728869f5d1364523836042c079b">&#9670;&nbsp;</a></span>SCLKLowTime</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t SCLKLowTime</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>SCLK low period offset </p>
+
+</div>
+</div>
+<a id="ac4f6cad05c61dc040ccbd503afc20f1f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac4f6cad05c61dc040ccbd503afc20f1f">&#9670;&nbsp;</a></span>SCLKPin</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uvint32_t* SCLKPin</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Pointer to bit bang SPI SCLK pin </p>
 
 </div>
 </div>
