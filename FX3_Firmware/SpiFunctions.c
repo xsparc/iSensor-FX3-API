@@ -42,10 +42,17 @@ uvint32_t *MISOPin;
 /** Pointer to bit bang SPI MOSI pin */
 uvint32_t *MOSIPin;
 
-uint32_t highMask;
-uint32_t lowMask;
+/** Mask to set GPIO pin high */
+uint32_t PinHighMask;
+
+/** Mask to set GPIO pin low */
+uint32_t PinLowMask;
+
+/** Mask for the MOSI pin */
 uint32_t MOSIMask;
-uint32_t finalTime;
+
+/** SCLK low period offset */
+uint32_t SCLKLowTime;
 
 /**
   * @brief This function restarts the SPI controller.
@@ -268,16 +275,16 @@ CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 	SCLKPin = &GPIO->lpp_gpio_simple[config.SCLK];
 
 	/* Set the high and low masks (from SCLK initial value)*/
-	highMask = *SCLKPin;
-	highMask |= CY_U3P_LPP_GPIO_OUT_VALUE;
-	lowMask = highMask & ~CY_U3P_LPP_GPIO_OUT_VALUE;
+	PinHighMask = *SCLKPin;
+	PinHighMask |= CY_U3P_LPP_GPIO_OUT_VALUE;
+	PinLowMask = PinHighMask & ~CY_U3P_LPP_GPIO_OUT_VALUE;
 
 	/* Set the MOSI mask and clear output bit */
 	MOSIMask = *MOSIPin;
 	MOSIMask &= ~CY_U3P_LPP_GPIO_OUT_VALUE;
 
 	/* Calculate wait value for short half of period */
-	finalTime = config.HalfClockDelay + BITBANG_HALFCLOCK_OFFSET;
+	SCLKLowTime = config.HalfClockDelay + BITBANG_HALFCLOCK_OFFSET;
 
 	return status;
 }
@@ -303,7 +310,7 @@ void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, Bit
 	register uvint32_t cycleTimer;
 
 	/* Drop chip select */
-	*CSPin = lowMask;
+	*CSPin = PinLowMask;
 
 	/* Wait for CS lead delay */
 	cycleTimer = config.CSLeadDelay;
@@ -317,15 +324,15 @@ void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, Bit
 		*MOSIPin = MOSIMask | MOSI[bitCounter];
 
 		/* Toggle SCLK low */
-		*SCLKPin = lowMask;
+		*SCLKPin = PinLowMask;
 
 		/* Wait HalfClock period (w/ added offset to make duty cycle 50%)*/
-		cycleTimer = finalTime;
+		cycleTimer = SCLKLowTime;
 		while(cycleTimer > 0)
 			cycleTimer--;
 
 		/* Toggle SCLK high */
-		*SCLKPin = highMask;
+		*SCLKPin = PinHighMask;
 
 		/* Sample MISO pin */
 		MISO[bitCounter] = *MISOPin;
@@ -342,15 +349,15 @@ void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, Bit
 	*MOSIPin = MOSIMask | MOSI[BitCount - 1];
 
 	/* Toggle SCLK low */
-	*SCLKPin = lowMask;
+	*SCLKPin = PinLowMask;
 
 	/* Wait HalfClock period (w/ added offset to make duty cycle 50%)*/
-	cycleTimer = finalTime;
+	cycleTimer = SCLKLowTime;
 	while(cycleTimer > 0)
 		cycleTimer--;
 
 	/* Toggle SCLK high */
-	*SCLKPin = highMask;
+	*SCLKPin = PinHighMask;
 
 	/* Sample MISO pin */
 	MISO[BitCount - 1] = *MISOPin;
@@ -363,8 +370,8 @@ void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, Bit
 	}
 
 	/* Restore CS, SCLK, MOSI to high */
-	*CSPin = highMask;
-	*MOSIPin = highMask;
+	*CSPin = PinHighMask;
+	*MOSIPin = PinHighMask;
 }
 
 /**
