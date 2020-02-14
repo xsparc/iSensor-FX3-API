@@ -64,9 +64,9 @@ CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config);
 CyU3PReturnStatus_t AdiBitBangSpiHandler();
 
 /** Offset to make the short side of the bitbang SPI match long side. Approx. 62ns per tick */
-#define BITBANG_HALFCLOCK_OFFSET 11
+#define BITBANG_HALFCLOCK_OFFSET 8
 
 /** Offset for bit bang stall time calc */
-#define STALL_COUNT_OFFSET 15
+#define STALL_COUNT_OFFSET 14
 
 #endif

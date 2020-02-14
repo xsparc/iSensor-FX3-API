@@ -88,7 +88,6 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	BitBangSpiConf config;
-	uint32_t bytesPerTransfer;
 	uint32_t bitsPerTransfer;
 	uint32_t numTransfers;
 	uint32_t transferCounter;
@@ -114,14 +113,16 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 	config.CSLagDelay |= (USBBuffer[11] << 8);
 	bitBangStallTime = USBBuffer[12];
 	bitBangStallTime |= (USBBuffer[13] << 8);
-	bitsPerTransfer = USBBuffer[14];
-	bitsPerTransfer |= (USBBuffer[15] << 8);
-	bitsPerTransfer |= (USBBuffer[16] << 16);
-	bitsPerTransfer |= (USBBuffer[17] << 24);
-	numTransfers = USBBuffer[18];
-	numTransfers |= (USBBuffer[19] << 8);
-	numTransfers |= (USBBuffer[20] << 16);
-	numTransfers |= (USBBuffer[21] << 24);
+	bitBangStallTime |= (USBBuffer[14] << 16);
+	bitBangStallTime |= (USBBuffer[15] << 24);
+	bitsPerTransfer = USBBuffer[16];
+	bitsPerTransfer |= (USBBuffer[17] << 8);
+	bitsPerTransfer |= (USBBuffer[18] << 16);
+	bitsPerTransfer |= (USBBuffer[19] << 24);
+	numTransfers = USBBuffer[20];
+	numTransfers |= (USBBuffer[21] << 8);
+	numTransfers |= (USBBuffer[22] << 16);
+	numTransfers |= (USBBuffer[23] << 24);
 
 	/* apply offset to stall */
 	if(bitBangStallTime > STALL_COUNT_OFFSET)
@@ -129,23 +130,15 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 	else
 		bitBangStallTime = 0;
 
-	/* Calculate bytes per transfer */
-	bytesPerTransfer = bitsPerTransfer >> 3;
-	/* Account for non-byte aligned transfers */
-	if(bitsPerTransfer & 0x7)
-	{
-		bytesPerTransfer++;
-	}
-
 	/* Memclear the bulk buffer */
 	CyU3PMemSet (BulkBuffer, 0, sizeof(BulkBuffer));
 
 	/* Start MISO pointer at bulk buffer */
 	MISOPtr = BulkBuffer;
 
-	/* Start MOSI pointer at USBBuffer[20] */
+	/* Start MOSI pointer at USBBuffer[22] */
 	MOSIPtr = USBBuffer;
-	MOSIPtr += 20;
+	MOSIPtr += 24;
 
 	/* Setup the GPIO selected */
 	status = AdiBitBangSpiSetup(config);
@@ -161,8 +154,8 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 			/* Transfer data */
 			AdiBitBangSpiTransfer(MOSIPtr, MISOPtr, bitsPerTransfer, config);
 			/* Update buffer pointers */
-			MOSIPtr += bytesPerTransfer;
-			MISOPtr += bytesPerTransfer;
+			MOSIPtr += bitsPerTransfer;
+			MISOPtr += bitsPerTransfer;
 			/* Wait for stall time */
 			cycleTimer = bitBangStallTime;
 			while(cycleTimer > 0)
@@ -173,13 +166,13 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 	/* Return MISO data over bulk buffer */
 	ManualDMABuffer.buffer = BulkBuffer;
 	ManualDMABuffer.size = sizeof(BulkBuffer);
-	ManualDMABuffer.count = numTransfers * bytesPerTransfer;
+	ManualDMABuffer.count = numTransfers * bitsPerTransfer;
 
 	/* Send the data to PC */
 	status = CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
 	if(status != CY_U3P_SUCCESS)
 	{
-		CyU3PDebugPrint (4, "Sending DR data to PC failed!, error code = 0x%x\r\n", status);
+		CyU3PDebugPrint (4, "Sending bit bang SPI data to PC failed!, error code = 0x%x\r\n", status);
 	}
 
 	return status;
@@ -306,13 +299,8 @@ CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, BitBangSpiConf config)
 {
 	/* Track the number of bits clocked */
-	uint32_t bitCounter, byteCounter, tempCnt;
-	uint32_t bytePosition;
-	register uint32_t MISOValue;
+	uint32_t bitCounter;
 	register uvint32_t cycleTimer;
-
-	/* Reduce bit count by 1 (pseudo loop unrolling) */
-	BitCount--;
 
 	/* Drop chip select */
 	*CSPin = lowMask;
@@ -323,13 +311,10 @@ void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, Bit
 		cycleTimer--;
 
 	/* main transmission loop */
-	bytePosition = 7;
-	byteCounter = 0;
-	tempCnt = 0;
-	for(bitCounter = 0; bitCounter < BitCount; bitCounter++)
+	for(bitCounter = 0; bitCounter < (BitCount - 1); bitCounter++)
 	{
 		/* Place output data bit on MOSI pin (approx. 150ns) */
-		*MOSIPin = MOSIMask | ((MOSI[byteCounter] >> bytePosition) & 0x1);
+		*MOSIPin = MOSIMask | MOSI[bitCounter];
 
 		/* Toggle SCLK low */
 		*SCLKPin = lowMask;
@@ -342,26 +327,19 @@ void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, Bit
 		/* Toggle SCLK high */
 		*SCLKPin = highMask;
 
-		/* Sample MISO pin - just sampling takes 200ns */
-		MISOValue = (*MISOPin & CY_U3P_LPP_GPIO_IN_VALUE) >> 1;
-		MISO[byteCounter] |= (MISOValue << bytePosition);
+		/* Sample MISO pin */
+		MISO[bitCounter] = *MISOPin;
 
 		/* Wait HalfClock period */
 		cycleTimer = config.HalfClockDelay;
 		while(cycleTimer > 0)
 			cycleTimer--;
-
-		/* Update counters (approx. 50ns) */
-		tempCnt++;
-		byteCounter += (tempCnt >> 3);
-		tempCnt &= 0x7;
-		bytePosition = 7 - tempCnt;
 	}
 
 	/* Perform last bit outside the loop to save some time */
 
-	/* Place output data bit on MOSI pin (approx. 150ns) */
-	*MOSIPin = MOSIMask | ((MOSI[byteCounter] >> bytePosition) & 0x1);
+	/* Place output data bit on MOSI pin */
+	*MOSIPin = MOSIMask | MOSI[BitCount - 1];
 
 	/* Toggle SCLK low */
 	*SCLKPin = lowMask;
@@ -374,9 +352,8 @@ void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, Bit
 	/* Toggle SCLK high */
 	*SCLKPin = highMask;
 
-	/* Sample MISO pin - just sampling takes 200ns */
-	MISOValue = (*MISOPin & CY_U3P_LPP_GPIO_IN_VALUE) >> 1;
-	MISO[byteCounter] |= (MISOValue << bytePosition);
+	/* Sample MISO pin */
+	MISO[BitCount - 1] = *MISOPin;
 
 	/* Wait for CS lag delay */
 	cycleTimer = config.CSLagDelay;
