@@ -81,6 +81,7 @@
   <HelpKINode Title="BitBangSpiConfig.MOSI field" Url="html/8bfa6938-ce9b-e953-4679-2c5fa2fc7e49.htm" />
   <HelpKINode Title="BitBangSpiConfig.SCLK field" Url="html/bca90136-f9a9-b710-6290-c4e2455818c2.htm" />
   <HelpKINode Title="BitBangSpiConfig.SCLKHalfPeriodTicks field" Url="html/8b8fd904-046d-798e-6492-b3b786d4e65b.htm" />
+  <HelpKINode Title="BitBangSpiConfig.StallTicks field" Url="html/8c379ad2-bcbf-249c-14de-aab48905cd65.htm" />
   <HelpKINode Title="BitBangWriteRegByte method" Url="html/62a425f0-db94-2159-1733-d340d7551ad6.htm" />
   <HelpKINode Title="BoardType property" Url="html/2f199188-2fc5-e2dd-1ebe-e38b7623e06d.htm" />
   <HelpKINode Title="BootloaderBlinkLED method" Url="html/36824e9a-6a88-3094-304a-90a377419241.htm" />
@@ -334,6 +335,7 @@
   <HelpKINode Title="FX3Connection.SclkFrequency property" Url="html/6c81a4f6-5c6c-36a0-9c51-90450e3a156a.htm" />
   <HelpKINode Title="FX3Connection.SensorType property" Url="html/9e341986-58e8-d7fe-7994-f5dc0f2913f7.htm" />
   <HelpKINode Title="FX3Connection.SetBitBangSpiFreq method" Url="html/0827146d-d21a-6502-c57a-bf27a387aab1.htm" />
+  <HelpKINode Title="FX3Connection.SetBitBangStallTime method" Url="html/56f4fec7-eb04-322b-49e9-b544d201b9ea.htm" />
   <HelpKINode Title="FX3Connection.SetPin method" Url="html/7c878496-b143-52d3-657e-ac23ead892db.htm" />
   <HelpKINode Title="FX3Connection.SetPinResistorSetting method" Url="html/dd796022-2abc-efad-5a3e-4e7b657c01bb.htm" />
   <HelpKINode Title="FX3Connection.SetupBurstMode method" Url="html/464bda3e-6bf3-722c-dab0-7e60d8597bff.htm" />
@@ -536,6 +538,7 @@
   <HelpKINode Title="SensorType property" Url="html/9e341986-58e8-d7fe-7994-f5dc0f2913f7.htm" />
   <HelpKINode Title="SerialNumber property" Url="html/3f41ce39-2334-2b3b-5841-a7ba619ebe37.htm" />
   <HelpKINode Title="SetBitBangSpiFreq method" Url="html/0827146d-d21a-6502-c57a-bf27a387aab1.htm" />
+  <HelpKINode Title="SetBitBangStallTime method" Url="html/56f4fec7-eb04-322b-49e9-b544d201b9ea.htm" />
   <HelpKINode Title="SetPin method" Url="html/7c878496-b143-52d3-657e-ac23ead892db.htm" />
   <HelpKINode Title="SetPinResistorSetting method" Url="html/dd796022-2abc-efad-5a3e-4e7b657c01bb.htm" />
   <HelpKINode Title="SetupBurstMode method" Url="html/464bda3e-6bf3-722c-dab0-7e60d8597bff.htm" />
@@ -551,6 +554,7 @@
   <HelpKINode Title="SPI_SSN_LAG_LEAD_ONE_HALF_CLK enumeration member" Url="html/4f4a1f09-8752-eb16-d55b-5d0dbf56b772.htm" />
   <HelpKINode Title="SPI_SSN_LAG_LEAD_ZERO_CLK enumeration member" Url="html/4f4a1f09-8752-eb16-d55b-5d0dbf56b772.htm" />
   <HelpKINode Title="StallCycles property" Url="html/624d233b-cfd0-0dd2-3357-bd3ef59bcee0.htm" />
+  <HelpKINode Title="StallTicks field" Url="html/8c379ad2-bcbf-249c-14de-aab48905cd65.htm" />
   <HelpKINode Title="StallTime property">
     <HelpKINode Title="FX3Connection.StallTime Property " Url="html/77c71401-7caa-1f28-a555-c44ae22ca6d4.htm" />
     <HelpKINode Title="FX3SPIConfig.StallTime Property " Url="html/12609f8f-e0ff-3c77-fc9c-82c83b66ae5d.htm" />
