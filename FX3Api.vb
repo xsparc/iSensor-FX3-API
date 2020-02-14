@@ -561,6 +561,10 @@ Public Class FX3Connection
                 m_ActiveFX3.ControlEndPt.Value = m_FX3SPIConfig.StallTime
                 ConfigureSPI()
             End If
+            'apply stall time to the bit bang SPI
+            If Not IsNothing(m_BitBangSpi) Then
+                SetBitBangStallTime(CDbl(value))
+            End If
         End Set
     End Property
 
