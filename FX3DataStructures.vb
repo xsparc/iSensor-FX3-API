@@ -250,6 +250,7 @@ Public Class BitBangSpiConfig
     Public CSLeadTicks As UShort
     Public CSLagTicks As UShort
     Public SCLKHalfPeriodTicks As UInteger
+    Public StallTicks As UInteger
 
     ''' <summary>
     ''' Constructor which lets you specify set of default pins to use as bit bang SPI pins
@@ -274,6 +275,7 @@ Public Class BitBangSpiConfig
         CSLeadTicks = 5 'Lead one SCLK period
         CSLagTicks = 5 'Lag one SCLK period
         SCLKHalfPeriodTicks = 5 'Should give approx. 1MHz
+        StallTicks = 82 '5us
     End Sub
 
     ''' <summary>
@@ -294,6 +296,10 @@ Public Class BitBangSpiConfig
         params.Add((CSLeadTicks And &HFF00) >> 8)
         params.Add(CSLagTicks And &HFF)
         params.Add((CSLagTicks And &HFF00) >> 8)
+        params.Add(StallTicks And &HFF)
+        params.Add((StallTicks And &HFF00) >> 8)
+        params.Add((StallTicks And &HFF0000) >> 16)
+        params.Add((StallTicks And &HFF000000) >> 24)
         Return params.ToArray()
     End Function
 

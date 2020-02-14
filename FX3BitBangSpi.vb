@@ -32,18 +32,44 @@ Partial Class FX3Connection
         Dim buf As New List(Of Byte)
         Dim timeoutTimer As New Stopwatch()
         Dim transferStatus As Boolean
-        Dim bytesPerTransfer As UInteger
-        Dim len As Integer
+        Dim MOSIBits As New List(Of Byte)
+        Dim byteIndex As Integer
+        Dim index As Integer
+        Dim resultData As New List(Of Byte)
 
         'Validate bits per transfer
         If BitsPerTransfer = 0 Then
             Throw New FX3ConfigurationException("ERROR: Bits per transfer must be non-zero in a bit banged SPI transfer")
         End If
 
+        'Check size
+        If buf.Count() > 4096 Then
+            Throw New FX3ConfigurationException("ERROR: Too much data (" + buf.Count() + " bytes) in a single bit banged SPI transaction.")
+        End If
+
+        'check the transmit data size
+        If BitsPerTransfer * NumTransfers > (MOSIData.Count() * 8) Then
+            Throw New FX3ConfigurationException("ERROR: MOSI data size must meet or exceed total transfer size")
+        End If
+
         'Return for 0 transfers
         If NumTransfers = 0 Then
             Return buf.ToArray()
         End If
+
+        'build MOSI bit array
+        index = 0
+        byteIndex = 7
+        For transfer As Integer = 0 To NumTransfers - 1
+            For bit As Integer = 0 To BitsPerTransfer - 1
+                MOSIBits.Add((MOSIData(index) >> byteIndex) And &H1)
+                byteIndex -= 1
+                If byteIndex < 0 Then
+                    byteIndex = 7
+                    index += 1
+                End If
+            Next
+        Next
 
         'Build the buffer
         buf.AddRange(m_BitBangSpi.GetParameterArray())
@@ -55,20 +81,7 @@ Partial Class FX3Connection
         buf.Add((NumTransfers And &HFF00) >> 8)
         buf.Add((NumTransfers And &HFF0000) >> 16)
         buf.Add((NumTransfers And &HFF000000) >> 24)
-        buf.AddRange(MOSIData)
-
-        'Find bytes per transfer
-        bytesPerTransfer = BitsPerTransfer >> 3
-        If BitsPerTransfer And &H7 Then bytesPerTransfer += 1
-
-        If bytesPerTransfer * NumTransfers <> MOSIData.Count() Then
-            Throw New FX3ConfigurationException("ERROR: MOSI data size must match total transfer size")
-        End If
-
-        'Check size
-        If buf.Count() > 4096 Then
-            Throw New FX3ConfigurationException("ERROR: Too much data (" + buf.Count() + " bytes) in a single bit banged SPI transaction.")
-        End If
+        buf.AddRange(MOSIBits)
 
         'Send the start command
         ConfigureControlEndpoint(USBCommands.ADI_BITBANG_SPI, True)
@@ -79,10 +92,9 @@ Partial Class FX3Connection
         'Read data back from part
         transferStatus = False
         timeoutTimer.Start()
-        Dim resultBuf(bytesPerTransfer * NumTransfers - 1) As Byte
+        Dim resultBuf(BitsPerTransfer * NumTransfers - 1) As Byte
         While ((Not transferStatus) And (timeoutTimer.ElapsedMilliseconds() < TimeoutInMs))
-            len = bytesPerTransfer * NumTransfers
-            transferStatus = USB.XferData(resultBuf, len, DataInEndPt)
+            transferStatus = USB.XferData(resultBuf, resultBuf.Count, DataInEndPt)
         End While
         timeoutTimer.Stop()
 
@@ -90,7 +102,26 @@ Partial Class FX3Connection
             Console.WriteLine("ERROR: Bit bang SPI transfer timed out")
         End If
 
-        Return resultBuf
+        'pre-process result buffer to just be input values
+        For i As Integer = 0 To resultBuf.Count - 1
+            resultBuf(i) = (resultBuf(i) >> 1) And &H1
+        Next
+
+        'pack result buffer to byte values
+        byteIndex = 7
+        index = 0
+        resultData.Add(0)
+        For i As Integer = 0 To resultBuf.Count - 1
+            resultData(index) += (resultBuf(i) << byteIndex)
+            byteIndex -= 1
+            If byteIndex < 0 And (i <> (resultBuf.Count - 1)) Then
+                resultData.Add(0)
+                byteIndex = 7
+                index += 1
+            End If
+        Next
+
+        Return resultData.ToArray()
     End Function
 
     ''' <summary>
@@ -160,25 +191,50 @@ Partial Class FX3Connection
     End Function
 
     ''' <summary>
+    ''' Set the bit bang SPI stall time. Driven by a clock with resolution of 49.3ns
+    ''' </summary>
+    ''' <param name="MicroSecondsStall">Stall time desired, in microseconds. Minimum of 0.7us</param>
+    ''' <returns>A boolean indicating if value is good or not. Defaults to closest possible value</returns>
+    Public Function SetBitBangStallTime(MicroSecondsStall As Double) As Boolean
+        Dim stallNs As Double
+
+        Const NsPerTick As Double = 49.61
+
+        Try
+            'convert to nanoseconds stall
+            stallNs = MicroSecondsStall * 1000
+            'convert to ticks
+            stallNs = stallNs / NsPerTick
+            'round to uint and apply
+            m_BitBangSpi.StallTicks = CUInt(stallNs)
+        Catch ex As Exception
+            Return False
+        End Try
+
+        Return True
+    End Function
+
+    ''' <summary>
     ''' Sets the SCLK frequency for a bit bang SPI connection. 
     ''' </summary>
     ''' <param name="Freq">The desired SPI frequency. Can go from 800KHz to approx 0.001Hz</param>
     ''' <returns></returns>
     Public Function SetBitBangSpiFreq(Freq As Double) As Boolean
-        Dim halfPeriodNsOffset As Double = 740
+        Const halfPeriodNsOffset As Double = 550
+        Const NsPerTick As Double = 49.61
+        Dim desiredPeriodNS As Double
+
         'Check if freq is more than max capable freq
         If Freq > (1 / (2 * halfPeriodNsOffset * 10 ^ -9)) Then
             m_BitBangSpi.SCLKHalfPeriodTicks = 0
             Return False
         End If
 
-        Dim desiredPeriodNS As Double
         desiredPeriodNS = 10 ^ 9 / Freq
-        'There is a base half clock period of 740ns (atm). Each value added to that adds an additional 62ns
+        'There is a base half clock period of 550ns (atm). Each value added to that adds an additional 49ns
         desiredPeriodNS = desiredPeriodNS / 2
         desiredPeriodNS = desiredPeriodNS - halfPeriodNsOffset
-        m_BitBangSpi.SCLKHalfPeriodTicks = Math.Floor(desiredPeriodNS / 62)
-
+        m_BitBangSpi.SCLKHalfPeriodTicks = CUInt(Math.Floor(desiredPeriodNS / NsPerTick))
         Return True
     End Function
 
