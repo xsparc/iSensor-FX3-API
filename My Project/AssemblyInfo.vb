@@ -12,7 +12,7 @@ Imports System.Runtime.InteropServices
 <Assembly: AssemblyDescription("Interfacing Library for the Analog Devices iSensor FX3 Demonstration Platform")>
 <Assembly: AssemblyCompany("Analog Devices")>
 <Assembly: AssemblyProduct("FX3Api")>
-<Assembly: AssemblyCopyright("Copyright ©  2019")>
+<Assembly: AssemblyCopyright("Copyright ©  2020")>
 <Assembly: AssemblyTrademark("")> 
 
 <Assembly: ComVisible(False)>
@@ -31,5 +31,5 @@ Imports System.Runtime.InteropServices
 ' by using the '*' as shown below:
 ' <Assembly: AssemblyVersion("1.0.*")> 
 
-<Assembly: AssemblyVersion("2.5.2")>
-<Assembly: AssemblyFileVersion("2.5.2")>
+<Assembly: AssemblyVersion("2.6.0")>
+<Assembly: AssemblyFileVersion("2.6.0")>
