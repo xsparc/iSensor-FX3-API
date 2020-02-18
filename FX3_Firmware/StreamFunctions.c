@@ -127,7 +127,10 @@ CyU3PReturnStatus_t AdiTransferStreamStart()
 	status = CyU3PUsbGetEP0Data(StreamThreadState.TransferByteLength, USBBuffer, &bytesRead);
 	if(status != CY_U3P_SUCCESS)
 	{
+#ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "Failed to read configuration data from control endpoint!, error code = 0x%x\r\n", status);
+#endif
+		AdiAppErrorHandler(status);
 	}
 
 	/* Parse control endpoint data. The data is formatted as follows
@@ -174,7 +177,9 @@ CyU3PReturnStatus_t AdiTransferStreamStart()
 	status = CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
 	if(status != CY_U3P_SUCCESS)
 	{
+#ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "Flushing the ADI_STREAMING_ENDPOINT failed, Error Code = 0x%x\r\n", status);
+#endif
 		AdiAppErrorHandler(status);
 	}
 
@@ -196,7 +201,9 @@ CyU3PReturnStatus_t AdiTransferStreamStart()
 	status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_MANUAL_OUT, &dmaConfig);
 	if(status != CY_U3P_SUCCESS)
 	{
+#ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "Configuring the StreamingChannel DMA for generic stream failed, Error Code = 0x%x\r\n", status);
+#endif
 		AdiAppErrorHandler(status);
 	}
 
@@ -204,8 +211,10 @@ CyU3PReturnStatus_t AdiTransferStreamStart()
 	status = CyU3PDmaChannelSetXfer(&StreamingChannel, 0);
 	if(status != CY_U3P_SUCCESS)
 	{
+#ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "CyU3PDmaChannelSetXfer failed, Error Code = 0x%x\r\n", status);
-		return status;
+#endif
+		AdiAppErrorHandler(status);
 	}
 
 	/* Enable timer interrupts */
@@ -315,8 +324,10 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
     status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_AUTO, &dmaConfig);
 	if(status != CY_U3P_SUCCESS)
 	{
+#ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "Configuring the RTS DMA failed, Error Code = 0x%x\r\n", status);
-		return status;
+#endif
+		AdiAppErrorHandler(status);
 	}
 
 	/* Clear the DMA buffers */
@@ -336,14 +347,13 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 			status = CyU3PSpiTransmitWords(tempReadBuffer, 2);
 			if (status != CY_U3P_SUCCESS)
 			{
-						return status;
+#ifdef VERBOSE_MODE
+				CyU3PDebugPrint (4, "SPI Transfer failed, STATUS = 0x%x\r\n", status);
+#endif
+				AdiAppErrorHandler(status);
 			}
 			AdiSleepForMicroSeconds(FX3State.StallTime);
 			status = CyU3PSpiReceiveWords(tempReadBuffer, 2);
-			if (status != CY_U3P_SUCCESS)
-			{
-				return status;
-			}
 			AdiSleepForMicroSeconds(FX3State.StallTime);
 
 			/* Clear bit 12 (bit enables/disables starting a capture using SYNC pin) */
@@ -353,18 +363,10 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 			tempWriteBuffer[1] = (0x80) | (0x64);
 			tempWriteBuffer[0] = tempReadBuffer[0];
 			status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
-			if (status != CY_U3P_SUCCESS)
-			{
-				return status;
-			}
 			AdiSleepForMicroSeconds(FX3State.StallTime);
 			tempWriteBuffer[1] = (0x80) | (0x65);
 			tempWriteBuffer[0] = tempReadBuffer[0];
 			status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
-			if (status != CY_U3P_SUCCESS)
-			{
-				return status;
-			}
 			AdiSleepForMicroSeconds(FX3State.StallTime);
 
 			/* Configure SYNC/RTS as an output and set high */
@@ -387,7 +389,10 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 			status = CyU3PGpioSimpleSetValue(FX3State.BusyPin, CyTrue);
 			if(status != CY_U3P_SUCCESS)
 			{
-				return status;
+#ifdef VERBOSE_MODE
+				CyU3PDebugPrint (4, "Setting BUSY pin as input failed, STATUS = 0x%x\r\n", status);
+#endif
+				AdiAppErrorHandler(status);
 			}
 		}
 	}
@@ -399,16 +404,8 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 		tempReadBuffer[1] = (0x64);
 		tempReadBuffer[0] = (0x00);
 		status = CyU3PSpiTransmitWords(tempReadBuffer, 2);
-		if (status != CY_U3P_SUCCESS)
-		{
-					return status;
-		}
 		AdiSleepForMicroSeconds(FX3State.StallTime);
 		status = CyU3PSpiReceiveWords(tempReadBuffer, 2);
-		if (status != CY_U3P_SUCCESS)
-		{
-			return status;
-		}
 		AdiSleepForMicroSeconds(FX3State.StallTime);
 
 		/* Set bit 12 (bit enables/disables starting a capture using SYNC pin) */
@@ -418,18 +415,10 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 		tempWriteBuffer[1] = (0x80) | (0x64);
 		tempWriteBuffer[0] = tempReadBuffer[0];
 		status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
-		if (status != CY_U3P_SUCCESS)
-		{
-			return status;
-		}
 		AdiSleepForMicroSeconds(FX3State.StallTime);
 		tempWriteBuffer[1] = (0x80) | (0x65);
 		tempWriteBuffer[0] = tempReadBuffer[1];
 		status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
-		if (status != CY_U3P_SUCCESS)
-		{
-			return status;
-		}
 		AdiSleepForMicroSeconds(FX3State.StallTime);
 
 		/* Configure SYNC/RTS as an output and set high */
@@ -452,7 +441,10 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 		status = CyU3PGpioSimpleSetValue(FX3State.BusyPin, CyTrue);
 		if(status != CY_U3P_SUCCESS)
 		{
-			return status;
+#ifdef VERBOSE_MODE
+			CyU3PDebugPrint (4, "Setting BUSY pin as input failed, STATUS = 0x%x\r\n", status);
+#endif
+			AdiAppErrorHandler(status);
 		}
 	}
 	else
@@ -462,18 +454,10 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 		tempWriteBuffer[1] = (0x80) | (0x3E);
 		tempWriteBuffer[0] = 0;
 		status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
-		if (status != CY_U3P_SUCCESS)
-		{
-			return status;
-		}
 		AdiSleepForMicroSeconds(FX3State.StallTime);
 		tempWriteBuffer[1] = (0x80) | (0x3F);
 		tempWriteBuffer[0] = 0x08;
 		status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
-		if (status != CY_U3P_SUCCESS)
-		{
-			return status;
-		}
 		AdiSleepForMicroSeconds(FX3State.StallTime);
 	}
 
@@ -509,8 +493,6 @@ CyU3PReturnStatus_t AdiRealTimeStreamFinished()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
-	/* Set stream running flag to false */
-
 	/* Pull SYNC/RTS pin low to force x021 out of RT mode */
 	if(StreamThreadState.PinExitEnable || StreamThreadState.PinStartEnable)
 	{
@@ -545,10 +527,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamFinished()
     status = CyU3PDmaChannelDestroy(&StreamingChannel);
 	if(status != CY_U3P_SUCCESS)
 	{
-#ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "Tearing down the RTS DMA failed, Error Code = 0x%x\r\n", status);
-#endif
-		AdiAppErrorHandler(status);
 	}
 
 	/* Flush streaming end point */
@@ -565,10 +544,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamFinished()
 	status = CyU3PSpiSetConfig(&FX3State.SpiConfig, NULL);
 	if(status != CY_U3P_SUCCESS)
 	{
-#ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "Restoring SPI config after burst stream mode failed, Error Code = 0x%x\r\n", status);
-#endif
-		AdiAppErrorHandler(status);
 	}
 
 	/* Reset KillStreamEarly flag in case the user wants to capture data again */
@@ -697,7 +673,9 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_AUTO, &dmaConfig);
 	if(status != CY_U3P_SUCCESS)
 	{
+#ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "Configuring the Burst Stream DMA failed, Error Code = 0x%x\r\n", status);
+#endif
 		AdiAppErrorHandler(status);
 	}
 
@@ -720,7 +698,9 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
     status = CyU3PDmaChannelCreate(&MemoryToSPI, CY_U3P_DMA_TYPE_MANUAL_OUT, &dmaConfig);
 	if(status != CY_U3P_SUCCESS)
 	{
+#ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "Configuring the SPI TX DMA failed, Error Code = 0x%x\r\n", status);
+#endif
 		AdiAppErrorHandler(status);
 	}
 
@@ -728,7 +708,9 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	status = CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
 	if(status != CY_U3P_SUCCESS)
 	{
+#ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "Flushing the ADI_STREAMING_ENDPOINT failed, Error Code = 0x%x\r\n", status);
+#endif
 		AdiAppErrorHandler(status);
 	}
 
@@ -749,7 +731,9 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	status = CyU3PDmaChannelSetXfer(&StreamingChannel, 0);
 	if(status != CY_U3P_SUCCESS)
 	{
+#ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "Setting CyU3PDmaChannelSetXfer failed, Error Code = 0x%x\r\n", status);
+#endif
 		AdiAppErrorHandler(status);
 	}
 
@@ -789,7 +773,6 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 	if(status != CY_U3P_SUCCESS)
 	{
 		CyU3PDebugPrint (4, "Destroying the SPI TX DMA failed, Error Code = 0x%x\r\n", status);
-		return status;
 	}
 
     /* Destroy the burst DMA channel (and recover a LOT of memory) */
@@ -797,7 +780,6 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 	if(status != CY_U3P_SUCCESS)
 	{
 		CyU3PDebugPrint (4, "Tearing down the Streaming DMA channel failed, Error Code = 0x%x\r\n", status);
-		return status;
 	}
 
 	/* Flush the streaming end point */
@@ -887,7 +869,9 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 	status = CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
 	if(status != CY_U3P_SUCCESS)
 	{
+#ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "Flushing the ADI_STREAMING_ENDPOINT failed, Error Code = 0x%x\r\n", status);
+#endif
 		AdiAppErrorHandler(status);
 	}
 
@@ -909,7 +893,9 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 	status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_MANUAL_OUT, &dmaConfig);
 	if(status != CY_U3P_SUCCESS)
 	{
+#ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "Configuring the StreamingChannel DMA for generic stream failed, Error Code = 0x%x\r\n", status);
+#endif
 		AdiAppErrorHandler(status);
 	}
 
@@ -917,8 +903,10 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 	status = CyU3PDmaChannelSetXfer(&StreamingChannel, 0);
 	if(status != CY_U3P_SUCCESS)
 	{
+#ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "CyU3PDmaChannelSetXfer failed, Error Code = 0x%x\r\n", status);
-		return status;
+#endif
+		AdiAppErrorHandler(status);
 	}
 
 	/* Print stream state after all config */
