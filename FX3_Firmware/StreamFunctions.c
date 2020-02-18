@@ -44,9 +44,47 @@ extern uint8_t BulkBuffer[12288];
 CyU3PReturnStatus_t AdiStopAnyDataStream()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+
+	/* Set the event mask to the stream enable events */
+	uint32_t eventMask = ADI_GENERIC_STREAM_ENABLE|ADI_RT_STREAM_ENABLE|ADI_BURST_STREAM_ENABLE|ADI_TRANSFER_STREAM_ENABLE;
+
+	/* Variable to receive the event arguments into */
+	uint32_t eventFlags;
+
+	/* Check if any streams are enabled */
+	CyU3PEventGet (&EventHandler, eventMask, CYU3P_EVENT_OR, &eventFlags, CYU3P_NO_WAIT);
+
+	/* If no events are set eventFlags will be 0 */
+	if(eventFlags == 0)
+	{
+		status = CY_U3P_ERROR_NOT_STARTED;
+	}
+
+	/* Set kill stream early flag */
 	KillStreamEarly = CyTrue;
-	//TODO: Check if the stream thread is active and return status based on the thread state
+
+	/* Return status over USB */
+	AdiReturnStreamCancelStatus(status);
+
+	/* return status code */
 	return status;
+}
+
+/**
+  * @brief Return a status code over control endpoint (4 bytes)
+  *
+  * @param status The status code to send over the control endpoint
+  *
+  * @return void
+ **/
+void AdiReturnStreamCancelStatus(CyU3PReturnStatus_t status)
+{
+	/* Send status back over control endpoint to end USB transaction and signal cancel was completed successfully */
+	USBBuffer[0] = status & 0xFF;
+	USBBuffer[1] = (status & 0xFF00) >> 8;
+	USBBuffer[2] = (status & 0xFF0000) >> 16;
+	USBBuffer[3] = (status & 0xFF000000) >> 24;
+	CyU3PUsbSendEP0Data (4, USBBuffer);
 }
 
 /**
@@ -471,6 +509,8 @@ CyU3PReturnStatus_t AdiRealTimeStreamFinished()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
+	/* Set stream running flag to false */
+
 	/* Pull SYNC/RTS pin low to force x021 out of RT mode */
 	if(StreamThreadState.PinExitEnable || StreamThreadState.PinStartEnable)
 	{
@@ -505,8 +545,10 @@ CyU3PReturnStatus_t AdiRealTimeStreamFinished()
     status = CyU3PDmaChannelDestroy(&StreamingChannel);
 	if(status != CY_U3P_SUCCESS)
 	{
+#ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "Tearing down the RTS DMA failed, Error Code = 0x%x\r\n", status);
-		return status;
+#endif
+		AdiAppErrorHandler(status);
 	}
 
 	/* Flush streaming end point */
@@ -523,24 +565,16 @@ CyU3PReturnStatus_t AdiRealTimeStreamFinished()
 	status = CyU3PSpiSetConfig(&FX3State.SpiConfig, NULL);
 	if(status != CY_U3P_SUCCESS)
 	{
+#ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "Restoring SPI config after burst stream mode failed, Error Code = 0x%x\r\n", status);
+#endif
 		AdiAppErrorHandler(status);
 	}
 
-	/* Additional clean-up after a user requests an early cancellation */
-	if(KillStreamEarly)
-	{
-		/* Send status back over control endpoint to end USB transaction and signal cancel was completed successfully */
-		USBBuffer[0] = status & 0xFF;
-		USBBuffer[1] = (status & 0xFF00) >> 8;
-		USBBuffer[2] = (status & 0xFF0000) >> 16;
-		USBBuffer[3] = (status & 0xFF000000) >> 24;
-		CyU3PUsbSendEP0Data (4, USBBuffer);
+	/* Reset KillStreamEarly flag in case the user wants to capture data again */
+	KillStreamEarly = CyFalse;
 
-		/* Reset KillStreamEarly flag in case the user wants to capture data again */
-		KillStreamEarly = CyFalse;
-	}
-
+	/* Return status code */
 	return status;
 }
 
@@ -582,7 +616,9 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	status = CyU3PGpioSetSimpleConfig(FX3State.DrPin, &gpioConfig);
 	if(status != CY_U3P_SUCCESS)
 	{
+#ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "Setting burst stream pin interrupt failed!, error code = 0x%x\r\n", status);
+#endif
 		AdiAppErrorHandler(status);
 	}
 
@@ -590,7 +626,9 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	CyU3PUsbGetEP0Data(StreamThreadState.TransferWordLength, USBBuffer, &bytesRead);
 	if(status != CY_U3P_SUCCESS)
 	{
+#ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "Failed to get EP0 data!, error code = 0x%x\r\n", status);
+#endif
 		AdiAppErrorHandler(status);
 	}
 
@@ -775,19 +813,8 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 	/* Restore the SPI state */
 	AdiSetSpiWordLength(FX3State.SpiConfig.wordLen);
 
-	/* Additional clean-up after a user requests an early cancellation */
-	if(KillStreamEarly)
-	{
-		/* Send status back over control endpoint to end USB transaction and signal cancel was completed successfully */
-		USBBuffer[0] = status & 0xFF;
-		USBBuffer[1] = (status & 0xFF00) >> 8;
-		USBBuffer[2] = (status & 0xFF0000) >> 16;
-		USBBuffer[3] = (status & 0xFF000000) >> 24;
-		CyU3PUsbSendEP0Data (4, USBBuffer);
-
-		/* Reset KillStreamEarly flag in case the user wants to capture data again */
-		KillStreamEarly = CyFalse;
-	}
+	/* Reset KillStreamEarly flag in case the user wants to capture data again */
+	KillStreamEarly = CyFalse;
 
 	return status;
 }
@@ -895,7 +922,9 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 	}
 
 	/* Print stream state after all config */
+#ifdef VERBOSE_MODE
 	AdiPrintStreamState();
+#endif
 
 	/* Enable timer interrupts */
 	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= (~CY_U3P_LPP_GPIO_INTRMODE_MASK);
@@ -951,22 +980,10 @@ CyU3PReturnStatus_t AdiGenericStreamFinished()
 	CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
 	CyU3PVicEnableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
 
-	/* Additional clean-up after a user requests an early cancellation */
-	if(KillStreamEarly)
-	{
-		/* Send status back over control endpoint to end USB transaction and signal cancel was completed successfully */
-		USBBuffer[0] = status & 0xFF;
-		USBBuffer[1] = (status & 0xFF00) >> 8;
-		USBBuffer[2] = (status & 0xFF0000) >> 16;
-		USBBuffer[3] = (status & 0xFF000000) >> 24;
-		CyU3PUsbSendEP0Data (4, USBBuffer);
+	/* Reset KillStreamEarly flag in case the user wants to capture data again */
+	KillStreamEarly = CyFalse;
 
-		/* Reset KillStreamEarly flag in case the user wants to capture data again */
-		KillStreamEarly = CyFalse;
-
-		/* print debug message */
-		CyU3PDebugPrint (4, "Generic stream terminated early! \r\n");
-	}
+	/* return status code */
 	return status;
 }
 

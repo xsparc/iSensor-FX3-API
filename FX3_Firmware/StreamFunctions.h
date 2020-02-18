@@ -42,6 +42,7 @@ CyU3PReturnStatus_t AdiBurstStreamFinished();
 CyU3PReturnStatus_t AdiStopAnyDataStream();
 CyBool_t AdiPrintStreamState();
 CyU3PReturnStatus_t AdiConfigureDrPin();
+void AdiReturnStreamCancelStatus(CyU3PReturnStatus_t status);
 
 /*
  * Stream action commands
