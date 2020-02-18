@@ -97,6 +97,37 @@ Partial Class FX3Connection
         RaiseEvent StreamFinished()
     End Sub
 
+    ''' <summary>
+    ''' Cancel running stream
+    ''' </summary>
+    ''' <param name="ReqCode">ReqCode for the type of stream to cancel</param>
+    Private Sub CancelStreamImplementation(ReqCode As USBCommands)
+        'Buffer to store command data
+        Dim buf(3) As Byte
+        Dim status As UInteger
+
+        'Stop the stream manager thread
+        m_StreamThreadRunning = False
+
+        'Configure the endpoint
+        ConfigureControlEndpoint(CUShort(ReqCode), False)
+        m_ActiveFX3.ControlEndPt.Value = 0
+        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_STOP_CMD
+
+        'Send command to the DUT to stop streaming data
+        If Not XferControlData(buf, 4, 5000) Then
+            Throw New FX3CommunicationException("ERROR: Timeout occurred while stopping burst stream")
+        End If
+
+        'Read the return values from the buffer
+        status = BitConverter.ToUInt32(buf, 0)
+
+        'Status can be ok (0x0) or not started (0x42) without causing issues
+        If status <> 0 And status <> &H42 Then
+            Throw New FX3BadStatusException("ERROR: Bad status code after stream cancel operation. Status: 0x" + status.ToString("X4"))
+        End If
+    End Sub
+
 #End Region
 
 #Region "Burst Stream Functions"
@@ -151,29 +182,6 @@ Partial Class FX3Connection
         'Spin up a BurstStreamManager thread
         m_StreamThread = New Thread(AddressOf BurstStreamManager)
         m_StreamThread.Start()
-
-    End Sub
-
-    ''' <summary>
-    ''' Stops a burst stream by setting the stream state variables
-    ''' </summary>
-    Public Sub StopBurstStream()
-
-        'Buffer to store command data
-        Dim buf(3) As Byte
-
-        'Stop the stream manager thread
-        m_StreamThreadRunning = False
-
-        'Configure the endpoint
-        ConfigureControlEndpoint(USBCommands.ADI_STREAM_BURST_DATA, False)
-        m_ActiveFX3.ControlEndPt.Value = 0
-        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_STOP_CMD
-
-        'Send command to the DUT to stop streaming data
-        If Not XferControlData(buf, 4, 2000) Then
-            Throw New FX3CommunicationException("ERROR: Timeout occurred while stopping burst stream")
-        End If
 
     End Sub
 
@@ -295,7 +303,8 @@ Partial Class FX3Connection
                 Next
             ElseIf m_StreamThreadRunning Then
                 Console.WriteLine("Transfer failed during burst stream. Error code: " + StreamingEndPt.LastError.ToString() + " (0x" + StreamingEndPt.LastError.ToString("X4") + ")")
-                StopBurstStream()
+                'send cancel command
+                CancelStreamImplementation(USBCommands.ADI_STREAM_BURST_DATA)
                 'Exit streaming mode if the transfer fails
                 Exit While
             Else
@@ -320,29 +329,6 @@ Partial Class FX3Connection
 #End Region
 
 #Region "Generic Stream Functions"
-
-    ''' <summary>
-    ''' Stops a generic stream by setting the stream state variables
-    ''' </summary>
-    Public Sub StopGenericStream()
-
-        'Buffer to hold command data
-        Dim buf(3) As Byte
-
-        'Stop the stream manager thread
-        m_StreamThreadRunning = False
-
-        'Configure the control endpoint
-        ConfigureControlEndpoint(USBCommands.ADI_STREAM_GENERIC_DATA, False)
-        m_ActiveFX3.ControlEndPt.Value = 0
-        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_STOP_CMD
-
-        'Send command to the DUT to stop streaming data
-        If Not XferControlData(buf, 4, 2000) Then
-            Throw New FX3CommunicationException("ERROR: Timeout occurred when stopping a generic stream")
-        End If
-
-    End Sub
 
     Private Sub GenericStreamDone()
         'Buffer to hold command data
@@ -525,7 +511,8 @@ Partial Class FX3Connection
             ElseIf m_StreamThreadRunning Then
                 'Exit for a failed data transfer
                 Console.WriteLine("Transfer failed during generic stream. Error code: " + StreamingEndPt.LastError.ToString() + " (0x" + StreamingEndPt.LastError.ToString("X4") + ")")
-                StopGenericStream()
+                'send cancel command
+                CancelStreamImplementation(USBCommands.ADI_STREAM_GENERIC_DATA)
                 Exit While
             Else
                 'Exit for a cancel
@@ -616,7 +603,7 @@ Partial Class FX3Connection
         m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_STOP_CMD
 
         'Send command to the DUT to stop streaming data
-        If Not XferControlData(buf, 4, 2000) Then
+        If Not XferControlData(buf, 4, 5000) Then
             Throw New FX3CommunicationException("ERROR: Timeout occurred while stopping a real time stream")
         End If
     End Sub

@@ -185,13 +185,14 @@ Partial Class FX3Connection
         'depending on the stream mode, cancel as needed
         Select Case m_StreamType
             Case StreamType.BurstStream
-                StopBurstStream()
+                CancelStreamImplementation(USBCommands.ADI_STREAM_BURST_DATA)
             Case StreamType.GenericStream
-                StopGenericStream()
+                CancelStreamImplementation(USBCommands.ADI_STREAM_GENERIC_DATA)
             Case StreamType.RealTimeStream
+                'don't use general cancel implementation because of pin exit condition
                 StopRealTimeStreaming()
             Case StreamType.TransferStream
-                ISpi32Interface_StopStream()
+                CancelStreamImplementation(USBCommands.ADI_TRANSFER_STREAM)
             Case Else
                 m_StreamType = StreamType.None
         End Select
@@ -408,7 +409,7 @@ Partial Class FX3Connection
                 'Release the streaming endpoint mutex (in case exceptions are being caught, don't want to keep locking things up forever)
                 m_StreamMutex.ReleaseMutex()
                 'Send generic stream stop command
-                StopGenericStream()
+                CancelStreamImplementation(USBCommands.ADI_STREAM_GENERIC_DATA)
                 'Throw exception
                 Throw New FX3CommunicationException("ERROR: Transfer failed during register array read/write. Error code: " + StreamingEndPt.LastError.ToString() + " (0x" + StreamingEndPt.LastError.ToString("X4") + ")")
                 Exit While
