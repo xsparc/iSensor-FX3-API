@@ -13,7 +13,7 @@
   * @date		8/1/2019
   * @author		A. Nolan (alex.nolan@analog.com)
   * @author 	J. Chong (juan.chong@analog.com)
-  * @version 	2.6.0-pub
+  * @version 	2.6.1-pub
   * @brief		Entry point and setup functions for the Analog Devices iSensor FX3 Demonstration Platform firmware.
  **/
 
@@ -103,7 +103,7 @@ CyU3PDmaBuffer_t SpiDmaBuffer;
  */
 
 /** Constant firmware ID string. Manually updated when building new firmware. Must match API version. */
-const uint8_t FirmwareID[32] __attribute__((aligned(32))) = "ADI FX3 REV 2.6.0-PUB\0";
+const uint8_t FirmwareID[32] __attribute__((aligned(32))) = "ADI FX3 REV 2.6.1-PUB\0";
 
 /** FX3 unique serial number. Set at runtime during the boot process. */
 char serial_number[] __attribute__((aligned(32))) = {'0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00};
@@ -919,7 +919,7 @@ void AdiGPIOEventHandler(uint8_t gpioId)
 void AdiAppErrorHandler (CyU3PReturnStatus_t status)
 {
     /* Application failed with the error code status */
-	CyU3PDebugPrint (4, "Application startup failed with fatal error. Error code: 0x%x\r\n", status);
+	CyU3PDebugPrint (4, "Application failed with fatal error. Error code: 0x%x\r\n", status);
 
 	for(int i = 5; i > 0; i--)
 	{
