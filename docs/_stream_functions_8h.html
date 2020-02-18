@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.6.0-pub</span>
+   &#160;<span id="projectnumber">v2.6.1-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -126,6 +126,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a45ae5cdd0919f6acf4fbfe230bbc7dd8"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_functions_8h.html#a45ae5cdd0919f6acf4fbfe230bbc7dd8">AdiConfigureDrPin</a> ()</td></tr>
 <tr class="memdesc:a45ae5cdd0919f6acf4fbfe230bbc7dd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configures the data ready pin as an input with edge interrupt triggering enabled.  <a href="#a45ae5cdd0919f6acf4fbfe230bbc7dd8">More...</a><br /></td></tr>
 <tr class="separator:a45ae5cdd0919f6acf4fbfe230bbc7dd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7df732c976114a54e6947c122b128dd8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_functions_8h.html#a7df732c976114a54e6947c122b128dd8">AdiReturnStreamCancelStatus</a> (CyU3PReturnStatus_t status)</td></tr>
+<tr class="memdesc:a7df732c976114a54e6947c122b128dd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a status code over control endpoint (4 bytes)  <a href="#a7df732c976114a54e6947c122b128dd8">More...</a><br /></td></tr>
+<tr class="separator:a7df732c976114a54e6947c122b128dd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Header file for all data streaming functions (generic, burst, ADcm real time, transfer). </p>
@@ -348,6 +351,33 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 <p>Starts a real time stream for ADcmXLx021 DUTs. </p>
 <dl class="section return"><dt>Returns</dt><dd>The status of starting a real-time stream.</dd></dl>
 <p>This function kicks off a real-time stream by configuring interrupts, SPI, and end points. It also optionally toggles the SYNC/RTS pin if requested. At the end of the function, the bit assigned to enable the capture thread is toggled to signal the streaming thread to start producing data. </p>
+
+</div>
+</div>
+<a id="a7df732c976114a54e6947c122b128dd8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7df732c976114a54e6947c122b128dd8">&#9670;&nbsp;</a></span>AdiReturnStreamCancelStatus()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void AdiReturnStreamCancelStatus </td>
+          <td>(</td>
+          <td class="paramtype">CyU3PReturnStatus_t&#160;</td>
+          <td class="paramname"><em>status</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return a status code over control endpoint (4 bytes) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">status</td><td>The status code to send over the control endpoint</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>void </dd></dl>
 
 </div>
 </div>
