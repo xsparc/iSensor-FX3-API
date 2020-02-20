@@ -13,7 +13,7 @@
   * @date		8/1/2019
   * @author		A. Nolan (alex.nolan@analog.com)
   * @author 	J. Chong (juan.chong@analog.com)
-  * @version 	2.6.1-pub
+  * @version 	2.6.2-pub
   * @brief		Entry point and setup functions for the Analog Devices iSensor FX3 Demonstration Platform firmware.
  **/
 
@@ -103,7 +103,7 @@ CyU3PDmaBuffer_t SpiDmaBuffer;
  */
 
 /** Constant firmware ID string. Manually updated when building new firmware. Must match API version. */
-const uint8_t FirmwareID[32] __attribute__((aligned(32))) = "ADI FX3 REV 2.6.1-PUB\0";
+const uint8_t FirmwareID[32] __attribute__((aligned(32))) = "ADI FX3 REV 2.6.2-PUB\0";
 
 /** FX3 unique serial number. Set at runtime during the boot process. */
 char serial_number[] __attribute__((aligned(32))) = {'0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00};
@@ -509,12 +509,10 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 					status = CyU3PEventSet(&EventHandler, ADI_RT_STREAM_START, CYU3P_EVENT_OR);
 					break;
 				case ADI_STREAM_DONE_CMD:
+            		/* Get the data from the control endpoint */
+            		CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+            		/* Set stream done event */
 					status = CyU3PEventSet(&EventHandler, ADI_RT_STREAM_DONE, CYU3P_EVENT_OR);
-	            	USBBuffer[0] = status & 0xFF;
-	            	USBBuffer[1] = (status & 0xFF00) >> 8;
-	            	USBBuffer[2] = (status & 0xFF0000) >> 16;
-	            	USBBuffer[3] = (status & 0xFF000000) >> 24;
-	            	CyU3PUsbSendEP0Data (wLength, USBBuffer);
 					break;
 				case ADI_STREAM_STOP_CMD:
 					status = CyU3PEventSet(&EventHandler, ADI_RT_STREAM_STOP, CYU3P_EVENT_OR);
@@ -539,12 +537,10 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 					StreamThreadState.TransferByteLength = wLength;
 					break;
 				case ADI_STREAM_DONE_CMD:
+            		/* Get the data from the control endpoint */
+            		CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+            		/* Set stream done event */
 					status = CyU3PEventSet(&EventHandler, ADI_TRANSFER_STREAM_DONE, CYU3P_EVENT_OR);
-	            	USBBuffer[0] = status & 0xFF;
-	            	USBBuffer[1] = (status & 0xFF00) >> 8;
-	            	USBBuffer[2] = (status & 0xFF0000) >> 16;
-	            	USBBuffer[3] = (status & 0xFF000000) >> 24;
-	            	CyU3PUsbSendEP0Data (wLength, USBBuffer);
 					break;
 				case ADI_STREAM_STOP_CMD:
 					status = CyU3PEventSet(&EventHandler, ADI_TRANSFER_STREAM_STOP, CYU3P_EVENT_OR);
