@@ -227,10 +227,10 @@ Partial Class FX3Connection
     Private Sub ISpi32TransferStreamDone()
         'Buffer to hold command data
         Dim buf(3) As Byte
-        Dim status As UInteger
 
         'Configure the control endpoint
-        ConfigureControlEndpoint(USBCommands.ADI_TRANSFER_STREAM, False)
+        ConfigureControlEndpoint(USBCommands.ADI_TRANSFER_STREAM, True)
+        m_ActiveFX3.ControlEndPt.Value = 0
         m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_DONE_CMD
 
         'Send command to the DUT to stop streaming data
@@ -238,11 +238,6 @@ Partial Class FX3Connection
             Throw New FX3CommunicationException("ERROR: Timeout occurred when cleaning up a transfer stream thread on the FX3")
         End If
 
-        'Read status from the buffer and throw exception for bad status
-        status = BitConverter.ToUInt32(buf, 0)
-        If Not status = 0 Then
-            Throw New FX3BadStatusException("ERROR: Failed to set stream done event, status: " + status.ToString("X4"))
-        End If
     End Sub
 
     Private Function ISpi32TransferStreamSetup(WriteData As IEnumerable(Of UInteger), numCaptures As UInteger, numBuffers As UInteger) As UInteger

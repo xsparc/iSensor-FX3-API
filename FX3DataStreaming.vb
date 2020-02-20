@@ -611,22 +611,15 @@ Partial Class FX3Connection
     Private Sub RealTimeStreamingDone()
         'Buffer to hold command data
         Dim buf(3) As Byte
-        Dim status As UInteger
 
         'Configure the control endpoint
-        ConfigureControlEndpoint(USBCommands.ADI_STREAM_REALTIME, False)
+        ConfigureControlEndpoint(USBCommands.ADI_STREAM_REALTIME, True)
         m_ActiveFX3.ControlEndPt.Value = m_pinExit
         m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_DONE_CMD
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 2000) Then
             Throw New FX3CommunicationException("ERROR: Timeout occurred when cleaning up a real time stream thread on the FX3")
-        End If
-
-        'Read status from the buffer and throw exception for bad status
-        status = BitConverter.ToUInt32(buf, 0)
-        If Not status = 0 Then
-            Throw New FX3BadStatusException("ERROR: Failed to set stream done event, status: " + status.ToString("X4"))
         End If
 
     End Sub
