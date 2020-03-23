@@ -640,14 +640,6 @@ CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 	}
 	else
 	{
-		/* want to reset the specified pin to simple state without output driven */
-		status = CyU3PDeviceGpioOverride(pinNumber, CyTrue);
-		if(status != CY_U3P_SUCCESS)
-		{
-			CyU3PDebugPrint (4, "Error! GPIO override to exit PWM mode failed, error code: 0x%s\r\n", status);
-			return status;
-		}
-
 		/* Disable the GPIO */
 		status = CyU3PGpioDisable(pinNumber);
 		if(status != CY_U3P_SUCCESS)
@@ -656,7 +648,17 @@ CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 			return status;
 		}
 
-		/* Set the GPIO configuration for each GPIO that was just overridden */
+		CyU3PDeviceGpioRestore(pinNumber);
+
+		/* want to reset the specified pin to simple state without output driven */
+		status = CyU3PDeviceGpioOverride(pinNumber, CyTrue);
+		if(status != CY_U3P_SUCCESS)
+		{
+			CyU3PDebugPrint (4, "Error! GPIO override to exit PWM mode failed, error code: 0x%s\r\n", status);
+			return status;
+		}
+
+		/* Set the GPIO configuration for the GPIO that was just overridden */
 		CyU3PGpioSimpleConfig_t gpioConfig;
 		CyU3PMemSet ((uint8_t *)&gpioConfig, 0, sizeof (gpioConfig));
 		gpioConfig.outValue = CyFalse;
