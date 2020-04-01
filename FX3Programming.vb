@@ -777,16 +777,29 @@ Partial Class FX3Connection
         End Get
         Set(value As String)
             'Setter checks that the path is valid before setting
-            If IsFirmwarePathValid(value) Then
+            Dim goodImage As Boolean = IsFirmwarePathValid(value)
+
+            'handle case where directory was passed.
+            If Not goodImage Then
+                If Directory.Exists(value) Then
+                    value = Path.Combine(value, "FX3_Firmware.img")
+                    'check again
+                    goodImage = IsFirmwarePathValid(value)
+                End If
+            End If
+
+            'apply to private backer
+            If goodImage Then
                 m_FirmwarePath = value
             Else
+                m_FirmwarePath = ""
                 Throw New FX3ConfigurationException("ERROR: Invalid application firmware path provided: " + value)
             End If
         End Set
     End Property
 
     ''' <summary>
-    ''' Set/get the blink firmware .img file used for multi-board identification
+    ''' Set/get the blink USB bootloader firmware .img file used for multi-board identification
     ''' </summary>
     ''' <returns>A string representing the path to the firmware on the user machine</returns>
     Public Property BootloaderPath As String
@@ -795,18 +808,33 @@ Partial Class FX3Connection
         End Get
         Set(value As String)
             'Setter checks that the path is valid before setting
-            If IsFirmwarePathValid(value) Then
+            Dim goodImage As Boolean = IsFirmwarePathValid(value)
+
+            'handle case where directory was passed.
+            If Not goodImage Then
+                If Directory.Exists(value) Then
+                    value = Path.Combine(value, "boot_fw.img")
+                    'check again
+                    goodImage = IsFirmwarePathValid(value)
+                End If
+            End If
+
+            'apply to private backer if valid
+            If goodImage Then
                 m_BlinkFirmwarePath = value
             Else
-                Throw New FX3ConfigurationException("ERROR: Invalid bootloader path provided: " + value)
+                m_BootloaderVersion = "Not Set"
+                m_BlinkFirmwarePath = ""
+                Throw New FX3ConfigurationException("ERROR: Invalid bootloader firmware path provided: " + value)
             End If
-            'set the version based on the image
+
+            'set the version based on the image. Won't get here if image is bad
             m_BootloaderVersion = GetBootloaderVersion(value)
         End Set
     End Property
 
     ''' <summary>
-    ''' Path to the programmer firmware which is loaded in RAM to allow flashing the EEPROM.
+    ''' Path to the programmer firmware which is loaded in RAM to allow flashing the EEPROM with the bootloader.
     ''' </summary>
     ''' <returns></returns>
     Public Property FlashProgrammerPath As String
@@ -815,10 +843,23 @@ Partial Class FX3Connection
         End Get
         Set(value As String)
             'Setter checks that the path is valid before setting
-            If IsFirmwarePathValid(value) Then
+            Dim goodImage As Boolean = IsFirmwarePathValid(value)
+
+            'handle case where directory was passed.
+            If Not goodImage Then
+                If Directory.Exists(value) Then
+                    value = Path.Combine(value, "USBFlashProg.img")
+                    'check again
+                    goodImage = IsFirmwarePathValid(value)
+                End If
+            End If
+
+            'apply to private backer if valid
+            If goodImage Then
                 m_FlashProgrammerPath = value
             Else
-                Throw New FX3ConfigurationException("ERROR: Invalid programmer firmware path provided: " + value)
+                m_FlashProgrammerPath = ""
+                Throw New FX3ConfigurationException("ERROR: Invalid flash programmer firmware path provided: " + value)
             End If
         End Set
     End Property

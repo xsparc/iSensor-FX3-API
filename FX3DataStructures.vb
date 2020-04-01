@@ -816,6 +816,10 @@ Public Class FX3Board
 
     'Public interfaces
 
+    ''' <summary>
+    ''' The FX3 board type (iSensor FX3 board or Cypress eval FX3 board)
+    ''' </summary>
+    ''' <returns></returns>
     Public ReadOnly Property BoardType As FX3BoardType
         Get
             Return m_boardType
