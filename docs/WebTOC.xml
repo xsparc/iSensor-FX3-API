@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <HelpTOC>
 
-  <HelpTOCNode Id="72af5e6f-88a4-4ffe-bedf-8665fab96d52" Title="FX3Api" Url="html/338939de-c7bb-3899-fea8-9b1a456a0a9c.htm">
-    <HelpTOCNode Id="eee11624-0600-4e05-9e2e-31f243b7e2b4" Title="BitBangSpiConfig Class" Url="html/e41f0d6a-bfa5-327c-9a48-301b50ba9f63.htm">
+  <HelpTOCNode Id="289e139c-eab4-4f20-ae00-0d5042b2059e" Title="FX3Api" Url="html/338939de-c7bb-3899-fea8-9b1a456a0a9c.htm">
+    <HelpTOCNode Id="a26f5cac-29ca-4cb5-8443-08fd37282cdf" Title="BitBangSpiConfig Class" Url="html/e41f0d6a-bfa5-327c-9a48-301b50ba9f63.htm">
       <HelpTOCNode Title="BitBangSpiConfig Constructor " Url="html/3209f8d8-a53d-9729-6cfd-2dc5d3360b6f.htm" />
-      <HelpTOCNode Id="160dc2cd-8bcb-4d83-90b7-00eeef681171" Title="BitBangSpiConfig Methods" Url="html/fe2ec8b0-490d-ca6c-d214-c029b3683e3f.htm">
+      <HelpTOCNode Id="f86ddffc-97cc-44df-8a3d-c63ab1c58763" Title="BitBangSpiConfig Methods" Url="html/fe2ec8b0-490d-ca6c-d214-c029b3683e3f.htm">
         <HelpTOCNode Title="GetParameterArray Method " Url="html/26d0f519-bf2f-03bb-c522-995bd3050045.htm" />
       </HelpTOCNode>
-      <HelpTOCNode Id="e79c4311-7210-4c1e-9d84-23ace9fec245" Title="BitBangSpiConfig Fields" Url="html/659a14a3-2f71-cbfc-9d5f-d7139b84a75a.htm">
+      <HelpTOCNode Id="13b3d2e3-30f5-4ad8-8050-8f5e64719eb6" Title="BitBangSpiConfig Fields" Url="html/659a14a3-2f71-cbfc-9d5f-d7139b84a75a.htm">
         <HelpTOCNode Title="CS Field" Url="html/7355ce14-34a2-c91e-f625-acce06d91e9f.htm" />
         <HelpTOCNode Title="CSLagTicks Field" Url="html/454f6627-c6ee-f68f-3a23-39d70f66b8bd.htm" />
         <HelpTOCNode Title="CSLeadTicks Field" Url="html/e53474ad-dbf4-d4c2-e846-34ebbf3ae6f5.htm" />
@@ -22,26 +22,26 @@
     <HelpTOCNode Title="DUTType Enumeration" Url="html/a664dc00-67b0-e1cf-2c27-cb6c9cf0cba5.htm" />
     <HelpTOCNode Title="DutVoltage Enumeration" Url="html/96d63ff4-ab0e-90ae-6261-7f4d7a4105d1.htm" />
     <HelpTOCNode Title="EndpointAddresses Enumeration" Url="html/3858bc40-e306-6b88-e2ec-956c3ad36fbe.htm" />
-    <HelpTOCNode Id="17df5eaa-e676-43c2-a213-a1fedf53722b" Title="FX3ApiInfo Class" Url="html/e73f1e96-55a3-c723-22a1-efd6582404a4.htm">
+    <HelpTOCNode Id="659bf195-5f77-410f-8dd7-499009f4b8f4" Title="FX3ApiInfo Class" Url="html/e73f1e96-55a3-c723-22a1-efd6582404a4.htm">
       <HelpTOCNode Title="FX3ApiInfo Constructor " Url="html/ff42d6f5-f1e1-2cb4-7819-5416beb08046.htm" />
-      <HelpTOCNode Id="679662f3-5479-4afd-9b71-cae3ed90272a" Title="FX3ApiInfo Properties" Url="html/c20f9448-9e34-a822-df8f-5f8ea8c283a2.htm">
+      <HelpTOCNode Id="0732e9ca-82d6-45c1-9b8c-0182f3ffb577" Title="FX3ApiInfo Properties" Url="html/c20f9448-9e34-a822-df8f-5f8ea8c283a2.htm">
         <HelpTOCNode Title="GitBranch Property " Url="html/f26ec043-0ac7-d293-acf9-8bf94e7d5b37.htm" />
         <HelpTOCNode Title="GitCommitSHA1 Property " Url="html/bfb4ec2d-4672-2746-cbb6-f5cfa1a4313f.htm" />
         <HelpTOCNode Title="GitCommitURL Property " Url="html/a4b8dfbc-0886-4512-c8d7-bb556e6d9651.htm" />
         <HelpTOCNode Title="GitURL Property " Url="html/a13eeff7-20a4-473b-68e6-19ef1aae81b0.htm" />
       </HelpTOCNode>
-      <HelpTOCNode Id="7ccc78d7-8ca5-4c0b-9de8-d9840522c126" Title="FX3ApiInfo Methods" Url="html/af3a3e8d-4cac-8329-ac87-b70ce0fc924d.htm">
+      <HelpTOCNode Id="4ccb1a85-1c47-46a8-9b0a-b00ec5a44bc0" Title="FX3ApiInfo Methods" Url="html/af3a3e8d-4cac-8329-ac87-b70ce0fc924d.htm">
         <HelpTOCNode Title="ToString Method " Url="html/8b1cd4ac-7e43-9b82-d924-52e115e2029b.htm" />
       </HelpTOCNode>
-      <HelpTOCNode Id="12af9221-3e17-4339-a8f3-3bfb6ebce3bd" Title="FX3ApiInfo Fields" Url="html/1cfa5050-cf1c-961c-7336-b06b82a5fc28.htm">
+      <HelpTOCNode Id="9bd7bbe7-5df8-4f2c-96f9-1943311825f8" Title="FX3ApiInfo Fields" Url="html/1cfa5050-cf1c-961c-7336-b06b82a5fc28.htm">
         <HelpTOCNode Title="BuildDateTime Field" Url="html/65e52223-6400-4b8d-112b-919f05b7609f.htm" />
         <HelpTOCNode Title="Description Field" Url="html/6f172777-b7f7-0762-ea61-58bbb85a3f9c.htm" />
         <HelpTOCNode Title="Name Field" Url="html/92cf4648-7b40-1610-bcd7-873ee7aa736f.htm" />
         <HelpTOCNode Title="VersionNumber Field" Url="html/b28f2d65-6f98-eb0e-a4d1-6941660b9bd5.htm" />
       </HelpTOCNode>
     </HelpTOCNode>
-    <HelpTOCNode Id="6ca884f3-4248-4554-aae5-f1c78348ef76" Title="FX3BadStatusException Class" Url="html/5dd375f1-50eb-1d7e-73a9-0a185ee41c0a.htm">
-      <HelpTOCNode Id="2dbbd0da-90c7-47b1-bf65-56d39123656a" Title="FX3BadStatusException Constructor " Url="html/72e5aa12-3eb4-e987-07b0-7695712444ad.htm">
+    <HelpTOCNode Id="a130dd3b-9a93-4e2c-b130-54e62e951cb6" Title="FX3BadStatusException Class" Url="html/5dd375f1-50eb-1d7e-73a9-0a185ee41c0a.htm">
+      <HelpTOCNode Id="f6c41473-7e39-4be1-93b8-850b8a928b13" Title="FX3BadStatusException Constructor " Url="html/72e5aa12-3eb4-e987-07b0-7695712444ad.htm">
         <HelpTOCNode Title="FX3BadStatusException Constructor " Url="html/d7242d52-902d-6cfb-f8d0-e71ec1663c15.htm" />
         <HelpTOCNode Title="FX3BadStatusException Constructor (String)" Url="html/8c769edd-89a2-4140-65f0-c2853ac17fe7.htm" />
         <HelpTOCNode Title="FX3BadStatusException Constructor (String, Exception)" Url="html/9f95a0b4-3ce5-e578-43bd-64166b4e6c82.htm" />
@@ -50,9 +50,9 @@
       <HelpTOCNode Title="FX3BadStatusException Methods" Url="html/7066c064-c911-7a6f-61cd-3290cb313b38.htm" />
       <HelpTOCNode Title="FX3BadStatusException Events" Url="html/a7540ac9-19c0-a954-411c-fd6b4db893bb.htm" />
     </HelpTOCNode>
-    <HelpTOCNode Id="5ba2926c-f759-4653-8f58-c4fd4be9e95d" Title="FX3Board Class" Url="html/5565446a-4c70-4e5a-6591-52d3eca41856.htm">
+    <HelpTOCNode Id="b1a40838-e316-4447-a21d-1afe1d474fef" Title="FX3Board Class" Url="html/5565446a-4c70-4e5a-6591-52d3eca41856.htm">
       <HelpTOCNode Title="FX3Board Constructor " Url="html/769997b7-1a4f-08d1-64ec-3ebd734eeb85.htm" />
-      <HelpTOCNode Id="813252c8-0674-4fce-8e82-b643c3ea5dce" Title="FX3Board Properties" Url="html/a4b9a618-2b91-0200-d220-948bf4f30d79.htm">
+      <HelpTOCNode Id="8319b334-19a1-4d24-9a6e-dfbb3adc3c3d" Title="FX3Board Properties" Url="html/a4b9a618-2b91-0200-d220-948bf4f30d79.htm">
         <HelpTOCNode Title="BoardType Property " Url="html/2f199188-2fc5-e2dd-1ebe-e38b7623e06d.htm" />
         <HelpTOCNode Title="BootloaderVersion Property " Url="html/9c5339b7-203f-5576-b57d-e1ac5269aa4f.htm" />
         <HelpTOCNode Title="BuildDateTime Property " Url="html/4f62f926-09c9-cd95-cd3e-27709125071a.htm" />
@@ -62,13 +62,13 @@
         <HelpTOCNode Title="Uptime Property " Url="html/8bac1b60-641b-4bf7-1deb-eb9a14b14543.htm" />
         <HelpTOCNode Title="VerboseMode Property " Url="html/8f05fb6a-5a94-5db5-2577-8d320dfce4ec.htm" />
       </HelpTOCNode>
-      <HelpTOCNode Id="8ee6a924-b0eb-4c4f-989b-3aa91bcbc003" Title="FX3Board Methods" Url="html/f6ad139e-66a6-f854-28eb-8f5d724a3a53.htm">
+      <HelpTOCNode Id="c27e0518-b1b0-4133-a6c3-4463876ec3da" Title="FX3Board Methods" Url="html/f6ad139e-66a6-f854-28eb-8f5d724a3a53.htm">
         <HelpTOCNode Title="ToString Method " Url="html/b72f9634-88f6-a97f-7e7b-b03f2837d903.htm" />
       </HelpTOCNode>
     </HelpTOCNode>
     <HelpTOCNode Title="FX3BoardType Enumeration" Url="html/7bbd69cb-7041-ec59-4c56-ec5da4661e1e.htm" />
-    <HelpTOCNode Id="cdb1d552-1aab-4242-85ec-8ee5b267338c" Title="FX3CommunicationException Class" Url="html/dd5057dd-7816-3b3a-211a-096415fb4956.htm">
-      <HelpTOCNode Id="306aec84-11f7-4354-9fdd-924141956eed" Title="FX3CommunicationException Constructor " Url="html/2c644d0d-98da-16ac-7108-05edd8f406fc.htm">
+    <HelpTOCNode Id="83ec62ad-f5a2-4a17-88d5-01d67801db39" Title="FX3CommunicationException Class" Url="html/dd5057dd-7816-3b3a-211a-096415fb4956.htm">
+      <HelpTOCNode Id="68babb72-a2bf-4cb9-af91-907a630b9966" Title="FX3CommunicationException Constructor " Url="html/2c644d0d-98da-16ac-7108-05edd8f406fc.htm">
         <HelpTOCNode Title="FX3CommunicationException Constructor " Url="html/9cef8cee-be7b-88ae-4caa-a42285933d6d.htm" />
         <HelpTOCNode Title="FX3CommunicationException Constructor (String)" Url="html/e70444e9-6ef4-bd40-be0c-fa123f4a5959.htm" />
         <HelpTOCNode Title="FX3CommunicationException Constructor (String, Exception)" Url="html/72998625-6cd0-e384-4b7f-96b1a11a8b24.htm" />
@@ -77,8 +77,8 @@
       <HelpTOCNode Title="FX3CommunicationException Methods" Url="html/082c2843-3f5c-f30a-bde0-eae60953a9ef.htm" />
       <HelpTOCNode Title="FX3CommunicationException Events" Url="html/8b8219e0-ebb6-8d57-5e59-8cde1084f662.htm" />
     </HelpTOCNode>
-    <HelpTOCNode Id="31c927ff-ab7d-4a65-915f-f86fa244f204" Title="FX3ConfigurationException Class" Url="html/938e543e-5eff-c25d-37dd-4a72bd232859.htm">
-      <HelpTOCNode Id="f7b5420a-0d75-4538-a0d8-98bf0ebb7757" Title="FX3ConfigurationException Constructor " Url="html/db25d640-a5b0-4707-2461-1ff15bb5014e.htm">
+    <HelpTOCNode Id="230b8fe2-bc19-4d65-8764-e6cf1c18073f" Title="FX3ConfigurationException Class" Url="html/938e543e-5eff-c25d-37dd-4a72bd232859.htm">
+      <HelpTOCNode Id="27ee4ff7-1776-424c-b477-ea0a4a25d737" Title="FX3ConfigurationException Constructor " Url="html/db25d640-a5b0-4707-2461-1ff15bb5014e.htm">
         <HelpTOCNode Title="FX3ConfigurationException Constructor " Url="html/98050664-f223-1731-c191-3e98ed7a10b1.htm" />
         <HelpTOCNode Title="FX3ConfigurationException Constructor (String)" Url="html/98d5d4fb-9c21-ddc1-a658-648c9781f679.htm" />
         <HelpTOCNode Title="FX3ConfigurationException Constructor (String, Exception)" Url="html/c982fda6-c391-3110-08d7-afb84acbb746.htm" />
@@ -87,9 +87,9 @@
       <HelpTOCNode Title="FX3ConfigurationException Methods" Url="html/cb6ba1fd-7eb9-025e-02e4-7d732ee0c64b.htm" />
       <HelpTOCNode Title="FX3ConfigurationException Events" Url="html/5e3a14ee-22dc-a477-7afd-d8d6f1287620.htm" />
     </HelpTOCNode>
-    <HelpTOCNode Id="e450a80a-c0a3-4e73-b23c-5dfe46c8bf17" Title="FX3Connection Class" Url="html/8620563f-3f40-5410-ed4b-dfba03527986.htm">
+    <HelpTOCNode Id="0efd7822-5b63-4c94-93ed-926bbfcd7065" Title="FX3Connection Class" Url="html/8620563f-3f40-5410-ed4b-dfba03527986.htm">
       <HelpTOCNode Title="FX3Connection Constructor " Url="html/2dec6402-3f29-cd7d-7f98-92cec2a66342.htm" />
-      <HelpTOCNode Id="00424a7a-83dd-4e93-8540-4007c5d6524f" Title="FX3Connection Properties" Url="html/1d16c313-17db-cbfa-9d2c-f05cbdfbda6a.htm">
+      <HelpTOCNode Id="f0be96f1-2e97-4fc2-b795-99980e5d5a2a" Title="FX3Connection Properties" Url="html/1d16c313-17db-cbfa-9d2c-f05cbdfbda6a.htm">
         <HelpTOCNode Title="ISpi32Interface.DrActive Property " Url="html/5cde595d-de21-042d-d16d-179086287b19.htm" />
         <HelpTOCNode Title="ISpi32Interface.DrPolarity Property " Url="html/fea85fa3-ee06-4d4c-fdc7-fb76ecaa3eab.htm" />
         <HelpTOCNode Title="ISpi32Interface.StreamTimeoutSeconds Property " Url="html/74f7d484-f16f-c7fd-5082-ad9ddd95e29c.htm" />
@@ -152,7 +152,7 @@
         <HelpTOCNode Title="WordCount Property " Url="html/af129f70-ec8e-ba83-dba9-84003867000c.htm" />
         <HelpTOCNode Title="WordLength Property " Url="html/fd51c3f2-6254-8d71-64a0-8e63d51b3cb5.htm" />
       </HelpTOCNode>
-      <HelpTOCNode Id="67016f24-4560-440c-bf37-6f5603b9e496" Title="FX3Connection Methods" Url="html/cb93209d-541f-8e98-d3b9-bbfba5e489e2.htm">
+      <HelpTOCNode Id="2bf8a98b-db00-4e00-a20e-ba8241d16d03" Title="FX3Connection Methods" Url="html/cb93209d-541f-8e98-d3b9-bbfba5e489e2.htm">
         <HelpTOCNode Title="ISpi32Interface.GetBufferedStreamDataPacket Method " Url="html/83e536d1-4099-3451-e532-29f647fec8fc.htm" />
         <HelpTOCNode Title="ISpi32Interface.BackgroundWorker) Method " Url="html/0cda3979-b0e4-ec44-da38-baabf1ebef74.htm" />
         <HelpTOCNode Title="BitBangReadReg16 Method " Url="html/ba5c797a-4c59-39b4-c383-b5602bf0f6b0.htm" />
@@ -164,7 +164,7 @@
         <HelpTOCNode Title="CancelStreamAsync Method " Url="html/a1b196c4-9356-0e0d-b5aa-8a706a6de939.htm" />
         <HelpTOCNode Title="ClearBurstMode Method " Url="html/0db9153e-9792-111c-4df9-b433ca651157.htm" />
         <HelpTOCNode Title="Connect Method " Url="html/4b6e5cd7-b945-45e2-6275-936e9b9b4a5e.htm" />
-        <HelpTOCNode Id="f2be07e4-ab0e-4a2f-b290-9fd3c41bae01" Title="Disconnect Method " Url="html/182a2d38-f1c9-0650-8af8-cdc7c789e81b.htm">
+        <HelpTOCNode Id="bb171c11-0710-4e5d-adff-61bfc839c7da" Title="Disconnect Method " Url="html/182a2d38-f1c9-0650-8af8-cdc7c789e81b.htm">
           <HelpTOCNode Title="Disconnect Method " Url="html/a1714e7f-2664-172c-b24d-96db264ea09f.htm" />
           <HelpTOCNode Title="Disconnect Method (String)" Url="html/1f212ee9-b807-773c-907c-2434d2b7dfdb.htm" />
         </HelpTOCNode>
@@ -175,7 +175,7 @@
         <HelpTOCNode Title="GetStreamDataPacketU16 Method " Url="html/c6a66559-824f-4fbf-0fa6-8aa54f486d13.htm" />
         <HelpTOCNode Title="ISpi32StopStream Method " Url="html/52a3102f-a983-352b-9eb6-7477399b0856.htm" />
         <HelpTOCNode Title="isPWMPin Method " Url="html/fe7d19f7-40da-11f1-de8d-42c07116628f.htm" />
-        <HelpTOCNode Id="adeb838e-b031-48f6-b004-b878ddf830b5" Title="MeasureBusyPulse Method " Url="html/b416fddf-98f9-01ef-1d88-f71bce9cf5e2.htm">
+        <HelpTOCNode Id="69b0e919-94ac-480c-8115-05fefa389aed" Title="MeasureBusyPulse Method " Url="html/b416fddf-98f9-01ef-1d88-f71bce9cf5e2.htm">
           <HelpTOCNode Title="MeasureBusyPulse Method (Byte[], IPinObject, UInt32, UInt32)" Url="html/e5d647f8-db65-c6df-0501-d8891ba7350b.htm" />
           <HelpTOCNode Title="MeasureBusyPulse Method (IPinObject, UInt32, UInt32, IPinObject, UInt32, UInt32)" Url="html/7e13dafb-f06e-23e6-2ed5-5ac36e85ed60.htm" />
         </HelpTOCNode>
@@ -186,16 +186,16 @@
         <HelpTOCNode Title="PurgeBadFrameData Method " Url="html/0744f798-2a6a-c364-49c1-0bd96c885021.htm" />
         <HelpTOCNode Title="ReadDRFreq Method " Url="html/6457666b-d132-487d-9a96-099ef097ac44.htm" />
         <HelpTOCNode Title="ReadPin Method " Url="html/661afed3-df1d-d1f6-9f84-83c93b07a1cb.htm" />
-        <HelpTOCNode Id="21449165-bcd0-470f-91db-927e7526fddf" Title="ReadPins Method " Url="html/fe783061-d1ca-42e1-0f81-3783f8f6aa4b.htm">
+        <HelpTOCNode Id="ac16e5ac-b43c-45bb-91d6-14e7f53abc96" Title="ReadPins Method " Url="html/fe783061-d1ca-42e1-0f81-3783f8f6aa4b.htm">
           <HelpTOCNode Title="ReadPins Method (IPinObject[])" Url="html/40215716-8ec0-b89f-db11-a8113d840adb.htm" />
           <HelpTOCNode Title="ReadPins Method (IEnumerable(IPinObject))" Url="html/1fc2b5e9-f1f8-16e8-9044-29ff745ca157.htm" />
         </HelpTOCNode>
-        <HelpTOCNode Id="ec19576d-5f84-46da-8523-a64fc8132f5c" Title="ReadRegArray Method " Url="html/5f6f63a6-0281-d578-63bf-2d1d9f93f29a.htm">
+        <HelpTOCNode Id="eac06ea0-da70-4b60-95f7-ea65a3a6ca24" Title="ReadRegArray Method " Url="html/5f6f63a6-0281-d578-63bf-2d1d9f93f29a.htm">
           <HelpTOCNode Title="ReadRegArray Method (IEnumerable(UInt32))" Url="html/f2b89cbf-4012-be1d-f1d5-ac72e7197141.htm" />
           <HelpTOCNode Title="ReadRegArray Method (IEnumerable(AddrDataPair), UInt32)" Url="html/2a7ccf97-65d3-222d-9287-d27d230caed5.htm" />
           <HelpTOCNode Title="ReadRegArray Method (IEnumerable(UInt32), UInt32)" Url="html/24116cfa-69f7-4ae9-d55e-3036b7c22ec9.htm" />
         </HelpTOCNode>
-        <HelpTOCNode Id="96618669-e9d5-42cb-a3fb-ebf0c6907333" Title="ReadRegArrayStream Method " Url="html/5f4099f1-a22e-7257-7034-83f18f8b8188.htm">
+        <HelpTOCNode Id="5e22e478-b57d-408b-95ee-8c8de16d1631" Title="ReadRegArrayStream Method " Url="html/5f4099f1-a22e-7257-7034-83f18f8b8188.htm">
           <HelpTOCNode Title="ReadRegArrayStream Method (IEnumerable(AddrDataPair), UInt32, UInt32)" Url="html/990c3a73-5898-a35c-4a87-65e8d497e79f.htm" />
           <HelpTOCNode Title="ReadRegArrayStream Method (IEnumerable(UInt32), UInt32, UInt32)" Url="html/9263c760-5a97-0024-8c57-29448e7f0ecf.htm" />
         </HelpTOCNode>
@@ -205,7 +205,7 @@
         <HelpTOCNode Title="Reset Method " Url="html/f0bff5d7-785a-008d-08eb-9f7aaa2992b5.htm" />
         <HelpTOCNode Title="ResetAllFX3s Method " Url="html/4c19ef3f-5883-86b8-38cc-ddcf1ec14044.htm" />
         <HelpTOCNode Title="RestoreHardwareSpi Method " Url="html/7bffc307-014c-a89b-8d5c-9978358c74bb.htm" />
-        <HelpTOCNode Id="5c900e3b-2a4c-4391-a09e-c711f11c4830" Title="SetBitBangSpiFreq Method " Url="html/0827146d-d21a-6502-c57a-bf27a387aab1.htm">
+        <HelpTOCNode Id="1968c7f7-c1a4-4128-9f90-27890415490a" Title="SetBitBangSpiFreq Method " Url="html/0827146d-d21a-6502-c57a-bf27a387aab1.htm">
           <HelpTOCNode Title="SetBitBangSpiFreq Method (Double)" Url="html/a0b0d20e-e383-ae04-0367-3caa0c1a00d6.htm" />
           <HelpTOCNode Title="SetBitBangSpiFreq Method (UInt32)" Url="html/75e483c4-f7e1-64f0-0253-f01d4a460f16.htm" />
         </HelpTOCNode>
@@ -214,7 +214,7 @@
         <HelpTOCNode Title="SetPinResistorSetting Method " Url="html/dd796022-2abc-efad-5a3e-4e7b657c01bb.htm" />
         <HelpTOCNode Title="SetupBurstMode Method " Url="html/464bda3e-6bf3-722c-dab0-7e60d8597bff.htm" />
         <HelpTOCNode Title="Start Method " Url="html/dc818414-2c3c-b7d8-acf4-aa6a3bc9cebd.htm" />
-        <HelpTOCNode Id="9d16ab51-4bac-43a8-89dd-c05723f1eb1f" Title="StartBufferedStream Method " Url="html/0cf0c7de-122c-a8dc-d8b2-6ab037124a13.htm">
+        <HelpTOCNode Id="b4aa2156-3303-463b-8dfa-75cb3aba3588" Title="StartBufferedStream Method " Url="html/0cf0c7de-122c-a8dc-d8b2-6ab037124a13.htm">
           <HelpTOCNode Title="StartBufferedStream Method (IEnumerable(AddrDataPair), UInt32, UInt32, Int32, BackgroundWorker)" Url="html/71615ff4-5c08-774b-c3a3-da1690af6376.htm" />
           <HelpTOCNode Title="StartBufferedStream Method (IEnumerable(UInt32), UInt32, UInt32, Int32, BackgroundWorker)" Url="html/c9950b91-239e-76ad-66fb-4b19d3c7ebdb.htm" />
         </HelpTOCNode>
@@ -227,17 +227,17 @@
         <HelpTOCNode Title="StopRealTimeStreaming Method " Url="html/c2c1b045-c7b9-563c-c316-d8d9827c26f1.htm" />
         <HelpTOCNode Title="StopStream Method " Url="html/47cb4928-2637-9c27-ed27-d149550fe939.htm" />
         <HelpTOCNode Title="Transfer Method " Url="html/0cfc934b-2eab-4327-e5f7-1f7e45438ab7.htm" />
-        <HelpTOCNode Id="2f6427b7-cce0-4f79-87c2-a18f60ea5de2" Title="TransferArray Method " Url="html/46557991-be3a-f991-c36f-d895ea7771ef.htm">
+        <HelpTOCNode Id="759e9e35-8d96-42d7-a861-54c9ba3427aa" Title="TransferArray Method " Url="html/46557991-be3a-f991-c36f-d895ea7771ef.htm">
           <HelpTOCNode Title="TransferArray Method (IEnumerable(UInt32))" Url="html/dc77f6c9-55f9-4f89-8b67-bde2853f30f2.htm" />
           <HelpTOCNode Title="TransferArray Method (IEnumerable(UInt32), UInt32)" Url="html/7766b49c-6420-e626-5263-9731005347fe.htm" />
           <HelpTOCNode Title="TransferArray Method (IEnumerable(UInt32), UInt32, UInt32)" Url="html/18232515-7333-a5a2-063b-02223610fd44.htm" />
         </HelpTOCNode>
         <HelpTOCNode Title="WaitForBoard Method " Url="html/4e574267-34de-9f80-0cc0-dddf0a93d40d.htm" />
-        <HelpTOCNode Id="6e27debe-3b19-4eaf-96ef-20206ec36eb5" Title="WaitForStreamCompletion Method " Url="html/4409394c-b943-ddef-8f45-8843d985cd84.htm">
+        <HelpTOCNode Id="d75c652d-0dcf-423f-8899-7c0444e8bbbf" Title="WaitForStreamCompletion Method " Url="html/4409394c-b943-ddef-8f45-8843d985cd84.htm">
           <HelpTOCNode Title="WaitForStreamCompletion Method " Url="html/e8985c55-3115-9956-a569-a1b680dc31c2.htm" />
           <HelpTOCNode Title="WaitForStreamCompletion Method (Int32)" Url="html/1a4276f2-4516-b85e-f049-0f1e3c86c872.htm" />
         </HelpTOCNode>
-        <HelpTOCNode Id="434580a7-d733-4d48-be35-5b6bf3df7a0c" Title="WriteRegByte Method " Url="html/7470aa78-1dd1-b34f-92bb-eb104bcc74b4.htm">
+        <HelpTOCNode Id="b6a094b5-7fe0-448a-acd4-8c696e670366" Title="WriteRegByte Method " Url="html/7470aa78-1dd1-b34f-92bb-eb104bcc74b4.htm">
           <HelpTOCNode Title="WriteRegByte Method (AddrDataPair)" Url="html/90de83a6-7190-4e44-dea8-e60390a4cf91.htm" />
           <HelpTOCNode Title="WriteRegByte Method (IEnumerable(AddrDataPair))" Url="html/8580e64a-9072-7d5e-ea51-213fd75408ee.htm" />
           <HelpTOCNode Title="WriteRegByte Method (IEnumerable(UInt32), IEnumerable(UInt32))" Url="html/6dce60eb-8389-b809-5e83-fcb62f45c990.htm" />
@@ -245,7 +245,7 @@
         </HelpTOCNode>
         <HelpTOCNode Title="WriteRegWord Method " Url="html/bd17d83e-656a-fb48-f222-fb658ea122a2.htm" />
       </HelpTOCNode>
-      <HelpTOCNode Id="187adb67-1ae3-4fe3-852f-9662a0ac1afb" Title="FX3Connection Events" Url="html/3229f3fd-c50b-54bb-f322-51ec6b5e81d3.htm">
+      <HelpTOCNode Id="2e50abf1-5b44-4b07-baeb-32f4d6939e80" Title="FX3Connection Events" Url="html/3229f3fd-c50b-54bb-f322-51ec6b5e81d3.htm">
         <HelpTOCNode Title="DisconnectFinished Event" Url="html/1eab635c-251d-ae8d-eee9-bfbfb2619199.htm" />
         <HelpTOCNode Title="NewBufferAvailable Event" Url="html/68540fa1-0b29-2ca7-a29b-0be6ba9a71c8.htm" />
         <HelpTOCNode Title="StreamFinished Event" Url="html/9a44759b-8b32-ff0a-55a5-c1f848d35857.htm" />
@@ -254,8 +254,8 @@
     </HelpTOCNode>
     <HelpTOCNode Title="FX3Connection.DisconnectFinishedEventHandler Delegate" Url="html/96d0ad43-d352-d971-1e6c-c6d2ffa6e681.htm" />
     <HelpTOCNode Title="FX3Connection.UnexpectedDisconnectEventHandler Delegate" Url="html/534755e7-b798-0a28-046c-c2eb459477b7.htm" />
-    <HelpTOCNode Id="2bceab4c-ad94-4f72-9081-bdff3680a260" Title="FX3Exception Class" Url="html/9d8abe8e-9f83-fc8c-e72e-e5a53c931a8a.htm">
-      <HelpTOCNode Id="bd56f3ef-779d-4175-aa0d-839b5e74458c" Title="FX3Exception Constructor " Url="html/b51fb537-8234-8862-290e-b069dd8b323a.htm">
+    <HelpTOCNode Id="01e40010-67f4-44d7-a71f-0c2cc75ad3e5" Title="FX3Exception Class" Url="html/9d8abe8e-9f83-fc8c-e72e-e5a53c931a8a.htm">
+      <HelpTOCNode Id="936af296-25f3-440a-a31d-f9713b3afbb4" Title="FX3Exception Constructor " Url="html/b51fb537-8234-8862-290e-b069dd8b323a.htm">
         <HelpTOCNode Title="FX3Exception Constructor " Url="html/693b44c2-85bc-acd1-7185-20fe5863c6b4.htm" />
         <HelpTOCNode Title="FX3Exception Constructor (String)" Url="html/63012325-45ed-b0b2-37f0-3d5e1628cd97.htm" />
         <HelpTOCNode Title="FX3Exception Constructor (String, Exception)" Url="html/b35272bd-e2ed-3695-8998-c7f10881b7ea.htm" />
@@ -264,26 +264,26 @@
       <HelpTOCNode Title="FX3Exception Methods" Url="html/9b789559-5c57-8502-8a69-bb9e0a78c0b4.htm" />
       <HelpTOCNode Title="FX3Exception Events" Url="html/25a0bc9b-0b31-c43b-72bc-c6e7e854b7a9.htm" />
     </HelpTOCNode>
-    <HelpTOCNode Id="d113b4cc-60e9-4303-9e4a-255c59bd633e" Title="FX3PinObject Class" Url="html/437f623b-8fa7-178c-ff30-61bb68bb622f.htm">
-      <HelpTOCNode Id="b5990848-126f-4d1d-8c9f-ea9a499a9d2a" Title="FX3PinObject Constructor " Url="html/de8e7f2e-2229-0e85-2b60-9790a87db692.htm">
+    <HelpTOCNode Id="bdf71cd0-57ec-4bd9-8a39-f11f6e87cc95" Title="FX3PinObject Class" Url="html/437f623b-8fa7-178c-ff30-61bb68bb622f.htm">
+      <HelpTOCNode Id="162cdf94-79fb-492d-90d2-2e336d879425" Title="FX3PinObject Constructor " Url="html/de8e7f2e-2229-0e85-2b60-9790a87db692.htm">
         <HelpTOCNode Title="FX3PinObject Constructor " Url="html/0052b5a6-95cb-8754-26be-a6413903d006.htm" />
         <HelpTOCNode Title="FX3PinObject Constructor (UInt32)" Url="html/e024b110-d4bd-2597-f3f4-884ca4b853a0.htm" />
         <HelpTOCNode Title="FX3PinObject Constructor (UInt32, Boolean)" Url="html/5287110b-f486-ffb8-2ba8-69be6c3519e7.htm" />
       </HelpTOCNode>
-      <HelpTOCNode Id="0cc64314-8b20-4fb8-a7e6-28e96a1b51dd" Title="FX3PinObject Properties" Url="html/57ec4152-9f13-c121-7a4b-ebd0fa437b9c.htm">
+      <HelpTOCNode Id="0401f8e7-ade4-48cb-87bb-4d35a8da0e1b" Title="FX3PinObject Properties" Url="html/57ec4152-9f13-c121-7a4b-ebd0fa437b9c.htm">
         <HelpTOCNode Title="Invert Property " Url="html/4fcc6d29-cd04-50cc-c5d2-b71d3063e938.htm" />
         <HelpTOCNode Title="pinConfig Property " Url="html/51879030-37ab-bee4-b093-bd08a857ba4f.htm" />
         <HelpTOCNode Title="PinNumber Property " Url="html/7f01c998-1701-500a-72e5-11b0cbc22f3d.htm" />
       </HelpTOCNode>
-      <HelpTOCNode Id="3f21e92f-3f7e-4c6a-8d6b-5d87568be3f2" Title="FX3PinObject Methods" Url="html/9e153003-5fe8-0eb2-c265-71d663325586.htm">
+      <HelpTOCNode Id="4725b45d-4fe0-4eea-98da-b3467ffae8dc" Title="FX3PinObject Methods" Url="html/9e153003-5fe8-0eb2-c265-71d663325586.htm">
         <HelpTOCNode Title="IPinObject.Object) Method " Url="html/dd47c0ba-8943-86b8-3433-fc07d3c7b074.htm" />
         <HelpTOCNode Title="IPinObject.GetHashCode Method " Url="html/e8359fbf-fbfa-bf4a-7db1-a660fdcdc43e.htm" />
         <HelpTOCNode Title="IPinObject.ToString Method " Url="html/0b063eec-7960-5658-74d5-1068fb18cfe6.htm" />
       </HelpTOCNode>
     </HelpTOCNode>
     <HelpTOCNode Title="FX3PinResistorSetting Enumeration" Url="html/43c2aa87-dcdc-3866-e332-9cb18194cbdc.htm" />
-    <HelpTOCNode Id="1f6621ae-44b1-4612-bd6b-fb9f6396afef" Title="FX3ProgrammingException Class" Url="html/16a39d22-24a2-be91-e5cf-fa5ab779db9e.htm">
-      <HelpTOCNode Id="2ef1733a-a44e-4bad-bf23-75a5e5a41ed2" Title="FX3ProgrammingException Constructor " Url="html/faa0ff5b-fb8a-f461-6561-109a5794c292.htm">
+    <HelpTOCNode Id="d8e23127-8781-4c3b-b0fa-2268926392a6" Title="FX3ProgrammingException Class" Url="html/16a39d22-24a2-be91-e5cf-fa5ab779db9e.htm">
+      <HelpTOCNode Id="72f4d76a-6119-425f-a3cc-b45e54a30f62" Title="FX3ProgrammingException Constructor " Url="html/faa0ff5b-fb8a-f461-6561-109a5794c292.htm">
         <HelpTOCNode Title="FX3ProgrammingException Constructor " Url="html/89881283-86c9-4afb-4f4a-2f35f473cea1.htm" />
         <HelpTOCNode Title="FX3ProgrammingException Constructor (String)" Url="html/0efe885c-58a8-652b-5870-38ed6fd3d69f.htm" />
         <HelpTOCNode Title="FX3ProgrammingException Constructor (String, Exception)" Url="html/e0de19c5-af67-dda6-03db-2b984e6b2f4b.htm" />
@@ -292,9 +292,9 @@
       <HelpTOCNode Title="FX3ProgrammingException Methods" Url="html/6e93d31b-3766-c4fc-6f51-af01485a6a3f.htm" />
       <HelpTOCNode Title="FX3ProgrammingException Events" Url="html/5635a882-7e6d-583f-aca3-c0690b6c2abf.htm" />
     </HelpTOCNode>
-    <HelpTOCNode Id="61279de4-b951-4eff-817b-0fe6c846670b" Title="FX3SPIConfig Class" Url="html/8e72f395-0ddd-51f7-906f-74fb7c11ea45.htm">
+    <HelpTOCNode Id="182cb9da-fe0c-4323-9de0-2758f1c15ca3" Title="FX3SPIConfig Class" Url="html/8e72f395-0ddd-51f7-906f-74fb7c11ea45.htm">
       <HelpTOCNode Title="FX3SPIConfig Constructor " Url="html/7140e549-8f89-548c-6a4b-9d6ed2ebc143.htm" />
-      <HelpTOCNode Id="55f68ea9-d9e9-4e66-acf0-2cf89a019ba6" Title="FX3SPIConfig Properties" Url="html/dfa9ae9f-f94d-f1f2-d195-4a5c60e68134.htm">
+      <HelpTOCNode Id="f328f13d-2fab-4f91-8535-0938659e94c1" Title="FX3SPIConfig Properties" Url="html/dfa9ae9f-f94d-f1f2-d195-4a5c60e68134.htm">
         <HelpTOCNode Title="DataReadyPin Property " Url="html/7bedeb2a-d22c-5e87-621c-9c13a23aae7e.htm" />
         <HelpTOCNode Title="DataReadyPinFX3GPIO Property " Url="html/e3994d9d-fc1d-f923-64f3-9ce6f5276269.htm" />
         <HelpTOCNode Title="SCLKFrequency Property " Url="html/705196d0-12a4-0bd3-2faa-f275f3ce5943.htm" />
@@ -302,7 +302,7 @@
         <HelpTOCNode Title="StallTime Property " Url="html/12609f8f-e0ff-3c77-fc9c-82c83b66ae5d.htm" />
       </HelpTOCNode>
       <HelpTOCNode Title="FX3SPIConfig Methods" Url="html/ecfc9c34-fd36-5dde-7d6b-f9c63fe1fc9a.htm" />
-      <HelpTOCNode Id="c8a4ea28-b18b-4a10-9efa-e11765126891" Title="FX3SPIConfig Fields" Url="html/a301462d-6842-359b-bfbb-c2d4f3aa9c98.htm">
+      <HelpTOCNode Id="071224d5-06b8-415e-96ea-b6b9a364e9d6" Title="FX3SPIConfig Fields" Url="html/a301462d-6842-359b-bfbb-c2d4f3aa9c98.htm">
         <HelpTOCNode Title="ChipSelectControl Field" Url="html/c1da2c80-a439-c1a0-a50b-50ad35dc506a.htm" />
         <HelpTOCNode Title="ChipSelectLagTime Field" Url="html/792c490f-4578-eff3-e926-7e46ce067644.htm" />
         <HelpTOCNode Title="ChipSelectLeadTime Field" Url="html/89f6ee69-e732-c189-780d-e82a4a5599e6.htm" />
@@ -317,24 +317,24 @@
         <HelpTOCNode Title="WordLength Field" Url="html/f7014575-856c-3a0a-e99d-0193b3739ed3.htm" />
       </HelpTOCNode>
     </HelpTOCNode>
-    <HelpTOCNode Id="24f188e8-dacc-498f-a95c-d5521f5c7170" Title="PinList Class" Url="html/444c4859-5384-fa00-cb9d-f46332154db8.htm">
+    <HelpTOCNode Id="77aefae2-06a7-4ab6-8ebb-f0c28faa942c" Title="PinList Class" Url="html/444c4859-5384-fa00-cb9d-f46332154db8.htm">
       <HelpTOCNode Title="PinList Constructor " Url="html/86f4bea3-7f90-8947-778d-143dc88c038c.htm" />
       <HelpTOCNode Title="PinList Properties" Url="html/1c59de21-6f19-ba73-6037-6026a63a4e95.htm" />
-      <HelpTOCNode Id="9fb1bf2e-e4a1-40aa-bb43-0554897637c0" Title="PinList Methods" Url="html/47da96b9-85e2-8b05-df8c-464e5f535b64.htm">
+      <HelpTOCNode Id="f78f55f7-33a6-4b24-aeeb-bdb928c4bd1a" Title="PinList Methods" Url="html/47da96b9-85e2-8b05-df8c-464e5f535b64.htm">
         <HelpTOCNode Title="AddReplace Method " Url="html/5c3d3260-bae4-0d5b-b526-d6eefaba4c2d.htm" />
-        <HelpTOCNode Id="eb5e6b3f-1f00-4987-894f-27922f259ade" Title="Contains Method " Url="html/dca41037-07eb-5adf-2647-4454d2ce1656.htm">
+        <HelpTOCNode Id="ccc9a80f-be70-4cb2-9f5b-b64a21f9217d" Title="Contains Method " Url="html/dca41037-07eb-5adf-2647-4454d2ce1656.htm">
           <HelpTOCNode Title="Contains Method (IPinObject)" Url="html/793bd9c0-ae20-9363-1a00-5b648c2ce0ed.htm" />
           <HelpTOCNode Title="Contains Method (UInt32)" Url="html/0f72e5f4-316d-e95f-e491-3b9f64574074.htm" />
         </HelpTOCNode>
-        <HelpTOCNode Id="6e37a864-2cba-4623-b48c-addea547c352" Title="GetPinPWMInfo Method " Url="html/ffd0c7f1-8ef6-5abd-646d-db7ac0d584fe.htm">
+        <HelpTOCNode Id="ad844a31-60cb-4fcc-aa8f-20ed6be59c6b" Title="GetPinPWMInfo Method " Url="html/ffd0c7f1-8ef6-5abd-646d-db7ac0d584fe.htm">
           <HelpTOCNode Title="GetPinPWMInfo Method (IPinObject)" Url="html/a34be347-9165-c5cb-87ca-f21a5b34f5fe.htm" />
           <HelpTOCNode Title="GetPinPWMInfo Method (UInt32)" Url="html/3e0c4237-ba0a-529d-0a7c-4be9eac61aee.htm" />
         </HelpTOCNode>
       </HelpTOCNode>
     </HelpTOCNode>
-    <HelpTOCNode Id="3f59850d-15d1-4255-a40d-5ce3fcc78c89" Title="PinPWMInfo Class" Url="html/e31bf2a8-b37c-c3e5-a5ae-f2095cf377d3.htm">
+    <HelpTOCNode Id="d6d376a9-a6c4-473f-9c33-5723f120e0b6" Title="PinPWMInfo Class" Url="html/e31bf2a8-b37c-c3e5-a5ae-f2095cf377d3.htm">
       <HelpTOCNode Title="PinPWMInfo Constructor " Url="html/4c2c679e-ed26-4879-ac7e-e6cba2ae5622.htm" />
-      <HelpTOCNode Id="27aa0f08-2b91-4286-a3c5-2074961b8c2d" Title="PinPWMInfo Properties" Url="html/d3aae7f1-f2ee-5036-2049-d3922d2df394.htm">
+      <HelpTOCNode Id="3b61ce70-d643-4858-85e7-69c0f4b3dcb2" Title="PinPWMInfo Properties" Url="html/d3aae7f1-f2ee-5036-2049-d3922d2df394.htm">
         <HelpTOCNode Title="FX3GPIONumber Property " Url="html/ccc9666b-68cb-6be2-dc53-0099e0ccc4a0.htm" />
         <HelpTOCNode Title="FX3TimerBlock Property " Url="html/30816788-86f4-5b3f-84e5-a97d8e6cd497.htm" />
         <HelpTOCNode Title="IdealDutyCycle Property " Url="html/c823b44d-b278-50d8-5aad-b9efd27dc1a1.htm" />
@@ -342,7 +342,7 @@
         <HelpTOCNode Title="RealDutyCycle Property " Url="html/2ac5623f-04d7-dbdf-512c-15be1801c383.htm" />
         <HelpTOCNode Title="RealFrequency Property " Url="html/9d660b67-3b16-3eb1-0eda-5b3279228165.htm" />
       </HelpTOCNode>
-      <HelpTOCNode Id="28701d78-19e2-41bc-8894-9f472d79b695" Title="PinPWMInfo Methods" Url="html/5793d456-c217-564a-86d3-6f50384ebfab.htm">
+      <HelpTOCNode Id="0e5ce6de-6674-4217-afcf-ec91bf389bf5" Title="PinPWMInfo Methods" Url="html/5793d456-c217-564a-86d3-6f50384ebfab.htm">
         <HelpTOCNode Title="ToString Method " Url="html/228530e5-2a58-8c1b-5787-9b97a83ee0aa.htm" />
       </HelpTOCNode>
     </HelpTOCNode>
@@ -352,10 +352,10 @@
     <HelpTOCNode Title="StreamType Enumeration" Url="html/8001ed3d-aab3-d9a9-516a-2fc3368c0259.htm" />
     <HelpTOCNode Title="USBCommands Enumeration" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   </HelpTOCNode>
-  <HelpTOCNode Id="5b7e9fda-3681-45af-816f-49f92f02fda2" Title="FX3USB" Url="html/9f5142ef-eb7c-2e0f-5e80-8be7aac03e49.htm">
-    <HelpTOCNode Id="9ad9ddd0-6938-4f68-b56a-015258cbee2c" Title="USB Class" Url="html/ed03a85e-e486-17af-6597-caf580baeb71.htm">
+  <HelpTOCNode Id="2a959b96-7e71-48b4-a357-1a290a005eec" Title="FX3USB" Url="html/9f5142ef-eb7c-2e0f-5e80-8be7aac03e49.htm">
+    <HelpTOCNode Id="aea2b344-5862-4680-b528-1747f5da7698" Title="USB Class" Url="html/ed03a85e-e486-17af-6597-caf580baeb71.htm">
       <HelpTOCNode Title="USB Constructor " Url="html/ea3c699a-157a-9660-49ae-7be09b893278.htm" />
-      <HelpTOCNode Id="5691f1b3-eb40-47da-a035-240e41292d3a" Title="USB Methods" Url="html/817a57f9-cf91-cc06-3c77-437063680ce8.htm">
+      <HelpTOCNode Id="8028beba-c6be-4473-8f79-26bdc6f98636" Title="USB Methods" Url="html/817a57f9-cf91-cc06-3c77-437063680ce8.htm">
         <HelpTOCNode Title="XferData Method " Url="html/0ddc94a1-a7eb-1fdd-178b-0adec274ddec.htm" />
       </HelpTOCNode>
     </HelpTOCNode>
