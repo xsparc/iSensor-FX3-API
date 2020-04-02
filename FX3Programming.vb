@@ -214,7 +214,8 @@ Partial Class FX3Connection
     ''' Overload of Disconnect which lets you specify the FX3 serial number to disconnect. Returns a boolean
     ''' indicating if the board was disconnected.
     ''' </summary>
-    ''' <param name="FX3SerialNumber"></param>
+    ''' <param name="FX3SerialNumber">Serial number of board to disconnect from</param>
+    ''' <returns>Success status of the board disconnect operation</returns>
     Public Function Disconnect(FX3SerialNumber As String) As Boolean
         Dim boardFound As Boolean
 

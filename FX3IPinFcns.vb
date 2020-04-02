@@ -306,6 +306,15 @@ Partial Class FX3Connection
 
     End Function
 
+    ''' <summary>
+    ''' Not implemented
+    ''' </summary>
+    ''' <param name="start_pin">Not implemented</param>
+    ''' <param name="start_polarity">Not implemented</param>
+    ''' <param name="stop_pin">Not implemented</param>
+    ''' <param name="stop_polarity">Not implemented</param>
+    ''' <param name="delay">Not implemented</param>
+    ''' <returns>Not implemented</returns>
     Public Function ReadTime(start_pin As UInteger, start_polarity As UInteger, stop_pin As UInteger, stop_polarity As UInteger, delay As UInteger) As UShort() Implements IPinFcns.ReadTime
         Throw New NotImplementedException()
     End Function

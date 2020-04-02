@@ -243,13 +243,44 @@ End Enum
 ''' </summary>
 Public Class BitBangSpiConfig
 
+    ''' <summary>
+    ''' Chip select pin for bit bang SPI
+    ''' </summary>
     Public CS As FX3PinObject
+
+    ''' <summary>
+    ''' SCLK pin for bit bang SPI
+    ''' </summary>
     Public SCLK As FX3PinObject
+
+    ''' <summary>
+    ''' MOSI (master out, slave in) pin for bit bang SPI
+    ''' </summary>
     Public MOSI As FX3PinObject
+
+    ''' <summary>
+    ''' MISO (master is, slave out) pin for bit bang SPI
+    ''' </summary>
     Public MISO As FX3PinObject
+
+    ''' <summary>
+    ''' Number of timer ticks from CS falling edge to first sclk edge
+    ''' </summary>
     Public CSLeadTicks As UShort
+
+    ''' <summary>
+    ''' Number of timer ticks from last sclk edge to CS rising edge
+    ''' </summary>
     Public CSLagTicks As UShort
+
+    ''' <summary>
+    ''' Half SCLK period timer ticks
+    ''' </summary>
     Public SCLKHalfPeriodTicks As UInteger
+
+    ''' <summary>
+    ''' Stall time timer ticks
+    ''' </summary>
     Public StallTicks As UInteger
 
     ''' <summary>
@@ -315,17 +346,65 @@ End Class
 Public Class FX3SPIConfig
 
     'Public Variables
+
+    ''' <summary>
+    ''' SPI word length (in bits)
+    ''' </summary>
     Public WordLength As Byte
+
+    ''' <summary>
+    ''' SCLK polarity
+    ''' </summary>
     Public Cpol As Boolean
+
+    ''' <summary>
+    ''' CS polarity
+    ''' </summary>
     Public ChipSelectPolarity As Boolean
+
+    ''' <summary>
+    ''' Clock phase
+    ''' </summary>
     Public Cpha As Boolean
+
+    ''' <summary>
+    ''' Select if SPI controller works LSB first or MSB first
+    ''' </summary>
     Public IsLSBFirst As Boolean
+
+    ''' <summary>
+    ''' Chip select control mode
+    ''' </summary>
     Public ChipSelectControl As SpiChipselectControl
+
+    ''' <summary>
+    ''' Chip select lead delay mode
+    ''' </summary>
     Public ChipSelectLeadTime As SpiLagLeadTime
+
+    ''' <summary>
+    ''' Chip select lag delay mode
+    ''' </summary>
     Public ChipSelectLagTime As SpiLagLeadTime
+
+    ''' <summary>
+    ''' Connected DUT type
+    ''' </summary>
     Public DUTType As DUTType
+
+    ''' <summary>
+    ''' Enable/Disable data ready interrupt triggering for SPI
+    ''' </summary>
     Public DrActive As Boolean
+
+    ''' <summary>
+    ''' Data ready polarity for interrupt triggering (posedge or negedge)
+    ''' </summary>
     Public DrPolarity As Boolean
+
+    ''' <summary>
+    ''' Scale factor to convert seconds to timer ticks)
+    ''' </summary>
     Public SecondsToTimerTicks As UInt32
 
     'Private variables for general use
@@ -801,6 +880,11 @@ Public Class FX3Board
     Private m_buildDateTime As String
     Private m_boardType As FX3BoardType
 
+    ''' <summary>
+    ''' Constructor, should be only called by FX3Connection instance
+    ''' </summary>
+    ''' <param name="SerialNumber">Board SN</param>
+    ''' <param name="BootTime">Board boot time</param>
     Public Sub New(SerialNumber As String, BootTime As DateTime)
 
         'set the serial number string
@@ -829,7 +913,7 @@ Public Class FX3Board
     ''' <summary>
     ''' Override of the ToString function
     ''' </summary>
-    ''' <returns></returns>
+    ''' <returns>String with board information</returns>
     Public Overrides Function ToString() As String
         Return "Firmware Version: " + FirmwareVersion + Environment.NewLine +
             "Board Type: " + [Enum].GetName(GetType(FX3BoardType), BoardType) + Environment.NewLine +
