@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.6.4-pub</span>
+   &#160;<span id="projectnumber">v2.6.5-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -129,6 +129,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a7df732c976114a54e6947c122b128dd8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_functions_8h.html#a7df732c976114a54e6947c122b128dd8">AdiReturnStreamCancelStatus</a> (CyU3PReturnStatus_t status)</td></tr>
 <tr class="memdesc:a7df732c976114a54e6947c122b128dd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a status code over control endpoint (4 bytes)  <a href="#a7df732c976114a54e6947c122b128dd8">More...</a><br /></td></tr>
 <tr class="separator:a7df732c976114a54e6947c122b128dd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9472e86b07c3354560aa67493ce48e1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_functions_8h.html#ad9472e86b07c3354560aa67493ce48e1">AdiConfigStreamStallTimer</a> ()</td></tr>
+<tr class="memdesc:ad9472e86b07c3354560aa67493ce48e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configures 10MHz timer to control stall time for generic or transfer streams.  <a href="#ad9472e86b07c3354560aa67493ce48e1">More...</a><br /></td></tr>
+<tr class="separator:ad9472e86b07c3354560aa67493ce48e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Header file for all data streaming functions (generic, burst, ADcm real time, transfer). </p>
@@ -225,6 +228,27 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 <p>Starts a burst stream for IMU products. </p>
 <dl class="section return"><dt>Returns</dt><dd>The status of starting a real-time stream.</dd></dl>
 <p>This function kicks off a burst stream by configuring a pin interrupt on a user-specified pin, configuring the SPI and USB DMAs to handle the incoming data, and enabling the streaming function.It can be configured for "Blackfin" or "ADuC" burst using vendor requests. </p>
+
+</div>
+</div>
+<a id="ad9472e86b07c3354560aa67493ce48e1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad9472e86b07c3354560aa67493ce48e1">&#9670;&nbsp;</a></span>AdiConfigStreamStallTimer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void AdiConfigStreamStallTimer </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Configures 10MHz timer to control stall time for generic or transfer streams. </p>
+<dl class="section return"><dt>Returns</dt><dd>void</dd></dl>
+<p>This function sets the timer period and enables the timer interrupt as required for the stream </p>
 
 </div>
 </div>

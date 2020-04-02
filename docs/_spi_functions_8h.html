@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.6.4-pub</span>
+   &#160;<span id="projectnumber">v2.6.5-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -130,6 +130,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a72c5344f6d7ce3000731bd79737be26d"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a72c5344f6d7ce3000731bd79737be26d">AdiRestartSpi</a> ()</td></tr>
 <tr class="memdesc:a72c5344f6d7ce3000731bd79737be26d"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function restarts the SPI controller.  <a href="#a72c5344f6d7ce3000731bd79737be26d">More...</a><br /></td></tr>
 <tr class="separator:a72c5344f6d7ce3000731bd79737be26d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5aa3ac86c50391ba42f141c2735dd068"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a5aa3ac86c50391ba42f141c2735dd068">AdiSpiTransferWord</a> (uint8_t *txBuf, uint8_t *rxBuf, uint32_t numBytes)</td></tr>
+<tr class="memdesc:a5aa3ac86c50391ba42f141c2735dd068"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bi-directional SPI transfer function, in register mode. Optimized for speed.  <a href="#a5aa3ac86c50391ba42f141c2735dd068">More...</a><br /></td></tr>
+<tr class="separator:a5aa3ac86c50391ba42f141c2735dd068"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5254848805c4b8e74cbc8e94fa78307f"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a5254848805c4b8e74cbc8e94fa78307f">AdiTransferBytes</a> (uint32_t writeData)</td></tr>
 <tr class="memdesc:a5254848805c4b8e74cbc8e94fa78307f"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function performs a protocol agnostic SPI bi-directional SPI transfer of (1, 2, 4) bytes.  <a href="#a5254848805c4b8e74cbc8e94fa78307f">More...</a><br /></td></tr>
 <tr class="separator:a5254848805c4b8e74cbc8e94fa78307f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -471,6 +474,44 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The success of the SPI reset FIFO operation.</dd></dl>
 <p>It is a copy of the private CyU3PSpiResetFifo() function which bypasses some input sanitization which the Cypress libraries perform. This is required due to our high-speed, register-initiated transfers. </p>
+
+</div>
+</div>
+<a id="a5aa3ac86c50391ba42f141c2735dd068"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5aa3ac86c50391ba42f141c2735dd068">&#9670;&nbsp;</a></span>AdiSpiTransferWord()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void AdiSpiTransferWord </td>
+          <td>(</td>
+          <td class="paramtype">uint8_t *&#160;</td>
+          <td class="paramname"><em>txBuf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t *&#160;</td>
+          <td class="paramname"><em>rxBuf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>numBytes</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Bi-directional SPI transfer function, in register mode. Optimized for speed. </p>
+<dl class="section return"><dt>Returns</dt><dd>void</dd></dl>
+<p>This function is used to allow for a reduced SPI stall time. Is fairly "unsafe" in that all hardware has to be configured for correct operation, and free, before this function can be called. </p>
 
 </div>
 </div>
