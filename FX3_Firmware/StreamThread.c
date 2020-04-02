@@ -218,7 +218,6 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
 		/* Clear interrupt flag */
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
-
 	}
 
 	/* Check to see if we've captured enough buffers or if we were asked to stop data capture early */
