@@ -34,6 +34,34 @@ extern uint8_t USBBuffer[4096];
 extern uint8_t BulkBuffer[12288];
 
 /**
+  * @brief Configures 10MHz timer to control stall time for generic or transfer streams.
+  *
+  * @return void
+  *
+  * This function sets the timer period and enables the timer interrupt as required for the stream
+ **/
+void AdiConfigStreamStallTimer()
+{
+	/* Enable timer interrupts */
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= (~CY_U3P_LPP_GPIO_INTRMODE_MASK);
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_GPIO_INTR_TIMER_THRES << CY_U3P_LPP_GPIO_INTRMODE_POS;
+
+	/* Set the timer pin threshold to correspond with the stall time */
+	if((FX3State.StallTime * 10) < ADI_GENERIC_STALL_OFFSET)
+	{
+		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold = 1;
+		/* Set the timer pin period (useful for error case, timer register is manually reset) */
+		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = 2;
+	}
+	else
+	{
+		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold = (FX3State.StallTime * 10) - ADI_GENERIC_STALL_OFFSET;
+		/* Set the timer pin period (useful for error case, timer register is manually reset) */
+		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = (FX3State.StallTime * 10) - ADI_GENERIC_STALL_OFFSET + 1;
+	}
+}
+
+/**
   * @brief This function sets a flag to notify the streaming thread that the user requested to cancel streaming.
   *
   * @return A status code indicating the success of the function.
@@ -217,18 +245,13 @@ CyU3PReturnStatus_t AdiTransferStreamStart()
 		AdiAppErrorHandler(status);
 	}
 
-	/* Enable timer interrupts */
-	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= (~CY_U3P_LPP_GPIO_INTRMODE_MASK);
-	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_GPIO_INTR_TIMER_THRES << CY_U3P_LPP_GPIO_INTRMODE_POS;
-
-	/* Set the timer pin threshold to correspond with the stall time */
-	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold = (FX3State.StallTime * 10) - ADI_GENERIC_STALL_OFFSET;
-	/* Set the timer pin period (useful for error case, timer register is manually reset) */
-	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = (FX3State.StallTime * 10) - ADI_GENERIC_STALL_OFFSET + 1;
+	/* Enable timer hardware for stall */
+	AdiConfigStreamStallTimer();
 
 	/* Enable generic data capture thread */
 	status = CyU3PEventSet (&EventHandler, ADI_TRANSFER_STREAM_ENABLE, CYU3P_EVENT_OR);
 
+	/* Return status code */
 	return status;
 }
 
@@ -909,25 +932,18 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 		AdiAppErrorHandler(status);
 	}
 
-	/* Print stream state after all config */
 #ifdef VERBOSE_MODE
+	/* Print stream state after all config */
 	AdiPrintStreamState();
 #endif
 
-	/* Enable timer interrupts */
-	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= (~CY_U3P_LPP_GPIO_INTRMODE_MASK);
-	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_GPIO_INTR_TIMER_THRES << CY_U3P_LPP_GPIO_INTRMODE_POS;
-
-	/* Set the timer pin threshold to correspond with the stall time */
-	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold = (FX3State.StallTime * 10) - ADI_GENERIC_STALL_OFFSET;
-	/* Set the timer pin period (useful for error case, timer register is manually reset) */
-	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = (FX3State.StallTime * 10) - ADI_GENERIC_STALL_OFFSET + 1;
+	/* Enable timer for stall */
+	AdiConfigStreamStallTimer();
 
 	/* Enable generic data capture thread */
 	status = CyU3PEventSet (&EventHandler, ADI_GENERIC_STREAM_ENABLE, CYU3P_EVENT_OR);
 
 	return status;
-
 }
 
 /**

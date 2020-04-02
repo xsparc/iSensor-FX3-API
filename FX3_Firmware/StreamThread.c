@@ -141,8 +141,6 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 		GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
 		/* Loop until interrupt is triggered */
 		while(!(GPIO->lpp_gpio_intr0 & (1 << FX3State.DrPin)));
-		/* Clear GPIO interrupt bit */
-		GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
 	}
 
 	/* Run through the register list numCaptures times - this is one buffer */
@@ -169,14 +167,14 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 			while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
 
 			/* transfer words */
-			status = CyU3PSpiTransferWords(MOSIPtr, 2, MISOPtr, 2);
+			AdiSpiTransferWord(MOSIPtr, MISOPtr, 2);
 
 			/* Set the pin timer to 0 */
 			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
 			/* clear interrupt flag */
 			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
 
-			/* If check if a readback is needed for the last transfer */
+			/* Check if a readback is needed for the last transfer */
 			if(regIndex == (StreamThreadState.TransferByteLength - 12))
 			{
 				/* If the write bit was set skip the read back*/
@@ -535,8 +533,6 @@ CyU3PReturnStatus_t AdiTransferStreamWork()
 		GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
 		/* Loop until interrupt is triggered */
 		while(!(GPIO->lpp_gpio_intr0 & (1 << FX3State.DrPin)));
-		/* Clear GPIO interrupt bit */
-		GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
 	}
 
 	/* Set the pin timer to 0 */
@@ -556,7 +552,7 @@ CyU3PReturnStatus_t AdiTransferStreamWork()
 			while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
 
 			/* Transfer data */
-			status = CyU3PSpiTransferWords(MOSIData, bytesPerSpiTransfer, bufPtr, bytesPerSpiTransfer);
+			AdiSpiTransferWord(MOSIData, bufPtr, bytesPerSpiTransfer);
 
 			/* Set the pin timer to 0 */
 			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;

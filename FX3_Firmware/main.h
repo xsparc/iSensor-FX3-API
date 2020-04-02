@@ -318,7 +318,7 @@ typedef struct StreamState
 #define MS_TO_TICKS_MULT						S_TO_TICKS_MULT	/ 1000
 
 /** Offset to take away from the timer period for generic stream stall time. In 10MHz timer ticks */
-#define ADI_GENERIC_STALL_OFFSET				(90) //Previously 76 with optimized SPI
+#define ADI_GENERIC_STALL_OFFSET				(52)
 
 /** Minimum possible sleep time  */
 #define ADI_MICROSECONDS_SLEEP_OFFSET			(14)

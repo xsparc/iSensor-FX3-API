@@ -55,6 +55,102 @@ uint32_t MOSIMask;
 uint32_t SCLKLowTime;
 
 /**
+  * @brief Bi-directional SPI transfer function, in register mode. Optimized for speed.
+  *
+  * @return void
+  *
+  * This function is used to allow for a reduced SPI stall time. Is fairly "unsafe" in that
+  * all hardware has to be configured for correct operation, and free, before this function
+  * can be called.
+ **/
+void AdiSpiTransferWord(uint8_t *txBuf, uint8_t *rxBuf, uint32_t numBytes)
+{
+    uint32_t temp, intrMask;
+    uint8_t  wordLen;
+
+    /* Get the wordLen in bytes. Min. 1 byte */
+    wordLen = ((SPI->lpp_spi_config & CY_U3P_LPP_SPI_WL_MASK) >> CY_U3P_LPP_SPI_WL_POS);
+    if ((wordLen & 0x07) != 0)
+    {
+        wordLen = (wordLen >> 3) + 1;
+    }
+    else
+    {
+        wordLen = (wordLen >> 3);
+    }
+
+    /* Disable interrupts. */
+    intrMask = SPI->lpp_spi_intr_mask;
+    SPI->lpp_spi_intr_mask = 0;
+
+    /* Reset SPI FIFO */
+    SPI->lpp_spi_config |= (CY_U3P_LPP_SPI_TX_CLEAR | CY_U3P_LPP_SPI_RX_CLEAR);
+
+    /* Wait for done */
+	while ((SPI->lpp_spi_status & CY_U3P_LPP_SPI_TX_DONE) == 0);
+	while ((SPI->lpp_spi_status & CY_U3P_LPP_SPI_RX_DATA) != 0);
+
+	/* Disable tx/rx clear flags */
+    SPI->lpp_spi_config &= ~(CY_U3P_LPP_SPI_TX_CLEAR | CY_U3P_LPP_SPI_RX_CLEAR);
+
+    /* Enable the TX and RX bits. */
+    SPI->lpp_spi_config |= CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_RX_ENABLE;
+
+    /* Re-enable SPI block. */
+    SPI->lpp_spi_config |= CY_U3P_LPP_SPI_ENABLE;
+
+    /* Place data in egress register */
+    temp = 0;
+    switch (wordLen)
+    {
+        case 4:
+            temp |= (txBuf[3] << 24);
+        case 3:
+            temp |= (txBuf[2] << 16);
+        case 2:
+            temp |= (txBuf[1] << 8);
+        default:
+            temp |= txBuf[0];
+            break;
+    }
+    SPI->lpp_spi_egress_data = temp;
+
+    /* Wait for tx/rx done interrupt */
+    while ((SPI->lpp_spi_status & (CY_U3P_LPP_SPI_RX_DATA | CY_U3P_LPP_SPI_TX_SPACE)) != (CY_U3P_LPP_SPI_RX_DATA | CY_U3P_LPP_SPI_TX_SPACE));
+
+    /* Get ingress data */
+    temp = SPI->lpp_spi_ingress_data;
+
+    /* Apply to buffer */
+    switch (wordLen)
+    {
+        case 4:
+        	/* Word length of 4 bytes */
+            rxBuf[3] = (uint8_t)((temp >> 24) & 0xFF);
+        case 3:
+        	/* Word length of 3 bytes */
+            rxBuf[2] = (uint8_t)((temp >> 16) & 0xFF);
+        case 2:
+        	/* Word length of 2 bytes */
+            rxBuf[1] = (uint8_t)((temp >> 8) & 0xFF);
+        default:
+        	/* Word length of 0.5 - 1 bytes */
+            rxBuf[0] = (uint8_t)(temp & 0xFF);
+            break;
+    }
+
+    /* Disable the TX and RX. */
+    SPI->lpp_spi_config &= ~(CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_RX_ENABLE);
+
+    /* Clear all interrupts and restore interrupt mask. */
+    SPI->lpp_spi_intr |= (CY_U3P_LPP_SPI_TX_DONE | CY_U3P_LPP_SPI_RX_DATA);
+    SPI->lpp_spi_intr_mask = intrMask;
+
+    /* Disable SPI block */
+    SPI->lpp_spi_config &= ~(CY_U3P_LPP_SPI_ENABLE);
+}
+
+/**
   * @brief This function restarts the SPI controller.
   *
   * @return A status code indicating the success of the setConfig call after re-initialization.
