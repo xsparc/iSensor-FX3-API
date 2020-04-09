@@ -521,10 +521,10 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 		}
 	}
 
-	/* add 2us to current time (fudge factor, calibrated using DSLogic Pro) */
-	if(currentTime < (0xFFFFFFFF - 20))
+	/* add 1.2us to current time (fudge factor, calibrated using DSLogic Pro) */
+	if(currentTime < (0xFFFFFFFF - 12))
 	{
-		currentTime = currentTime + 20;
+		currentTime = currentTime + 12;
 	}
 	else
 	{
