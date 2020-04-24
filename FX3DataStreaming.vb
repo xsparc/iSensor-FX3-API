@@ -116,7 +116,7 @@ Partial Class FX3Connection
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 5000) Then
-            Throw New FX3CommunicationException("ERROR: Timeout occurred while stopping burst stream")
+            Throw New FX3CommunicationException("ERROR: Timeout occurred while canceling a stream. Cancel code 0x" + ReqCode.ToString("X4"))
         End If
 
         'Read the return values from the buffer
