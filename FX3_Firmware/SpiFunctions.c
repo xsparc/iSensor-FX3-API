@@ -105,10 +105,13 @@ void AdiSpiTransferWord(uint8_t *txBuf, uint8_t *rxBuf, uint32_t numBytes)
     {
         case 4:
             temp |= (txBuf[3] << 24);
+            //no break
         case 3:
             temp |= (txBuf[2] << 16);
+            //no break
         case 2:
             temp |= (txBuf[1] << 8);
+            //no break
         default:
             temp |= txBuf[0];
             break;
@@ -127,12 +130,15 @@ void AdiSpiTransferWord(uint8_t *txBuf, uint8_t *rxBuf, uint32_t numBytes)
         case 4:
         	/* Word length of 4 bytes */
             rxBuf[3] = (uint8_t)((temp >> 24) & 0xFF);
+            //no break
         case 3:
         	/* Word length of 3 bytes */
             rxBuf[2] = (uint8_t)((temp >> 16) & 0xFF);
+            //no break
         case 2:
         	/* Word length of 2 bytes */
             rxBuf[1] = (uint8_t)((temp >> 8) & 0xFF);
+            //no break
         default:
         	/* Word length of 0.5 - 1 bytes */
             rxBuf[0] = (uint8_t)(temp & 0xFF);
