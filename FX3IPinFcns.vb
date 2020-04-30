@@ -833,7 +833,7 @@ Partial Class FX3Connection
 
         'Read status from the buffer and throw exception for bad status
         status = BitConverter.ToUInt32(respBuf, 0)
-        If Not status = 0 Then
+        If status <> 0 Then
             Throw New FX3BadStatusException("ERROR: Failed to configure pin as input, error code: " + status.ToString("X4"))
         End If
 
