@@ -189,6 +189,17 @@ Public Class FX3Connection
     'Track the supply mode
     Private m_DutSupplyMode As DutVoltage
 
+    'FX3 Pin GPIO mapping
+    Private RESET_PIN As UShort = 10
+    Private DIO1_PIN As UShort = 3
+    Private DIO2_PIN As UShort = 2
+    Private DIO3_PIN As UShort = 1
+    Private DIO4_PIN As UShort = 0
+    Private FX3_GPIO1_PIN As UShort = 4
+    Private FX3_GPIO2_PIN As UShort = 5
+    Private FX3_GPIO3_PIN As UShort = 6
+    Private FX3_GPIO4_PIN As UShort = 12
+
     'Events
 
     ''' <summary>
@@ -550,6 +561,10 @@ Public Class FX3Connection
                 m_ActiveFX3.ControlEndPt.Value = m_FX3SPIConfig.StallTime
                 ConfigureSPI()
             End If
+            'apply stall time to the bit bang SPI
+            If Not IsNothing(m_BitBangSpi) Then
+                SetBitBangStallTime(CDbl(value))
+            End If
         End Set
     End Property
 
@@ -814,6 +829,43 @@ Public Class FX3Connection
     'The functions in this region are not a part of the IDutInterface, and are specific to the FX3 board
 
     ''' <summary>
+    ''' Set the FX3 GPIO input stage pull up or pull down resistor setting. All FX3 GPIOs have a software configurable
+    ''' pull up / pull down resistor (10KOhm).
+    ''' </summary>
+    ''' <param name="Pin">The pin to set (FX3PinObject)</param>
+    ''' <param name="Setting">The pin resistor setting to apply</param>
+    Public Sub SetPinResistorSetting(Pin As IPinObject, Setting As FX3PinResistorSetting)
+
+        'status code from FX3
+        Dim status As UInteger
+
+        'Create buffer for transfer
+        Dim buf(3) As Byte
+
+        'validate pin
+        If Not IsFX3Pin(Pin) Then
+            Throw New FX3ConfigurationException("ERROR: FX3 pin functions must operate with FX3PinObjects")
+        End If
+
+        'configure the control endpoint
+        ConfigureControlEndpoint(USBCommands.ADI_SET_PIN_RESISTOR, False)
+        FX3ControlEndPt.Value = Setting And &HFFFF
+        FX3ControlEndPt.Index = (Pin.pinConfig And &HFFFF)
+
+        'Transfer data from the FX3
+        If Not XferControlData(buf, 4, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer for pin resistor setting configuration failed.")
+        End If
+
+        'parse status
+        status = BitConverter.ToUInt32(buf, 0)
+        If status <> 0 Then
+            Throw New FX3BadStatusException("ERROR: Bad status code after pin resistor set. Error code: 0x" + status.ToString("X4"))
+        End If
+
+    End Sub
+
+    ''' <summary>
     ''' Set the FX3 firmware watchdog timeout period (in seconds). If the watchdog is triggered the FX3 will reset.
     ''' </summary>
     ''' <returns></returns>
@@ -849,7 +901,8 @@ Public Class FX3Connection
 
     ''' <summary>
     ''' Get or set the DUT supply mode on the FX3. Available options are regulated 3.3V, USB 5V, and off. This feature is only available on the 
-    ''' ADI in-house iSensor FX3 eval platform, not the platform based on the Cypress Explorer kit.
+    ''' ADI in-house iSensor FX3 eval platform, not the platform based on the Cypress Explorer kit. If a Cypress Explorer kit is connected, the 
+    ''' setter for this property will be disabled.
     ''' </summary>
     ''' <returns>The DUT supply voltage setting</returns>
     Public Property DutSupplyMode As DutVoltage
@@ -857,6 +910,13 @@ Public Class FX3Connection
             Return m_DutSupplyMode
         End Get
         Set(value As DutVoltage)
+
+            'Disable setting if not iSensor board
+            If m_ActiveFX3Info.BoardType <> FX3BoardType.iSensorFX3Board Then
+                Exit Property
+            End If
+
+            'set up control endpoint
             ConfigureControlEndpoint(USBCommands.ADI_SET_DUT_SUPPLY, False)
             FX3ControlEndPt.Index = 0
             FX3ControlEndPt.Value = value
@@ -1037,7 +1097,7 @@ Public Class FX3Connection
         Set(value As DeviceType)
             If m_sensorType <> value Then
                 m_sensorType = value
-                m_FX3SPIConfig = New FX3SPIConfig(m_sensorType)
+                m_FX3SPIConfig = New FX3SPIConfig(m_sensorType, m_ActiveFX3Info.BoardType)
                 WriteBoardSpiParameters()
             End If
         End Set

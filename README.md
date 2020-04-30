@@ -14,11 +14,46 @@ A .NET-compatible API (this repository) has been developed in parallel to simpli
 
 Sandcastle-generated documentation for the FX3 API class can be found [https://juchong.github.io/iSensor-FX3-API/](https://juchong.github.io/iSensor-FX3-API/). 
 
-## Hardware Requirements
+## iSensor FX3 Evaluation Board
 
-This firmware was designed using the Cypress SuperSpeed Explorer Kit (CYUSB3KIT-003), but should operate on a bare CYUSB3014 device assuming the correct hardware resources are externally available. 
+This firmware was designed around the Cypress EZ-USB FX3 SuperSpeed USB Controller (CYUSB3014 and CYUSB2014) family of USB interface ICs offered by Cypress. 
 
-Design files for a breakout board designed to adapt the Explorer Kit's pins to a standard, 16-pin, 2mm connector used on most iSensor evaluation boards is available in the [hardware](https://github.com/juchong/iSensor-FX3-Firmware/tree/master/hardware) folder of this repository. 
+The next-generation FX3-based interface board now includes many additional firmware and hardware features that make testing, characterizing, and developing software for iSensor products easy. Firmware and API support for this board are included in release v2.5 onward. 
+
+![iSensor FX3 Evaluation Board](https://raw.githubusercontent.com/juchong/iSensor-FX3-Firmware/master/hardware/pictures/img6.jpg)
+
+Some of the board's features include:
+
+- Dedicated, onboard 3.3V, 2A regulator designed for high-transient applications
+- USB-C connector
+- Onboard, field-programmable EEPROM with USB bootloader fallback
+- Software-selectable OFF / 3.3V / 5V sensor supply output with overcurrent and short protection
+- JST-XH-2 external supply connector
+- iSensor standard, 16-pin, 2mm connector for compatibility with most iSensor breakout boards and adapters
+- Additional 10-pin, 2mm connector for feature expansion. The current firmware and API include support for:
+  - FX3 UART debugging
+  - Four GPIO for external test equipment triggering and sensing
+  - Internal 3.3V and 5V supplies are broken out separately from the DUT supply to power external level shifters, interface ICs, etc.
+  - An extra "bit-banged" SPI port to allow for "exotic" SPI configurations and communication with external hardware (ADCs, DACs, protocol interface ICs, etc.)
+- Multi-board data capture capability. Multiple boards can be connected to the same PC and can concurrently capture data independently of each other
+- Very low CPU usage while capturing data, even on older Windows machines
+- 1.5" x 1.75" PCB footprint
+
+![iSensor FX3 Evaluation Board with IMU ](https://raw.githubusercontent.com/juchong/iSensor-FX3-Firmware/master/hardware/pictures/img7.jpg)
+
+Design files for the breakout board is available in the [hardware](https://github.com/juchong/iSensor-FX3-Firmware/tree/master/hardware) folder of this repository. 
+
+## SuperSpeed Explorer Kit Breakout Board
+
+A breakout board designed for interfacing iSensor devices with the Cypress SuperSpeed Explorer Kit (CYUSB3KIT-003) was introduced as a temporary solution while a more feature-rich offering was developed.  Both boards will continue to be supported in future firmware revisions. 
+
+![CYUSB3KIT-003 and Breakout Board](https://raw.githubusercontent.com/juchong/iSensor-FX3-Firmware/master/hardware/pictures/img2.jpg)
+
+Design files for both breakout boards are available in the [hardware](https://github.com/juchong/iSensor-FX3-Firmware/tree/master/hardware) folder of this repository. 
+
+## SuperSpeed Explorer Kit Jumper Configuration
+
+The Explorer Kit requires **three** jumpers to be installed to operate correctly as shown in the image below. **Jumpers J2, J3, and J5 must be installed** when using the SuperSpeed Explorer Kit. **Jumper J4 must be open** to allow booting from the onboard EEPROM. 
 
  ![FX3 Jumper Locations](https://raw.githubusercontent.com/juchong/iSensor-FX3-Firmware/master/hardware/pictures/JumperLocations.jpg)
 

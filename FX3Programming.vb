@@ -143,9 +143,6 @@ Partial Class FX3Connection
             Throw New FX3Exception("ERROR: Unable to configure endpoints")
         End If
 
-        'Make sure that the board SPI parameters match current setting
-        WriteBoardSpiParameters()
-
         'set up watchdog
         UpdateWatchdog()
 
@@ -153,6 +150,21 @@ Partial Class FX3Connection
         m_ActiveFX3Info = New FX3Board(FX3SerialNumber, DateTime.Now)
         m_ActiveFX3Info.SetFirmwareVersion(GetFirmwareID())
         m_ActiveFX3Info.SetBootloaderVersion(m_BootloaderVersion)
+
+        'Get FX3 board type
+        GetFX3BoardType()
+
+        'Set up data ready pin (pin mapping occure in get board type)
+        If m_sensorType <> DeviceType.ADcmXL Then
+            'DIO1 for all IMU products
+            m_FX3SPIConfig.DataReadyPin = DIO1
+        Else
+            'DIO2 for ADcmXL machine health products
+            m_FX3SPIConfig.DataReadyPin = DIO2
+        End If
+
+        'Make sure that the board SPI parameters match current setting
+        WriteBoardSpiParameters()
 
         'Set the application firmware boot time
         SetBootTimeStamp()
@@ -202,7 +214,8 @@ Partial Class FX3Connection
     ''' Overload of Disconnect which lets you specify the FX3 serial number to disconnect. Returns a boolean
     ''' indicating if the board was disconnected.
     ''' </summary>
-    ''' <param name="FX3SerialNumber"></param>
+    ''' <param name="FX3SerialNumber">Serial number of board to disconnect from</param>
+    ''' <returns>Success status of the board disconnect operation</returns>
     Public Function Disconnect(FX3SerialNumber As String) As Boolean
         Dim boardFound As Boolean
 
@@ -229,6 +242,39 @@ Partial Class FX3Connection
         Return boardFound
 
     End Function
+
+    ''' <summary>
+    ''' Get the FX3 board type from the connected firmware.
+    ''' </summary>
+    Private Sub GetFX3BoardType()
+
+        'exit if no board
+        If Not m_FX3Connected Then Exit Sub
+
+        'send get board type command
+        ConfigureControlEndpoint(USBCommands.ADI_GET_BOARD_TYPE, False)
+        Dim buf(21) As Byte
+
+        'Transfer data from the FX3
+        If Not XferControlData(buf, 22, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer to get firmware type and pin mapping failed.")
+        End If
+
+        'parse board type result
+        m_ActiveFX3Info.SetBoardType(BitConverter.ToUInt32(buf, 0))
+
+        'parse pin mapping
+        RESET_PIN = BitConverter.ToUInt16(buf, 4)
+        DIO1_PIN = BitConverter.ToUInt16(buf, 6)
+        DIO2_PIN = BitConverter.ToUInt16(buf, 8)
+        DIO3_PIN = BitConverter.ToUInt16(buf, 10)
+        DIO4_PIN = BitConverter.ToUInt16(buf, 12)
+        FX3_GPIO1_PIN = BitConverter.ToUInt16(buf, 14)
+        FX3_GPIO2_PIN = BitConverter.ToUInt16(buf, 16)
+        FX3_GPIO3_PIN = BitConverter.ToUInt16(buf, 18)
+        FX3_GPIO4_PIN = BitConverter.ToUInt16(buf, 20)
+
+    End Sub
 
     ''' <summary>
     ''' This function is used to wait for an FX3 to be programmed with the ADI bootloader. In general, the programming model would go as follows,
@@ -732,16 +778,29 @@ Partial Class FX3Connection
         End Get
         Set(value As String)
             'Setter checks that the path is valid before setting
-            If IsFirmwarePathValid(value) Then
+            Dim goodImage As Boolean = IsFirmwarePathValid(value)
+
+            'handle case where directory was passed.
+            If Not goodImage Then
+                If Directory.Exists(value) Then
+                    value = Path.Combine(value, "FX3_Firmware.img")
+                    'check again
+                    goodImage = IsFirmwarePathValid(value)
+                End If
+            End If
+
+            'apply to private backer
+            If goodImage Then
                 m_FirmwarePath = value
             Else
+                m_FirmwarePath = ""
                 Throw New FX3ConfigurationException("ERROR: Invalid application firmware path provided: " + value)
             End If
         End Set
     End Property
 
     ''' <summary>
-    ''' Set/get the blink firmware .img file used for multi-board identification
+    ''' Set/get the blink USB bootloader firmware .img file used for multi-board identification
     ''' </summary>
     ''' <returns>A string representing the path to the firmware on the user machine</returns>
     Public Property BootloaderPath As String
@@ -750,18 +809,33 @@ Partial Class FX3Connection
         End Get
         Set(value As String)
             'Setter checks that the path is valid before setting
-            If IsFirmwarePathValid(value) Then
+            Dim goodImage As Boolean = IsFirmwarePathValid(value)
+
+            'handle case where directory was passed.
+            If Not goodImage Then
+                If Directory.Exists(value) Then
+                    value = Path.Combine(value, "boot_fw.img")
+                    'check again
+                    goodImage = IsFirmwarePathValid(value)
+                End If
+            End If
+
+            'apply to private backer if valid
+            If goodImage Then
                 m_BlinkFirmwarePath = value
             Else
-                Throw New FX3ConfigurationException("ERROR: Invalid bootloader path provided: " + value)
+                m_BootloaderVersion = "Not Set"
+                m_BlinkFirmwarePath = ""
+                Throw New FX3ConfigurationException("ERROR: Invalid bootloader firmware path provided: " + value)
             End If
-            'set the version based on the image
+
+            'set the version based on the image. Won't get here if image is bad
             m_BootloaderVersion = GetBootloaderVersion(value)
         End Set
     End Property
 
     ''' <summary>
-    ''' Path to the programmer firmware which is loaded in RAM to allow flashing the EEPROM.
+    ''' Path to the programmer firmware which is loaded in RAM to allow flashing the EEPROM with the bootloader.
     ''' </summary>
     ''' <returns></returns>
     Public Property FlashProgrammerPath As String
@@ -770,10 +844,23 @@ Partial Class FX3Connection
         End Get
         Set(value As String)
             'Setter checks that the path is valid before setting
-            If IsFirmwarePathValid(value) Then
+            Dim goodImage As Boolean = IsFirmwarePathValid(value)
+
+            'handle case where directory was passed.
+            If Not goodImage Then
+                If Directory.Exists(value) Then
+                    value = Path.Combine(value, "USBFlashProg.img")
+                    'check again
+                    goodImage = IsFirmwarePathValid(value)
+                End If
+            End If
+
+            'apply to private backer if valid
+            If goodImage Then
                 m_FlashProgrammerPath = value
             Else
-                Throw New FX3ConfigurationException("ERROR: Invalid programmer firmware path provided: " + value)
+                m_FlashProgrammerPath = ""
+                Throw New FX3ConfigurationException("ERROR: Invalid flash programmer firmware path provided: " + value)
             End If
         End Set
     End Property

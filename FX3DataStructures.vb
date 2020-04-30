@@ -37,6 +37,26 @@ Public Enum StreamCommands
 End Enum
 
 ''' <summary>
+''' Possible FX3 board types. Used to differentiate iSensors FX3 board from Cypress Explorer kit.
+''' </summary>
+Public Enum FX3BoardType
+    iSensorFX3Board = 0
+    CypressFX3Board = 1
+End Enum
+
+''' <summary>
+''' Setting for pull up / pull down resistors on FX3 GPIO input stage.
+''' </summary>
+Public Enum FX3PinResistorSetting
+    'Disable internal resistor on FX3 GPIO input stage
+    None = 0
+    'Enable pull down resistor
+    PullDown = 1
+    'Enable pull up resistor
+    PullUp = 2
+End Enum
+
+''' <summary>
 ''' This enum lists all supported vendor commands for the FX3 firmware. The LED commands can only be used with the ADI bootloader firmware.
 ''' </summary>
 Public Enum USBCommands
@@ -70,6 +90,9 @@ Public Enum USBCommands
 
     'Set the boot time code
     ADI_SET_BOOT_TIME = &HB9
+
+    ' Get the type of the programmed board
+    ADI_GET_BOARD_TYPE = &HBA
 
     'Start/stop a generic data stream
     ADI_STREAM_GENERIC_DATA = &HC0
@@ -113,11 +136,17 @@ Public Enum USBCommands
     'Reset the SPI controller
     ADI_RESET_SPI = &HCE
 
+    'pin delay measure
+    ADI_PIN_DELAY_MEASURE = &HCF
+
     'Start/stop a real-time stream
     ADI_STREAM_REALTIME = &HD0
 
-    'Do nothing (default case
+    'Do nothing (default case)
     ADI_NULL_COMMAND = &HD1
+
+    'Set GPIO resistor value
+    ADI_SET_PIN_RESISTOR = &HD2
 
     'Read a word at a specified address and return the data over the control endpoint
     ADI_READ_BYTES = &HF0
@@ -185,13 +214,14 @@ Public Enum SpiLagLeadTime
 End Enum
 
 ''' <summary>
-''' Enum of the possible DUT types for the ADcmXLx021
+''' Enum of the possible iSensors DUT types
 ''' </summary>
 Public Enum DUTType
     ADcmXL1021 = 0
     ADcmXL2021
     ADcmXL3021
     IMU
+    LegacyIMU
 End Enum
 
 ''' <summary>
@@ -213,13 +243,45 @@ End Enum
 ''' </summary>
 Public Class BitBangSpiConfig
 
+    ''' <summary>
+    ''' Chip select pin for bit bang SPI
+    ''' </summary>
     Public CS As FX3PinObject
+
+    ''' <summary>
+    ''' SCLK pin for bit bang SPI
+    ''' </summary>
     Public SCLK As FX3PinObject
+
+    ''' <summary>
+    ''' MOSI (master out, slave in) pin for bit bang SPI
+    ''' </summary>
     Public MOSI As FX3PinObject
+
+    ''' <summary>
+    ''' MISO (master is, slave out) pin for bit bang SPI
+    ''' </summary>
     Public MISO As FX3PinObject
+
+    ''' <summary>
+    ''' Number of timer ticks from CS falling edge to first sclk edge
+    ''' </summary>
     Public CSLeadTicks As UShort
+
+    ''' <summary>
+    ''' Number of timer ticks from last sclk edge to CS rising edge
+    ''' </summary>
     Public CSLagTicks As UShort
+
+    ''' <summary>
+    ''' Half SCLK period timer ticks
+    ''' </summary>
     Public SCLKHalfPeriodTicks As UInteger
+
+    ''' <summary>
+    ''' Stall time timer ticks
+    ''' </summary>
+    Public StallTicks As UInteger
 
     ''' <summary>
     ''' Constructor which lets you specify set of default pins to use as bit bang SPI pins
@@ -244,6 +306,7 @@ Public Class BitBangSpiConfig
         CSLeadTicks = 5 'Lead one SCLK period
         CSLagTicks = 5 'Lag one SCLK period
         SCLKHalfPeriodTicks = 5 'Should give approx. 1MHz
+        StallTicks = 82 '5us
     End Sub
 
     ''' <summary>
@@ -264,6 +327,10 @@ Public Class BitBangSpiConfig
         params.Add((CSLeadTicks And &HFF00) >> 8)
         params.Add(CSLagTicks And &HFF)
         params.Add((CSLagTicks And &HFF00) >> 8)
+        params.Add(StallTicks And &HFF)
+        params.Add((StallTicks And &HFF00) >> 8)
+        params.Add((StallTicks And &HFF0000) >> 16)
+        params.Add((StallTicks And &HFF000000) >> 24)
         Return params.ToArray()
     End Function
 
@@ -279,17 +346,65 @@ End Class
 Public Class FX3SPIConfig
 
     'Public Variables
+
+    ''' <summary>
+    ''' SPI word length (in bits)
+    ''' </summary>
     Public WordLength As Byte
+
+    ''' <summary>
+    ''' SCLK polarity
+    ''' </summary>
     Public Cpol As Boolean
+
+    ''' <summary>
+    ''' CS polarity
+    ''' </summary>
     Public ChipSelectPolarity As Boolean
+
+    ''' <summary>
+    ''' Clock phase
+    ''' </summary>
     Public Cpha As Boolean
+
+    ''' <summary>
+    ''' Select if SPI controller works LSB first or MSB first
+    ''' </summary>
     Public IsLSBFirst As Boolean
+
+    ''' <summary>
+    ''' Chip select control mode
+    ''' </summary>
     Public ChipSelectControl As SpiChipselectControl
+
+    ''' <summary>
+    ''' Chip select lead delay mode
+    ''' </summary>
     Public ChipSelectLeadTime As SpiLagLeadTime
+
+    ''' <summary>
+    ''' Chip select lag delay mode
+    ''' </summary>
     Public ChipSelectLagTime As SpiLagLeadTime
+
+    ''' <summary>
+    ''' Connected DUT type
+    ''' </summary>
     Public DUTType As DUTType
+
+    ''' <summary>
+    ''' Enable/Disable data ready interrupt triggering for SPI
+    ''' </summary>
     Public DrActive As Boolean
+
+    ''' <summary>
+    ''' Data ready polarity for interrupt triggering (posedge or negedge)
+    ''' </summary>
     Public DrPolarity As Boolean
+
+    ''' <summary>
+    ''' Scale factor to convert seconds to timer ticks)
+    ''' </summary>
     Public SecondsToTimerTicks As UInt32
 
     'Private variables for general use
@@ -387,7 +502,7 @@ Public Class FX3SPIConfig
     ''' Class Constructor, sets reasonable default values for IMU and ADcmXL devices
     ''' </summary>
     ''' <param name="SensorType">Optional parameter to specify default device SPI settings. Valid options are IMU and ADcmXL</param>
-    Public Sub New(Optional SensorType As DeviceType = DeviceType.IMU)
+    Public Sub New(Optional SensorType As DeviceType = DeviceType.IMU, Optional BoardType As FX3BoardType = FX3BoardType.CypressFX3Board)
         'Set the properties true for all devices
         Cpol = True
         Cpha = True
@@ -398,6 +513,9 @@ Public Class FX3SPIConfig
         IsLSBFirst = False
         DrPolarity = True
         DrActive = False
+        DataReadyPinFX3GPIO = 4
+        If BoardType = FX3BoardType.CypressFX3Board Then DataReadyPinFX3GPIO = 4
+        If BoardType = FX3BoardType.iSensorFX3Board Then DataReadyPinFX3GPIO = 5
 
         If SensorType = DeviceType.ADcmXL Then
             'ADcmXL (machine health)
@@ -405,21 +523,20 @@ Public Class FX3SPIConfig
             ClockFrequency = 14000000
             WordLength = 16
             DUTType = DUTType.ADcmXL3021
-            DataReadyPinFX3GPIO = 3
+            If BoardType = FX3BoardType.CypressFX3Board Then DataReadyPinFX3GPIO = 3
+            If BoardType = FX3BoardType.iSensorFX3Board Then DataReadyPinFX3GPIO = 4
         ElseIf SensorType = DeviceType.IMU Then
             'General IMU
             ClockFrequency = 2000000
             WordLength = 16
             m_StallTime = 25
             DUTType = DUTType.IMU
-            DataReadyPinFX3GPIO = 4
         Else
             'Automotive IMU with iSensorAutomotiveSpi protocol
             ClockFrequency = 4000000
             WordLength = 32
             m_StallTime = 10
             DUTType = DUTType.IMU
-            DataReadyPinFX3GPIO = 4
         End If
 
     End Sub
@@ -761,7 +878,13 @@ Public Class FX3Board
     Private m_verboseMode As Boolean
     Private m_bootloaderVersion As String
     Private m_buildDateTime As String
+    Private m_boardType As FX3BoardType
 
+    ''' <summary>
+    ''' Constructor, should be only called by FX3Connection instance
+    ''' </summary>
+    ''' <param name="SerialNumber">Board SN</param>
+    ''' <param name="BootTime">Board boot time</param>
     Public Sub New(SerialNumber As String, BootTime As DateTime)
 
         'set the serial number string
@@ -778,13 +901,27 @@ Public Class FX3Board
     'Public interfaces
 
     ''' <summary>
-    ''' Override of the ToString function
+    ''' The FX3 board type (iSensor FX3 board or Cypress eval FX3 board)
     ''' </summary>
     ''' <returns></returns>
+    Public ReadOnly Property BoardType As FX3BoardType
+        Get
+            Return m_boardType
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' Override of the ToString function
+    ''' </summary>
+    ''' <returns>String with board information</returns>
     Public Overrides Function ToString() As String
-        Return "Firmware Version: " + FirmwareVersion + Environment.NewLine + "Build Date and Time: " + BuildDateTime + Environment.NewLine +
-            "Serial Number: " + SerialNumber + Environment.NewLine + "Debug Mode: " + VerboseMode.ToString() + Environment.NewLine +
-            "Uptime: " + Uptime.ToString() + "ms" + Environment.NewLine + "Bootloader Version: " + BootloaderVersion
+        Return "Firmware Version: " + FirmwareVersion + Environment.NewLine +
+            "Board Type: " + [Enum].GetName(GetType(FX3BoardType), BoardType) + Environment.NewLine +
+            "Build Date and Time: " + BuildDateTime + Environment.NewLine +
+            "Serial Number: " + SerialNumber + Environment.NewLine +
+            "Debug Mode: " + VerboseMode.ToString() + Environment.NewLine +
+            "Uptime: " + Uptime.ToString() + "ms" + Environment.NewLine +
+            "Bootloader Version: " + BootloaderVersion
     End Function
 
     ''' <summary>
@@ -895,6 +1032,11 @@ Public Class FX3Board
     Friend Sub SetDateTime(DateTime As String)
         m_buildDateTime = DateTime
     End Sub
+
+    Friend Sub SetBoardType(BoardType As FX3BoardType)
+        m_boardType = BoardType
+    End Sub
+
 
 End Class
 

@@ -146,33 +146,6 @@ Partial Class FX3Connection
     End Function
 
     ''' <summary>
-    ''' 
-    ''' </summary>
-    Private Sub ISpi32Interface_StopStream() Implements ISpi32Interface.StopStream
-        'Buffer to hold command data
-        Dim buf(3) As Byte
-        Dim status As UInteger
-
-        'send stop stream command to thread
-        m_StreamThreadRunning = False
-
-        'Configure the control endpoint
-        ConfigureControlEndpoint(USBCommands.ADI_TRANSFER_STREAM, False)
-        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_STOP_CMD
-
-        'Send command to the DUT to stop streaming data
-        If Not XferControlData(buf, 4, 2000) Then
-            Throw New FX3CommunicationException("ERROR: Timeout occurred when stopping a transfer stream thread on the FX3")
-        End If
-
-        'Read status from the buffer and throw exception for bad status
-        status = BitConverter.ToUInt32(buf, 0)
-        If Not status = 0 Then
-            Throw New FX3BadStatusException("ERROR: Failed to set stream stop event, status: " + status.ToString("X4"))
-        End If
-    End Sub
-
-    ''' <summary>
     ''' This is similar to the most general streaming function used by the IRegInterface, and all other buffered streaming functions can be derived from 
     ''' it with a little glue logic. When a stream is started, a second thread should be started to pull buffers from the interfacing board asynchronously.
     ''' Each buffer will consist of WriteData.count() * numCaptures 32-bit words, which are just the raw data read back from the DUT over the MISO line. 
@@ -244,13 +217,20 @@ Partial Class FX3Connection
 
     End Sub
 
+    ''' <summary>
+    ''' ISpi32 StopStream implementation. Calls generic version.
+    ''' </summary>
+    Public Sub ISpi32StopStream() Implements ISpi32Interface.StopStream
+        CancelStreamImplementation(USBCommands.ADI_TRANSFER_STREAM)
+    End Sub
+
     Private Sub ISpi32TransferStreamDone()
         'Buffer to hold command data
         Dim buf(3) As Byte
-        Dim status As UInteger
 
         'Configure the control endpoint
-        ConfigureControlEndpoint(USBCommands.ADI_TRANSFER_STREAM, False)
+        ConfigureControlEndpoint(USBCommands.ADI_TRANSFER_STREAM, True)
+        m_ActiveFX3.ControlEndPt.Value = 0
         m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_DONE_CMD
 
         'Send command to the DUT to stop streaming data
@@ -258,11 +238,6 @@ Partial Class FX3Connection
             Throw New FX3CommunicationException("ERROR: Timeout occurred when cleaning up a transfer stream thread on the FX3")
         End If
 
-        'Read status from the buffer and throw exception for bad status
-        status = BitConverter.ToUInt32(buf, 0)
-        If Not status = 0 Then
-            Throw New FX3BadStatusException("ERROR: Failed to set stream done event, status: " + status.ToString("X4"))
-        End If
     End Sub
 
     Private Function ISpi32TransferStreamSetup(WriteData As IEnumerable(Of UInteger), numCaptures As UInteger, numBuffers As UInteger) As UInteger
@@ -418,7 +393,8 @@ Partial Class FX3Connection
             ElseIf m_StreamThreadRunning Then
                 'Exit for a failed data transfer
                 Console.WriteLine("Transfer failed during transfer stream. Error code: " + StreamingEndPt.LastError.ToString() + " (0x" + StreamingEndPt.LastError.ToString("X4") + ")")
-                ISpi32Interface_StopStream()
+                'send cancel
+                CancelStreamImplementation(USBCommands.ADI_TRANSFER_STREAM)
                 Exit While
             Else
                 'exit due to stream cancel

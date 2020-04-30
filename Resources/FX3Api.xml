@@ -248,6 +248,14 @@ FX3Api
  </summary>
  <param name="clockFrequency">The SPI clock frequency, if it needs to be set</param>
 </member>
+<member name="M:FX3Api.FX3Connection.SetPinResistorSetting(AdisApi.IPinObject,FX3Api.FX3PinResistorSetting)">
+ <summary>
+ Set the FX3 GPIO input stage pull up or pull down resistor setting. All FX3 GPIOs have a software configurable
+ pull up / pull down resistor (10KOhm).
+ </summary>
+ <param name="Pin">The pin to set (FX3PinObject)</param>
+ <param name="Setting">The pin resistor setting to apply</param>
+</member>
 <member name="P:FX3Api.FX3Connection.WatchdogTimeoutSeconds">
  <summary>
  Set the FX3 firmware watchdog timeout period (in seconds). If the watchdog is triggered the FX3 will reset.
@@ -263,7 +271,8 @@ FX3Api
 <member name="P:FX3Api.FX3Connection.DutSupplyMode">
  <summary>
  Get or set the DUT supply mode on the FX3. Available options are regulated 3.3V, USB 5V, and off. This feature is only available on the 
- ADI in-house iSensor FX3 eval platform, not the platform based on the Cypress Explorer kit.
+ ADI in-house iSensor FX3 eval platform, not the platform based on the Cypress Explorer kit. If a Cypress Explorer kit is connected, the 
+ setter for this property will be disabled.
  </summary>
  <returns>The DUT supply voltage setting</returns>
 </member>
@@ -410,6 +419,13 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  <param name="Freq">The SPI frequency, in Hz</param>
  <returns>A boolean indicating if the frequency could be set.</returns>
 </member>
+<member name="M:FX3Api.FX3Connection.SetBitBangStallTime(System.Double)">
+ <summary>
+ Set the bit bang SPI stall time. Driven by a clock with resolution of 49.3ns
+ </summary>
+ <param name="MicroSecondsStall">Stall time desired, in microseconds. Minimum of 0.7us</param>
+ <returns>A boolean indicating if value is good or not. Defaults to closest possible value</returns>
+</member>
 <member name="M:FX3Api.FX3Connection.SetBitBangSpiFreq(System.Double)">
  <summary>
  Sets the SCLK frequency for a bit bang SPI connection. 
@@ -443,11 +459,17 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
 </member>
 <member name="P:FX3Api.FX3Connection.WordCount">
  <summary>
- Gets or sets the number of 16 bit words that are transferred during the burst.
+ Gets or sets the number of 16 bit words that are read during the burst. Does not include trigger, real transfer will be 2 bytes larger.
  </summary>
  <value></value>
  <returns></returns>
  <remarks></remarks>
+</member>
+<member name="P:FX3Api.FX3Connection.BurstByteCount">
+ <summary>
+ Get or set the burst word length, in bytes. Is the total count of bytes transfered, including trigger
+ </summary>
+ <returns></returns>
 </member>
 <member name="P:FX3Api.FX3Connection.TriggerReg">
  <summary>
@@ -456,6 +478,13 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  <value></value>
  <returns></returns>
  <remarks></remarks>
+</member>
+<member name="P:FX3Api.FX3Connection.BurstMOSIData">
+ <summary>
+ Data to transmit on the MOSI line during a burst read operation. Is overwriten if
+ you set the trigger reg, since trigger reg is given priority.
+ </summary>
+ <returns></returns>
 </member>
 <member name="M:FX3Api.FX3Connection.ClearBurstMode">
  <summary>
@@ -495,16 +524,17 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  Cancel a any running stream
  </summary>
 </member>
-<member name="M:FX3Api.FX3Connection.StartBurstStream(System.UInt32)">
+<member name="M:FX3Api.FX3Connection.CancelStreamImplementation(FX3Api.USBCommands)">
+ <summary>
+ Cancel running stream
+ </summary>
+ <param name="ReqCode">ReqCode for the type of stream to cancel</param>
+</member>
+<member name="M:FX3Api.FX3Connection.StartBurstStream(System.UInt32,System.Collections.Generic.IEnumerable{System.Byte})">
  <summary>
  Function to start a burst read using the BurstStreamManager
  </summary>
  <param name="numBuffers">The number of buffers to read in the stream operation</param>
-</member>
-<member name="M:FX3Api.FX3Connection.StopBurstStream">
- <summary>
- Stops a burst stream by setting the stream state variables
- </summary>
 </member>
 <member name="P:FX3Api.FX3Connection.StripBurstTriggerWord">
  <summary>
@@ -515,11 +545,6 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
 <member name="M:FX3Api.FX3Connection.BurstStreamManager">
  <summary>
  This function reads burst stream data from the DUT over the streaming endpoint. It is intended to operate in its own thread, and should not be called directly.
- </summary>
-</member>
-<member name="M:FX3Api.FX3Connection.StopGenericStream">
- <summary>
- Stops a generic stream by setting the stream state variables
  </summary>
 </member>
 <member name="M:FX3Api.FX3Connection.StartGenericStream(System.Collections.Generic.IEnumerable{AdisApi.AddrDataPair},System.UInt32,System.UInt32)">
@@ -578,7 +603,7 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  </summary>
  <param name="pin">The FX3PinObject for the pin to drive</param>
  <param name="polarity">The level to drive the pin to. 1 - high, 0 - low</param>
- <param name="pperiod">The time to drive the pin for, in ms</param>
+ <param name="pperiod">The time to drive the pin for, in ms. Minimum of 3us.</param>
  <param name="mode">Not implemented</param>
 </member>
 <member name="M:FX3Api.FX3Connection.PulseWait(AdisApi.IPinObject,System.UInt32,System.UInt32,System.UInt32)">
@@ -612,6 +637,17 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  <param name="pins">An enumerable list of FX3PinObjects to read (maximum of 32)</param>
  <returns>The pin values, as a UInteger. The first pin is in bit 0, second is in bit 1, and so on</returns>
 </member>
+<member name="M:FX3Api.FX3Connection.ReadTime(System.UInt32,System.UInt32,System.UInt32,System.UInt32,System.UInt32)">
+ <summary>
+ Not implemented
+ </summary>
+ <param name="start_pin">Not implemented</param>
+ <param name="start_polarity">Not implemented</param>
+ <param name="stop_pin">Not implemented</param>
+ <param name="stop_polarity">Not implemented</param>
+ <param name="delay">Not implemented</param>
+ <returns>Not implemented</returns>
+</member>
 <member name="M:FX3Api.FX3Connection.SetPin(AdisApi.IPinObject,System.UInt32)">
  <summary>
  Sets the value of a FX3 GPIO pin. This value will persist until the pin is set to a different value, or read from
@@ -638,6 +674,17 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  <param name="timeoutInMs">The timeout from when the pin measurement starts to when the function returns if the signal cannot be found</param>
  <returns>The DR frequency in Hz</returns>
 </member>
+<member name="M:FX3Api.FX3Connection.MeasurePinDelay(AdisApi.IPinObject,System.UInt32,AdisApi.IPinObject,System.UInt32)">
+ <summary>
+ This function measures the time delay between toggling a trigger pin, and a state change on the busy pin. This can be used to measure
+ the propagation delay between a sync edge and data ready being de-asserted.
+ </summary>
+ <param name="TriggerPin">The pin to toggle. When this pin is driven to the selected polarity the delay timer starts</param>
+ <param name="TriggerDrivePolarity">The polarity to drive the trigger pin to. 1- high, 0 - low</param>
+ <param name="BusyPin">The pin to measure.</param>
+ <param name="Timeout">Operation timeout period, in ms</param>
+ <returns>The delay time, in ms</returns>
+</member>
 <member name="M:FX3Api.FX3Connection.MeasureBusyPulse(AdisApi.IPinObject,System.UInt32,System.UInt32,AdisApi.IPinObject,System.UInt32,System.UInt32)">
  <summary>
  This function triggers a DUT action using a pulse drive, and then measures the following pulse width on a separate busy line.
@@ -651,12 +698,11 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  <param name="Timeout">The timeout, in ms, to wait before canceling, if the pulse is never detected</param>
  <returns>The pulse width, in ms. Accurate to approx. 1us</returns>
 </member>
-<member name="M:FX3Api.FX3Connection.MeasureBusyPulse(System.UInt16,System.UInt16,AdisApi.IPinObject,System.UInt32,System.UInt32)">
+<member name="M:FX3Api.FX3Connection.MeasureBusyPulse(System.Byte[],AdisApi.IPinObject,System.UInt32,System.UInt32)">
  <summary>
  Overload of measure busy pulse which triggers the DUT event using a SPI write instead of a pin drive.
  </summary>
- <param name="TriggerRegAddr">The address of the DUT trigger register (For example, a COMMAND register)</param>
- <param name="TriggerRegValue">The value to write to the DUT trigger register</param>
+ <param name="SpiTriggerData">The data to transmit on the MOSI line, to trigger the operation being measured</param>
  <param name="BusyPin">The pin to measure a busy pulse on</param>
  <param name="BusyPolarity">The polarity of the pulse being measured (0 will measure a low pulse, 1 will measure a high pulse)</param>
  <param name="Timeout">The timeout, in ms, to wait before canceling, if the pulse is never detected</param>
@@ -698,58 +744,58 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
 </member>
 <member name="P:FX3Api.FX3Connection.ResetPin">
  <summary>
- Read-only property to get the reset pin (mapped to GPIO 0 on FX3)
+ Read-only property to get the reset pin
  </summary>
  <returns>The reset pin, as an IPinObject</returns>
 </member>
 <member name="P:FX3Api.FX3Connection.DIO1">
  <summary>
- Read-only property to get the DIO1 pin (mapped to GPIO 4 on FX3)
+ Read-only property to get the DIO1 pin
  </summary>
  <returns>Returns the DIO1 pin, as an IPinObject</returns>
 </member>
 <member name="P:FX3Api.FX3Connection.DIO2">
  <summary>
- Read-only property to get the DIO2 pin (mapped to GPIO 3 on FX3)
+ Read-only property to get the DIO2 pin
  </summary>
  <returns>Returns the DIO2 pin, as an IPinObject</returns>
 </member>
 <member name="P:FX3Api.FX3Connection.DIO3">
  <summary>
- Read-only property to get the DIO3 pin (mapped to GPIO 2 on FX3)
+ Read-only property to get the DIO3 pin
  </summary>
  <returns>Returns the DIO3 pin, as an IPinObject</returns>
 </member>
 <member name="P:FX3Api.FX3Connection.DIO4">
  <summary>
- Read-only property to get the DIO4 pin (mapped to GPIO 1 on FX3)
+ Read-only property to get the DIO4 pin
  </summary>
  <returns>Returns the DIO4 pin, as an IPinObject</returns>
 </member>
 <member name="P:FX3Api.FX3Connection.FX3_GPIO1">
  <summary>
- Read-only property to get the FX3_GPIO1 pin (mapped to GPIO 5 on FX3). This pin does not map to the standard iSensor breakout,
+ Read-only property to get the FX3_GPIO1 pin. This pin does not map to the standard iSensor breakout,
  and should be used for other general purpose interfacing.
  </summary>
  <returns>Returns the GPIO pin, as an IPinObject</returns>
 </member>
 <member name="P:FX3Api.FX3Connection.FX3_GPIO2">
  <summary>
- Read-only property to get the FX3_GPIO2 pin (mapped to GPIO 6 on FX3). This pin does not map to the standard iSensor breakout,
+ Read-only property to get the FX3_GPIO2 pin. This pin does not map to the standard iSensor breakout,
  and should be used for other general purpose interfacing.
  </summary>
  <returns>Returns the GPIO pin, as an IPinObject</returns>
 </member>
 <member name="P:FX3Api.FX3Connection.FX3_GPIO3">
  <summary>
- Read-only property to get the FX3_GPIO3 pin (mapped to GPIO 7 on FX3). This pin does not map to the standard iSensor breakout,
+ Read-only property to get the FX3_GPIO3 pin. This pin does not map to the standard iSensor breakout,
  and should be used for other general purpose interfacing.
  </summary>
  <returns>Returns the GPIO pin, as an IPinObject</returns>
 </member>
 <member name="P:FX3Api.FX3Connection.FX3_GPIO4">
  <summary>
- Read-only property to get the FX3_GPIO4 pin (mapped to GPIO 12 on FX3). This pin does not map to the standard iSensor breakout,
+ Read-only property to get the FX3_GPIO4 pin. This pin does not map to the standard iSensor breakout,
  and should be used for other general purpose interfacing. This pin shares a complex GPIO block with DIO1. If DIO1 is being used
  as a clock source, via the StartPWM function, then this pin cannot be used as a clock source.
  </summary>
@@ -933,7 +979,13 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  Overload of Disconnect which lets you specify the FX3 serial number to disconnect. Returns a boolean
  indicating if the board was disconnected.
  </summary>
- <param name="FX3SerialNumber"></param>
+ <param name="FX3SerialNumber">Serial number of board to disconnect from</param>
+ <returns>Success status of the board disconnect operation</returns>
+</member>
+<member name="M:FX3Api.FX3Connection.GetFX3BoardType">
+ <summary>
+ Get the FX3 board type from the connected firmware.
+ </summary>
 </member>
 <member name="M:FX3Api.FX3Connection.WaitForBoard(System.Int32)">
  <summary>
@@ -1060,13 +1112,13 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
 </member>
 <member name="P:FX3Api.FX3Connection.BootloaderPath">
  <summary>
- Set/get the blink firmware .img file used for multi-board identification
+ Set/get the blink USB bootloader firmware .img file used for multi-board identification
  </summary>
  <returns>A string representing the path to the firmware on the user machine</returns>
 </member>
 <member name="P:FX3Api.FX3Connection.FlashProgrammerPath">
  <summary>
- Path to the programmer firmware which is loaded in RAM to allow flashing the EEPROM.
+ Path to the programmer firmware which is loaded in RAM to allow flashing the EEPROM with the bootloader.
  </summary>
  <returns></returns>
 </member>
@@ -1226,11 +1278,6 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  <param name="numBuffers">The total number of data ready's to capture.</param>
  <returns></returns>
 </member>
-<member name="M:FX3Api.FX3Connection.ISpi32Interface_StopStream">
- <summary>
- 
- </summary>
-</member>
 <member name="M:FX3Api.FX3Connection.ISpi32Interface_StartBufferedStream(System.Collections.Generic.IEnumerable{System.UInt32},System.UInt32,System.UInt32,System.Int32,System.ComponentModel.BackgroundWorker)">
  <summary>
  This is similar to the most general streaming function used by the IRegInterface, and all other buffered streaming functions can be derived from 
@@ -1243,6 +1290,11 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  <param name="numBuffers">The total number of buffers to capture</param>
  <param name="timeoutSeconds">The time to wait on the interfacing board before stopping the stream</param>
  <param name="worker">A background worker used to notify the caller of progress made in the stream. You MUST check that this parameter has been initialized</param>
+</member>
+<member name="M:FX3Api.FX3Connection.ISpi32StopStream">
+ <summary>
+ ISpi32 StopStream implementation. Calls generic version.
+ </summary>
 </member>
 <member name="M:FX3Api.FX3Connection.ISpi32Interface_GetBufferedStreamDataPacket">
  <summary>
@@ -1289,6 +1341,16 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  This enum lists all the available streaming commands which can be sent to the FX3 (in the endpoint index)
  </summary>
 </member>
+<member name="T:FX3Api.FX3BoardType">
+ <summary>
+ Possible FX3 board types. Used to differentiate iSensors FX3 board from Cypress Explorer kit.
+ </summary>
+</member>
+<member name="T:FX3Api.FX3PinResistorSetting">
+ <summary>
+ Setting for pull up / pull down resistors on FX3 GPIO input stage.
+ </summary>
+</member>
 <member name="T:FX3Api.USBCommands">
  <summary>
  This enum lists all supported vendor commands for the FX3 firmware. The LED commands can only be used with the ADI bootloader firmware.
@@ -1311,7 +1373,7 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
 </member>
 <member name="T:FX3Api.DUTType">
  <summary>
- Enum of the possible DUT types for the ADcmXLx021
+ Enum of the possible iSensors DUT types
  </summary>
 </member>
 <member name="T:FX3Api.DutVoltage">
@@ -1323,6 +1385,46 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
 <member name="T:FX3Api.BitBangSpiConfig">
  <summary>
  This class stores all the relevant information about a given bit bang SPI connection.
+ </summary>
+</member>
+<member name="F:FX3Api.BitBangSpiConfig.CS">
+ <summary>
+ Chip select pin for bit bang SPI
+ </summary>
+</member>
+<member name="F:FX3Api.BitBangSpiConfig.SCLK">
+ <summary>
+ SCLK pin for bit bang SPI
+ </summary>
+</member>
+<member name="F:FX3Api.BitBangSpiConfig.MOSI">
+ <summary>
+ MOSI (master out, slave in) pin for bit bang SPI
+ </summary>
+</member>
+<member name="F:FX3Api.BitBangSpiConfig.MISO">
+ <summary>
+ MISO (master is, slave out) pin for bit bang SPI
+ </summary>
+</member>
+<member name="F:FX3Api.BitBangSpiConfig.CSLeadTicks">
+ <summary>
+ Number of timer ticks from CS falling edge to first sclk edge
+ </summary>
+</member>
+<member name="F:FX3Api.BitBangSpiConfig.CSLagTicks">
+ <summary>
+ Number of timer ticks from last sclk edge to CS rising edge
+ </summary>
+</member>
+<member name="F:FX3Api.BitBangSpiConfig.SCLKHalfPeriodTicks">
+ <summary>
+ Half SCLK period timer ticks
+ </summary>
+</member>
+<member name="F:FX3Api.BitBangSpiConfig.StallTicks">
+ <summary>
+ Stall time timer ticks
  </summary>
 </member>
 <member name="M:FX3Api.BitBangSpiConfig.#ctor(System.Boolean)">
@@ -1340,6 +1442,66 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
 <member name="T:FX3Api.FX3SPIConfig">
  <summary>
  Class for all the programmable SPI configuration options on the FX3.
+ </summary>
+</member>
+<member name="F:FX3Api.FX3SPIConfig.WordLength">
+ <summary>
+ SPI word length (in bits)
+ </summary>
+</member>
+<member name="F:FX3Api.FX3SPIConfig.Cpol">
+ <summary>
+ SCLK polarity
+ </summary>
+</member>
+<member name="F:FX3Api.FX3SPIConfig.ChipSelectPolarity">
+ <summary>
+ CS polarity
+ </summary>
+</member>
+<member name="F:FX3Api.FX3SPIConfig.Cpha">
+ <summary>
+ Clock phase
+ </summary>
+</member>
+<member name="F:FX3Api.FX3SPIConfig.IsLSBFirst">
+ <summary>
+ Select if SPI controller works LSB first or MSB first
+ </summary>
+</member>
+<member name="F:FX3Api.FX3SPIConfig.ChipSelectControl">
+ <summary>
+ Chip select control mode
+ </summary>
+</member>
+<member name="F:FX3Api.FX3SPIConfig.ChipSelectLeadTime">
+ <summary>
+ Chip select lead delay mode
+ </summary>
+</member>
+<member name="F:FX3Api.FX3SPIConfig.ChipSelectLagTime">
+ <summary>
+ Chip select lag delay mode
+ </summary>
+</member>
+<member name="F:FX3Api.FX3SPIConfig.DUTType">
+ <summary>
+ Connected DUT type
+ </summary>
+</member>
+<member name="F:FX3Api.FX3SPIConfig.DrActive">
+ <summary>
+ Enable/Disable data ready interrupt triggering for SPI
+ </summary>
+</member>
+<member name="F:FX3Api.FX3SPIConfig.DrPolarity">
+ <summary>
+ Data ready polarity for interrupt triggering (posedge or negedge)
+ </summary>
+</member>
+<member name="F:FX3Api.FX3SPIConfig.SecondsToTimerTicks">
+ <summary>
+ Scale factor to convert seconds to timer ticks)
  </summary>
 </member>
 <member name="P:FX3Api.FX3SPIConfig.SCLKFrequency">
@@ -1372,7 +1534,7 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  </summary>
  <returns>The GPIO number, as a UINT16</returns>
 </member>
-<member name="M:FX3Api.FX3SPIConfig.#ctor(FX3Api.DeviceType)">
+<member name="M:FX3Api.FX3SPIConfig.#ctor(FX3Api.DeviceType,FX3Api.FX3BoardType)">
  <summary>
  Class Constructor, sets reasonable default values for IMU and ADcmXL devices
  </summary>
@@ -1529,11 +1691,24 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  This class contains information about the connected FX3 board
  </summary>
 </member>
+<member name="M:FX3Api.FX3Board.#ctor(System.String,System.DateTime)">
+ <summary>
+ Constructor, should be only called by FX3Connection instance
+ </summary>
+ <param name="SerialNumber">Board SN</param>
+ <param name="BootTime">Board boot time</param>
+</member>
+<member name="P:FX3Api.FX3Board.BoardType">
+ <summary>
+ The FX3 board type (iSensor FX3 board or Cypress eval FX3 board)
+ </summary>
+ <returns></returns>
+</member>
 <member name="M:FX3Api.FX3Board.ToString">
  <summary>
  Override of the ToString function
  </summary>
- <returns></returns>
+ <returns>String with board information</returns>
 </member>
 <member name="P:FX3Api.FX3Board.Uptime">
  <summary>
