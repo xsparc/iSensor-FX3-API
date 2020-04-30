@@ -1,5 +1,5 @@
 /**
-  * Copyright (c) Analog Devices Inc, 2018 - 2019
+  * Copyright (c) Analog Devices Inc, 2018 - 2020
   * All Rights Reserved.
   * 
   * THIS SOFTWARE UTILIZES LIBRARIES DEVELOPED
@@ -26,7 +26,9 @@ extern CyU3PDmaBuffer_t SpiDmaBuffer;
 extern BoardState FX3State;
 extern volatile CyBool_t KillStreamEarly;
 extern StreamState StreamThreadState;
-extern uint8_t USBBuffer[];
+
+/** Global USB Buffer (Control Endpoint) */
+extern uint8_t USBBuffer[4096];
 
 /**
   * @brief The entry point function for the StreamThread. Handles all streaming data captures.
@@ -139,8 +141,6 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 		GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
 		/* Loop until interrupt is triggered */
 		while(!(GPIO->lpp_gpio_intr0 & (1 << FX3State.DrPin)));
-		/* Clear GPIO interrupt bit */
-		GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
 	}
 
 	/* Run through the register list numCaptures times - this is one buffer */
@@ -167,14 +167,14 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 			while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
 
 			/* transfer words */
-			status = CyU3PSpiTransferWords(MOSIPtr, 2, MISOPtr, 2);
+			AdiSpiTransferWord(MOSIPtr, MISOPtr, 2);
 
 			/* Set the pin timer to 0 */
 			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
 			/* clear interrupt flag */
 			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
 
-			/* If check if a readback is needed for the last transfer */
+			/* Check if a readback is needed for the last transfer */
 			if(regIndex == (StreamThreadState.TransferByteLength - 12))
 			{
 				/* If the write bit was set skip the read back*/
@@ -218,7 +218,6 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
 		/* Clear interrupt flag */
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status |= CY_U3P_LPP_GPIO_INTR;
-
 	}
 
 	/* Check to see if we've captured enough buffers or if we were asked to stop data capture early */
@@ -533,8 +532,6 @@ CyU3PReturnStatus_t AdiTransferStreamWork()
 		GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
 		/* Loop until interrupt is triggered */
 		while(!(GPIO->lpp_gpio_intr0 & (1 << FX3State.DrPin)));
-		/* Clear GPIO interrupt bit */
-		GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
 	}
 
 	/* Set the pin timer to 0 */
@@ -554,7 +551,7 @@ CyU3PReturnStatus_t AdiTransferStreamWork()
 			while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
 
 			/* Transfer data */
-			status = CyU3PSpiTransferWords(MOSIData, bytesPerSpiTransfer, bufPtr, bytesPerSpiTransfer);
+			AdiSpiTransferWord(MOSIData, bufPtr, bytesPerSpiTransfer);
 
 			/* Set the pin timer to 0 */
 			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;

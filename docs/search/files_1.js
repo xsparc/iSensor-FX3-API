@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['main_2ec',['main.c',['../main_8c.html',1,'']]],
-  ['main_2eh',['main.h',['../main_8h.html',1,'']]]
+  ['gctlaon_5fregs_2eh',['gctlaon_regs.h',['../gctlaon__regs_8h.html',1,'']]]
 ];

@@ -1,5 +1,5 @@
 /**
-  * Copyright (c) Analog Devices Inc, 2018 - 2019
+  * Copyright (c) Analog Devices Inc, 2018 - 2020
   * All Rights Reserved.
   * 
   * THIS SOFTWARE UTILIZES LIBRARIES DEVELOPED
@@ -19,12 +19,142 @@
 #include "SpiFunctions.h"
 
 /* Tell the compiler where to find the needed globals */
-extern uint8_t USBBuffer[4096];
-extern uint8_t BulkBuffer[12288];
 extern BoardState FX3State;
 extern StreamState StreamThreadState;
 extern CyU3PDmaBuffer_t ManualDMABuffer;
 extern CyU3PDmaChannel ChannelToPC;
+
+/** Global USB Buffer (Control Endpoint) */
+extern uint8_t USBBuffer[4096];
+
+/** Global USB Buffer (Bulk Endpoints) */
+extern uint8_t BulkBuffer[12288];
+
+/** Pointer to bit bang SPI SCLK pin */
+uvint32_t *SCLKPin;
+
+/** Pointer to bit bang SPI CS pin */
+uvint32_t *CSPin;
+
+/** Pointer to bit bang SPI MISO pin */
+uvint32_t *MISOPin;
+
+/** Pointer to bit bang SPI MOSI pin */
+uvint32_t *MOSIPin;
+
+/** Mask to set GPIO pin high */
+uint32_t PinHighMask;
+
+/** Mask to set GPIO pin low */
+uint32_t PinLowMask;
+
+/** Mask for the MOSI pin */
+uint32_t MOSIMask;
+
+/** SCLK low period offset */
+uint32_t SCLKLowTime;
+
+/**
+  * @brief Bi-directional SPI transfer function, in register mode. Optimized for speed.
+  *
+  * @return void
+  *
+  * This function is used to allow for a reduced SPI stall time. Is fairly "unsafe" in that
+  * all hardware has to be configured for correct operation, and free, before this function
+  * can be called.
+ **/
+void AdiSpiTransferWord(uint8_t *txBuf, uint8_t *rxBuf, uint32_t numBytes)
+{
+    uint32_t temp, intrMask;
+    uint8_t  wordLen;
+
+    /* Get the wordLen in bytes. Min. 1 byte */
+    wordLen = ((SPI->lpp_spi_config & CY_U3P_LPP_SPI_WL_MASK) >> CY_U3P_LPP_SPI_WL_POS);
+    if ((wordLen & 0x07) != 0)
+    {
+        wordLen = (wordLen >> 3) + 1;
+    }
+    else
+    {
+        wordLen = (wordLen >> 3);
+    }
+
+    /* Disable interrupts. */
+    intrMask = SPI->lpp_spi_intr_mask;
+    SPI->lpp_spi_intr_mask = 0;
+
+    /* Reset SPI FIFO */
+    SPI->lpp_spi_config |= (CY_U3P_LPP_SPI_TX_CLEAR | CY_U3P_LPP_SPI_RX_CLEAR);
+
+    /* Wait for done */
+	while ((SPI->lpp_spi_status & CY_U3P_LPP_SPI_TX_DONE) == 0);
+	while ((SPI->lpp_spi_status & CY_U3P_LPP_SPI_RX_DATA) != 0);
+
+	/* Disable tx/rx clear flags */
+    SPI->lpp_spi_config &= ~(CY_U3P_LPP_SPI_TX_CLEAR | CY_U3P_LPP_SPI_RX_CLEAR);
+
+    /* Enable the TX and RX bits. */
+    SPI->lpp_spi_config |= CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_RX_ENABLE;
+
+    /* Re-enable SPI block. */
+    SPI->lpp_spi_config |= CY_U3P_LPP_SPI_ENABLE;
+
+    /* Place data in egress register */
+    temp = 0;
+    switch (wordLen)
+    {
+        case 4:
+            temp |= (txBuf[3] << 24);
+            //no break
+        case 3:
+            temp |= (txBuf[2] << 16);
+            //no break
+        case 2:
+            temp |= (txBuf[1] << 8);
+            //no break
+        default:
+            temp |= txBuf[0];
+            break;
+    }
+    SPI->lpp_spi_egress_data = temp;
+
+    /* Wait for tx/rx done interrupt */
+    while ((SPI->lpp_spi_status & (CY_U3P_LPP_SPI_RX_DATA | CY_U3P_LPP_SPI_TX_SPACE)) != (CY_U3P_LPP_SPI_RX_DATA | CY_U3P_LPP_SPI_TX_SPACE));
+
+    /* Get ingress data */
+    temp = SPI->lpp_spi_ingress_data;
+
+    /* Apply to buffer */
+    switch (wordLen)
+    {
+        case 4:
+        	/* Word length of 4 bytes */
+            rxBuf[3] = (uint8_t)((temp >> 24) & 0xFF);
+            //no break
+        case 3:
+        	/* Word length of 3 bytes */
+            rxBuf[2] = (uint8_t)((temp >> 16) & 0xFF);
+            //no break
+        case 2:
+        	/* Word length of 2 bytes */
+            rxBuf[1] = (uint8_t)((temp >> 8) & 0xFF);
+            //no break
+        default:
+        	/* Word length of 0.5 - 1 bytes */
+            rxBuf[0] = (uint8_t)(temp & 0xFF);
+            break;
+    }
+
+    /* Disable the TX and RX. */
+    SPI->lpp_spi_config &= ~(CY_U3P_LPP_SPI_TX_ENABLE | CY_U3P_LPP_SPI_RX_ENABLE);
+
+    /* Clear all interrupts and restore interrupt mask. */
+    SPI->lpp_spi_intr |= (CY_U3P_LPP_SPI_TX_DONE | CY_U3P_LPP_SPI_RX_DATA);
+    SPI->lpp_spi_intr_mask = intrMask;
+
+    /* Disable SPI block */
+    SPI->lpp_spi_config &= ~(CY_U3P_LPP_SPI_ENABLE);
+}
 
 /**
   * @brief This function restarts the SPI controller.
@@ -67,10 +197,11 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	BitBangSpiConf config;
-	uint32_t bytesPerTransfer;
 	uint32_t bitsPerTransfer;
 	uint32_t numTransfers;
 	uint32_t transferCounter;
+	uint32_t bitBangStallTime;
+	register uvint32_t cycleTimer;
 
 	/* Buffer pointers */
 	uint8_t * MOSIPtr;
@@ -89,22 +220,24 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 	config.CSLeadDelay |= (USBBuffer[9] << 8);
 	config.CSLagDelay = USBBuffer[10];
 	config.CSLagDelay |= (USBBuffer[11] << 8);
-	bitsPerTransfer = USBBuffer[12];
-	bitsPerTransfer |= (USBBuffer[13] << 8);
-	bitsPerTransfer |= (USBBuffer[14] << 16);
-	bitsPerTransfer |= (USBBuffer[15] << 24);
-	numTransfers = USBBuffer[16];
-	numTransfers |= (USBBuffer[17] << 8);
-	numTransfers |= (USBBuffer[18] << 16);
-	numTransfers |= (USBBuffer[19] << 24);
+	bitBangStallTime = USBBuffer[12];
+	bitBangStallTime |= (USBBuffer[13] << 8);
+	bitBangStallTime |= (USBBuffer[14] << 16);
+	bitBangStallTime |= (USBBuffer[15] << 24);
+	bitsPerTransfer = USBBuffer[16];
+	bitsPerTransfer |= (USBBuffer[17] << 8);
+	bitsPerTransfer |= (USBBuffer[18] << 16);
+	bitsPerTransfer |= (USBBuffer[19] << 24);
+	numTransfers = USBBuffer[20];
+	numTransfers |= (USBBuffer[21] << 8);
+	numTransfers |= (USBBuffer[22] << 16);
+	numTransfers |= (USBBuffer[23] << 24);
 
-	/* Calculate bytes per transfer */
-	bytesPerTransfer = bitsPerTransfer >> 3;
-	/* Account for non-byte aligned transfers */
-	if(bitsPerTransfer & 0x7)
-	{
-		bytesPerTransfer++;
-	}
+	/* apply offset to stall */
+	if(bitBangStallTime > STALL_COUNT_OFFSET)
+		bitBangStallTime -= STALL_COUNT_OFFSET;
+	else
+		bitBangStallTime = 0;
 
 	/* Memclear the bulk buffer */
 	CyU3PMemSet (BulkBuffer, 0, sizeof(BulkBuffer));
@@ -112,9 +245,9 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 	/* Start MISO pointer at bulk buffer */
 	MISOPtr = BulkBuffer;
 
-	/* Start MOSI pointer at USBBuffer[20] */
+	/* Start MOSI pointer at USBBuffer[22] */
 	MOSIPtr = USBBuffer;
-	MOSIPtr += 20;
+	MOSIPtr += 24;
 
 	/* Setup the GPIO selected */
 	status = AdiBitBangSpiSetup(config);
@@ -129,24 +262,26 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 		{
 			/* Transfer data */
 			AdiBitBangSpiTransfer(MOSIPtr, MISOPtr, bitsPerTransfer, config);
-			/* Wait for stall time */
-			CyFx3BusyWait(FX3State.StallTime - 2);
 			/* Update buffer pointers */
-			MOSIPtr += bytesPerTransfer;
-			MISOPtr += bytesPerTransfer;
+			MOSIPtr += bitsPerTransfer;
+			MISOPtr += bitsPerTransfer;
+			/* Wait for stall time */
+			cycleTimer = bitBangStallTime;
+			while(cycleTimer > 0)
+				cycleTimer--;
 		}
 	}
 
 	/* Return MISO data over bulk buffer */
 	ManualDMABuffer.buffer = BulkBuffer;
 	ManualDMABuffer.size = sizeof(BulkBuffer);
-	ManualDMABuffer.count = numTransfers * bytesPerTransfer;
+	ManualDMABuffer.count = numTransfers * bitsPerTransfer;
 
 	/* Send the data to PC */
 	status = CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
 	if(status != CY_U3P_SUCCESS)
 	{
-		CyU3PDebugPrint (4, "Sending DR data to PC failed!, error code = 0x%x\r\n", status);
+		CyU3PDebugPrint (4, "Sending bit bang SPI data to PC failed!, error code = 0x%x\r\n", status);
 	}
 
 	return status;
@@ -235,11 +370,23 @@ CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 		status = CyU3PGpioSetSimpleConfig(config.MISO, &gpioConfig);
 	}
 
-	/* Ensure 10MHz clock is operating in correct mode */
-	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= ~(CY_U3P_LPP_GPIO_INTRMODE_MASK);
+	/* Set pin pointers */
+	MOSIPin = &GPIO->lpp_gpio_simple[config.MOSI];
+	MISOPin = &GPIO->lpp_gpio_simple[config.MISO];
+	CSPin = &GPIO->lpp_gpio_simple[config.CS];
+	SCLKPin = &GPIO->lpp_gpio_simple[config.SCLK];
 
-	/* reset the timer register */
-	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+	/* Set the high and low masks (from SCLK initial value)*/
+	PinHighMask = *SCLKPin;
+	PinHighMask |= CY_U3P_LPP_GPIO_OUT_VALUE;
+	PinLowMask = PinHighMask & ~CY_U3P_LPP_GPIO_OUT_VALUE;
+
+	/* Set the MOSI mask and clear output bit */
+	MOSIMask = *MOSIPin;
+	MOSIMask &= ~CY_U3P_LPP_GPIO_OUT_VALUE;
+
+	/* Calculate wait value for short half of period */
+	SCLKLowTime = config.HalfClockDelay + BITBANG_HALFCLOCK_OFFSET;
 
 	return status;
 }
@@ -261,94 +408,72 @@ CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, BitBangSpiConf config)
 {
 	/* Track the number of bits clocked */
-	uint32_t bitCounter, byteCounter, highMask, lowMask, MOSIMask, finalTime, tempCnt;
-	uint8_t bytePosition;
-	register uint32_t MISOValue;
+	uint32_t bitCounter;
 	register uvint32_t cycleTimer;
-	uvint32_t *SCLKPin, *CSPin, *MISOPin, *MOSIPin;
-
-	/* Set pin pointers */
-	MOSIPin = &GPIO->lpp_gpio_simple[config.MOSI];
-	MISOPin = &GPIO->lpp_gpio_simple[config.MISO];
-	CSPin = &GPIO->lpp_gpio_simple[config.CS];
-	SCLKPin = &GPIO->lpp_gpio_simple[config.SCLK];
-
-	/* Set the high and low masks (from SCLK initial value)*/
-	highMask = *SCLKPin;
-	highMask |= CY_U3P_LPP_GPIO_OUT_VALUE;
-	lowMask = highMask & ~CY_U3P_LPP_GPIO_OUT_VALUE;
-
-	/* Set the MOSI mask and clear output bit */
-	MOSIMask = *MOSIPin;
-	MOSIMask &= ~CY_U3P_LPP_GPIO_OUT_VALUE;
-
-	/* Calculate wait value for short half of period */
-	finalTime = config.HalfClockDelay + BITBANG_HALFCLOCK_OFFSET;
 
 	/* Drop chip select */
-	*CSPin = lowMask;
+	*CSPin = PinLowMask;
 
 	/* Wait for CS lead delay */
-	cycleTimer = 0;
-	while(cycleTimer < config.CSLeadDelay)
-	{
-		cycleTimer++;
-	}
+	cycleTimer = config.CSLeadDelay;
+	while(cycleTimer > 0)
+		cycleTimer--;
 
 	/* main transmission loop */
-	bytePosition = 7;
-	byteCounter = 0;
-	tempCnt = 0;
-	for(bitCounter = 0; bitCounter < BitCount; bitCounter++)
+	for(bitCounter = 0; bitCounter < (BitCount - 1); bitCounter++)
 	{
 		/* Place output data bit on MOSI pin (approx. 150ns) */
-		*MOSIPin = MOSIMask | ((MOSI[byteCounter] >> bytePosition) & 0x1);
+		*MOSIPin = MOSIMask | MOSI[bitCounter];
 
 		/* Toggle SCLK low */
-		*SCLKPin = lowMask;
+		*SCLKPin = PinLowMask;
 
-		/* Wait HalfClock period */
-		cycleTimer = 0;
-		while(cycleTimer < finalTime)
-		{
-			cycleTimer++;
-		}
+		/* Wait HalfClock period (w/ added offset to make duty cycle 50%)*/
+		cycleTimer = SCLKLowTime;
+		while(cycleTimer > 0)
+			cycleTimer--;
 
 		/* Toggle SCLK high */
-		*SCLKPin = highMask;
+		*SCLKPin = PinHighMask;
 
-		/* Sample MISO pin - just sampling takes 200ns */
-		MISOValue = (*MISOPin & CY_U3P_LPP_GPIO_IN_VALUE) >> 1;
-		MISO[byteCounter] |= (MISOValue << bytePosition);
+		/* Sample MISO pin */
+		MISO[bitCounter] = *MISOPin;
 
 		/* Wait HalfClock period */
-		if(config.HalfClockDelay)
-		{
-			cycleTimer = 0;
-			while(cycleTimer < config.HalfClockDelay)
-			{
-				cycleTimer++;
-			}
-		}
-
-		/* Update counters (approx. 50ns) */
-		tempCnt++;
-		byteCounter += (tempCnt >> 3);
-		tempCnt &= 0x7;
-		bytePosition = 7 - tempCnt;
+		cycleTimer = config.HalfClockDelay;
+		while(cycleTimer > 0)
+			cycleTimer--;
 	}
 
+	/* Perform last bit outside the loop to save some time */
+
+	/* Place output data bit on MOSI pin */
+	*MOSIPin = MOSIMask | MOSI[BitCount - 1];
+
+	/* Toggle SCLK low */
+	*SCLKPin = PinLowMask;
+
+	/* Wait HalfClock period (w/ added offset to make duty cycle 50%)*/
+	cycleTimer = SCLKLowTime;
+	while(cycleTimer > 0)
+		cycleTimer--;
+
+	/* Toggle SCLK high */
+	*SCLKPin = PinHighMask;
+
+	/* Sample MISO pin */
+	MISO[BitCount - 1] = *MISOPin;
+
 	/* Wait for CS lag delay */
-	cycleTimer = 0;
-	while(cycleTimer < config.CSLagDelay)
+	cycleTimer = config.CSLagDelay;
+	while(cycleTimer > 0)
 	{
-		cycleTimer++;
+		cycleTimer--;
 	}
 
 	/* Restore CS, SCLK, MOSI to high */
-	*CSPin = highMask;
-	*SCLKPin = highMask;
-	*MOSIPin = highMask;
+	*CSPin = PinHighMask;
+	*MOSIPin = PinHighMask;
 }
 
 /**
@@ -809,7 +934,8 @@ CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length)
 			/* 32 word + 8 word padding + 4 word status/counter/etc */
 			StreamThreadState.BytesPerFrame = 88;
 			break;
-		case Other:
+		case IMU:
+		case LegacyIMU:
 			/* Falls into default case */
 		default:
 			/* Default to  3021 - shouldn't reach here during normal operation */

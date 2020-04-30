@@ -1,5 +1,5 @@
 /**
-  * Copyright (c) Analog Devices Inc, 2018 - 2019
+  * Copyright (c) Analog Devices Inc, 2018 - 2020
   * All Rights Reserved.
   * 
   * THIS SOFTWARE UTILIZES LIBRARIES DEVELOPED
@@ -20,6 +20,8 @@
 
 /* Tell the compiler where to find the needed globals */
 extern CyU3PEvent EventHandler;
+
+/** Global char buffer to store unique FX3 serial number */
 extern char serial_number[];
 
 /**

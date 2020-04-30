@@ -1,5 +1,5 @@
 /**
-  * Copyright (c) Analog Devices Inc, 2018 - 2019
+  * Copyright (c) Analog Devices Inc, 2018 - 2020
   * All Rights Reserved.
   * 
   * THIS SOFTWARE UTILIZES LIBRARIES DEVELOPED
@@ -42,6 +42,10 @@ CyU3PReturnStatus_t AdiBurstStreamFinished();
 CyU3PReturnStatus_t AdiStopAnyDataStream();
 CyBool_t AdiPrintStreamState();
 CyU3PReturnStatus_t AdiConfigureDrPin();
+void AdiReturnStreamCancelStatus(CyU3PReturnStatus_t status);
+
+/* Config functions */
+void AdiConfigStreamStallTimer();
 
 /*
  * Stream action commands

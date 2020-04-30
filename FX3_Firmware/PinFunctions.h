@@ -1,5 +1,5 @@
 /**
-  * Copyright (c) Analog Devices Inc, 2018 - 2019
+  * Copyright (c) Analog Devices Inc, 2018 - 2020
   * All Rights Reserved.
   * 
   * THIS SOFTWARE UTILIZES LIBRARIES DEVELOPED
@@ -30,6 +30,14 @@ typedef enum DutVoltage
 	On5_0Volts = 2
 }DutVoltage;
 
+/** Enum of pin resistor settings for GPIO pull up/down*/
+typedef enum PinResistorSetting
+{
+	None = 0,
+	PullDown = 1,
+	PullUp = 2
+}PinResistorSetting;
+
 /* Function definitions */
 CyU3PReturnStatus_t AdiPulseDrive();
 CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength);
@@ -45,52 +53,47 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength);
 CyU3PReturnStatus_t AdiSetDutSupply(DutVoltage SupplyMode);
 CyU3PReturnStatus_t AdiConfigurePinInterrupt(uint16_t pin, CyBool_t polarity);
 uint32_t AdiReadTimerRegValue();
+CyU3PReturnStatus_t AdiMeasurePinDelay(uint16_t transferLength);
+CyBool_t AdiIsValidGPIO(uint16_t GpioId);
+CyU3PReturnStatus_t AdiSetPinResistor(uint16_t pin, PinResistorSetting setting);
+void AdiReturnBulkEndpointData(CyU3PReturnStatus_t status, uint16_t length);
 
 /*
  * GPIO Pin mapping definitions
  */
 
-/** Reset pin, wired to the hardware reset on most iSensor products. Mapped to GPIO 0 */
-#define ADI_PIN_RESET							(0x0)
-
-/** iSensors DIO1 pin, commonly used as data ready for IMUs. Mapped to GPIO 4 */
-#define ADI_PIN_DIO1							(0x4)
-
-/** iSensors DIO2 pin, used as BUSY(data ready) on ADcmXL devices. Mapped to GPIO 3 */
-#define ADI_PIN_DIO2							(0x3)
-
-/** iSensors DIO3 pin. Mapped to GPIO 2 */
-#define ADI_PIN_DIO3							(0x2)
-
-/** iSensors DIO4 pin. Mapped to GPIO 1 */
-#define ADI_PIN_DIO4							(0x1)
-
-/** General purpose FX3 GPIO 1. Used for triggering off external test equipment, etc. Mapped to GPIO 5 */
-#define FX3_PIN_GPIO1							(0x5)
-
-/** General purpose FX3 GPIO 2. Used for triggering off external test equipment, etc. Mapped to GPIO 6 */
-#define FX3_PIN_GPIO2							(0x6)
-
-/** General purpose FX3 GPIO 3. Used for triggering off external test equipment, etc. Mapped to GPIO 7 */
-#define FX3_PIN_GPIO3							(0x7)
-
-/** General purpose FX3 GPIO 4. This GPIO shares a complex GPIO block with DIO1. Mapped to GPIO 12 */
-#define FX3_PIN_GPIO4							(0x12)
-
-/** Control pins for power management circuit */
+/** Control pins for power management circuit. 3.3V enable pin */
 #define ADI_3_3V_EN								(33)
+
+/** Control pins for power management circuit. 5V enable pin */
 #define ADI_5V_EN 								(34)
 
 /*
  * ADI GPIO Event Handler Definitions
  */
 
+/** Event flag indicating a GPIO interrupt has triggered on DIO1 */
 #define ADI_DIO1_INTERRUPT_FLAG					(1 << 0)
+
+/** Event flag indicating a GPIO interrupt has triggered on DIO2 */
 #define ADI_DIO2_INTERRUPT_FLAG					(1 << 1)
+
+/** Event flag indicating a GPIO interrupt has triggered on DIO3 */
 #define ADI_DIO3_INTERRUPT_FLAG					(1 << 2)
+
+/** Event flag indicating a GPIO interrupt has triggered on DIO4 */
 #define ADI_DIO4_INTERRUPT_FLAG					(1 << 3)
-#define ADI_DIO5_INTERRUPT_FLAG					(1 << 4)
-#define ADI_DIO6_INTERRUPT_FLAG					(1 << 5)
-#define ADI_DIO7_INTERRUPT_FLAG					(1 << 6)
+
+/** Event flag indicating a GPIO interrupt has triggered on FX3_GPIO1 */
+#define FX3_GPIO1_INTERRUPT_FLAG					(1 << 4)
+
+/** Event flag indicating a GPIO interrupt has triggered on FX3_GPIO2 */
+#define FX3_GPIO2_INTERRUPT_FLAG					(1 << 5)
+
+/** Event flag indicating a GPIO interrupt has triggered on FX3_GPIO3 */
+#define FX3_GPIO3_INTERRUPT_FLAG					(1 << 6)
+
+/** Event flag indicating a GPIO interrupt has triggered on FX3_GPIO4 */
+#define FX3_GPIO4_INTERRUPT_FLAG					(1 << 7)
 
 #endif

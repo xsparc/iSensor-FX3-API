@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['gctlaon_5fregs_5ft',['GCTLAON_REGS_T',['../struct_g_c_t_l_a_o_n___r_e_g_s___t.html',1,'']]]
+  ['fx3pinmap',['FX3PinMap',['../struct_f_x3_pin_map.html',1,'']]]
 ];

@@ -1,5 +1,5 @@
 /**
-  * Copyright (c) Analog Devices Inc, 2018 - 2019
+  * Copyright (c) Analog Devices Inc, 2018 - 2020
   * All Rights Reserved.
   * 
   * THIS SOFTWARE UTILIZES LIBRARIES DEVELOPED
@@ -54,10 +54,10 @@ void AdiPrintSpiConfig(CyU3PSpiConfig_t config);
 CyU3PReturnStatus_t AdiRestartSpi();
 
 /* SPI data transfer functions */
+void AdiSpiTransferWord(uint8_t *txBuf, uint8_t *rxBuf, uint32_t numBytes);
 CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData);
 CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data);
 CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr);
-CyU3PReturnStatus_t AdiBulkByteTransfer(uint16_t numBytes, uint16_t bytesPerCapture);
 
 /* Bitbang SPI functions */
 void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, BitBangSpiConf config);
@@ -65,6 +65,9 @@ CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config);
 CyU3PReturnStatus_t AdiBitBangSpiHandler();
 
 /** Offset to make the short side of the bitbang SPI match long side. Approx. 62ns per tick */
-#define BITBANG_HALFCLOCK_OFFSET 11
+#define BITBANG_HALFCLOCK_OFFSET 8
+
+/** Offset for bit bang stall time calc */
+#define STALL_COUNT_OFFSET 14
 
 #endif

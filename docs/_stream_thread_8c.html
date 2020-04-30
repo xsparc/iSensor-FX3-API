@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.3.0-pub</span>
+   &#160;<span id="projectnumber">v2.6.5-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -114,13 +114,12 @@ Variables</h2></td></tr>
 <tr class="separator:a588a5b1b27013a3c880a0c031d6b7f3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a98693015cd59e2346ce44ac5af02a4c0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_stream_state.html">StreamState</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_thread_8c.html#a98693015cd59e2346ce44ac5af02a4c0">StreamThreadState</a></td></tr>
 <tr class="separator:a98693015cd59e2346ce44ac5af02a4c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a692aacac4ebd741e3b0d75c4ab3b19a3"><td class="memItemLeft" align="right" valign="top"><a id="a692aacac4ebd741e3b0d75c4ab3b19a3"></a>
-uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>USBBuffer</b> []</td></tr>
-<tr class="separator:a692aacac4ebd741e3b0d75c4ab3b19a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af61156727a983c3f2ebfd9ae0e5bac71"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_thread_8c.html#af61156727a983c3f2ebfd9ae0e5bac71">USBBuffer</a> [4096]</td></tr>
+<tr class="separator:af61156727a983c3f2ebfd9ae0e5bac71"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>This file contains the functions directly associated with StreamThread. </p>
-<p>Copyright (c) Analog Devices Inc, 2018 - 2019 All Rights Reserved.</p>
+<p>Copyright (c) Analog Devices Inc, 2018 - 2020 All Rights Reserved.</p>
 <p>THIS SOFTWARE UTILIZES LIBRARIES DEVELOPED AND MAINTAINED BY CYPRESS INC. THE LICENSE INCLUDED IN THIS REPOSITORY DOES NOT EXTEND TO CYPRESS PROPERTY.</p>
 <p>Use of this file is governed by the license agreement included in this repository.</p>
 <dl class="section date"><dt>Date</dt><dd>8/1/2019 </dd></dl>
@@ -342,6 +341,21 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
       </table>
 </div><div class="memdoc">
 <p>Struct of data used to synchronize the data streaming / app threads </p>
+
+</div>
+</div>
+<a id="af61156727a983c3f2ebfd9ae0e5bac71"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af61156727a983c3f2ebfd9ae0e5bac71">&#9670;&nbsp;</a></span>USBBuffer</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t USBBuffer[4096]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Global USB Buffer (Control Endpoint) </p>
 
 </div>
 </div>

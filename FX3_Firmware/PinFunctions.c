@@ -1,5 +1,5 @@
 /**
-  * Copyright (c) Analog Devices Inc, 2018 - 2019
+  * Copyright (c) Analog Devices Inc, 2018 - 2020
   * All Rights Reserved.
   * 
   * THIS SOFTWARE UTILIZES LIBRARIES DEVELOPED
@@ -19,12 +19,305 @@
 #include "PinFunctions.h"
 
 /* Tell the compiler where to find the needed globals */
-extern uint8_t USBBuffer[4096];
-extern uint8_t BulkBuffer[12288];
 extern CyU3PDmaBuffer_t ManualDMABuffer;
 extern BoardState FX3State;
 extern CyU3PDmaChannel ChannelToPC;
 extern CyU3PEvent GpioHandler;
+
+/** Global USB Buffer (Control Endpoint) */
+extern uint8_t USBBuffer[4096];
+
+/** Global USB Buffer (Bulk Endpoints) */
+extern uint8_t BulkBuffer[12288];
+
+/**
+  * @brief Configure GPIO input stage pull up / pull down resistor
+  *
+  * @param pin The GPIO matrix index for the pin to configure (0 - 63)
+  *
+  * @param setting The PinResistorSetting to apply to the selected pin
+  *
+  * @return A status code indicating the success of the operation
+  *
+  * This function configures the "weak" pull up or pull down setting which the FX3 micro
+  * provides for each GPIO.
+ **/
+CyU3PReturnStatus_t AdiSetPinResistor(uint16_t pin, PinResistorSetting setting)
+{
+
+#ifdef VERBOSE_MODE
+	CyU3PDebugPrint (4, "Starting GPIO Resistor Config for pin: %d with setting: %d\r\n", pin, setting);
+#endif
+	/* Check that pin number is valid */
+	if(!AdiIsValidGPIO(pin))
+		return CY_U3P_ERROR_BAD_ARGUMENT;
+
+	/* If pin is in lower 32 bits */
+	if(pin < 32)
+	{
+		/* Clear pull up/down first */
+		GCTL_WPU_CFG &= ~(1 << pin);
+		GCTL_WPD_CFG &= ~(1 << pin);
+
+		/* Sleep 5us */
+		AdiSleepForMicroSeconds(5);
+
+		/* Apply setting */
+		if(setting == PullDown)
+		{
+			GCTL_WPD_CFG |= (1 << pin);
+		}
+		else if(setting == PullUp)
+		{
+			GCTL_WPU_CFG |= (1 << pin);
+		}
+	}
+	/* If pin is in upper 32 bits */
+	else
+	{
+		/* Offset the pin value by 32*/
+		pin = pin - 32;
+
+		/* Clear pull up/down first */
+		GCTL_WPU_CFG_UPPR &= ~(1 << pin);
+		GCTL_WPD_CFG_UPPR &= ~(1 << pin);
+
+		/* Sleep 5us */
+		AdiSleepForMicroSeconds(5);
+
+		/* Apply setting */
+		if(setting == PullDown)
+		{
+			GCTL_WPD_CFG_UPPR |= (1 << pin);
+		}
+		else if(setting == PullUp)
+		{
+			GCTL_WPU_CFG_UPPR |= (1 << pin);
+		}
+	}
+
+	/* Sleep 5us */
+	AdiSleepForMicroSeconds(5);
+
+	/* return success code */
+	return CY_U3P_SUCCESS;
+}
+
+/**
+  * @brief Determines if a GPIO pin is valid for the FX3 Application firmware to set
+  *
+  * @param GpioId The GPIO matrix index for the pin to check
+  *
+  * @return A boolean indicating if the GPIO is valid or not.
+  *
+  * This function is called before all interfacing functions. This prevents invalid GPIO access,
+  * or unintended modifications to the power supply management pins.
+ **/
+CyBool_t AdiIsValidGPIO(uint16_t GpioId)
+{
+	/* return false for power management pins */
+	if(GpioId == ADI_3_3V_EN)
+		return CyFalse;
+
+	if(GpioId == ADI_5V_EN)
+		return CyFalse;
+
+	/* GPIO must be less than 64 */
+	if(GpioId > 63)
+		return CyFalse;
+
+	/* Else, should be good */
+	return CyTrue;
+}
+
+/**
+  * @brief Sends a function result to the PC via the ChannelToPC endpoint
+  *
+  * @param status The status code to place in the BulkEndpointBuffer (0 - 3)
+  *
+  * @param length The number of bytes to send to the PC over the bulk endpoint
+  *
+  * @return void
+  *
+  * This function is used to allow early returns out of long functions in the
+  * case where an invalid setting or operation is detected. Once this function
+  * is called, and the result sent to the PC, the function can be safely exited.
+ **/
+void AdiReturnBulkEndpointData(CyU3PReturnStatus_t status, uint16_t length)
+{
+	/* Load status to BulkBuffer */
+	BulkBuffer[0] = status & 0xFF;
+	BulkBuffer[1] = (status & 0xFF00) >> 8;
+	BulkBuffer[2] = (status & 0xFF0000) >> 16;
+	BulkBuffer[3] = (status & 0xFF000000) >> 24;
+
+	/* Configure manual DMA */
+	ManualDMABuffer.buffer = BulkBuffer;
+	ManualDMABuffer.size = sizeof(BulkBuffer);
+	ManualDMABuffer.count = length;
+
+	/* Send the data to PC */
+	CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
+}
+
+/**
+  * @brief Measures the delay from a trigger pin edge (sync) to a busy pin edge.
+  *
+  * @param transferLength The amount of data (in bytes) to read from the USB buffer
+  *
+  * @return A status code indicating the success of the pin delay measure operation
+  *
+  * This function is approx. microsecond accurate. It can be used for timing measurements which
+  * require a high degree of accuracy since it avoids the overhead of having a USB transaction (200us)
+  * between the initial pin drive condition and the pulse measurement. This function is primarily
+  * intended to be used for measuring the latency between a sync edge and data ready toggle on the
+  * ADIS IMU series of products.
+ **/
+CyU3PReturnStatus_t AdiMeasurePinDelay(uint16_t transferLength)
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+	uint16_t *bytesRead = 0;
+	uint16_t busyPin, triggerPin;
+	CyBool_t busyInitialValue, busyCurrentValue, triggerDrivePolarity, exitCondition;
+	uint32_t currentTime, lastTime, timeout, rollOverCount;
+	CyU3PGpioSimpleConfig_t gpioConfig;
+
+	/* Read config data into USBBuffer */
+	status = CyU3PUsbGetEP0Data(transferLength, USBBuffer, bytesRead);
+
+	if(status != CY_U3P_SUCCESS)
+	{
+		CyU3PDebugPrint (4, "Error! Failed to read data from control endpoint.\r\n");
+		return CY_U3P_ERROR_INVALID_SEQUENCE;
+	}
+
+	/* Parse config */
+	triggerPin = USBBuffer[0];
+	triggerPin = triggerPin + (USBBuffer[1] << 8);
+	triggerDrivePolarity = (CyBool_t) USBBuffer[2];
+	busyPin = USBBuffer[3];
+	busyPin = busyPin + (USBBuffer[4] << 8);
+	timeout = USBBuffer[5];
+	timeout = timeout + (USBBuffer[6] << 8);
+	timeout = timeout + (USBBuffer[7] << 16);
+	timeout = timeout + (USBBuffer[8] << 24);
+
+	/* Convert ms to timer ticks */
+	timeout = timeout * MS_TO_TICKS_MULT;
+
+	/* Verify pins */
+	if(!AdiIsValidGPIO(busyPin) || !AdiIsValidGPIO(triggerPin))
+	{
+		status = CY_U3P_ERROR_BAD_ARGUMENT;
+		AdiReturnBulkEndpointData(status, 12);
+		return status;
+	}
+
+	/* Check that busy pin specified is configured as input */
+	status = CyU3PGpioSimpleGetValue(busyPin, &busyInitialValue);
+	if(status != CY_U3P_SUCCESS)
+	{
+		/* If initial pin read fails try and configure as input */
+		gpioConfig.outValue = CyFalse;
+		gpioConfig.inputEn = CyTrue;
+		gpioConfig.driveLowEn = CyFalse;
+		gpioConfig.driveHighEn = CyFalse;
+		gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+		status = CyU3PGpioSetSimpleConfig(busyPin, &gpioConfig);
+
+		/* get the pin value again after configuring */
+		status = CyU3PGpioSimpleGetValue(busyPin, &busyInitialValue);
+
+		/* If pin setup not successful skip wait operation and return -1 */
+		if(status != CY_U3P_SUCCESS)
+		{
+			AdiReturnBulkEndpointData(status, 12);
+			return status;
+		}
+	}
+
+	/* Drive trigger pin to drive polarity */
+	gpioConfig.outValue = triggerDrivePolarity;
+	gpioConfig.inputEn = CyFalse;
+	gpioConfig.driveLowEn = CyTrue;
+	gpioConfig.driveHighEn = CyTrue;
+	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+	status = CyU3PGpioSetSimpleConfig(triggerPin, &gpioConfig);
+
+	/* Reset the pin timer register to 0 */
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+	/* Disable interrupts on the timer pin */
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= ~(CY_U3P_LPP_GPIO_INTRMODE_MASK);
+	/* Set the pin timer period to 0xFFFFFFFF; */
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = 0xFFFFFFFF;
+
+	lastTime = 0;
+	currentTime = 0;
+	rollOverCount = 0;
+	exitCondition = CyFalse;
+
+	/* Begin wait operation (for edge transition on busy pin)*/
+	while(!exitCondition)
+	{
+		/* Store previous time */
+		lastTime = currentTime;
+
+		/* Set the pin config for sample now mode */
+		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (FX3State.TimerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
+		/* wait for sample to finish */
+		while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
+		/* read timer value */
+		currentTime = GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
+
+		/* Read the pin value */
+		busyCurrentValue = ((GPIO->lpp_gpio_simple[busyPin] & CY_U3P_LPP_GPIO_IN_VALUE) >> 1);
+
+		/* Check if rollover occurred */
+		if(currentTime < lastTime)
+		{
+			rollOverCount++;
+		}
+
+		/* update the exit condition */
+		exitCondition = (busyCurrentValue != busyInitialValue);
+		if(timeout)
+		{
+			exitCondition |= (currentTime >= timeout);
+		}
+	}
+
+	/*Restore trigger pin GPIO value*/
+	if(triggerDrivePolarity)
+		CyU3PGpioSetValue(triggerPin, CyFalse);
+	else
+		CyU3PGpioSetValue(triggerPin, CyTrue);
+
+	/*Add 0.5us (calibrated using DSLogic Pro)*/
+	if(currentTime < (0xFFFFFFFF - 5))
+	{
+		currentTime = currentTime + 5;
+	}
+	else
+	{
+		currentTime = 0;
+		rollOverCount++;
+	}
+
+	/* Populate bulk buffer with result */
+	BulkBuffer[4] = currentTime & 0xFF;
+	BulkBuffer[5] = (currentTime & 0xFF00) >> 8;
+	BulkBuffer[6] = (currentTime & 0xFF0000) >> 16;
+	BulkBuffer[7] = (currentTime & 0xFF000000) >> 24;
+	BulkBuffer[8] = rollOverCount & 0xFF;
+	BulkBuffer[9] = (rollOverCount & 0xFF00) >> 8;
+	BulkBuffer[10] = (rollOverCount & 0xFF0000) >> 16;
+	BulkBuffer[11] = (rollOverCount & 0xFF000000) >> 24;
+
+	/* Return pulse wait data over ChannelToPC */
+	AdiReturnBulkEndpointData(status, 12);
+
+	return status;
+}
 
 /**
   * @brief Sets a user configurable trigger condition and then measures the following GPIO pulse.
@@ -43,7 +336,7 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint16_t *bytesRead = 0;
 	uint16_t busyPin, triggerPin;
-	CyBool_t pinValue, exitCondition, SpiTriggerMode, validPin, busyPolarity, triggerPolarity;
+	CyBool_t pinValue, exitCondition, SpiTriggerMode, busyPolarity, triggerPolarity;
 	uint32_t currentTime, lastTime, timeout, rollOverCount, driveTime;
 	CyU3PGpioSimpleConfig_t gpioConfig;
 
@@ -67,7 +360,6 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 
 	/* Check that busy pin specified is configured as input */
 	status = CyU3PGpioSimpleGetValue(busyPin, &pinValue);
-	validPin = CyTrue;
 	if(status != CY_U3P_SUCCESS)
 	{
 		/* If initial pin read fails try and configure as input */
@@ -84,181 +376,160 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 		/* If pin setup not successful skip wait operation and return -1 */
 		if(status != CY_U3P_SUCCESS)
 		{
-			validPin = CyFalse;
+			/* Send the data to PC */
+			AdiReturnBulkEndpointData(status, 16);
+			return status;
 		}
 	}
 
 	/* Set default for trigger pin to invalid value */
 	triggerPin = 0xFFFF;
 
-	/* Only perform pulse wait if the pin is able to act as an input */
-	if(validPin)
+	/* parse the trigger specific data and trigger */
+	if(SpiTriggerMode)
 	{
-		/* parse the trigger specific data and trigger */
-		if(SpiTriggerMode)
+		/* Get the SPI trigger word count */
+		uint16_t SpiTriggerWordCount = USBBuffer[8];
+		SpiTriggerWordCount += (USBBuffer[9] << 8);
+
+		/* Set the SPI buffer */
+		uint8_t * spiBuf = USBBuffer + 10;
+
+		/* Transmit the SPI words */
+		CyU3PSpiTransmitWords(spiBuf, SpiTriggerWordCount);
+	}
+	else
+	{
+		/* parse parameters from USB Buffer */
+		triggerPin = USBBuffer[8];
+		triggerPin = triggerPin + (USBBuffer[9] << 8);
+
+		triggerPolarity = USBBuffer[10];
+
+		driveTime = USBBuffer[11];
+		driveTime = driveTime + (USBBuffer[12] << 8);
+		driveTime = driveTime + (USBBuffer[13] << 16);
+		driveTime = driveTime + (USBBuffer[14] << 24);
+
+		/* convert drive time (ms) to ticks */
+		driveTime = driveTime * MS_TO_TICKS_MULT;
+
+		/* want to configure the trigger pin to act as an output */
+		status = CyU3PDeviceGpioOverride(triggerPin, CyTrue);
+		if(status != CY_U3P_SUCCESS)
 		{
-			uint16_t RegAddr, RegValue;
-			uint8_t spiBuf[2];
-
-			/* parse register address */
-			RegAddr = USBBuffer[8];
-			RegAddr = RegAddr + (USBBuffer[9] << 8);
-
-			/* parse register write value */
-			RegValue = USBBuffer[10];
-			RegValue = RegValue + (USBBuffer[11] << 8);
-
-			/* transmit addr and least significant byte of SpiValue */
-			spiBuf[0] = RegAddr | 0x80;
-			spiBuf[1] = RegValue & 0xFF;
-			CyU3PSpiTransmitWords(spiBuf, 2);
-
-			/* wait for stall */
-			AdiSleepForMicroSeconds(FX3State.StallTime);
-
-			/* transmit (addr + 1) and most significant byte of SpiValue */
-			spiBuf[0] = (RegAddr + 1) | 0x80;
-			spiBuf[1] = (RegValue & 0xFF00) >> 8;
-			CyU3PSpiTransmitWords(spiBuf, 2);
-		}
-		else
-		{
-			/* parse parameters from USB Buffer */
-			triggerPin = USBBuffer[8];
-			triggerPin = triggerPin + (USBBuffer[9] << 8);
-
-			triggerPolarity = USBBuffer[10];
-
-			driveTime = USBBuffer[11];
-			driveTime = driveTime + (USBBuffer[12] << 8);
-			driveTime = driveTime + (USBBuffer[13] << 16);
-			driveTime = driveTime + (USBBuffer[14] << 24);
-
-			/* convert drive time (ms) to ticks */
-			driveTime = driveTime * MS_TO_TICKS_MULT;
-
-			/* want to configure the trigger pin to act as an output */
-			status = CyU3PDeviceGpioOverride(triggerPin, CyTrue);
-			if(status != CY_U3P_SUCCESS)
-			{
-				CyU3PDebugPrint (4, "Error! GPIO override to exit PWM mode failed, error code: 0x%x\r\n", status);
-				return status;
-			}
-
-			/* Disable the GPIO */
-			status = CyU3PGpioDisable(triggerPin);
-			if(status != CY_U3P_SUCCESS)
-			{
-				CyU3PDebugPrint (4, "Error! Pin disable while exiting PWM mode failed, error code: 0x%x\r\n", status);
-			}
-
-			/* Reset the pin timer register to 0 */
-			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
-			/* Disable interrupts on the timer pin */
-			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= ~(CY_U3P_LPP_GPIO_INTRMODE_MASK);
-			/* Set the pin timer period to 0xFFFFFFFF; */
-			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = 0xFFFFFFFF;
-
-			/* Configure the pin to act as an output and drive */
-			gpioConfig.outValue = triggerPolarity;
-			gpioConfig.inputEn = CyFalse;
-			gpioConfig.driveLowEn = CyTrue;
-			gpioConfig.driveHighEn = CyTrue;
-			gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
-			status = CyU3PGpioSetSimpleConfig(triggerPin, &gpioConfig);
-		    if (status != CY_U3P_SUCCESS)
-		    {
-		    	CyU3PDebugPrint (4, "Error! GPIO config to exit PWM mode failed, error code: 0x%x\r\n", status);
-		    }
+			CyU3PDebugPrint (4, "Error! GPIO override to exit PWM mode failed, error code: 0x%x\r\n", status);
+			return status;
 		}
 
-		/* Wait until the busy pin reaches the selected polarity */
-		while(((GPIO->lpp_gpio_simple[busyPin] & CY_U3P_LPP_GPIO_IN_VALUE) >> 1) != busyPolarity);
-
-		/* In pin mode subtract the wait time from the total drive time */
-		if(!SpiTriggerMode)
+		/* Disable the GPIO */
+		status = CyU3PGpioDisable(triggerPin);
+		if(status != CY_U3P_SUCCESS)
 		{
-			/* Set the pin config for sample now mode */
-			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (FX3State.TimerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
-			/* wait for sample to finish */
-			while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
-			/* read timer value */
-			driveTime = driveTime - GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
+			CyU3PDebugPrint (4, "Error! Pin disable while exiting PWM mode failed, error code: 0x%x\r\n", status);
 		}
 
 		/* Reset the pin timer register to 0 */
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
 		/* Disable interrupts on the timer pin */
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= ~(CY_U3P_LPP_GPIO_INTRMODE_MASK);
-		/* Set the pin timer period to 0xFFFFFFFF */
+		/* Set the pin timer period to 0xFFFFFFFF; */
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = 0xFFFFFFFF;
 
-		/* Reset state variables */
-		currentTime = 0;
-		rollOverCount = 0;
-		lastTime = 0;
-		exitCondition = CyFalse;
-
-		/* Wait for the GPIO pin the reach the desired level or timeout */
-		while(!exitCondition)
+		/* Configure the pin to act as an output and drive */
+		gpioConfig.outValue = triggerPolarity;
+		gpioConfig.inputEn = CyFalse;
+		gpioConfig.driveLowEn = CyTrue;
+		gpioConfig.driveHighEn = CyTrue;
+		gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+		status = CyU3PGpioSetSimpleConfig(triggerPin, &gpioConfig);
+		if (status != CY_U3P_SUCCESS)
 		{
-			/* Store previous time */
-			lastTime = currentTime;
+			CyU3PDebugPrint (4, "Error! GPIO config to exit PWM mode failed, error code: 0x%x\r\n", status);
+		}
+	}
 
-			/* Set the pin config for sample now mode */
-			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (FX3State.TimerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
-			/* wait for sample to finish */
-			while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
-			/* read timer value */
-			currentTime = GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
+	/* Wait until the busy pin reaches the selected polarity */
+	while(((GPIO->lpp_gpio_simple[busyPin] & CY_U3P_LPP_GPIO_IN_VALUE) >> 1) != busyPolarity);
 
-			/* Read the pin value */
-			pinValue = ((GPIO->lpp_gpio_simple[busyPin] & CY_U3P_LPP_GPIO_IN_VALUE) >> 1);
+	/* In pin mode subtract the wait time from the total drive time */
+	if(!SpiTriggerMode)
+	{
+		/* Set the pin config for sample now mode */
+		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (FX3State.TimerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
+		/* wait for sample to finish */
+		while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
+		/* read timer value */
+		driveTime = driveTime - GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
+	}
 
-			/* Check if rollover occurred */
-			if(currentTime < lastTime)
-			{
-				rollOverCount++;
-			}
+	/* Reset the pin timer register to 0 */
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
+	/* Disable interrupts on the timer pin */
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= ~(CY_U3P_LPP_GPIO_INTRMODE_MASK);
+	/* Set the pin timer period to 0xFFFFFFFF */
+	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = 0xFFFFFFFF;
 
-			/* update the exit condition */
-			if(timeout)
-			{
-				exitCondition = ((pinValue != busyPolarity) || (currentTime >= timeout));
-			}
-			else
-			{
-				exitCondition = (pinValue != busyPolarity);
-			}
+	/* Reset state variables */
+	currentTime = 0;
+	rollOverCount = 0;
+	lastTime = 0;
+	exitCondition = CyFalse;
 
-			/* Check if the pin drive can stop */
-			if(!SpiTriggerMode)
-			{
-				if(currentTime > driveTime)
-				{
-					/* drive the opposite polarity */
-					CyU3PGpioSimpleSetValue(triggerPin, ~triggerPolarity);
-				}
-				/* Set trigger mode to true to prevent this loop from hitting again */
-				SpiTriggerMode = CyTrue;
-			}
+	/* Wait for the GPIO pin the reach the desired level or timeout */
+	while(!exitCondition)
+	{
+		/* Store previous time */
+		lastTime = currentTime;
+
+		/* Set the pin config for sample now mode */
+		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (FX3State.TimerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
+		/* wait for sample to finish */
+		while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
+		/* read timer value */
+		currentTime = GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
+
+		/* Read the pin value */
+		pinValue = ((GPIO->lpp_gpio_simple[busyPin] & CY_U3P_LPP_GPIO_IN_VALUE) >> 1);
+
+		/* Check if rollover occurred */
+		if(currentTime < lastTime)
+		{
+			rollOverCount++;
 		}
 
-		/* add 2us to current time (fudge factor, calibrated using DSLogic Pro) */
-		if(currentTime < (0xFFFFFFFF - 20))
+		/* update the exit condition */
+		if(timeout)
 		{
-			currentTime = currentTime + 20;
+			exitCondition = ((pinValue != busyPolarity) || (currentTime >= timeout));
 		}
 		else
 		{
-			currentTime = 0;
-			rollOverCount++;
+			exitCondition = (pinValue != busyPolarity);
 		}
+
+		/* Check if the pin drive can stop */
+		if(!SpiTriggerMode)
+		{
+			if(currentTime > driveTime)
+			{
+				/* drive the opposite polarity */
+				CyU3PGpioSimpleSetValue(triggerPin, ~triggerPolarity);
+			}
+			/* Set trigger mode to true to prevent this loop from hitting again */
+			SpiTriggerMode = CyTrue;
+		}
+	}
+
+	/* add 1.2us to current time (fudge factor, calibrated using DSLogic Pro) */
+	if(currentTime < (0xFFFFFFFF - 12))
+	{
+		currentTime = currentTime + 12;
 	}
 	else
 	{
-		/* Case where pin could not be configured as input */
-		currentTime = 0xFFFFFFFF;
+		currentTime = 0;
+		rollOverCount++;
 	}
 
 	/* Reset trigger pin to input if needed */
@@ -273,11 +544,7 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 		status = CyU3PGpioSetSimpleConfig(triggerPin, &gpioConfig);
 	}
 
-	/* Return pulse wait data over ChannelToPC */
-	BulkBuffer[0] = status & 0xFF;
-	BulkBuffer[1] = (status & 0xFF00) >> 8;
-	BulkBuffer[2] = (status & 0xFF0000) >> 16;
-	BulkBuffer[3] = (status & 0xFF000000) >> 24;
+	/* Populate buffer with result data */
 	BulkBuffer[4] = currentTime & 0xFF;
 	BulkBuffer[5] = (currentTime & 0xFF00) >> 8;
 	BulkBuffer[6] = (currentTime & 0xFF0000) >> 16;
@@ -291,12 +558,8 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 	BulkBuffer[14] = (MS_TO_TICKS_MULT & 0xFF0000) >> 16;
 	BulkBuffer[15] = (MS_TO_TICKS_MULT & 0xFF000000) >> 24;
 
-	ManualDMABuffer.buffer = BulkBuffer;
-	ManualDMABuffer.size = sizeof(BulkBuffer);
-	ManualDMABuffer.count = 16;
-
 	/* Send the data to PC */
-	CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
+	AdiReturnBulkEndpointData(status, 16);
 
 	return status;
 }
@@ -323,7 +586,7 @@ CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 	pinNumber |= (USBBuffer[1] << 8);
 
 	/* Check that GPIO is valid */
-	if(!CyU3PIsGpioValid(pinNumber))
+	if(!AdiIsValidGPIO(pinNumber))
 	{
 		CyU3PDebugPrint (4, "Error! Invalid GPIO pin number: %d\r\n", pinNumber);
 		return CY_U3P_ERROR_BAD_ARGUMENT;
@@ -377,14 +640,6 @@ CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 	}
 	else
 	{
-		/* want to reset the specified pin to simple state without output driven */
-		status = CyU3PDeviceGpioOverride(pinNumber, CyTrue);
-		if(status != CY_U3P_SUCCESS)
-		{
-			CyU3PDebugPrint (4, "Error! GPIO override to exit PWM mode failed, error code: 0x%s\r\n", status);
-			return status;
-		}
-
 		/* Disable the GPIO */
 		status = CyU3PGpioDisable(pinNumber);
 		if(status != CY_U3P_SUCCESS)
@@ -393,7 +648,17 @@ CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 			return status;
 		}
 
-		/* Set the GPIO configuration for each GPIO that was just overridden */
+		CyU3PDeviceGpioRestore(pinNumber);
+
+		/* want to reset the specified pin to simple state without output driven */
+		status = CyU3PDeviceGpioOverride(pinNumber, CyTrue);
+		if(status != CY_U3P_SUCCESS)
+		{
+			CyU3PDebugPrint (4, "Error! GPIO override to exit PWM mode failed, error code: 0x%s\r\n", status);
+			return status;
+		}
+
+		/* Set the GPIO configuration for the GPIO that was just overridden */
 		CyU3PGpioSimpleConfig_t gpioConfig;
 		CyU3PMemSet ((uint8_t *)&gpioConfig, 0, sizeof (gpioConfig));
 		gpioConfig.outValue = CyFalse;
@@ -442,6 +707,13 @@ CyU3PReturnStatus_t AdiPulseDrive()
 	timerRollovers = timerRollovers + (USBBuffer[8] << 8);
 	timerRollovers = timerRollovers + (USBBuffer[9] << 16);
 	timerRollovers = timerRollovers + (USBBuffer[10] << 24);
+
+	/*Verify the pin number */
+	if(!AdiIsValidGPIO(pinNumber))
+	{
+		CyU3PDebugPrint (4, "Error! Invalid GPIO pin number: %d\r\n", pinNumber);
+		return CY_U3P_ERROR_BAD_ARGUMENT;
+	}
 
 	/* Configure the GPIO pin as a driven output */
 	CyU3PGpioSimpleConfig_t gpioConfig;
@@ -539,7 +811,7 @@ CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength)
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint16_t pin;
     uint16_t *bytesRead = 0;
-	CyBool_t polarity, validPin, pinValue, exitCondition;
+	CyBool_t polarity, pinValue, exitCondition;
 	uint32_t currentTime, lastTime, delay, timeoutTicks, timeoutRollover, rollOverCount;
 
 	/* Disable interrupts on the timer pin */
@@ -574,7 +846,6 @@ CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength)
 
 	/* Check that input pin specified is configured as input */
 	status = CyU3PGpioSimpleGetValue(pin, &pinValue);
-	validPin = CyTrue;
 	if(status != CY_U3P_SUCCESS)
 	{
 		/* If initial pin read fails try and configure as input */
@@ -592,63 +863,54 @@ CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength)
 		/* If pin setup not successful skip wait operation and return -1 */
 		if(status != CY_U3P_SUCCESS)
 		{
-			validPin = CyFalse;
+			AdiReturnBulkEndpointData(status, 12);
+			return status;
 		}
 	}
 
-	/* Only perform pulse wait if the pin is able to act as an input */
-	if(validPin)
+	/* Wait for the delay, if needed */
+	currentTime = 0;
+	rollOverCount = 0;
+	lastTime = 0;
+	exitCondition = CyFalse;
+	if(delay > 0)
 	{
-		/* Wait for the delay, if needed */
-		currentTime = 0;
-		rollOverCount = 0;
-		lastTime = 0;
-		exitCondition = CyFalse;
-		if(delay > 0)
+		while(currentTime < delay)
 		{
-			while(currentTime < delay)
-			{
-				/* Set the pin config for sample now mode */
-				GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (FX3State.TimerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
-				/* wait for sample to finish */
-				while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
-				/* read timer value */
-				currentTime = GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
-			}
-		}
-
-		/* Wait for the GPIO pin the reach the desired level or timeout */
-		while(!exitCondition)
-		{
-			/* Store previous time */
-			lastTime = currentTime;
-
 			/* Set the pin config for sample now mode */
 			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (FX3State.TimerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
 			/* wait for sample to finish */
 			while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
 			/* read timer value */
 			currentTime = GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
+		}
+	}
 
-			/* Check if rollover occured */
-			if(currentTime < lastTime)
-			{
-				rollOverCount++;
-			}
+	/* Wait for the GPIO pin the reach the desired level or timeout */
+	while(!exitCondition)
+	{
+		/* Store previous time */
+		lastTime = currentTime;
 
-			/* Read the pin value */
-			pinValue = ((GPIO->lpp_gpio_simple[pin] & CY_U3P_LPP_GPIO_IN_VALUE) >> 1);
+		/* Set the pin config for sample now mode */
+		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (FX3State.TimerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
+		/* wait for sample to finish */
+		while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
+		/* read timer value */
+		currentTime = GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
 
-			/* update the exit condition (will always have valid timeout)
-			 * exits when pin reaches the desired polarity or timer reaches timeout */
-			exitCondition = ((pinValue == polarity) || ((currentTime >= timeoutTicks) && (rollOverCount >= timeoutRollover)));
+		/* Check if rollover occured */
+		if(currentTime < lastTime)
+		{
+			rollOverCount++;
 		}
 
-	}
-	else
-	{
-		/* Case where pin could not be configured as input */
-		currentTime = 0xFFFFFFFF;
+		/* Read the pin value */
+		pinValue = ((GPIO->lpp_gpio_simple[pin] & CY_U3P_LPP_GPIO_IN_VALUE) >> 1);
+
+		/* update the exit condition (will always have valid timeout)
+		 * exits when pin reaches the desired polarity or timer reaches timeout */
+		exitCondition = ((pinValue == polarity) || ((currentTime >= timeoutTicks) && (rollOverCount >= timeoutRollover)));
 	}
 
 	/* Catch potential out of bounds status code */
@@ -657,11 +919,7 @@ CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength)
 		status = CY_U3P_ERROR_NOT_SUPPORTED;
 	}
 
-	/* Return pulse wait data over ChannelToPC */
-	BulkBuffer[0] = status & 0xFF;
-	BulkBuffer[1] = (status & 0xFF00) >> 8;
-	BulkBuffer[2] = (status & 0xFF0000) >> 16;
-	BulkBuffer[3] = (status & 0xFF000000) >> 24;
+	/* Populate bulk buffer with the function results */
 	BulkBuffer[4] = currentTime & 0xFF;
 	BulkBuffer[5] = (currentTime & 0xFF00) >> 8;
 	BulkBuffer[6] = (currentTime & 0xFF0000) >> 16;
@@ -671,13 +929,10 @@ CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength)
 	BulkBuffer[10] = (rollOverCount & 0xFF0000) >> 16;
 	BulkBuffer[11] = (rollOverCount & 0xFF000000) >> 24;
 
-	ManualDMABuffer.buffer = BulkBuffer;
-	ManualDMABuffer.size = sizeof(BulkBuffer);
-	ManualDMABuffer.count = 12;
-
 	/* Send the data to PC via bulk endpoint */
-	CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
+	AdiReturnBulkEndpointData(status, 12);
 
+	/* return status code */
 	return status;
 }
 
@@ -765,7 +1020,7 @@ CyU3PReturnStatus_t AdiSetDutSupply(DutVoltage SupplyMode)
 CyU3PReturnStatus_t AdiSetPin(uint16_t pinNumber, CyBool_t polarity)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-	if(!CyU3PIsGpioValid(pinNumber))
+	if(!AdiIsValidGPIO(pinNumber))
 	{
 		CyU3PDebugPrint (4, "Error! Invalid GPIO pin number: %d\r\n", pinNumber);
 		return CY_U3P_ERROR_BAD_ARGUMENT;
@@ -1123,11 +1378,7 @@ CyU3PReturnStatus_t AdiMeasurePinFreq()
 	CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
 	CyU3PVicEnableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
 
-	/* Return data over ChannelToPC */
-	BulkBuffer[0] = status & 0xFF;
-	BulkBuffer[1] = (status & 0xFF00) >> 8;
-	BulkBuffer[2] = (status & 0xFF0000) >> 16;
-	BulkBuffer[3] = (status & 0xFF000000) >> 24;
+	/* Populate bulk buffer with function results */
 	BulkBuffer[4] = currentTime & 0xFF;
 	BulkBuffer[5] = (currentTime & 0xFF00) >> 8;
 	BulkBuffer[6] = (currentTime & 0xFF0000) >> 16;
@@ -1136,17 +1387,11 @@ CyU3PReturnStatus_t AdiMeasurePinFreq()
 	BulkBuffer[9] = (rollovers & 0xFF00) >> 8;
 	BulkBuffer[10] = (rollovers & 0xFF0000) >> 16;
 	BulkBuffer[11] = (rollovers & 0xFF000000) >> 24;
-	ManualDMABuffer.buffer = BulkBuffer;
-	ManualDMABuffer.size = sizeof(BulkBuffer);
-	ManualDMABuffer.count = 12;
 
 	/* Send the data to PC */
-	status = CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Sending DR data to PC failed!, error code = 0x%x\r\n", status);
-	}
+	AdiReturnBulkEndpointData(status, 12);
 
+	/* return status code */
 	return status;
 }
 
