@@ -22,11 +22,14 @@
 #include "cyu3error.h"
 #include "cyu3i2c.h"
 
-void AdiFlashInit();
-void AdiFlashWrite(uint16_t Address, uint16_t numBytes, uint8_t* WriteBuf);
-void AdiFlashRead(uint16_t Address, uint16_t numBytes, uint8_t* ReadBuf);
+CyU3PReturnStatus_t AdiFlashInit();
+void AdiFlashWrite(uint32_t Address, uint16_t NumBytes, uint8_t* WriteBuf);
+void AdiFlashRead(uint32_t Address, uint16_t NumBytes, uint8_t* ReadBuf);
 
 /** Page size for attached i2c flash memory  */
 #define FLASH_PAGE_SIZE		0x40
+
+/** Flash operation timeout  */
+#define FLASH_TIMEOUT_MS	5000
 
 #endif /* FLASH_H_ */
