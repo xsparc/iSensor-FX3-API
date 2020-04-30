@@ -168,7 +168,7 @@ int main (void)
     io_cfg.s0Mode = CY_U3P_SPORT_INACTIVE;
     io_cfg.s1Mode = CY_U3P_SPORT_INACTIVE;
     io_cfg.useUart   = CyTrue;
-    io_cfg.useI2C    = CyFalse;
+    io_cfg.useI2C    = CyTrue;
     io_cfg.useI2S    = CyFalse;
     io_cfg.useSpi    = CyTrue;
     io_cfg.lppMode   = CY_U3P_IO_MATRIX_LPP_DEFAULT;

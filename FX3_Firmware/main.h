@@ -23,7 +23,7 @@
  * This macro is used to set verbose mode during compile time.
  * Ensure that it is commented out for release versions.
  */
-//#define VERBOSE_MODE									(0)
+#define VERBOSE_MODE									(0)
 
 /* Include all needed Cypress libraries */
 #include "cyu3types.h"
@@ -50,6 +50,8 @@
 #include "SpiFunctions.h"
 #include "StreamFunctions.h"
 #include "StreamThread.h"
+#include "Flash.h"
+#include "ErrorLog.h"
 
 //Lower level register access includes
 #include "gpio_regs.h"

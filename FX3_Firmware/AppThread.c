@@ -283,6 +283,16 @@ void AdiAppThreadEntry (uint32_t input)
     /* Initialize UART debugging */
     AdiDebugInit();
 
+    /* Initialize the flash (for flash error logging) */
+    if(AdiFlashInit() != CY_U3P_SUCCESS)
+	{
+    	CyU3PDebugPrint (4, "Flash memory initialization failed!\r\n");
+	}
+    else
+    {
+    	CyU3PDebugPrint (4, "Flash memory successfully initialized!\r\n");
+    }
+
     /* Initialize the ADI application */
     AdiAppInit();
 

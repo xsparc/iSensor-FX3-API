@@ -39,14 +39,14 @@
 typedef enum FileIdentifier
 {
 	Unknown = 0,
-	Main = 1,
-	AppThread = 2,
-	StreamThread = 3,
-	PinFunctions = 4,
-	SpiFunctions = 5,
-	StreamFunctions = 6,
-	Flash = 7,
-	ErrorLog = 8
+	Main_c = 1,
+	AppThread_c = 2,
+	StreamThread_c = 3,
+	PinFunctions_c = 4,
+	SpiFunctions_c = 5,
+	StreamFunctions_c = 6,
+	Flash_c = 7,
+	ErrorLog_c = 8
 }FileIdentifier;
 
 /**
