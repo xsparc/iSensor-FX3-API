@@ -17,8 +17,11 @@
 
 #include "Flash.h"
 
-static uint16_t GetFlashDeviceAddress(uint32_t ByteAddress, CyBool_t isRead);
-static void FlashTransfer(uint32_t Address, uint16_t NumBytes, uint8_t* Buf, CyBool_t isRead);
+static uint16_t GetFlashDeviceAddress(uint32_t ByteAddress);
+static CyU3PReturnStatus_t FlashTransfer(uint32_t Address, uint16_t NumBytes, uint8_t* Buf, CyBool_t isRead);
+
+/** Global USB Buffer (Control Endpoint) */
+extern uint8_t USBBuffer[4096];
 
 /** I2C Tx DMA channel handle */
 static CyU3PDmaChannel flashTxHandle;
@@ -38,9 +41,12 @@ CyU3PReturnStatus_t AdiFlashInit()
     CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
     /* Initialize and configure the I2C master module. */
-    status = CyU3PI2cInit ();
+    status = CyU3PI2cInit();
     if (status != CY_U3P_SUCCESS)
     {
+#ifdef VERBOSE_MODE
+    	CyU3PDebugPrint (4, "I2C init failed! 0x%x\r\n", status);
+#endif
         return status;
     }
 
@@ -55,7 +61,7 @@ CyU3PReturnStatus_t AdiFlashInit()
     if (status != CY_U3P_SUCCESS)
     {
 #ifdef VERBOSE_MODE
-    	CyU3PDebugPrint (4, "Setting I2C configuration failed!\r\n");
+    	CyU3PDebugPrint (4, "Setting I2C configuration failed! 0x%x\r\n", status);
 #endif
         return status;
     }
@@ -75,11 +81,11 @@ CyU3PReturnStatus_t AdiFlashInit()
     /* Create a channel to write to the EEPROM. */
     i2cDmaConfig.prodSckId = CY_U3P_CPU_SOCKET_PROD;
     i2cDmaConfig.consSckId = CY_U3P_LPP_SOCKET_I2C_CONS;
-    status = CyU3PDmaChannelCreate (&flashTxHandle, CY_U3P_DMA_TYPE_MANUAL_OUT, &i2cDmaConfig);
+    status = CyU3PDmaChannelCreate(&flashTxHandle, CY_U3P_DMA_TYPE_MANUAL_OUT, &i2cDmaConfig);
     if (status != CY_U3P_SUCCESS)
     {
 #ifdef VERBOSE_MODE
-    	CyU3PDebugPrint (4, "Setting I2C Tx DMA channel failed!\r\n");
+    	CyU3PDebugPrint (4, "Setting I2C Tx DMA channel failed! 0x%x\r\n", status);
 #endif
         return status;
     }
@@ -91,13 +97,20 @@ CyU3PReturnStatus_t AdiFlashInit()
     if (status != CY_U3P_SUCCESS)
     {
 #ifdef VERBOSE_MODE
-    	CyU3PDebugPrint (4, "Setting I2C Rx DMA channel failed!\r\n");
+    	CyU3PDebugPrint (4, "Setting I2C Rx DMA channel failed! 0x%x\r\n", status);
 #endif
         return status;
     }
 
     /* Return status code */
     return status;
+}
+
+void AdiFlashDeInit()
+{
+	CyU3PI2cDeInit();
+	CyU3PDmaChannelDestroy(&flashTxHandle);
+	CyU3PDmaChannelDestroy(&flashRxHandle);
 }
 
 /**
@@ -120,48 +133,81 @@ void AdiFlashRead(uint32_t Address, uint16_t NumBytes, uint8_t* ReadBuf)
 	FlashTransfer(Address, NumBytes, ReadBuf, CyTrue);
 }
 
-static void FlashTransfer(uint32_t Address, uint16_t NumBytes, uint8_t* Buf, CyBool_t isRead)
+/**
+  * @brief Handles flash read requests from control endpoint
+  *
+  * @param Address The byte address in flash to start reading at
+  *
+  * @param NumBytes The number of bytes to read. Max 4KB
+  *
+  * @return void
+  *
+  * The data read from flash is returned over the control endpoint.
+  * This limits a single read to 4KB. If greater than a 4KB read
+  * is needed, multiple transactions should be sent.
+ **/
+void AdiFlashReadHandler(uint32_t Address, uint16_t NumBytes)
+{
+	/* Perform transfer */
+	FlashTransfer(Address, NumBytes, USBBuffer, CyTrue);
+	/* Return over USB control endpoint */
+	CyU3PUsbSendEP0Data(NumBytes, USBBuffer);
+}
+
+static CyU3PReturnStatus_t FlashTransfer(uint32_t Address, uint16_t NumBytes, uint8_t* Buf, CyBool_t isRead)
 {
     CyU3PDmaBuffer_t buf_p;
     CyU3PI2cPreamble_t preamble;
+    CyU3PReturnStatus_t status;
 
-    /* Get device address (upper two address bits encoded into device address) */
-    uint16_t device_address = GetFlashDeviceAddress(Address, isRead);
+    uint16_t dmaCount;
+    uint16_t lastCount;
 
-    /* Mask out unused upper address bits */
-    Address &= 0xFFFF;
+    /* device address (upper two address bits encoded into device address) */
+    uint16_t device_address;
 
     /* Calculate page count */
     uint16_t pageCount = (NumBytes / FLASH_PAGE_SIZE);
 
     /* Return for zero transfer */
     if(NumBytes == 0)
-    {
-        return;
-    }
+        return CY_U3P_SUCCESS;
+
+    /* Init flash memory */
+    AdiFlashInit();
 
     /* Check if extra bytes which fall onto another page */
-    if((NumBytes % FLASH_PAGE_SIZE) != 0)
-    {
+    lastCount = (NumBytes % FLASH_PAGE_SIZE);
+    if(lastCount != 0)
         pageCount ++;
-    }
+    else
+    	lastCount = FLASH_PAGE_SIZE;
 
-#ifdef VERBOSE_MODE
-    CyU3PDebugPrint (2, "I2C access: address: 0x%x, size: 0x%x, pages: 0x%x read: %d\r\n", Address, NumBytes, pageCount, isRead);
-#endif
-
-    /* Update the buffer address and status. */
-    buf_p.buffer = Buf;
+    /* Update the buffer status. */
     buf_p.status = 0;
+	/* Update buffer address */
+	buf_p.buffer = Buf;
 
     while (pageCount != 0)
     {
+    	/* Get device addr */
+    	device_address = GetFlashDeviceAddress(Address);
+    	/* Get transfer count */
+    	if(pageCount > 1)
+    		dmaCount = FLASH_PAGE_SIZE;
+    	else
+    		dmaCount = lastCount;
+
+#ifdef VERBOSE_MODE
+    	CyU3PDebugPrint (4, "I2C access: Dev addr: 0x%x Byte Addr: 0x%x, size: 0x%x, pages: 0x%x read: %d\r\n", device_address, Address, dmaCount, pageCount, isRead);
+#endif
+
     	if(isRead)
     	{
             /* Update the preamble information. */
             preamble.length    = 4;
             preamble.buffer[0] = device_address;
-            preamble.buffer[1] = (uint8_t)(Address >> 8);
+            preamble.buffer[1] = (uint8_t)((Address & 0xFF00) >> 8);
             preamble.buffer[2] = (uint8_t)(Address & 0xFF);
             preamble.buffer[3] = (device_address | 0x01);
             preamble.ctrlMask  = 0x0004;
@@ -170,48 +216,76 @@ static void FlashTransfer(uint32_t Address, uint16_t NumBytes, uint8_t* Buf, CyB
             buf_p.count = FLASH_PAGE_SIZE;
 
             /* Send read command */
-            CyU3PI2cSendCommand (&preamble, FLASH_PAGE_SIZE, CyTrue);
+            status = CyU3PI2cSendCommand (&preamble, dmaCount, CyTrue);
+#ifdef VERBOSE_MODE
+            if(status != CY_U3P_SUCCESS)
+            	CyU3PDebugPrint (4, "I2C send read command failed: 0x%x\r\n", status);
+#endif
             /* Set up DMA to receive read data */
-            CyU3PDmaChannelSetupRecvBuffer (&flashRxHandle, &buf_p);
-            /* Wait for finish */
-            CyU3PDmaChannelWaitForCompletion(&flashRxHandle, FLASH_TIMEOUT_MS);
+            status = CyU3PDmaChannelSetupRecvBuffer (&flashRxHandle, &buf_p);
+#ifdef VERBOSE_MODE
+            if(status != CY_U3P_SUCCESS)
+            	CyU3PDebugPrint (4, "I2C DMA Rx channel setup failed: 0x%x\r\n", status);
+#endif
     	}
     	else
     	{
             /* Update the preamble information. */
             preamble.length    = 3;
             preamble.buffer[0] = device_address;
-            preamble.buffer[1] = (uint8_t)(Address >> 8);
+            preamble.buffer[1] = (uint8_t)((Address & 0xFF00) >> 8);
             preamble.buffer[2] = (uint8_t)(Address & 0xFF);
             preamble.ctrlMask  = 0x0000;
 
             buf_p.size = FLASH_PAGE_SIZE;
-            buf_p.count = FLASH_PAGE_SIZE;
+            buf_p.count = dmaCount;
 
             /* Setup DMA transmit buffer */
-            CyU3PDmaChannelSetupSendBuffer (&flashTxHandle, &buf_p);
+            status = CyU3PDmaChannelSetupSendBuffer (&flashTxHandle, &buf_p);
+#ifdef VERBOSE_MODE
+            if(status != CY_U3P_SUCCESS)
+            	CyU3PDebugPrint (4, "I2C DMA Tx channel setup failed: 0x%x\r\n", status);
+#endif
             /* Send write command */
-            CyU3PI2cSendCommand (&preamble, FLASH_PAGE_SIZE, CyFalse);
-            /* Wait for completion */
-            CyU3PDmaChannelWaitForCompletion(&flashTxHandle,FLASH_TIMEOUT_MS);
-
-            /* Stall for 10ms */
-            CyU3PThreadSleep(10);
+            status = CyU3PI2cSendCommand (&preamble, dmaCount, CyFalse);
+#ifdef VERBOSE_MODE
+            if(status != CY_U3P_SUCCESS)
+            	CyU3PDebugPrint (4, "I2C send write command failed: 0x%x\r\n", status);
+#endif
     	}
+        /* Stall for 20ms */
+        CyU3PThreadSleep(20);
+        /* Wait for finish */
+        status = CyU3PI2cWaitForBlockXfer(isRead);
+#ifdef VERBOSE_MODE
+        if(status != CY_U3P_SUCCESS)
+        	CyU3PDebugPrint (4, "I2C DMA wait for completion failed: 0x%x\r\n", status);
+#endif
+
         /* decrement page count */
         pageCount --;
+        /* Increment address */
+        Address += dmaCount;
+        buf_p.buffer += dmaCount;
     }
+
+    /* De-init flash memory */
+    AdiFlashDeInit();
+
+#ifdef VERBOSE_MODE
+    CyU3PDebugPrint (4, "Flash transfer complete!\r\n", status);
+#endif
+
+    /* Return the status code */
+    return status;
 }
 
-static uint16_t GetFlashDeviceAddress(uint32_t ByteAddress, CyBool_t isRead)
+static uint16_t GetFlashDeviceAddress(uint32_t ByteAddress)
 {
 	uint16_t address = 0xA0;
 	/* mask out all but bits 17 - 16 in the byte address and shift down (leave one bit up) */
-	ByteAddress &= 0x30000;
 	ByteAddress = ByteAddress >> 15;
+	ByteAddress &= 0x6;
 	address |= ByteAddress;
-	if(isRead)
-		address |= 1;
-
 	return address;
 }

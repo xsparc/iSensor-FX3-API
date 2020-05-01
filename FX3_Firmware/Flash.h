@@ -24,10 +24,12 @@
 #include "main.h"
 
 CyU3PReturnStatus_t AdiFlashInit();
+void AdiFlashDeInit();
 void AdiFlashWrite(uint32_t Address, uint16_t NumBytes, uint8_t* WriteBuf);
 void AdiFlashRead(uint32_t Address, uint16_t NumBytes, uint8_t* ReadBuf);
+void AdiFlashReadHandler(uint32_t Address, uint16_t NumBytes);
 
-/** Page size for attached i2c flash memory  */
+/** Page size for attached i2c flash memory (64 bytes)  */
 #define FLASH_PAGE_SIZE		0x40
 
 /** Flash operation timeout  */

@@ -601,11 +601,24 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 				USBBuffer[2] = (status & 0xFF0000) >> 16;
 				USBBuffer[3] = (status & 0xFF000000) >> 24;
 				CyU3PUsbSendEP0Data (wLength, USBBuffer);
+				AdiLogError(Main_c, __LINE__, wIndex);
             	break;
 
 			/* Command to do nothing. Might remove, this isn't really used at all */
 			case ADI_NULL_COMMAND:
 				isHandled = CyTrue;
+				break;
+
+			/* Arbitrary flash read command */
+			case ADI_READ_FLASH:
+				AdiFlashReadHandler((wIndex << 16) | wValue, wLength);
+				isHandled = CyTrue;
+				break;
+
+			/* Clear flash error log command */
+			case ADI_CLEAR_FLASH_LOG:
+				WriteErrorLogCount(0);
+				CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
 				break;
 
             default:

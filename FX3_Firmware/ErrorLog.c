@@ -21,13 +21,15 @@
 extern BoardState FX3State;
 extern uint8_t FirmwareID[32];
 
+/** Error log buffer */
+uint8_t LogBuffer[FLASH_PAGE_SIZE];
+
 /* Helper functions */
 static void FindFirmwareVersion(uint8_t* buf);
 static void WriteLogToFlash(ErrorMsg* msg);
 static void WriteLogToDebug(ErrorMsg* msg);
 static uint32_t GetNewLogAddress();
 static uint32_t GetLogCount();
-static void WriteLogCount(uint32_t count);
 
 /**
   * @brief
@@ -36,7 +38,7 @@ static void WriteLogCount(uint32_t count);
  **/
 void AdiLogError(FileIdentifier File, uint32_t Line, uint32_t ErrorCode)
 {
-	ErrorMsg error;
+	ErrorMsg error = {};
 
 	/* Set the file code */
 	error.File = File;
@@ -65,10 +67,24 @@ void AdiLogError(FileIdentifier File, uint32_t Line, uint32_t ErrorCode)
   *
   * @return void
  **/
+void WriteErrorLogCount(uint32_t count)
+{
+	LogBuffer[0] = count & 0xFF;
+	LogBuffer[1] = (count & 0xFF00) >> 8;
+	LogBuffer[2] = (count & 0xFF0000) >> 16;
+	LogBuffer[3] = (count & 0xFF000000) >> 24;
+	AdiFlashWrite(LOG_COUNT_ADDR, 4, LogBuffer);
+}
+
+/**
+  * @brief
+  *
+  * @return void
+ **/
 static void FindFirmwareVersion(uint8_t* outBuf)
 {
 	uint32_t offset = 12;
-	for(int i = 0; i < 8; i++)
+	for(int i = 0; i < 12; i++)
 	{
 		outBuf[i] = FirmwareID[offset + i];
 	}
@@ -82,16 +98,25 @@ static void FindFirmwareVersion(uint8_t* outBuf)
 static void WriteLogToFlash(ErrorMsg* msg)
 {
 	uint32_t logAddr, logCount;
+	uint8_t* memPtr;
+
+	/* Copy the error message to the Log Buffer */
+	memPtr = (uint8_t *) msg;
+	for(int i = 0; i < 32; i++)
+	{
+		LogBuffer[i] = memPtr[i];
+		CyU3PDebugPrint (4, "i: %d: 0x%x\r\n", i, LogBuffer[i]);
+	}
 
 	/* Get the starting address of the next record based on the number of logs stored */
 	logAddr = GetNewLogAddress(&logCount);
 
 	/* Transfer log to flash */
-	AdiFlashWrite(logAddr, 32, (uint8_t*) msg);
+	AdiFlashWrite(logAddr, 32, LogBuffer);
 
 	/* Increment log count and store back to flash */
 	logCount++;
-	WriteLogCount(logCount);
+	WriteErrorLogCount(logCount);
 }
 
 /**
@@ -114,8 +139,12 @@ static uint32_t GetNewLogAddress(uint32_t* TotalLogCount)
 	/* Get the total lifetime log count from flash */
 	uint32_t count = GetLogCount();
 
-	/* Clear upper bits (over 4095) of log count to find number actually stored */
-	uint32_t logFlashCount = count & LOG_CAPACITY;
+#ifdef VERBOSE_MODE
+	CyU3PDebugPrint (4, "Error log count: 0x%x\r\n", count);
+#endif
+
+	/* Find location of "front" */
+	uint32_t logFlashCount = count % LOG_CAPACITY;
 
 	/* 32 bytes per log */
 	uint32_t addr = logFlashCount * 32;
@@ -125,6 +154,10 @@ static uint32_t GetNewLogAddress(uint32_t* TotalLogCount)
 
 	/* Return total count by reference */
 	*TotalLogCount = count;
+
+#ifdef VERBOSE_MODE
+	CyU3PDebugPrint (4, "New Log Address: 0x%x\r\n", addr);
+#endif
 
 	/* Return address to write the new log to */
 	return addr;
@@ -137,28 +170,21 @@ static uint32_t GetNewLogAddress(uint32_t* TotalLogCount)
  **/
 static uint32_t GetLogCount()
 {
-	uint8_t buf[4];
 	uint32_t count;
-	AdiFlashRead(LOG_COUNT_ADDR, 4, buf);
-	/* Count values are stored little endian in flash */
-	count = buf[0];
-	count |= (buf[1] << 8);
-	count |= (buf[2] << 16);
-	count |= (buf[3] << 24);
-	return count;
-}
 
-/**
-  * @brief
-  *
-  * @return void
- **/
-static void WriteLogCount(uint32_t count)
-{
-	uint8_t writeData[4];
-	writeData[0] = count & 0xFF;
-	writeData[1] = (count & 0xFF00) >> 8;
-	writeData[2] = (count & 0xFF0000) >> 16;
-	writeData[3] = (count & 0xFF000000) >> 24;
-	AdiFlashWrite(LOG_COUNT_ADDR, 4, writeData);
+	/* Perform DMA flash read (4 bytes) */
+	AdiFlashRead(LOG_COUNT_ADDR, 4, LogBuffer);
+
+	/* Count values are stored little endian in flash */
+	count = LogBuffer[0];
+	count |= (LogBuffer[1] << 8);
+	count |= (LogBuffer[2] << 16);
+	count |= (LogBuffer[3] << 24);
+
+	/* Handle un-initialized log */
+	if(count == 0xFFFFFFFF)
+	{
+		count = 0;
+	}
+	return count;
 }

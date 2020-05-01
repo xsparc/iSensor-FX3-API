@@ -23,17 +23,14 @@
 
 /* Defines */
 
-/** The log start address in flash (start at 64KB to leave size for bootloader) */
-#define LOG_BASE_ADDR							(0x10000)
+/** The log start address in flash (have to leave space for bootloader) */
+#define LOG_BASE_ADDR							(0x34040)
 
-/** The max log capacity for the ring buffer (128KB / 32 bytes per entry) */
-#define LOG_CAPACITY							(4095)
+/** The max log capacity for the ring buffer (32 bytes per entry) */
+#define LOG_CAPACITY							1500
 
-/** The flash address of the current log count (64KB - 4bytes) */
-#define LOG_COUNT_ADDR							(0xFFFC)
-
-/** The max allowed write address in flash */
-#define FLASH_SIZE								(0x40000)
+/** The flash address of the current log count  */
+#define LOG_COUNT_ADDR							(0x34000)
 
 /** Enum to identify the source file which threw an error. More RAM efficient than the __LINE__ directive (gives full path) */
 typedef enum FileIdentifier
@@ -58,23 +55,27 @@ typedef enum FileIdentifier
  **/
 typedef struct __attribute__((__packed__)) ErrorMsg
 {
-	/** The line which caused the error. Should be set by __LINE__ macro in AdiLogError call */
+	/** Allocate four unused bytes at front (0-3) */
+	uint8_t Temp[4];
+
+	/** The line which caused the error. Should be set by __LINE__ macro in AdiLogError call (4-7) */
 	uint32_t Line;
 
-	/** The error code from the set of cypress defined error codes */
+	/** The error code from the set of cypress defined error codes (8 - 11) */
 	uint32_t ErrorCode;
 
-	/** The Unix time stamp for when the instance of the FX3 booted */
+	/** The Unix time stamp for when the instance of the FX3 booted (12 - 15) */
 	uint32_t BootTimeCode;
 
-	/** The file which originated the error. Is a FileIdentifier cast into byte to save flash size */
-	uint8_t File;
+	/** The file which originated the error. Is file identifier placed into uint (16 - 19) */
+	uint32_t File;
 
-	/** The firmware version number */
+	/** The firmware version number (20 - 31) */
 	uint8_t FirmwareVersion[12];
 }ErrorMsg;
 
 /* External functions */
 void AdiLogError(FileIdentifier File, uint32_t Line, uint32_t ErrorCode);
+void WriteErrorLogCount(uint32_t count);
 
 #endif /* ERRORLOG_H_ */
