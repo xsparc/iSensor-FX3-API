@@ -18,11 +18,13 @@
 #ifndef FLASH_H_
 #define FLASH_H_
 
+/* Includes */
 #include "cyu3dma.h"
 #include "cyu3error.h"
 #include "cyu3i2c.h"
 #include "main.h"
 
+/* Public function prototypes */
 CyU3PReturnStatus_t AdiFlashInit();
 void AdiFlashDeInit();
 void AdiFlashWrite(uint32_t Address, uint16_t NumBytes, uint8_t* WriteBuf);

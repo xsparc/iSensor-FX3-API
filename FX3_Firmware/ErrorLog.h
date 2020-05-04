@@ -1,5 +1,5 @@
 /**
-  * Copyright (c) Analog Devices Inc, 2018 - 2019
+  * Copyright (c) Analog Devices Inc, 2018 - 2020
   * All Rights Reserved.
   *
   * THIS SOFTWARE UTILIZES LIBRARIES DEVELOPED
@@ -32,17 +32,34 @@
 /** The flash address of the current log count  */
 #define LOG_COUNT_ADDR							(0x34000)
 
-/** Enum to identify the source file which threw an error. More RAM efficient than the __LINE__ directive (gives full path) */
+/** Enum to identify the source file which threw an error. More RAM efficient than the __FILE__ directive (gives full path) */
 typedef enum FileIdentifier
 {
+	/** Error originated from an unknown file */
 	Unknown = 0,
+
+	/** Error originated from main.c */
 	Main_c = 1,
+
+	/** Error originated from AppThread.c */
 	AppThread_c = 2,
+
+	/** Error originated from StreamThread.c */
 	StreamThread_c = 3,
+
+	/** Error originated from PinFunctions.c */
 	PinFunctions_c = 4,
+
+	/** Error originated from SpiFunctions.c */
 	SpiFunctions_c = 5,
+
+	/** Error originated from StreamFunctions.c */
 	StreamFunctions_c = 6,
+
+	/** Error originated from Flash.c */
 	Flash_c = 7,
+
+	/** Error originated from ErrorLog.c */
 	ErrorLog_c = 8
 }FileIdentifier;
 

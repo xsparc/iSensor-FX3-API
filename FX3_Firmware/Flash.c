@@ -17,6 +17,7 @@
 
 #include "Flash.h"
 
+/* Private function prototypes */
 static uint16_t GetFlashDeviceAddress(uint32_t ByteAddress);
 static CyU3PReturnStatus_t FlashTransfer(uint32_t Address, uint16_t NumBytes, uint8_t* Buf, CyBool_t isRead);
 
@@ -30,9 +31,14 @@ static CyU3PDmaChannel flashTxHandle;
 static CyU3PDmaChannel flashRxHandle;
 
 /**
-  * @brief
+  * @brief Initializes flash memory interface module
   *
   * @return Status code indication the success of the flash init operation
+  *
+  * The FX3 board features a ST m24m02-dr I2C EEPROM. This function
+  * initializes the FX3 I2C block to operate in DMA mode with the max
+  * supported I2C clock. It then configures the I2C Rx and Tx channels
+  * to perform a transfer
  **/
 CyU3PReturnStatus_t AdiFlashInit()
 {
@@ -107,9 +113,12 @@ CyU3PReturnStatus_t AdiFlashInit()
 }
 
 /**
-  * @brief
+  * @brief De-init the flash memory interfacing module
   *
   * @return void
+  *
+  * This functions powers off the I2C block (used for interfacing with EEPROM)
+  * and destroys the associated DMA channels.
  **/
 void AdiFlashDeInit()
 {
@@ -119,7 +128,13 @@ void AdiFlashDeInit()
 }
 
 /**
-  * @brief
+  * @brief Write a block of memory to flash, at the specified byte address
+  *
+  * @param Address The start address (in flash) to perform the write operation to
+  *
+  * @param NumBytes The number of bytes to write to flash
+  *
+  * @param WriteBuf RAM buffer containing data to be written to flash
   *
   * @return void
  **/
@@ -129,7 +144,13 @@ void AdiFlashWrite(uint32_t Address, uint16_t NumBytes, uint8_t* WriteBuf)
 }
 
 /**
-  * @brief
+  * @brief Read a block of memory from flash, at the specified byte address
+  *
+  * @param Address The start address (in flash) to perform the read operation from
+  *
+  * @param NumBytes The number of bytes to read from the flash
+  *
+  * @param ReadBuf RAM buffer to read flash data into
   *
   * @return void
  **/
@@ -149,10 +170,15 @@ void AdiFlashRead(uint32_t Address, uint16_t NumBytes, uint8_t* ReadBuf)
   *
   * The data read from flash is returned over the control endpoint.
   * This limits a single read to 4KB. If greater than a 4KB read
-  * is needed, multiple transactions should be sent.
+  * is needed, multiple transactions should be sent. Managing
+  * this limit is left to the higher level software sending USB
+  * commands.
  **/
 void AdiFlashReadHandler(uint32_t Address, uint16_t NumBytes)
 {
+	/* Cap number of bytes to read at 4096 */
+	if(NumBytes > 4096)
+		NumBytes = 4096;
 	/* Perform transfer */
 	FlashTransfer(Address, NumBytes, USBBuffer, CyTrue);
 	/* Return over USB control endpoint */
@@ -160,9 +186,24 @@ void AdiFlashReadHandler(uint32_t Address, uint16_t NumBytes)
 }
 
 /**
-  * @brief
+  * @brief Performs a transfer from the I2C flash memory
   *
-  * @return void
+  * @param Address The flash byte address to start the read/write operation from. Valid range 0x0 - 0x40000
+  *
+  * @param NumBytes The number of data bytes to transfer to/from the flash
+  *
+  * @param Buf RAM data buffer. Write data must be placed here. Read data is returned here.
+  *
+  * @param isRead Bool indicating if operation is read or write
+  *
+  * @return Status code indicating the success of the flash read/write operation
+  *
+  * This function performs all interfacing with the ST m24m02-dr I2C EEPROM which is
+  * included on the iSensor FX3 board (and FX3 explorer kit). Before each transaction,
+  * AdiFlashInit is called to ensure the flash and DMA are configured properly. Then, for
+  * each transaction, the read/write is split into 64 byte (or less) chunks, which are
+  * each performed using a single I2C<->Mem DMA transfer. Once all required transfers have
+  * been performed, the flash is de-initialized.
  **/
 static CyU3PReturnStatus_t FlashTransfer(uint32_t Address, uint16_t NumBytes, uint8_t* Buf, CyBool_t isRead)
 {
@@ -291,9 +332,11 @@ static CyU3PReturnStatus_t FlashTransfer(uint32_t Address, uint16_t NumBytes, ui
 }
 
 /**
-  * @brief
+  * @brief Gets the flash devices address, based on the requested byte address
   *
-  * @return void
+  * @return void The 8-bit flash device address
+  *
+  * For the EEPROM, byte address bits 16-17 are encoded into the device address
  **/
 static uint16_t GetFlashDeviceAddress(uint32_t ByteAddress)
 {
