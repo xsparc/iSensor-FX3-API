@@ -106,6 +106,11 @@ CyU3PReturnStatus_t AdiFlashInit()
     return status;
 }
 
+/**
+  * @brief
+  *
+  * @return void
+ **/
 void AdiFlashDeInit()
 {
 	CyU3PI2cDeInit();
@@ -154,6 +159,11 @@ void AdiFlashReadHandler(uint32_t Address, uint16_t NumBytes)
 	CyU3PUsbSendEP0Data(NumBytes, USBBuffer);
 }
 
+/**
+  * @brief
+  *
+  * @return void
+ **/
 static CyU3PReturnStatus_t FlashTransfer(uint32_t Address, uint16_t NumBytes, uint8_t* Buf, CyBool_t isRead)
 {
     CyU3PDmaBuffer_t buf_p;
@@ -173,15 +183,15 @@ static CyU3PReturnStatus_t FlashTransfer(uint32_t Address, uint16_t NumBytes, ui
     if(NumBytes == 0)
         return CY_U3P_SUCCESS;
 
-    /* Init flash memory */
-    AdiFlashInit();
-
     /* Check if extra bytes which fall onto another page */
     lastCount = (NumBytes % FLASH_PAGE_SIZE);
     if(lastCount != 0)
         pageCount ++;
     else
     	lastCount = FLASH_PAGE_SIZE;
+
+    /* Init flash */
+    AdiFlashInit();
 
     /* Update the buffer status. */
     buf_p.status = 0;
@@ -269,17 +279,22 @@ static CyU3PReturnStatus_t FlashTransfer(uint32_t Address, uint16_t NumBytes, ui
         buf_p.buffer += dmaCount;
     }
 
-    /* De-init flash memory */
-    AdiFlashDeInit();
-
 #ifdef VERBOSE_MODE
     CyU3PDebugPrint (4, "Flash transfer complete!\r\n", status);
 #endif
+
+    /* De-Init flash */
+    AdiFlashDeInit();
 
     /* Return the status code */
     return status;
 }
 
+/**
+  * @brief
+  *
+  * @return void
+ **/
 static uint16_t GetFlashDeviceAddress(uint32_t ByteAddress)
 {
 	uint16_t address = 0xA0;

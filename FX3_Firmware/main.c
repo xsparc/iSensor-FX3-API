@@ -601,7 +601,6 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 				USBBuffer[2] = (status & 0xFF0000) >> 16;
 				USBBuffer[3] = (status & 0xFF000000) >> 24;
 				CyU3PUsbSendEP0Data (wLength, USBBuffer);
-				AdiLogError(Main_c, __LINE__, wIndex);
             	break;
 
 			/* Command to do nothing. Might remove, this isn't really used at all */
@@ -955,6 +954,9 @@ void AdiAppStop()
 
 	/* Signal that the app thread has been stopped */
 	FX3State.AppActive = CyFalse;
+
+    /* De-init flash memory */
+    AdiFlashDeInit();
 
 	/* Clean up UART (debug) */
 	CyU3PUartDeInit ();

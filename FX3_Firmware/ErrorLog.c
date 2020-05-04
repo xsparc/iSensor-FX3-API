@@ -100,16 +100,24 @@ static void WriteLogToFlash(ErrorMsg* msg)
 	uint32_t logAddr, logCount;
 	uint8_t* memPtr;
 
+	/* Get the starting address of the next record based on the number of logs stored */
+	logAddr = GetNewLogAddress(&logCount);
+
+	/* Set log buffer to 0xFF*/
+	for(int i = 0; i < 32; i++)
+	{
+		LogBuffer[i] = 0xFF;
+	}
+
+	/* Apply clear to flash flash */
+	AdiFlashWrite(logAddr, 32, LogBuffer);
+
 	/* Copy the error message to the Log Buffer */
 	memPtr = (uint8_t *) msg;
 	for(int i = 0; i < 32; i++)
 	{
 		LogBuffer[i] = memPtr[i];
-		CyU3PDebugPrint (4, "i: %d: 0x%x\r\n", i, LogBuffer[i]);
 	}
-
-	/* Get the starting address of the next record based on the number of logs stored */
-	logAddr = GetNewLogAddress(&logCount);
 
 	/* Transfer log to flash */
 	AdiFlashWrite(logAddr, 32, LogBuffer);
