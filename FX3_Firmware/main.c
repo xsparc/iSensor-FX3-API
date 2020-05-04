@@ -188,10 +188,14 @@ int main (void)
     /* Dummy return to make the compiler happy */
     return 0;
 
+	/* Cannot recover from device initialization error. */
 handle_fatal_error:
 
-	/* Cannot recover from this error. */
-	while (1);
+	/* Force CPU to perform hard reset */
+	GCTLAON->control &= ~CY_U3P_GCTL_HARD_RESET_N;
+
+	/* Kick into infinite loop (shouldn't get here) */
+	while(1);
 }
 
 /**
@@ -332,9 +336,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             case ADI_HARD_RESET:
             	CyU3PUsbAckSetup();
             	CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
-#ifdef VERBOSE_MODE
-        CyU3PDebugPrint (4, "Rebooting FX3!\r\n");
-#endif
+            	CyU3PDebugPrint (4, "Rebooting FX3!\r\n");
             	CyU3PThreadSleep(500);
             	CyU3PConnectState(CyFalse, CyTrue);
             	AdiAppStop();
@@ -456,13 +458,14 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             		status = CyU3PEventSet(&EventHandler, ADI_GENERIC_STREAM_STOP, CYU3P_EVENT_OR);
             		break;
             	default:
-            		CyU3PDebugPrint (4, "ERROR: Unknown Stream Command: %d\r\n", wIndex);
+            		/* Shouldn't get here */
+            		isHandled = CyFalse;
             		break;
             	}
             	if (status != CY_U3P_SUCCESS)
             	{
             		isHandled = CyFalse;
-					CyU3PDebugPrint (4, "Setting generic stream event failed, Error code = %x\r\n", status);
+					AdiLogError(Main_c, __LINE__, status);
             	}
 
             	break;
@@ -488,13 +491,14 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             		status = CyU3PEventSet(&EventHandler, ADI_BURST_STREAM_STOP, CYU3P_EVENT_OR);
             		break;
             	default:
-            		CyU3PDebugPrint (4, "ERROR: Unknown Stream Command: %d\r\n", wIndex);
+            		/* Shouldn't get here */
+            		isHandled = CyFalse;
             		break;
             	}
 				if (status != CY_U3P_SUCCESS)
 				{
 					isHandled = CyFalse;
-					CyU3PDebugPrint (4, "Setting burst stream event failed, Error code = %x\r\n", status);
+					AdiLogError(Main_c, __LINE__, status);
 				}
 				break;
 
@@ -517,13 +521,14 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 					status = CyU3PEventSet(&EventHandler, ADI_RT_STREAM_STOP, CYU3P_EVENT_OR);
 					break;
 				default:
-					CyU3PDebugPrint (4, "ERROR: Unknown Stream Command: %d\r\n", wIndex);
-					break;
+            		/* Shouldn't get here */
+            		isHandled = CyFalse;
+            		break;
 				}
 				if (status != CY_U3P_SUCCESS)
 				{
 					isHandled = CyFalse;
-					CyU3PDebugPrint (4, "Setting real time stream event failed, Error code = %x\r\n", status);
+					AdiLogError(Main_c, __LINE__, status);
 				}
 				break;
 
@@ -545,13 +550,14 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 					status = CyU3PEventSet(&EventHandler, ADI_TRANSFER_STREAM_STOP, CYU3P_EVENT_OR);
 					break;
 				default:
-					CyU3PDebugPrint (4, "ERROR: Unknown Stream Command: %d\r\n", wIndex);
-					break;
+            		/* Shouldn't get here */
+            		isHandled = CyFalse;
+            		break;
 				}
 				if (status != CY_U3P_SUCCESS)
 				{
 					isHandled = CyFalse;
-					CyU3PDebugPrint (4, "Setting real time stream event failed, Error code = %x\r\n", status);
+					AdiLogError(Main_c, __LINE__, status);
 				}
 				break;
 
@@ -698,6 +704,7 @@ void AdiConfigureWatchdog()
 		if(status != CY_U3P_SUCCESS)
 		{
 			CyU3PDebugPrint (4, "ERROR: Failed to configure watchdog timer callback, disabling watchdog functionality\r\n");
+			AdiLogError(Main_c, __LINE__, status);
 			CyU3PSysWatchDogConfigure(CyFalse, FX3State.WatchDogPeriodMs);
 		}
 	}
@@ -710,7 +717,7 @@ void AdiConfigureWatchdog()
 		status = CyU3PTimerDestroy(&WatchdogTimer);
 		if(status != CY_U3P_SUCCESS)
 		{
-			CyU3PDebugPrint (4, "ERROR: Failed to destroy watchdog timer\r\n");
+			AdiLogError(Main_c, __LINE__, status);
 		}
 	}
 }
@@ -926,7 +933,7 @@ void AdiGPIOEventHandler(uint8_t gpioId)
 void AdiAppErrorHandler (CyU3PReturnStatus_t status)
 {
     /* Application failed with the error code status */
-	CyU3PDebugPrint (4, "Application failed with fatal error. Error code: 0x%x\r\n", status);
+	CyU3PDebugPrint (4, "Application failed with fatal error! Error code: 0x%x\r\n", status);
 
 	for(int i = 5; i > 0; i--)
 	{
@@ -944,12 +951,13 @@ void AdiAppErrorHandler (CyU3PReturnStatus_t status)
   * @returns void
   *
   * This function cleans up the resources used by the ADI application
-  * and prepares them for the next run.
+  * and prepares them for the next run. Since this function is intended
+  * to be called as part of the shut down process, no error handling is
+  * performed. Any transient errors should be resolved the next time
+  * the system boots (after this function call is finished).
  **/
 void AdiAppStop()
 {
-	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-
 	CyU3PDebugPrint (4, "Application stopping!\r\n");
 
 	/* Signal that the app thread has been stopped */
@@ -988,25 +996,13 @@ void AdiAppStop()
 	/* Write configuration to each endpoint */
 
 	/* Set endpoint config for RTS endpoint */
-	status = CyU3PSetEpConfig(ADI_STREAMING_ENDPOINT, &epConfig);
-    if (status != CY_U3P_SUCCESS)
-    {
-    	AdiAppErrorHandler(status);
-    }
+	CyU3PSetEpConfig(ADI_STREAMING_ENDPOINT, &epConfig);
 
 	/* Set endpoint config for the PC to FX3 endpoint */
-	status = CyU3PSetEpConfig(ADI_FROM_PC_ENDPOINT, &epConfig);
-    if (status != CY_U3P_SUCCESS)
-    {
-    	AdiAppErrorHandler(status);
-    }
+	CyU3PSetEpConfig(ADI_FROM_PC_ENDPOINT, &epConfig);
 
 	/* Set endpoint config for the FX3 to PC endpoint */
-	status = CyU3PSetEpConfig(ADI_TO_PC_ENDPOINT, &epConfig);
-    if (status != CY_U3P_SUCCESS)
-    {
-    	AdiAppErrorHandler(status);
-    }
+	CyU3PSetEpConfig(ADI_TO_PC_ENDPOINT, &epConfig);
 }
 
 /**
@@ -1043,7 +1039,8 @@ void AdiAppStart()
             break;
 
         default:
-            CyU3PDebugPrint (4, "Error! Invalid USB speed.\r\n");
+        	/* Invalid USB speed */
+        	AdiLogError(Main_c, __LINE__, status);
             AdiAppErrorHandler (CY_U3P_ERROR_FAILURE);
             break;
     }
@@ -1066,6 +1063,7 @@ void AdiAppStart()
 	status = CyU3PGpioInit(&gpioClock, AdiGPIOEventHandler);
     if (status != CY_U3P_SUCCESS)
     {
+    	AdiLogError(Main_c, __LINE__, status);
     	AdiAppErrorHandler(status);
     }
 
@@ -1075,7 +1073,7 @@ void AdiAppStart()
     /* Enable 3.3V power supply by driving 5V pin high, then 3.3V pin low */
     if(FX3State.BoardType == iSensorFX3Board)
     {
-    	CyU3PDebugPrint (4, "Analog Devices iSensor FX3 Board Detected, Configuring Power Control Circuit...\r\n");
+    	CyU3PDebugPrint (4, "Analog Devices iSensor FX3 Board Detected! Configuring Power Control Circuit...\r\n");
     	/* Configure power control circuit */
     	CyU3PDeviceGpioOverride(ADI_5V_EN, CyTrue);
     	CyU3PDeviceGpioOverride(ADI_3_3V_EN, CyTrue);
@@ -1101,7 +1099,7 @@ void AdiAppStart()
     }
     else
     {
-    	CyU3PDebugPrint (4, "Cypress SuperSpeed Explorer FX3 Board Detected\r\n");
+    	CyU3PDebugPrint (4, "Cypress SuperSpeed Explorer FX3 Board Detected!\r\n");
     	/* Map pin assignments */
     	FX3State.PinMap.ADI_PIN_RESET = 0;
     	FX3State.PinMap.ADI_PIN_DIO4 = 1;
@@ -1115,65 +1113,67 @@ void AdiAppStart()
     }
 
 	/* Override all pins used by ADI to act as GPIO.
-	 * Configuration relies on io matrix configuration in main(). */
+	 * Configuration relies on io matrix configuration in main(). For failed
+	 * GPIO config, firmware logs error then continues (GPIO config not crucial for
+	 * system functionality, don't want to reboot */
 	status = CyU3PDeviceGpioOverride (FX3State.PinMap.ADI_PIN_DIO1, CyTrue);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiAppErrorHandler(status);
+    	AdiLogError(Main_c, __LINE__, status);
     }
 
 	status = CyU3PDeviceGpioOverride (FX3State.PinMap.ADI_PIN_DIO2, CyTrue);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiAppErrorHandler(status);
+    	AdiLogError(Main_c, __LINE__, status);
     }
 
 	status = CyU3PDeviceGpioOverride (FX3State.PinMap.ADI_PIN_DIO3, CyTrue);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiAppErrorHandler(status);
+    	AdiLogError(Main_c, __LINE__, status);
     }
 
 	status = CyU3PDeviceGpioOverride (FX3State.PinMap.ADI_PIN_DIO4, CyTrue);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiAppErrorHandler(status);
+    	AdiLogError(Main_c, __LINE__, status);
     }
 
 	status = CyU3PDeviceGpioOverride (FX3State.PinMap.FX3_PIN_GPIO1, CyTrue);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiAppErrorHandler(status);
+    	AdiLogError(Main_c, __LINE__, status);
     }
 
 	status = CyU3PDeviceGpioOverride (FX3State.PinMap.FX3_PIN_GPIO2, CyTrue);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiAppErrorHandler(status);
+    	AdiLogError(Main_c, __LINE__, status);
     }
 
 	status = CyU3PDeviceGpioOverride (FX3State.PinMap.FX3_PIN_GPIO3, CyTrue);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiAppErrorHandler(status);
+    	AdiLogError(Main_c, __LINE__, status);
     }
 
 	status = CyU3PDeviceGpioOverride (FX3State.PinMap.FX3_PIN_GPIO4, CyTrue);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiAppErrorHandler(status);
+    	AdiLogError(Main_c, __LINE__, status);
     }
 
 	status = CyU3PDeviceGpioOverride (FX3State.PinMap.ADI_PIN_RESET, CyTrue);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiAppErrorHandler(status);
+    	AdiLogError(Main_c, __LINE__, status);
     }
 
 	status = CyU3PDeviceGpioOverride(ADI_TIMER_PIN, CyFalse);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiAppErrorHandler(status);
+    	AdiLogError(Main_c, __LINE__, status);
     }
 
 	/* Set the GPIO configuration for each GPIO that was just overridden */
@@ -1187,55 +1187,55 @@ void AdiAppStart()
 	status = CyU3PGpioSetSimpleConfig(FX3State.PinMap.ADI_PIN_DIO1, &gpioConfig);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiAppErrorHandler(status);
+    	AdiLogError(Main_c, __LINE__, status);
     }
 
 	status = CyU3PGpioSetSimpleConfig(FX3State.PinMap.ADI_PIN_DIO2, &gpioConfig);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiAppErrorHandler(status);
+    	AdiLogError(Main_c, __LINE__, status);
     }
 
 	status = CyU3PGpioSetSimpleConfig(FX3State.PinMap.ADI_PIN_DIO3, &gpioConfig);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiAppErrorHandler(status);
+    	AdiLogError(Main_c, __LINE__, status);
     }
 
 	status = CyU3PGpioSetSimpleConfig(FX3State.PinMap.ADI_PIN_DIO4, &gpioConfig);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiAppErrorHandler(status);
+    	AdiLogError(Main_c, __LINE__, status);
     }
 
 	status = CyU3PGpioSetSimpleConfig(FX3State.PinMap.FX3_PIN_GPIO1, &gpioConfig);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiAppErrorHandler(status);
+    	AdiLogError(Main_c, __LINE__, status);
     }
 
 	status = CyU3PGpioSetSimpleConfig(FX3State.PinMap.FX3_PIN_GPIO2, &gpioConfig);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiAppErrorHandler(status);
+    	AdiLogError(Main_c, __LINE__, status);
     }
 
 	status = CyU3PGpioSetSimpleConfig(FX3State.PinMap.FX3_PIN_GPIO3, &gpioConfig);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiAppErrorHandler(status);
+    	AdiLogError(Main_c, __LINE__, status);
     }
 
 	status = CyU3PGpioSetSimpleConfig(FX3State.PinMap.FX3_PIN_GPIO4, &gpioConfig);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiAppErrorHandler(status);
+    	AdiLogError(Main_c, __LINE__, status);
     }
 
 	status = CyU3PGpioSetSimpleConfig(FX3State.PinMap.ADI_PIN_RESET, &gpioConfig);
     if (status != CY_U3P_SUCCESS)
     {
-    	AdiAppErrorHandler(status);
+    	AdiLogError(Main_c, __LINE__, status);
     }
 
 	/* Configure high-speed, high-resolution timer using a complex GPIO */
@@ -1252,8 +1252,10 @@ void AdiAppStart()
 	gpioComplexConfig.period = 0xFFFFFFFF;
 	gpioComplexConfig.threshold = 0xFFFFFFFF;
 	status = CyU3PGpioSetComplexConfig(ADI_TIMER_PIN, &gpioComplexConfig);
+	/* Timer config failure is critical error, force system reboot */
     if (status != CY_U3P_SUCCESS)
     {
+    	AdiLogError(Main_c, __LINE__, status);
     	AdiAppErrorHandler(status);
     }
 
@@ -1287,19 +1289,21 @@ void AdiAppStart()
     FX3State.SpiConfig.lagTime    = CY_U3P_SPI_SSN_LAG_LEAD_ONE_CLK;
     FX3State.SpiConfig.ssnCtrl    = CY_U3P_SPI_SSN_CTRL_HW_END_OF_XFER;
     FX3State.SpiConfig.clock      = 2000000;
-    FX3State.SpiConfig.wordLen    = 8;
+    FX3State.SpiConfig.wordLen    = 16;
 
     /* Start the SPI module and configure the FX3 as a master.
      * As with the GPIO configuration, SPI also relies on the io matrix to be correct. */
     status = CyU3PSpiInit();
     if (status != CY_U3P_SUCCESS)
     {
+    	AdiLogError(Main_c, __LINE__, status);
     	AdiAppErrorHandler(status);
     }
 
     status = CyU3PSpiSetConfig (&FX3State.SpiConfig, NULL);
     if (status != CY_U3P_SUCCESS)
     {
+    	AdiLogError(Main_c, __LINE__, status);
     	AdiAppErrorHandler(status);
     }
 
@@ -1309,6 +1313,7 @@ void AdiAppStart()
 	status = CyU3PEventCreate(&EventHandler);
     if (status != CY_U3P_SUCCESS)
     {
+    	AdiLogError(Main_c, __LINE__, status);
     	AdiAppErrorHandler(status);
     }
 
@@ -1316,6 +1321,7 @@ void AdiAppStart()
 	status = CyU3PEventCreate(&GpioHandler);
     if (status != CY_U3P_SUCCESS)
     {
+    	AdiLogError(Main_c, __LINE__, status);
     	AdiAppErrorHandler(status);
     }
 
@@ -1335,7 +1341,7 @@ void AdiAppStart()
 	status = CyU3PSetEpConfig(ADI_STREAMING_ENDPOINT, &epConfig);
     if (status != CY_U3P_SUCCESS)
     {
-    	CyU3PDebugPrint (4, "Setting RTS/Streaming endpoint failed, Error Code = 0x%x\r\n", status);
+    	AdiLogError(Main_c, __LINE__, status);
     	AdiAppErrorHandler(status);
     }
 
@@ -1343,7 +1349,7 @@ void AdiAppStart()
 	status = CyU3PSetEpConfig(ADI_FROM_PC_ENDPOINT, &epConfig);
     if (status != CY_U3P_SUCCESS)
     {
-    	CyU3PDebugPrint (4, "Setting PC to FX3 endpoint failed, Error Code = 0x%x\r\n", status);
+    	AdiLogError(Main_c, __LINE__, status);
     	AdiAppErrorHandler(status);
     }
 
@@ -1351,7 +1357,7 @@ void AdiAppStart()
 	status = CyU3PSetEpConfig(ADI_TO_PC_ENDPOINT, &epConfig);
     if (status != CY_U3P_SUCCESS)
     {
-    	CyU3PDebugPrint (4, "Setting FX3 to PC endpoint failed, Error Code = 0x%x\r\n", status);
+    	AdiLogError(Main_c, __LINE__, status);
     	AdiAppErrorHandler(status);
     }
 
@@ -1380,7 +1386,7 @@ void AdiAppStart()
     status = CyU3PDmaChannelCreate(&ChannelFromPC, CY_U3P_DMA_TYPE_MANUAL_IN, &dmaConfig);
     if (status != CY_U3P_SUCCESS)
     {
-    	CyU3PDebugPrint (4, "Configuring the ChannelFromPC DMA failed, Error Code = 0x%x\r\n", status);
+    	AdiLogError(Main_c, __LINE__, status);
     	AdiAppErrorHandler(status);
     }
 
@@ -1391,7 +1397,7 @@ void AdiAppStart()
     status = CyU3PDmaChannelCreate(&ChannelToPC, CY_U3P_DMA_TYPE_MANUAL_OUT, &dmaConfig);
     if (status != CY_U3P_SUCCESS)
     {
-    	CyU3PDebugPrint (4, "Configuring the ChannelToPC DMA failed, Error Code = 0x%x\r\n", status);
+    	AdiLogError(Main_c, __LINE__, status);
     	AdiAppErrorHandler(status);
     }
 
