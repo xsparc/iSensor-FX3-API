@@ -52,7 +52,7 @@ CyU3PReturnStatus_t AdiFlashInit()
 
     /* Start the I2C master block. Set i2c clock of 100KHz, DMA mode */
     CyU3PMemSet ((uint8_t *)&i2cConfig, 0, sizeof(i2cConfig));
-    i2cConfig.bitRate    = 100000;
+    i2cConfig.bitRate    = 1000000;
     i2cConfig.busTimeout = 0xFFFFFFFF;
     i2cConfig.dmaTimeout = 0xFFFF;
     i2cConfig.isDma      = CyTrue;
