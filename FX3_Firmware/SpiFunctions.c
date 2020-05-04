@@ -169,6 +169,8 @@ void AdiSpiTransferWord(uint8_t *txBuf, uint8_t *rxBuf, uint32_t numBytes)
  **/
 CyU3PReturnStatus_t AdiRestartSpi()
 {
+	/* Status code for SPI init */
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	/* Deactivate SPI controller */
 	CyU3PSpiDeInit();
 	/* Restore pins */
@@ -179,7 +181,12 @@ CyU3PReturnStatus_t AdiRestartSpi()
 	/* Reinitialized */
 	CyU3PSpiInit();
 	/* Set the prior config */
-	return CyU3PSpiSetConfig(&FX3State.SpiConfig, NULL);
+	status = CyU3PSpiSetConfig(&FX3State.SpiConfig, NULL);
+	if(status != CY_U3P_SUCCESS)
+	{
+		AdiLogError(SpiFunctions_c, __LINE__, status);
+	}
+	return status;
 }
 
 
@@ -251,11 +258,7 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 
 	/* Setup the GPIO selected */
 	status = AdiBitBangSpiSetup(config);
-	if(status != CY_U3P_SUCCESS)
-	{
-		CyU3PDebugPrint (4, "Bit bang SPI setup failed, error code: = 0x%x\r\n", status);
-	}
-	else
+	if(status == CY_U3P_SUCCESS)
 	{
 		/* Perform transfers */
 		for(transferCounter = 0; transferCounter < numTransfers; transferCounter++)
@@ -281,7 +284,7 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 	status = CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
 	if(status != CY_U3P_SUCCESS)
 	{
-		CyU3PDebugPrint (4, "Sending bit bang SPI data to PC failed!, error code = 0x%x\r\n", status);
+		AdiLogError(SpiFunctions_c, __LINE__, status);
 	}
 
 	return status;
@@ -300,22 +303,22 @@ CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 
 	if(!CyU3PIsGpioValid(config.MOSI))
 	{
-		CyU3PDebugPrint (4, "Error! Invalid MOSI GPIO pin number: %d\r\n", config.MOSI);
+		AdiLogError(SpiFunctions_c, __LINE__, status);
 		return CY_U3P_ERROR_BAD_ARGUMENT;
 	}
 	if(!CyU3PIsGpioValid(config.SCLK))
 	{
-		CyU3PDebugPrint (4, "Error! Invalid SCLK GPIO pin number: %d\r\n", config.SCLK);
+		AdiLogError(SpiFunctions_c, __LINE__, status);
 		return CY_U3P_ERROR_BAD_ARGUMENT;
 	}
 	if(!CyU3PIsGpioValid(config.CS))
 	{
-		CyU3PDebugPrint (4, "Error! Invalid CS GPIO pin number: %d\r\n", config.CS);
+		AdiLogError(SpiFunctions_c, __LINE__, status);
 		return CY_U3P_ERROR_BAD_ARGUMENT;
 	}
 	if(!CyU3PIsGpioValid(config.MISO))
 	{
-		CyU3PDebugPrint (4, "Error! Invalid MISO GPIO pin number: %d\r\n", config.MISO);
+		AdiLogError(SpiFunctions_c, __LINE__, status);
 		return CY_U3P_ERROR_BAD_ARGUMENT;
 	}
 
@@ -335,6 +338,12 @@ CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 		CyU3PDeviceGpioOverride(config.SCLK, CyTrue);
 		/* Set the config again */
 		status = CyU3PGpioSetSimpleConfig(config.SCLK, &gpioConfig);
+		/* Verify that override was successful */
+		if(status != CY_U3P_SUCCESS)
+		{
+			AdiLogError(SpiFunctions_c, __LINE__, status);
+			return status;
+		}
 	}
 
 	status = CyU3PGpioSetSimpleConfig(config.CS, &gpioConfig);
@@ -344,6 +353,12 @@ CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 		CyU3PDeviceGpioOverride(config.CS, CyTrue);
 		/* Set the config again */
 		status = CyU3PGpioSetSimpleConfig(config.CS, &gpioConfig);
+		/* Verify that override was successful */
+		if(status != CY_U3P_SUCCESS)
+		{
+			AdiLogError(SpiFunctions_c, __LINE__, status);
+			return status;
+		}
 	}
 
 	status = CyU3PGpioSetSimpleConfig(config.MOSI, &gpioConfig);
@@ -353,6 +368,12 @@ CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 		CyU3PDeviceGpioOverride(config.MOSI, CyTrue);
 		/* Set the config again */
 		status = CyU3PGpioSetSimpleConfig(config.MOSI, &gpioConfig);
+		/* Verify that override was successful */
+		if(status != CY_U3P_SUCCESS)
+		{
+			AdiLogError(SpiFunctions_c, __LINE__, status);
+			return status;
+		}
 	}
 
 	/* Set MISO as input pin */
@@ -368,6 +389,12 @@ CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 		CyU3PDeviceGpioOverride(config.MISO, CyTrue);
 		/* Set the config again */
 		status = CyU3PGpioSetSimpleConfig(config.MISO, &gpioConfig);
+		/* Verify that override was successful */
+		if(status != CY_U3P_SUCCESS)
+		{
+			AdiLogError(SpiFunctions_c, __LINE__, status);
+			return status;
+		}
 	}
 
 	/* Set pin pointers */
@@ -519,15 +546,15 @@ CyU3PSpiConfig_t AdiGetSpiConfig()
  **/
 void AdiPrintSpiConfig(CyU3PSpiConfig_t config)
 {
-	CyU3PDebugPrint (4, "SPI Clock Frequency: %d\r\n", config.clock);
-	CyU3PDebugPrint (4, "SPI Clock Phase: %d\r\n", config.cpha);
-	CyU3PDebugPrint (4, "SPI Clock Polarity: %d\r\n", config.cpol);
-	CyU3PDebugPrint (4, "SPI LSB First Mode: %d\r\n", config.isLsbFirst);
-	CyU3PDebugPrint (4, "SPI CS Lag Time (SCLK periods): %d\r\n", config.lagTime);
-	CyU3PDebugPrint (4, "SPI CS Lead Time (SCLK periods): %d\r\n", config.leadTime);
-	CyU3PDebugPrint (4, "SPI CS Control Mode: %d\r\n", config.ssnCtrl);
-	CyU3PDebugPrint (4, "SPI CS Polarity: %d\r\n", config.ssnPol);
-	CyU3PDebugPrint (4, "SPI Word Length: %d\r\n", config.wordLen);
+	CyU3PDebugPrint (4, "SPI Config: \r\nSCLK Freq: %d\r\n", config.clock);
+	CyU3PDebugPrint (4, "CPHA: %d\r\n", config.cpha);
+	CyU3PDebugPrint (4, "CPOL: %d\r\n", config.cpol);
+	CyU3PDebugPrint (4, "LSB First: %d\r\n", config.isLsbFirst);
+	CyU3PDebugPrint (4, "CS Lag Time: %d\r\n", config.lagTime);
+	CyU3PDebugPrint (4, "CS Lead Time: %d\r\n", config.leadTime);
+	CyU3PDebugPrint (4, "CS Control Mode: %d\r\n", config.ssnCtrl);
+	CyU3PDebugPrint (4, "CS Polarity: %d\r\n", config.ssnPol);
+	CyU3PDebugPrint (4, "Word Length: %d\r\n", config.wordLen);
 }
 
 /**
@@ -559,6 +586,10 @@ CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData)
 
 	/* perform SPI transfer */
 	status = CyU3PSpiTransferWords(writeBuffer, transferSize, readBuffer, transferSize);
+	if(status != CY_U3P_SUCCESS)
+	{
+		AdiLogError(SpiFunctions_c, __LINE__, status);
+	}
 
 	/* Send status and data back via control endpoint */
 	USBBuffer[0] = status & 0xFF;
@@ -599,7 +630,7 @@ CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr)
 	/* Check that the transfer was successful and end function if failed */
 	if (status != CY_U3P_SUCCESS)
 	{
-        CyU3PDebugPrint (4, "Error! CyU3PSpiTransmitWords failed, error code: 0x%s\r\n", status);
+		AdiLogError(SpiFunctions_c, __LINE__, status);
 	}
 
 	/* Stall for user-specified time */
@@ -610,7 +641,7 @@ CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr)
 	/* Check that the transfer was successful and end function if failed */
 	if (status != CY_U3P_SUCCESS)
 	{
-        CyU3PDebugPrint (4, "Error! CyU3PSpiReceiveWords failed! Status Code 0x%X\r\n", status);
+		AdiLogError(SpiFunctions_c, __LINE__, status);
 	}
 
 	/* Send status and data back via control endpoint */
@@ -648,7 +679,7 @@ CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data)
 	/* Check that the transfer was successful and end function if failed */
 	if (status != CY_U3P_SUCCESS)
 	{
-        CyU3PDebugPrint (4, "Error! CyU3PSpiTransmitWords failed! Status code 0x%x\r\n", status);
+		AdiLogError(SpiFunctions_c, __LINE__, status);
 	}
 	/* Send write status over the control endpoint */
 	USBBuffer[0] = status & 0xFF;
