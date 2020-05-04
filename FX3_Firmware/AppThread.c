@@ -45,6 +45,7 @@ void AdiDebugInit()
     if (status != CY_U3P_SUCCESS)
     {
         /* Error handling */
+    	AdiLogError(AppThread_c, __LINE__, status);
         AdiAppErrorHandler(status);
     }
 
@@ -62,6 +63,7 @@ void AdiDebugInit()
     status = CyU3PUartSetConfig (&uartConfig, NULL);
     if (status != CY_U3P_SUCCESS)
     {
+    	AdiLogError(AppThread_c, __LINE__, status);
     	AdiAppErrorHandler(status);
     }
 
@@ -69,6 +71,7 @@ void AdiDebugInit()
     status = CyU3PUartTxSetBlockXfer (0xFFFFFFFF);
     if (status != CY_U3P_SUCCESS)
     {
+    	AdiLogError(AppThread_c, __LINE__, status);
     	AdiAppErrorHandler(status);
     }
 
@@ -76,6 +79,7 @@ void AdiDebugInit()
     status = CyU3PDebugInit (CY_U3P_LPP_SOCKET_UART_CONS, 8);
     if (status != CY_U3P_SUCCESS)
     {
+    	AdiLogError(AppThread_c, __LINE__, status);
     	AdiAppErrorHandler(status);
     }
 
