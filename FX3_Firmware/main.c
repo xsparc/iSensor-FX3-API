@@ -168,7 +168,7 @@ int main (void)
     io_cfg.s0Mode = CY_U3P_SPORT_INACTIVE;
     io_cfg.s1Mode = CY_U3P_SPORT_INACTIVE;
     io_cfg.useUart   = CyTrue;
-    io_cfg.useI2C    = CyFalse;
+    io_cfg.useI2C    = CyTrue;
     io_cfg.useI2S    = CyFalse;
     io_cfg.useSpi    = CyTrue;
     io_cfg.lppMode   = CY_U3P_IO_MATRIX_LPP_DEFAULT;
@@ -608,6 +608,18 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 				isHandled = CyTrue;
 				break;
 
+			/* Arbitrary flash read command */
+			case ADI_READ_FLASH:
+				AdiFlashReadHandler((wIndex << 16) | wValue, wLength);
+				isHandled = CyTrue;
+				break;
+
+			/* Clear flash error log command */
+			case ADI_CLEAR_FLASH_LOG:
+				WriteErrorLogCount(0);
+				CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+				break;
+
             default:
                 /* This is an unknown request */
 #ifdef VERBOSE_MODE
@@ -942,6 +954,9 @@ void AdiAppStop()
 
 	/* Signal that the app thread has been stopped */
 	FX3State.AppActive = CyFalse;
+
+    /* De-init flash memory */
+    AdiFlashDeInit();
 
 	/* Clean up UART (debug) */
 	CyU3PUartDeInit ();

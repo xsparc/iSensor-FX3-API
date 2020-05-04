@@ -18,15 +18,23 @@
 #ifndef FLASH_H_
 #define FLASH_H_
 
+/* Includes */
 #include "cyu3dma.h"
 #include "cyu3error.h"
 #include "cyu3i2c.h"
+#include "main.h"
 
-void AdiFlashInit();
-void AdiFlashWrite(uint16_t Address, uint16_t numBytes, uint8_t* WriteBuf);
-void AdiFlashRead(uint16_t Address, uint16_t numBytes, uint8_t* ReadBuf);
+/* Public function prototypes */
+CyU3PReturnStatus_t AdiFlashInit();
+void AdiFlashDeInit();
+void AdiFlashWrite(uint32_t Address, uint16_t NumBytes, uint8_t* WriteBuf);
+void AdiFlashRead(uint32_t Address, uint16_t NumBytes, uint8_t* ReadBuf);
+void AdiFlashReadHandler(uint32_t Address, uint16_t NumBytes);
 
-/** Page size for attached i2c flash memory  */
+/** Page size for attached i2c flash memory (64 bytes)  */
 #define FLASH_PAGE_SIZE		0x40
+
+/** Flash operation timeout  */
+#define FLASH_TIMEOUT_MS	5000
 
 #endif /* FLASH_H_ */

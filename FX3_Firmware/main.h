@@ -50,6 +50,8 @@
 #include "SpiFunctions.h"
 #include "StreamFunctions.h"
 #include "StreamThread.h"
+#include "Flash.h"
+#include "ErrorLog.h"
 
 //Lower level register access includes
 #include "gpio_regs.h"
@@ -288,6 +290,12 @@ typedef struct StreamState
 
 /** Write one byte of data to a user-specified address */
 #define ADI_WRITE_BYTE							(0xF1)
+
+/** Clear error log stored in flash memory */
+#define ADI_CLEAR_FLASH_LOG						(0xF2)
+
+/** Read flash memory */
+#define ADI_READ_FLASH							(0xF3)
 
 /** Used to transfer bytes without any intervention/protocol management */
 #define ADI_TRANSFER_BYTES						(0xCA)
