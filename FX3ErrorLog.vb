@@ -6,39 +6,39 @@
 #Region "FX3 Error Log Class"
 
 ''' <summary>
-''' 
+''' FX3 flash error log class. These are generated and stored on the FX3 board
 ''' </summary>
 Public Class FX3ErrorLog
 
     ''' <summary>
-    ''' 
+    ''' The FX3 firmware line which generated the error
     ''' </summary>
     Public Line As UInteger
 
     ''' <summary>
-    ''' 
+    ''' The FX3 firmware file which generated the error. See FileIdentifier enum in firmware docs for details
     ''' </summary>
     Public FileIdentifier As UInteger
 
     ''' <summary>
-    ''' 
+    ''' The FX3 boot time when the error occurred. This is a 32-bit unix timestamp
     ''' </summary>
     Public BootTimeStamp As UInteger
 
     ''' <summary>
-    ''' 
+    ''' The error code supplied with the error. Usually sourced from RTOS
     ''' </summary>
     Public ErrorCode As UInteger
 
     ''' <summary>
-    ''' 
+    ''' The firmware revision the FX3 was running when the error log was generated. Can be used with the File/Line to track down exact source of error
     ''' </summary>
     Public FirmwareRev As String
 
     ''' <summary>
-    ''' 
+    ''' Error log constructor
     ''' </summary>
-    ''' <param name="FlashData"></param>
+    ''' <param name="FlashData">The 32 byte block of data read from flash which contains the error log struct</param>
     Public Sub New(FlashData As Byte())
         If FlashData.Count < 32 Then
             Throw New FX3ConfigurationException("ERROR: Flash log must be instantiated from a 32 byte array")
@@ -62,15 +62,24 @@ End Class
 Partial Class FX3Connection
 
     ''' <summary>
-    ''' 
+    ''' Read data from the FX3 non-volatile memory
     ''' </summary>
-    ''' <param name="ByteAddress"></param>
-    ''' <param name="ReadLength"></param>
-    ''' <returns></returns>
+    ''' <param name="ByteAddress">The flash byte address to read from (valid range 0x0 - 0x40000)</param>
+    ''' <param name="ReadLength">The number of bytes to read. Max 4096</param>
+    ''' <returns>The data read from the FX3 flash memory</returns>
     Public Function ReadFlash(ByteAddress As UInteger, ReadLength As UShort) As Byte()
 
         'transfer buffer
         Dim buf(ReadLength - 1) As Byte
+
+        'validate inputs
+        If ByteAddress > &H40000 Then
+            Throw New FX3ConfigurationException("ERROR: Invalid flash read address 0x" + ByteAddress.ToString("X4") + ". Max allowed address 0x40000")
+        End If
+
+        If ReadLength > 4096 Then
+            Throw New FX3ConfigurationException("ERROR: Invalid flash read length of " + ReadLength.ToString() + "bytes. Max allowed 4096 bytes per transfer")
+        End If
 
         'configure for flash read command
         ConfigureControlEndpoint(USBCommands.ADI_READ_FLASH, False)
@@ -90,7 +99,7 @@ Partial Class FX3Connection
     End Function
 
     ''' <summary>
-    ''' 
+    ''' Clear the error log stored in flash
     ''' </summary>
     Public Sub ClearErrorLog()
 
@@ -107,6 +116,10 @@ Partial Class FX3Connection
 
     End Sub
 
+    ''' <summary>
+    ''' Get the number of errors logged to the FX3 flash memory
+    ''' </summary>
+    ''' <returns>The error log count in flash</returns>
     Public Function GetErrorLogCount() As UInteger
 
         'log count address
@@ -117,9 +130,9 @@ Partial Class FX3Connection
     End Function
 
     ''' <summary>
-    ''' 
+    ''' Gets the current error log from FX3 flash memory
     ''' </summary>
-    ''' <returns></returns>
+    ''' <returns>The stored error log, as a list of FX3ErrorLog objects</returns>
     Public Function GetErrorLog() As List(Of FX3ErrorLog)
 
         'log count address
