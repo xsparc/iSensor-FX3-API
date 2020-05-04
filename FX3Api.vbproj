@@ -99,6 +99,7 @@
     <Compile Include="FX3Burst.vb" />
     <Compile Include="FX3DataStreaming.vb" />
     <Compile Include="FX3DataStructures.vb" />
+    <Compile Include="FX3ErrorLog.vb" />
     <Compile Include="FX3Exceptions.vb" />
     <Compile Include="FX3IPinFcns.vb" />
     <Compile Include="FX3IRegInterface.vb" />

@@ -154,6 +154,12 @@ Public Enum USBCommands
     'Write one byte of data to a user-specified address
     ADI_WRITE_BYTE = &HF1
 
+    'Clear error log stored in flash memory
+    ADI_CLEAR_FLASH_LOG = &HF2
+
+    '/** Read flash memory */
+    ADI_READ_FLASH = &HF3
+
     'The following commands are for the ADI bootloader only
 
     ' Turn on APP_LED_GPIO solid 
