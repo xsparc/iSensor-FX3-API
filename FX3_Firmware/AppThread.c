@@ -84,7 +84,7 @@ void AdiDebugInit()
 
     /* Send a success command over the newly-created debug port. */
     CyU3PDebugPrint (4, "\r\n");
-    CyU3PDebugPrint (4, "Debugger successfully initialized!\r\n");
+    CyU3PDebugPrint (4, "Debugger initialized!\r\n");
 }
 
 /**
@@ -134,7 +134,7 @@ void AdiAppInit ()
     status = CyU3PUsbStart();
     if (status != CY_U3P_SUCCESS)
     {
-    	CyU3PDebugPrint (4, "CyU3PUsbStart failed to Start, Error code = 0x%x\r\n", status);
+    	AdiLogError(AppThread_c, __LINE__, status);
         AdiAppErrorHandler(status);
     }
     else
@@ -159,7 +159,7 @@ void AdiAppInit ()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_DEVICE_DESCR, 0, (uint8_t *)CyFxUSB30DeviceDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set device descriptor failed, Error code = 0x%x\r\n", status);
+    	AdiLogError(AppThread_c, __LINE__, status);
         AdiAppErrorHandler(status);
     }
 
@@ -167,7 +167,7 @@ void AdiAppInit ()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_FS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBFSConfigDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB Set Configuration Descriptor failed, Error Code = 0x%x\r\n", status);
+    	AdiLogError(AppThread_c, __LINE__, status);
         AdiAppErrorHandler(status);
     }
 
@@ -175,7 +175,7 @@ void AdiAppInit ()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBSSConfigDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set configuration descriptor failed, Error code = 0x%x\r\n", status);
+    	AdiLogError(AppThread_c, __LINE__, status);
         AdiAppErrorHandler(status);
     }
 
@@ -183,7 +183,7 @@ void AdiAppInit ()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_SS_BOS_DESCR, 0, (uint8_t *)CyFxUSBBOSDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set configuration descriptor failed, Error code = 0x%x\r\n", status);
+    	AdiLogError(AppThread_c, __LINE__, status);
         AdiAppErrorHandler(status);
     }
 
@@ -191,7 +191,7 @@ void AdiAppInit ()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_HS_DEVICE_DESCR, 0, (uint8_t *)CyFxUSB20DeviceDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set device descriptor failed, Error code = 0x%x\r\n", status);
+    	AdiLogError(AppThread_c, __LINE__, status);
         AdiAppErrorHandler(status);
     }
 
@@ -199,7 +199,7 @@ void AdiAppInit ()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_DEVQUAL_DESCR, 0, (uint8_t *)CyFxUSBDeviceQualDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set device qualifier descriptor failed, Error code = 0x%x\r\n", status);
+    	AdiLogError(AppThread_c, __LINE__, status);
         AdiAppErrorHandler(status);
     }
 
@@ -207,7 +207,7 @@ void AdiAppInit ()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_HS_CONFIG_DESCR, 0, (uint8_t *)CyFxUSBHSConfigDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB Set Other Speed Descriptor failed, Error Code = 0x%x\r\n", status);
+    	AdiLogError(AppThread_c, __LINE__, status);
         AdiAppErrorHandler(status);
     }
 
@@ -215,7 +215,7 @@ void AdiAppInit ()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 0, (uint8_t *)CyFxUSBStringLangIDDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = 0x%x\r\n", status);
+    	AdiLogError(AppThread_c, __LINE__, status);
         AdiAppErrorHandler(status);
     }
 
@@ -223,7 +223,7 @@ void AdiAppInit ()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 1, (uint8_t *)CyFxUSBManufactureDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = 0x%x\r\n", status);
+    	AdiLogError(AppThread_c, __LINE__, status);
         AdiAppErrorHandler(status);
     }
 
@@ -231,7 +231,7 @@ void AdiAppInit ()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 2, (uint8_t *)CyFxUSBProductDscr);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB set string descriptor failed, Error code = 0x%x\r\n", status);
+    	AdiLogError(AppThread_c, __LINE__, status);
         AdiAppErrorHandler(status);
     }
 
@@ -239,15 +239,15 @@ void AdiAppInit ()
     status = CyU3PUsbSetDesc(CY_U3P_USB_SET_STRING_DESCR, 3, (uint8_t *)CyFxUSBSerialNumDesc);
     if (status != CY_U3P_SUCCESS)
     {
-      CyU3PDebugPrint (4, "USB set serial number descriptor failed, Error code = 0x%x\r\n", status);
-      AdiAppErrorHandler(status);
+    	AdiLogError(AppThread_c, __LINE__, status);
+    	AdiAppErrorHandler(status);
     }
 
     /* Connect the USB Pins with high speed operation enabled (USB 2.0 for better compatibility) */
     status = CyU3PConnectState (CyTrue, CyFalse);
     if (status != CY_U3P_SUCCESS)
     {
-        CyU3PDebugPrint (4, "USB Connect failed, Error code = 0x%x\r\n", status);
+    	AdiLogError(AppThread_c, __LINE__, status);
         AdiAppErrorHandler(status);
     }
 }
