@@ -9,7 +9,7 @@
   * Use of this file is governed by the license agreement
   * included in this repository.
   *
-  * @file		ErrorLog.h
+  * @file		ErrorLog.c
   * @date		12/6/2019
   * @author		A. Nolan (alex.nolan@analog.com)
   * @brief 		Implementation file for error logging capabilities
