@@ -87,7 +87,10 @@ void AdiStreamThreadEntry(uint32_t input)
 			else
 			{
 				/* Shouldnt be able to get here */
+				AdiLogError(StreamThread_c, __LINE__, eventFlag);
+#ifdef VERBOSE_MODE
 				CyU3PDebugPrint (4, "ERROR: Unhandled StreamThread event generated. eventFlag: 0x%x\r\n", eventFlag);
+#endif
 			}
 		}
         /* Allow other ready threads to run. */
@@ -129,7 +132,7 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 		status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &StreamChannelBuffer, CYU3P_WAIT_FOREVER);
 		if (status != CY_U3P_SUCCESS)
 		{
-			CyU3PDebugPrint (4, "CyU3PDmaChannelGetBuffer in generic capture failed, Error code = %d\r\n", status);
+			AdiLogError(StreamThread_c, __LINE__, status);
 		}
 		MISOPtr = StreamChannelBuffer.buffer;
 	}
@@ -198,13 +201,13 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 				status = CyU3PDmaChannelCommitBuffer (&StreamingChannel, FX3State.UsbBufferSize, 0);
 				if (status != CY_U3P_SUCCESS)
 				{
-					CyU3PDebugPrint (4, "CyU3PDmaChannelCommitBuffer in loop failed, Error code = 0x%x\r\n", status);
+					AdiLogError(StreamThread_c, __LINE__, status);
 				}
 
 				status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &StreamChannelBuffer, CYU3P_WAIT_FOREVER);
 				if (status != CY_U3P_SUCCESS)
 				{
-					CyU3PDebugPrint (4, "CyU3PDmaChannelGetBuffer in generic capture failed, Error code = 0x%x\r\n", status);
+					AdiLogError(StreamThread_c, __LINE__, status);
 				}
 				MISOPtr = StreamChannelBuffer.buffer;
 				byteCounter = 0;
@@ -235,7 +238,7 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 			status = CyU3PDmaChannelCommitBuffer (&StreamingChannel, FX3State.UsbBufferSize, 0);
 			if (status != CY_U3P_SUCCESS)
 			{
-				CyU3PDebugPrint (4, "CyU3PDmaChannelCommitBuffer in loop failed, Error code = 0x%x\r\n", status);
+				AdiLogError(StreamThread_c, __LINE__, status);
 			}
 			byteCounter = 0;
 		}
@@ -275,6 +278,7 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 		/* Reset flag */
 		CyU3PEventSet (&EventHandler, ADI_GENERIC_STREAM_ENABLE, CYU3P_EVENT_OR);
 	}
+	/* Return status code */
 	return status;
 }
 
@@ -318,10 +322,9 @@ CyU3PReturnStatus_t AdiRealTimeStreamWork()
 
 	/* Wait for transfer to finish */
 	status = CyU3PSpiWaitForBlockXfer(CyTrue);
-
 	if (status != CY_U3P_SUCCESS)
 	{
-		CyU3PDebugPrint (4, "Waiting for SPI DMA block xfer to finish failed!, error code: 0x%x\r\n", status);
+		AdiLogError(StreamThread_c, __LINE__, status);
 	}
 
 	/* Check that we haven't captured the desired number of frames or were asked to kill the thread early */
@@ -331,20 +334,17 @@ CyU3PReturnStatus_t AdiRealTimeStreamWork()
 		status = CyU3PSpiDisableBlockXfer(CyTrue, CyTrue);
 		if(status != CY_U3P_SUCCESS)
 		{
-			CyU3PDebugPrint (4, "Disabling block transfer failed!, error code = 0x%x\r\n", status);
+			AdiLogError(StreamThread_c, __LINE__, status);
 		}
 		/* Clear GPIO interrupts */
 		GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
+
 		/* Send whatever is in the buffer over to the PC */
 		status = CyU3PDmaChannelSetWrapUp(&StreamingChannel);
 		if(status != CY_U3P_SUCCESS)
 		{
-			CyU3PDebugPrint (4, "Wrapping up the streaming DMA channel failed!, error code = %d\r\n", status);
+			AdiLogError(StreamThread_c, __LINE__, status);
 		}
-
-#ifdef VERBOSE_MODE
-		CyU3PDebugPrint (4, "Exiting stream thread, %d real time frames read.\r\n", numFramesCaptured + 1);
-#endif
 
 		/* Reset frame counter */
 		numFramesCaptured = 0;
@@ -354,6 +354,10 @@ CyU3PReturnStatus_t AdiRealTimeStreamWork()
 		{
 			CyU3PEventSet(&EventHandler, ADI_RT_STREAM_DONE, CYU3P_EVENT_OR);
 		}
+
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "Exiting stream thread, %d real time frames read.\r\n", numFramesCaptured + 1);
+#endif
 	}
 	else
 	{
@@ -386,8 +390,7 @@ CyU3PReturnStatus_t AdiBurstStreamWork()
 	status = CyU3PDmaChannelSetupSendBuffer(&MemoryToSPI, &SpiDmaBuffer);
 	if(status != CY_U3P_SUCCESS)
 	{
-		CyU3PDebugPrint (4, "Setting up the MemoryToSpi buffer channel failed!, error code: 0x%x\r\n", status);
-		AdiAppErrorHandler(status);
+		AdiLogError(StreamThread_c, __LINE__, status);
 	}
 
 	/* Wait for DR if enabled */
@@ -420,8 +423,7 @@ CyU3PReturnStatus_t AdiBurstStreamWork()
 	status = CyU3PSpiWaitForBlockXfer(CyTrue);
 	if(status != CY_U3P_SUCCESS)
 	{
-		CyU3PDebugPrint (4, "Waiting for the block xfer to finish failed!, error code = %d\r\n", status);
-		AdiAppErrorHandler(status);
+		AdiLogError(StreamThread_c, __LINE__, status);
 	}
 
 	/* Check that we haven't captured the desired number of frames or that we were asked to kill the thread early */
@@ -431,21 +433,15 @@ CyU3PReturnStatus_t AdiBurstStreamWork()
 		status = CyU3PSpiDisableBlockXfer(CyTrue, CyTrue);
 		if(status != CY_U3P_SUCCESS)
 		{
-			CyU3PDebugPrint (4, "Disabling block transfer failed!, error code = %d\r\n", status);
-			AdiAppErrorHandler(status);
+			AdiLogError(StreamThread_c, __LINE__, status);
 		}
 
 		/* Send whatever is in the buffer over to the PC */
 		status = CyU3PDmaChannelSetWrapUp(&StreamingChannel);
 		if(status != CY_U3P_SUCCESS)
 		{
-			CyU3PDebugPrint (4, "Wrapping up the streaming DMA channel failed!, error code = %d\r\n", status);
-			AdiAppErrorHandler(status);
+			AdiLogError(StreamThread_c, __LINE__, status);
 		}
-
-#ifdef VERBOSE_MODE
-		CyU3PDebugPrint (4, "Exiting stream thread, %d burst stream buffers read.\r\n", numBuffersRead + 1);
-#endif
 
 		/* Clear GPIO interrupts */
 		GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
@@ -457,6 +453,11 @@ CyU3PReturnStatus_t AdiBurstStreamWork()
 		{
 			CyU3PEventSet(&EventHandler, ADI_BURST_STREAM_DONE, CYU3P_EVENT_OR);
 		}
+
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "Exiting stream thread, %d burst stream buffers read.\r\n", numBuffersRead + 1);
+#endif
+
 	}
 	else
 	{
@@ -514,7 +515,7 @@ CyU3PReturnStatus_t AdiTransferStreamWork()
 		status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &StreamChannelBuffer, CYU3P_WAIT_FOREVER);
 		if (status != CY_U3P_SUCCESS)
 		{
-			CyU3PDebugPrint (4, "CyU3PDmaChannelGetBuffer in generic capture failed, Error code = %d\r\n", status);
+			AdiLogError(StreamThread_c, __LINE__, status);
 		}
 		bufPtr = StreamChannelBuffer.buffer;
 #ifdef VERBOSE_MODE
@@ -570,16 +571,18 @@ CyU3PReturnStatus_t AdiTransferStreamWork()
 #ifdef VERBOSE_MODE
 				CyU3PDebugPrint (4, "Transfer steam DMA transmit started. Buffers Read = %d\r\n", numBuffersRead);
 #endif
+				/* Commit DMA buffer */
 				status = CyU3PDmaChannelCommitBuffer (&StreamingChannel, FX3State.UsbBufferSize, 0);
 				if (status != CY_U3P_SUCCESS)
 				{
-					CyU3PDebugPrint (4, "CyU3PDmaChannelCommitBuffer in loop failed, Error code = 0x%x\r\n", status);
+					AdiLogError(StreamThread_c, __LINE__, status);
 				}
 
+				/* Get new buffer */
 				status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &StreamChannelBuffer, CYU3P_WAIT_FOREVER);
 				if (status != CY_U3P_SUCCESS)
 				{
-					CyU3PDebugPrint (4, "CyU3PDmaChannelGetBuffer in generic capture failed, Error code = 0x%x\r\n", status);
+					AdiLogError(StreamThread_c, __LINE__, status);
 				}
 				bufPtr = StreamChannelBuffer.buffer;
 				byteCounter = 0;
@@ -604,7 +607,7 @@ CyU3PReturnStatus_t AdiTransferStreamWork()
 			status = CyU3PDmaChannelCommitBuffer (&StreamingChannel, FX3State.UsbBufferSize, 0);
 			if (status != CY_U3P_SUCCESS)
 			{
-				CyU3PDebugPrint (4, "CyU3PDmaChannelCommitBuffer in loop failed, Error code = %d\r\n", status);
+				AdiLogError(StreamThread_c, __LINE__, status);
 			}
 			byteCounter = 0;
 		}
