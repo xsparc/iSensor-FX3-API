@@ -184,10 +184,10 @@ CyU3PReturnStatus_t AdiMeasurePinDelay(uint16_t transferLength)
 
 	/* Read config data into USBBuffer */
 	status = CyU3PUsbGetEP0Data(transferLength, USBBuffer, bytesRead);
-
 	if(status != CY_U3P_SUCCESS)
 	{
-		CyU3PDebugPrint (4, "Error! Failed to read data from control endpoint.\r\n");
+		AdiLogError(PinFunctions_c, __LINE__, status);
+		/* Return error code up - timeout will occur on PC side */
 		return CY_U3P_ERROR_INVALID_SEQUENCE;
 	}
 
@@ -209,6 +209,7 @@ CyU3PReturnStatus_t AdiMeasurePinDelay(uint16_t transferLength)
 	if(!AdiIsValidGPIO(busyPin) || !AdiIsValidGPIO(triggerPin))
 	{
 		status = CY_U3P_ERROR_BAD_ARGUMENT;
+		/* Send status to the PC (alerting them of invalid GPIO selection) */
 		AdiReturnBulkEndpointData(status, 12);
 		return status;
 	}
@@ -231,6 +232,7 @@ CyU3PReturnStatus_t AdiMeasurePinDelay(uint16_t transferLength)
 		/* If pin setup not successful skip wait operation and return -1 */
 		if(status != CY_U3P_SUCCESS)
 		{
+			/* Send status to PC */
 			AdiReturnBulkEndpointData(status, 12);
 			return status;
 		}
@@ -341,7 +343,12 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 	CyU3PGpioSimpleConfig_t gpioConfig;
 
 	/* Read config data into USBBuffer */
-	CyU3PUsbGetEP0Data(transferLength, USBBuffer, bytesRead);
+	status = CyU3PUsbGetEP0Data(transferLength, USBBuffer, bytesRead);
+	if(status != CY_U3P_SUCCESS)
+	{
+		AdiLogError(PinFunctions_c, __LINE__, status);
+		return status;
+	}
 
 	/* Parse general request data from USBBuffer */
 	busyPin = USBBuffer[0];
@@ -418,15 +425,14 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 		status = CyU3PDeviceGpioOverride(triggerPin, CyTrue);
 		if(status != CY_U3P_SUCCESS)
 		{
-			CyU3PDebugPrint (4, "Error! GPIO override to exit PWM mode failed, error code: 0x%x\r\n", status);
-			return status;
+			AdiLogError(PinFunctions_c, __LINE__, status);
 		}
 
 		/* Disable the GPIO */
 		status = CyU3PGpioDisable(triggerPin);
 		if(status != CY_U3P_SUCCESS)
 		{
-			CyU3PDebugPrint (4, "Error! Pin disable while exiting PWM mode failed, error code: 0x%x\r\n", status);
+			AdiLogError(PinFunctions_c, __LINE__, status);
 		}
 
 		/* Reset the pin timer register to 0 */
@@ -445,7 +451,7 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 		status = CyU3PGpioSetSimpleConfig(triggerPin, &gpioConfig);
 		if (status != CY_U3P_SUCCESS)
 		{
-			CyU3PDebugPrint (4, "Error! GPIO config to exit PWM mode failed, error code: 0x%x\r\n", status);
+			AdiLogError(PinFunctions_c, __LINE__, status);
 		}
 	}
 
@@ -614,7 +620,7 @@ CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 		status = CyU3PDeviceGpioOverride(pinNumber, CyFalse);
 		if(status != CY_U3P_SUCCESS)
 		{
-			CyU3PDebugPrint (4, "Error! GPIO override for PWM mode failed, error code: 0x%x\r\n", status);
+			AdiLogError(PinFunctions_c, __LINE__, status);
 			return status;
 		}
 
@@ -634,7 +640,7 @@ CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 		status = CyU3PGpioSetComplexConfig(pinNumber, &gpioComplexConfig);
 	    if (status != CY_U3P_SUCCESS)
 	    {
-	    	CyU3PDebugPrint (4, "Error! GPIO config for PWM mode failed, error code: 0x%x\r\n", status);
+	    	AdiLogError(PinFunctions_c, __LINE__, status);
 	    	return status;
 	    }
 	}
@@ -644,7 +650,7 @@ CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 		status = CyU3PGpioDisable(pinNumber);
 		if(status != CY_U3P_SUCCESS)
 		{
-			CyU3PDebugPrint (4, "Error! Pin disable while exiting PWM mode failed, error code: 0x%s\r\n", status);
+			AdiLogError(PinFunctions_c, __LINE__, status);
 			return status;
 		}
 
@@ -654,7 +660,7 @@ CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 		status = CyU3PDeviceGpioOverride(pinNumber, CyTrue);
 		if(status != CY_U3P_SUCCESS)
 		{
-			CyU3PDebugPrint (4, "Error! GPIO override to exit PWM mode failed, error code: 0x%s\r\n", status);
+			AdiLogError(PinFunctions_c, __LINE__, status);
 			return status;
 		}
 
@@ -670,7 +676,7 @@ CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 		status = CyU3PGpioSetSimpleConfig(pinNumber, &gpioConfig);
 	    if (status != CY_U3P_SUCCESS)
 	    {
-	    	CyU3PDebugPrint (4, "Error! GPIO config to exit PWM mode failed, error code: 0x%s\r\n", status);
+	    	AdiLogError(PinFunctions_c, __LINE__, status);
 	    	return status;
 	    }
 	}
@@ -739,7 +745,7 @@ CyU3PReturnStatus_t AdiPulseDrive()
 		status = CyU3PGpioSetSimpleConfig(pinNumber, &gpioConfig);
 		if(status != CY_U3P_SUCCESS)
 		{
-			CyU3PDebugPrint (4, "Error! Unable to configure selected pin as output, status error: 0x%x\r\n", status);
+			AdiLogError(PinFunctions_c, __LINE__, status);
 			return status;
 		}
 	}
@@ -863,6 +869,7 @@ CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength)
 		/* If pin setup not successful skip wait operation and return -1 */
 		if(status != CY_U3P_SUCCESS)
 		{
+			/* Send status code back to PC */
 			AdiReturnBulkEndpointData(status, 12);
 			return status;
 		}
@@ -991,7 +998,7 @@ CyU3PReturnStatus_t AdiSetDutSupply(DutVoltage SupplyMode)
 		status0 = CyU3PGpioSetSimpleConfig(ADI_5V_EN, &gpioConfig);
 		status1 = CyU3PGpioSetSimpleConfig(ADI_3_3V_EN, &gpioConfig);
 		/* Return invalid argument */
-		CyU3PDebugPrint (4, "Error: Invalid power supply mode selected: %d\r\n", SupplyMode);
+		AdiLogError(PinFunctions_c, __LINE__, SupplyMode);
 		return CY_U3P_ERROR_BAD_ARGUMENT;
 	}
 
@@ -1047,7 +1054,7 @@ CyU3PReturnStatus_t AdiSetPin(uint16_t pinNumber, CyBool_t polarity)
 		status = CyU3PGpioSetSimpleConfig(pinNumber, &gpioConfig);
 		if(status != CY_U3P_SUCCESS)
 		{
-			CyU3PDebugPrint (4, "Error! Unable to configure selected pin as output, status error: 0x%x\r\n", status);
+			AdiLogError(PinFunctions_c, __LINE__, status);
 		}
 	}
 	return status;
@@ -1159,6 +1166,10 @@ CyU3PReturnStatus_t AdiPinRead(uint16_t pin)
 		{
 			status = CyU3PGpioSimpleGetValue(pin, &pinValue);
 		}
+		else
+		{
+			AdiLogError(PinFunctions_c, __LINE__, status);
+		}
 	}
 
 	/* Put pin register value in output buffer */
@@ -1204,7 +1215,7 @@ CyU3PReturnStatus_t AdiReadTimerValue()
 	status = CyU3PGpioComplexSampleNow(ADI_TIMER_PIN, &timerValue);
 	if(status != CY_U3P_SUCCESS)
 	{
-		return status;
+		AdiLogError(PinFunctions_c, __LINE__, status);
 	}
 	USBBuffer[0] = timerValue & 0xFF;
 	USBBuffer[1] = (timerValue & 0xFF00) >> 8;
@@ -1430,6 +1441,10 @@ CyU3PReturnStatus_t AdiConfigurePinInterrupt(uint16_t pin, CyBool_t polarity)
 		CyU3PDeviceGpioOverride(pin, CyTrue);
 		/* Set the config again */
 		status = CyU3PGpioSetSimpleConfig(pin, &gpioConfig);
+		if(status != CY_U3P_SUCCESS)
+		{
+			AdiLogError(PinFunctions_c, __LINE__, status);
+		}
 	}
 	return status;
 }
