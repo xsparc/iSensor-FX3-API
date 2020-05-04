@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['parttype',['PartType',['../main_8h.html#a84c3341ee9255c2714d904190f38559e',1,'main.h']]],
-  ['pinresistorsetting',['PinResistorSetting',['../_pin_functions_8h.html#acba463e6e1b670cb3037d25b232b5b4f',1,'PinFunctions.h']]]
+  ['fileidentifier',['FileIdentifier',['../_error_log_8h.html#a943fc87777d15d5b8a78207291109b10',1,'ErrorLog.h']]],
+  ['fx3boardtype',['FX3BoardType',['../main_8h.html#a092853ab57043b793be016a00193fdb7',1,'main.h']]],
+  ['fx3pinmap',['FX3PinMap',['../main_8h.html#a3c07ffb2debb7fcc21d01387a5a86198',1,'main.h']]]
 ];

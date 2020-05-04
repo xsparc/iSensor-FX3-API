@@ -28,7 +28,7 @@ uint8_t LogBuffer[FLASH_PAGE_SIZE];
 static void FindFirmwareVersion(uint8_t* buf);
 static void WriteLogToFlash(ErrorMsg* msg);
 static void WriteLogToDebug(ErrorMsg* msg);
-static uint32_t GetNewLogAddress();
+static uint32_t GetNewLogAddress(uint32_t* TotalLogCount);
 static uint32_t GetLogCount();
 
 /**

@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['gctlaon_5fregs_2eh',['gctlaon_regs.h',['../gctlaon__regs_8h.html',1,'']]]
+  ['errorlog_2ec',['ErrorLog.c',['../_error_log_8c.html',1,'']]],
+  ['errorlog_2eh',['ErrorLog.h',['../_error_log_8h.html',1,'']]]
 ];

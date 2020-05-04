@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.6.5-pub</span>
+   &#160;<span id="projectnumber">v2.7.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -104,6 +104,8 @@ $(function() {
 <code>#include &quot;<a class="el" href="_spi_functions_8h_source.html">SpiFunctions.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="_stream_functions_8h_source.html">StreamFunctions.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="_stream_thread_8h_source.html">StreamThread.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="_flash_8h_source.html">Flash.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="_error_log_8h_source.html">ErrorLog.h</a>&quot;</code><br />
 <code>#include &quot;gpio_regs.h&quot;</code><br />
 <code>#include &quot;spi_regs.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="gctlaon__regs_8h_source.html">gctlaon_regs.h</a>&quot;</code><br />
@@ -175,6 +177,10 @@ Macros</h2></td></tr>
 <tr class="separator:abf1db43c662adf543f1bb9cedbd063ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad203d16933de846ac4d367f437bd4965"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#ad203d16933de846ac4d367f437bd4965">ADI_WRITE_BYTE</a>&#160;&#160;&#160;(0xF1)</td></tr>
 <tr class="separator:ad203d16933de846ac4d367f437bd4965"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a02dad386062f1d526e118990e5e0427d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a02dad386062f1d526e118990e5e0427d">ADI_CLEAR_FLASH_LOG</a>&#160;&#160;&#160;(0xF2)</td></tr>
+<tr class="separator:a02dad386062f1d526e118990e5e0427d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3c6dbebaadaa1ddc436020a3608300f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#ac3c6dbebaadaa1ddc436020a3608300f">ADI_READ_FLASH</a>&#160;&#160;&#160;(0xF3)</td></tr>
+<tr class="separator:ac3c6dbebaadaa1ddc436020a3608300f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa48b7d4d2bae0d18b1bcad92cc8ab362"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#aa48b7d4d2bae0d18b1bcad92cc8ab362">ADI_TRANSFER_BYTES</a>&#160;&#160;&#160;(0xCA)</td></tr>
 <tr class="separator:aa48b7d4d2bae0d18b1bcad92cc8ab362"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add6e7505d3d87ec7ad782e97f183ade6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#add6e7505d3d87ec7ad782e97f183ade6">ADI_TRANSFER_STREAM</a>&#160;&#160;&#160;(0xCC)</td></tr>
@@ -367,6 +373,21 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
       </table>
 </div><div class="memdoc">
 <p>Command to trigger an event on the DUT and measure a subsequent pulse </p>
+
+</div>
+</div>
+<a id="a02dad386062f1d526e118990e5e0427d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a02dad386062f1d526e118990e5e0427d">&#9670;&nbsp;</a></span>ADI_CLEAR_FLASH_LOG</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_CLEAR_FLASH_LOG&#160;&#160;&#160;(0xF2)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Clear error log stored in flash memory </p>
 
 </div>
 </div>
@@ -592,6 +613,21 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
       </table>
 </div><div class="memdoc">
 <p>Read a word at a specified address and return the data over the control endpoint </p>
+
+</div>
+</div>
+<a id="ac3c6dbebaadaa1ddc436020a3608300f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac3c6dbebaadaa1ddc436020a3608300f">&#9670;&nbsp;</a></span>ADI_READ_FLASH</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_READ_FLASH&#160;&#160;&#160;(0xF3)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Read flash memory </p>
 
 </div>
 </div>
@@ -1162,7 +1198,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 <p>This function is called to shut down the application. </p>
 <dl class="section return"><dt>Returns</dt><dd>void</dd></dl>
-<p>This function cleans up the resources used by the ADI application and prepares them for the next run. </p>
+<p>This function cleans up the resources used by the ADI application and prepares them for the next run. Since this function is intended to be called as part of the shut down process, no error handling is performed. Any transient errors should be resolved the next time the system boots (after this function call is finished). </p>
 
 </div>
 </div>

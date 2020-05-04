@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.6.5-pub</span>
+   &#160;<span id="projectnumber">v2.7.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -248,7 +248,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 <p>Configures 10MHz timer to control stall time for generic or transfer streams. </p>
 <dl class="section return"><dt>Returns</dt><dd>void</dd></dl>
-<p>This function sets the timer period and enables the timer interrupt as required for the stream </p>
+<p>This function sets the timer period and enables the timer interrupt as required for the stream. For stall times less than the min (5 microseconds) the timer threshold is set to one timer tick. </p>
 
 </div>
 </div>
@@ -401,7 +401,8 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>void </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>void</dd></dl>
+<p>This function is called by the FX3 API stream cancel command. That command is set up as a "FromDevice" transfer. </p>
 
 </div>
 </div>
@@ -443,7 +444,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 <p>Cleans up a protocol agnostic transfer stream. </p>
 <dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the function.</dd></dl>
-<p>Resets the streaming endpoint, destroys the DMA channel, and restores the interrupt source states to their standard operating condition. Must be explicitly invoked via a vendor command when all "buffers" or captured, or indirectly via a TransferStream cancel. </p>
+<p>Resets the streaming endpoint, destroys the DMA channel, and restores the interrupt source states to their standard operating condition. Must be explicitly invoked via a vendor command when all "buffers" or captured, or indirectly via a TransferStream cancel. This function currently just calls the GenericStreamFinished implementation. </p>
 
 </div>
 </div>
@@ -464,7 +465,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 <p>Starts a protocol agnostic SPI transfer stream. </p>
 <dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the transfer stream start.</dd></dl>
-<p>This is used to implement the ISpi32Interface. The stream info is read in from EP0 into the USBBuffer. This includes stream parameters and the MOSI data. </p>
+<p>This is used to implement the ISpi32Interface. The stream info is read in from EP0 into the USBBuffer. This includes stream parameters and the MOSI data. Any error encountered during stream setup will result in a system reboot, after the error data is logged to flash memory. </p>
 
 </div>
 </div>
