@@ -321,22 +321,22 @@ Public Class BitBangSpiConfig
     ''' <returns>The parameter array to send to the FX3 for a bit bang vendor command</returns>
     Public Function GetParameterArray() As Byte()
         Dim params As New List(Of Byte)
-        params.Add(SCLK.pinConfig() And &HFF)
-        params.Add(CS.pinConfig() And &HFF)
-        params.Add(MOSI.pinConfig() And &HFF)
-        params.Add(MISO.pinConfig() And &HFF)
-        params.Add(SCLKHalfPeriodTicks And &HFF)
-        params.Add((SCLKHalfPeriodTicks And &HFF00) >> 8)
-        params.Add((SCLKHalfPeriodTicks And &HFF0000) >> 16)
-        params.Add((SCLKHalfPeriodTicks And &HFF000000) >> 24)
-        params.Add(CSLeadTicks And &HFF)
-        params.Add((CSLeadTicks And &HFF00) >> 8)
-        params.Add(CSLagTicks And &HFF)
-        params.Add((CSLagTicks And &HFF00) >> 8)
-        params.Add(StallTicks And &HFF)
-        params.Add((StallTicks And &HFF00) >> 8)
-        params.Add((StallTicks And &HFF0000) >> 16)
-        params.Add((StallTicks And &HFF000000) >> 24)
+        params.Add(CByte(SCLK.pinConfig() And &HFFUI))
+        params.Add(CByte(CS.pinConfig() And &HFFUI))
+        params.Add(CByte(MOSI.pinConfig() And &HFFUI))
+        params.Add(CByte(MISO.pinConfig() And &HFFUI))
+        params.Add(CByte(SCLKHalfPeriodTicks And &HFFUI))
+        params.Add(CByte((SCLKHalfPeriodTicks And &HFF00UI) >> 8))
+        params.Add(CByte((SCLKHalfPeriodTicks And &HFF0000UI) >> 16))
+        params.Add(CByte((SCLKHalfPeriodTicks And &HFF000000UI) >> 24))
+        params.Add(CByte(CSLeadTicks And &HFFUI))
+        params.Add(CByte((CSLeadTicks And &HFF00UI) >> 8))
+        params.Add(CByte(CSLagTicks And &HFFUI))
+        params.Add(CByte((CSLagTicks And &HFF00UI) >> 8))
+        params.Add(CByte(StallTicks And &HFFUI))
+        params.Add(CByte((StallTicks And &HFF00UI) >> 8))
+        params.Add(CByte((StallTicks And &HFF0000UI) >> 16))
+        params.Add(CByte((StallTicks And &HFF000000UI) >> 24))
         Return params.ToArray()
     End Function
 
@@ -411,21 +411,21 @@ Public Class FX3SPIConfig
     ''' <summary>
     ''' Scale factor to convert seconds to timer ticks)
     ''' </summary>
-    Public SecondsToTimerTicks As UInt32
+    Public SecondsToTimerTicks As UInteger
 
     'Private variables for general use
     Private SclkPeriod As Double
     Private StallSeconds As Double
-    Private ClockFrequency As Int32
+    Private ClockFrequency As Integer
 
     'Private member variable to store the current data ready pin GPIO number
-    Private m_ReadyPinGPIO As UInt16
+    Private m_ReadyPinGPIO As UInteger
 
     'Private member variable to store the stall time
-    Private m_StallTime As UInt16 = 50
+    Private m_StallTime As UShort = 50
 
     'Private member variable to store the stall cycles
-    Private m_StallCycles As UInt16 = 100
+    Private m_StallCycles As UShort = 100
 
     'Private member variable to store the current data ready pin
     Private m_ReadyPin As FX3PinObject
@@ -434,15 +434,15 @@ Public Class FX3SPIConfig
     ''' Property to store the current SPI clock. Updates the StallTime when set.
     ''' </summary>
     ''' <returns>The current SPI clock frequency</returns>
-    Public Property SCLKFrequency As Int32
+    Public Property SCLKFrequency As Integer
         Get
             Return ClockFrequency
         End Get
-        Set(value As Int32)
+        Set(value As Integer)
             ClockFrequency = value
             SclkPeriod = (1 / ClockFrequency)
             'Update the stall cycles
-            m_StallCycles = m_StallTime / (SclkPeriod * 1000000)
+            m_StallCycles = CUShort(m_StallTime / (SclkPeriod * 1000000))
         End Set
     End Property
 
@@ -455,14 +455,14 @@ Public Class FX3SPIConfig
             Return m_StallTime
         End Get
         Set(value As UInt16)
-            If (value > (UInt32.MaxValue / 10078)) Then
+            If (value > (UInteger.MaxValue / 10078)) Then
                 Throw New FX3ConfigurationException("ERROR: Stall time of " + value.ToString() + " not supported")
             End If
             m_StallTime = value
             'Calculate the new stall cycles value based on SPI clock and update private variable
             SclkPeriod = 1 / ClockFrequency
             StallSeconds = m_StallTime / 1000000
-            m_StallCycles = Convert.ToInt16(StallSeconds / SclkPeriod)
+            m_StallCycles = Convert.ToUInt16(StallSeconds / SclkPeriod)
         End Set
     End Property
 
@@ -493,12 +493,12 @@ Public Class FX3SPIConfig
     ''' <summary>
     ''' Property to get/set the data ready FX3 GPIO number
     ''' </summary>
-    ''' <returns>The GPIO number, as a UINT16</returns>
-    Public Property DataReadyPinFX3GPIO As UInt16
+    ''' <returns>The GPIO number, as a UInteger</returns>
+    Public Property DataReadyPinFX3GPIO As UInteger
         Get
             Return m_ReadyPinGPIO
         End Get
-        Set(value As UInt16)
+        Set(value As UInteger)
             m_ReadyPinGPIO = value
             m_ReadyPin = New FX3PinObject(m_ReadyPinGPIO)
         End Set
@@ -725,7 +725,7 @@ Public Class PinPWMInfo
     End Function
 
     Friend Sub SetValues(Pin As IPinObject, SelectedFreq As Double, RealFreq As Double, SelectedDutyCycle As Double, RealDutyCycle As Double)
-        m_FX3GPIONumber = Pin.pinConfig And &HFF
+        m_FX3GPIONumber = CInt(Pin.pinConfig And &HFFUI)
         m_FX3TimerBlock = m_FX3GPIONumber Mod 8
 
         m_IdealFrequency = SelectedFreq

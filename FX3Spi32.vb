@@ -18,25 +18,21 @@ Partial Class FX3Connection
     ''' <param name="WriteData">The 32 bit data to be send to the slave on the MOSI line</param>
     ''' <returns>The 32 bit data sent to the master over the MISO line during the SPI transaction</returns>
     Public Function Transfer(WriteData As UInteger) As UInteger Implements ISpi32Interface.Transfer
-        Dim readValue As UInt32
+        Dim readValue As UInteger
         Dim buf(7) As Byte
-        Dim numBytes As Integer
         Dim status As UInteger
 
         'Configure the control endpoint
         ConfigureControlEndpoint(USBCommands.ADI_TRANSFER_BYTES, False)
 
         'Set the write value
-        FX3ControlEndPt.Index = ((WriteData And &HFFFF0000) >> 16)
-        FX3ControlEndPt.Value = WriteData And &HFFFF
+        FX3ControlEndPt.Index = CUShort(((WriteData And &HFFFF0000UI) >> 16))
+        FX3ControlEndPt.Value = CUShort(WriteData And &HFFFFUI)
 
         'Send the vendor command
         If Not XferControlData(buf, 8, 2000) Then
             Throw New FX3CommunicationException("ERROR: Timeout during control endpoint transfer for SPI byte transfer")
         End If
-
-        'Calculate how many bytes to read back
-        numBytes = m_FX3SPIConfig.WordLength / 8
 
         'Read back data from buffer
         readValue = BitConverter.ToUInt32(buf, 4)
@@ -105,7 +101,7 @@ Partial Class FX3Connection
         BytesPerUsbBuffer = ISpi32TransferStreamSetup(WriteData, numCaptures, numBuffers)
 
         'Calculate number of transfers needed
-        numTransfers = Math.Ceiling(CDbl(WriteData.Count() * 4 * numCaptures * numBuffers) / BytesPerUsbBuffer)
+        numTransfers = CUInt(Math.Ceiling(WriteData.Count() * 4 * numCaptures * numBuffers / BytesPerUsbBuffer))
 
         'Find transfer size and create data buffer
         Dim transferSize As Integer
@@ -123,11 +119,11 @@ Partial Class FX3Connection
         'Acquire stream endpoint mutex
         m_StreamMutex.WaitOne()
 
-        For transferCount As Integer = 0 To numTransfers - 1
+        For transferCount As UInteger = 0 To numTransfers - 1UI
             validTransfer = USB.XferData(buf, transferSize, StreamingEndPt)
             If validTransfer Then
-                For byteCount As Integer = 0 To BytesPerUsbBuffer - 4 Step 4
-                    MISOData.Add(BitConverter.ToUInt32(buf, byteCount))
+                For byteCount As UInteger = 0 To BytesPerUsbBuffer - 4UI Step 4
+                    MISOData.Add(BitConverter.ToUInt32(buf, CInt(byteCount)))
                     If MISOData.Count >= WriteData.Count() * numBuffers * numCaptures Then
                         Exit For
                     End If
@@ -167,7 +163,7 @@ Partial Class FX3Connection
         'Setup the stream
         BytesPerUsbBuffer = ISpi32TransferStreamSetup(WriteData, numCaptures, numBuffers)
         streamArgs.Add(BytesPerUsbBuffer)
-        streamArgs.Add(WriteData.Count() * 4 * numCaptures)
+        streamArgs.Add(CUInt(WriteData.Count() * 4 * numCaptures))
 
         'Set the stream type
         m_StreamType = StreamType.TransferStream
@@ -199,7 +195,7 @@ Partial Class FX3Connection
             End If
 
             If worker.WorkerReportsProgress Then
-                progress = (GetNumBuffersRead / numBuffers) * 100
+                progress = CInt((GetNumBuffersRead * 100) / numBuffers)
                 If progress > oldProgress Then
                     worker.ReportProgress(progress)
                     oldProgress = progress
@@ -207,7 +203,7 @@ Partial Class FX3Connection
             End If
 
             'Sleep to avoid using too much CPU time
-            System.Threading.Thread.Sleep(25)
+            Thread.Sleep(25)
 
         End While
 
@@ -231,7 +227,7 @@ Partial Class FX3Connection
         'Configure the control endpoint
         ConfigureControlEndpoint(USBCommands.ADI_TRANSFER_STREAM, True)
         m_ActiveFX3.ControlEndPt.Value = 0
-        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_DONE_CMD
+        m_ActiveFX3.ControlEndPt.Index = CUShort(StreamCommands.ADI_STREAM_DONE_CMD)
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 2000) Then
@@ -241,7 +237,11 @@ Partial Class FX3Connection
     End Sub
 
     Private Function ISpi32TransferStreamSetup(WriteData As IEnumerable(Of UInteger), numCaptures As UInteger, numBuffers As UInteger) As UInteger
-        'Validate parameters
+        'Validate write data  parameters
+        If IsNothing(WriteData) Then
+            Throw New FX3ConfigurationException("ERROR: WriteData must not be null")
+        End If
+
         If WriteData.Count() = 0 Then
             Throw New FX3ConfigurationException("ERROR: WriteData must contain at least one element")
         End If
@@ -254,19 +254,19 @@ Partial Class FX3Connection
         Dim bytesMOSIData As UShort
 
         'Add numCaptures
-        buf.Add(numCaptures And &HFF)
-        buf.Add((numCaptures And &HFF00) >> 8)
-        buf.Add((numCaptures And &HFF0000) >> 16)
-        buf.Add((numCaptures And &HFF000000) >> 24)
+        buf.Add(CByte(numCaptures And &HFFUI))
+        buf.Add(CByte((numCaptures And &HFF00UI) >> 8))
+        buf.Add(CByte((numCaptures And &HFF0000UI) >> 16))
+        buf.Add(CByte((numCaptures And &HFF000000UI) >> 24))
 
         'Add numBuffers
-        buf.Add(numBuffers And &HFF)
-        buf.Add((numBuffers And &HFF00) >> 8)
-        buf.Add((numBuffers And &HFF0000) >> 16)
-        buf.Add((numBuffers And &HFF000000) >> 24)
+        buf.Add(CByte(numBuffers And &HFFUI))
+        buf.Add(CByte((numBuffers And &HFF00UI) >> 8))
+        buf.Add(CByte((numBuffers And &HFF0000UI) >> 16))
+        buf.Add(CByte((numBuffers And &HFF000000UI) >> 24))
 
         'Calculate the number of bytes per "register" buffer (iterating through write data numcapture times)
-        bytesPerDrTransfer = WriteData.Count() * 4 * numCaptures
+        bytesPerDrTransfer = CUInt(WriteData.Count() * 4UI * numCaptures)
 
         'Get the USB transfer size
         If m_ActiveFX3.bSuperSpeed Then
@@ -281,26 +281,26 @@ Partial Class FX3Connection
         If bytesPerDrTransfer > transferSize Then
             bytesPerUsbBuffer = transferSize
         Else
-            bytesPerUsbBuffer = Math.Floor(transferSize / bytesPerDrTransfer) * bytesPerDrTransfer
+            bytesPerUsbBuffer = CUInt(Math.Floor(transferSize / bytesPerDrTransfer) * bytesPerDrTransfer)
         End If
 
         'Add bytes per buffer
-        buf.Add(bytesPerUsbBuffer And &HFF)
-        buf.Add((bytesPerUsbBuffer And &HFF00) >> 8)
-        buf.Add((bytesPerUsbBuffer And &HFF0000) >> 16)
-        buf.Add((bytesPerUsbBuffer And &HFF000000) >> 24)
+        buf.Add(CByte(bytesPerUsbBuffer And &HFFUI))
+        buf.Add(CByte((bytesPerUsbBuffer And &HFF00UI) >> 8))
+        buf.Add(CByte((bytesPerUsbBuffer And &HFF0000UI) >> 16))
+        buf.Add(CByte((bytesPerUsbBuffer And &HFF000000UI) >> 24))
 
         'Add Number of bytes of write (MOSI) data
-        bytesMOSIData = WriteData.Count() * 4
-        buf.Add(bytesMOSIData And &HFF)
-        buf.Add((bytesMOSIData And &HFF00) >> 8)
+        bytesMOSIData = CUShort(WriteData.Count() * 4UI)
+        buf.Add(CByte(bytesMOSIData And &HFFUI))
+        buf.Add(CByte((bytesMOSIData And &HFF00UI) >> 8))
 
         'Add the write (MOSI) data
         For Each MOSIWord In WriteData
-            buf.Add(MOSIWord And &HFF)
-            buf.Add((MOSIWord And &HFF00) >> 8)
-            buf.Add((MOSIWord And &HFF0000) >> 16)
-            buf.Add((MOSIWord And &HFF000000) >> 24)
+            buf.Add(CByte(MOSIWord And &HFFUI))
+            buf.Add(CByte((MOSIWord And &HFF00UI) >> 8))
+            buf.Add(CByte((MOSIWord And &HFF0000UI) >> 16))
+            buf.Add(CByte((MOSIWord And &HFF000000UI) >> 24))
         Next
 
         'Check that the transmit buffer isn't too large (>4096)
@@ -310,7 +310,7 @@ Partial Class FX3Connection
 
         'Configure control endpoint
         ConfigureControlEndpoint(USBCommands.ADI_TRANSFER_STREAM, True)
-        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_START_CMD
+        m_ActiveFX3.ControlEndPt.Index = CUShort(StreamCommands.ADI_STREAM_START_CMD)
 
         'Send stream start command
         If Not XferControlData(buf.ToArray(), buf.Count(), 2000) Then
@@ -322,7 +322,7 @@ Partial Class FX3Connection
 
     End Function
 
-    Private Sub ISpi32InterfaceStreamWorker(StreamArgs As List(Of UInteger))
+    Private Sub ISpi32InterfaceStreamWorker(StreamArgs As Object)
 
         Dim BytesPerBuffer, BytesPerUsbBuffer As UInteger
         'Bool to track if transfer from FX3 board is successful
@@ -332,11 +332,13 @@ Partial Class FX3Connection
         'List to build output buffer in UInteger format
         Dim bufferBuilder As New List(Of UInteger)
         'Int to track buffer index
-        Dim bufIndex As Integer = 0
+        Dim bufIndex As UInteger = 0
+        'stream parameter list
+        Dim StreamArgsList As List(Of UInteger) = CType(StreamArgs, List(Of UInteger))
 
         'Parse thread arguments
-        BytesPerUsbBuffer = StreamArgs(0)
-        BytesPerBuffer = StreamArgs(1)
+        BytesPerUsbBuffer = StreamArgsList(0)
+        BytesPerBuffer = StreamArgsList(1)
 
         'Find transfer size and create data buffer
         Dim transferSize As Integer
@@ -371,9 +373,9 @@ Partial Class FX3Connection
             validTransfer = USB.XferData(buf, transferSize, StreamingEndPt)
             'Check that the data was read correctly
             If validTransfer Then
-                For bufIndex = 0 To (BytesPerUsbBuffer - 3) Step 4
+                For bufIndex = 0 To (BytesPerUsbBuffer - 3UI) Step 4UI
                     'Add the value at the current index position
-                    bufferBuilder.Add(BitConverter.ToUInt32(buf, bufIndex))
+                    bufferBuilder.Add(BitConverter.ToUInt32(buf, CInt(bufIndex)))
                     If bufferBuilder.Count() * 4 >= BytesPerBuffer Then
                         m_TransferStreamData.Enqueue(bufferBuilder.ToArray())
                         'Raise event indicating new data available

@@ -68,12 +68,12 @@ Imports AdisApi
         ''' </summary>
         ''' <returns></returns>
         Public ReadOnly Property pinConfig As UInteger Implements IPinObject.pinConfig
-            Get
-                Dim cfg As UInteger = Me.PinNumber    ' cfg[7:0] is pin number
-                If Me.Invert Then cfg = cfg Or &H200  ' cfg[ 9 ] is invert bit
-                Return cfg
-            End Get
-        End Property
+        Get
+            Dim cfg As UInteger = Me.PinNumber    ' cfg[7:0] is pin number
+            If Me.Invert Then cfg = cfg Or &H200UI  ' cfg[ 9 ] is invert bit
+            Return cfg
+        End Get
+    End Property
 
         ''' <summary>
         ''' Returns true if instances contain the same pin configuration.

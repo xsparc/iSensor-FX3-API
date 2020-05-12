@@ -44,7 +44,7 @@ Partial Class FX3Connection
 
         'Check size
         If buf.Count() > 4096 Then
-            Throw New FX3ConfigurationException("ERROR: Too much data (" + buf.Count() + " bytes) in a single bit banged SPI transaction.")
+            Throw New FX3ConfigurationException("ERROR: Too much data (" + buf.Count.ToString() + " bytes) in a single bit banged SPI transaction.")
         End If
 
         'check the transmit data size
@@ -60,9 +60,9 @@ Partial Class FX3Connection
         'build MOSI bit array
         index = 0
         byteIndex = 7
-        For transfer As Integer = 0 To NumTransfers - 1
-            For bit As Integer = 0 To BitsPerTransfer - 1
-                MOSIBits.Add((MOSIData(index) >> byteIndex) And &H1)
+        For transfer As UInteger = 0 To NumTransfers - 1UI
+            For bit As UInteger = 0 To BitsPerTransfer - 1UI
+                MOSIBits.Add(CByte((MOSIData(index) >> byteIndex) And &H1UI))
                 byteIndex -= 1
                 If byteIndex < 0 Then
                     byteIndex = 7
@@ -73,14 +73,14 @@ Partial Class FX3Connection
 
         'Build the buffer
         buf.AddRange(m_BitBangSpi.GetParameterArray())
-        buf.Add(BitsPerTransfer And &HFF)
-        buf.Add((BitsPerTransfer And &HFF00) >> 8)
-        buf.Add((BitsPerTransfer And &HFF0000) >> 16)
-        buf.Add((BitsPerTransfer And &HFF000000) >> 24)
-        buf.Add(NumTransfers And &HFF)
-        buf.Add((NumTransfers And &HFF00) >> 8)
-        buf.Add((NumTransfers And &HFF0000) >> 16)
-        buf.Add((NumTransfers And &HFF000000) >> 24)
+        buf.Add(CByte(BitsPerTransfer And &HFFUI))
+        buf.Add(CByte((BitsPerTransfer And &HFF00UI) >> 8))
+        buf.Add(CByte((BitsPerTransfer And &HFF0000UI) >> 16))
+        buf.Add(CByte((BitsPerTransfer And &HFF000000UI) >> 24))
+        buf.Add(CByte(NumTransfers And &HFF))
+        buf.Add(CByte((NumTransfers And &HFF00UI) >> 8))
+        buf.Add(CByte((NumTransfers And &HFF0000UI) >> 16))
+        buf.Add(CByte((NumTransfers And &HFF000000UI) >> 24))
         buf.AddRange(MOSIBits)
 
         'Send the start command
@@ -92,7 +92,7 @@ Partial Class FX3Connection
         'Read data back from part
         transferStatus = False
         timeoutTimer.Start()
-        Dim resultBuf(BitsPerTransfer * NumTransfers - 1) As Byte
+        Dim resultBuf(CInt(BitsPerTransfer * NumTransfers - 1UI)) As Byte
         While ((Not transferStatus) And (timeoutTimer.ElapsedMilliseconds() < TimeoutInMs))
             transferStatus = USB.XferData(resultBuf, resultBuf.Count, DataInEndPt)
         End While
@@ -104,7 +104,7 @@ Partial Class FX3Connection
 
         'pre-process result buffer to just be input values
         For i As Integer = 0 To resultBuf.Count - 1
-            resultBuf(i) = (resultBuf(i) >> 1) And &H1
+            resultBuf(i) = CByte((resultBuf(i) >> 1) And &H1UI)
         Next
 
         'pack result buffer to byte values
@@ -127,18 +127,17 @@ Partial Class FX3Connection
     ''' <summary>
     ''' Read a standard iSensors 16-bit register using a bitbang SPI connection
     ''' </summary>
-    ''' <param name="addr">The address of the register to read</param>
+    ''' <param name="addr">The address of the register to read (7 bit) </param>
     ''' <returns>The register value</returns>
     Public Function BitBangReadReg16(addr As UInteger) As UShort
         Dim MOSI As New List(Of Byte)
         Dim buf() As Byte
         Dim retValue, shift As UShort
-        addr = addr And &HFF
-        MOSI.Add(addr)
+        MOSI.Add(CByte(addr And &H7FUI))
         MOSI.Add(0)
         MOSI.Add(0)
         MOSI.Add(0)
-        buf = BitBangSpi(16, 2, MOSI.ToArray(), m_StreamTimeout)
+        buf = BitBangSpi(16, 2, MOSI.ToArray(), CUInt(1000 * m_StreamTimeout))
         shift = buf(2)
         shift = shift << 8
         retValue = shift + buf(3)
@@ -153,12 +152,12 @@ Partial Class FX3Connection
     Public Sub BitBangWriteRegByte(addr As Byte, data As Byte)
         Dim MOSI As New List(Of Byte)
         'Addr first (with write bit)
-        addr = addr And &HFF
-        addr = addr Or &H80
+        addr = CByte(addr And &H7FUI)
+        addr = CByte(addr Or &H80UI)
         MOSI.Add(addr)
         MOSI.Add(data)
         'Call bitbang SPI implementation
-        BitBangSpi(16, 1, MOSI.ToArray(), m_StreamTimeout)
+        BitBangSpi(16, 1, MOSI.ToArray(), CUInt(1000 * m_StreamTimeout))
     End Sub
 
     ''' <summary>
@@ -167,7 +166,7 @@ Partial Class FX3Connection
     ''' </summary>
     Public Sub RestoreHardwareSpi()
         Dim buf(3) As Byte
-        Dim status As UInt32
+        Dim status As UInteger
         ConfigureControlEndpoint(USBCommands.ADI_RESET_SPI, False)
         If Not XferControlData(buf, 4, 2000) Then
             Throw New FX3CommunicationException("ERROR: Control Endpoint transfer failed for SPI hardware controller reset")

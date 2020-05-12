@@ -36,7 +36,7 @@ Partial Class FX3Connection
         If Not m_StreamThreadRunning Then
             timer.Start()
             While timer.ElapsedMilliseconds < MillisecondsTimeout And Not m_StreamThreadRunning
-                System.Threading.Thread.Sleep(1)
+                Thread.Sleep(1)
             End While
             timer.Stop()
             If Not m_StreamThreadRunning Then
@@ -45,10 +45,10 @@ Partial Class FX3Connection
         End If
 
         'Ensure that the total timeout remains consistent
-        MillisecondsTimeout -= timer.ElapsedMilliseconds()
+        MillisecondsTimeout -= CInt(timer.ElapsedMilliseconds())
 
         'Acquire the mutex
-        If IsNothing(MillisecondsTimeout) Or MillisecondsTimeout <= 0 Then
+        If MillisecondsTimeout <= 0 Then
             'Perform wait with no timeout
             lockAquired = True
             m_StreamMutex.WaitOne()
@@ -104,21 +104,21 @@ Partial Class FX3Connection
     Private Sub CancelStreamImplementation(ReqCode As USBCommands)
         'Buffer to store command data
         Dim buf(3) As Byte
+
+        'status from FX3
         Dim status As UInteger
-        Dim code As UShort
 
         'Stop the stream manager thread
         m_StreamThreadRunning = False
 
         'Configure the endpoint
-        code = CUShort(ReqCode)
-        ConfigureControlEndpoint(code, False)
+        ConfigureControlEndpoint(ReqCode, False)
         m_ActiveFX3.ControlEndPt.Value = 0
-        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_STOP_CMD
+        m_ActiveFX3.ControlEndPt.Index = CUShort(StreamCommands.ADI_STREAM_STOP_CMD)
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 5000) Then
-            Throw New FX3CommunicationException("ERROR: Timeout occurred while canceling a stream. Cancel ReqCode: 0x" + code.ToString("X4"))
+            Throw New FX3CommunicationException("ERROR: Timeout occurred while canceling a stream. Cancel USB ReqCode: 0x" + CUShort(ReqCode).ToString("X4"))
         End If
 
         'Read the return values from the buffer
@@ -144,16 +144,16 @@ Partial Class FX3Connection
         Dim buf(burstTrigger.Count + 7) As Byte
 
         'Send number of buffers to read
-        buf(0) = numBuffers And &HFF
-        buf(1) = (numBuffers And &HFF00) >> 8
-        buf(2) = (numBuffers And &HFF0000) >> 16
-        buf(3) = (numBuffers And &HFF000000) >> 24
+        buf(0) = CByte(numBuffers And &HFFUI)
+        buf(1) = CByte((numBuffers And &HFF00UI) >> 8)
+        buf(2) = CByte((numBuffers And &HFF0000UI) >> 16)
+        buf(3) = CByte((numBuffers And &HFF000000UI) >> 24)
 
         'Send number of words to capture in a single burst
-        buf(4) = (BurstByteCount And &HFF)
-        buf(5) = (BurstByteCount And &HFF00) >> 8
-        buf(6) = (BurstByteCount And &HFF0000) >> 16
-        buf(7) = (BurstByteCount And &HFF000000) >> 24
+        buf(4) = CByte(BurstByteCount And &HFFUI)
+        buf(5) = CByte((BurstByteCount And &HFF00UI) >> 8)
+        buf(6) = CByte((BurstByteCount And &HFF0000UI) >> 16)
+        buf(7) = CByte((BurstByteCount And &HFF000000UI) >> 24)
 
         'Send burst trigger
         For i As Integer = 0 To burstTrigger.Count() - 1
@@ -165,7 +165,7 @@ Partial Class FX3Connection
 
         ConfigureControlEndpoint(USBCommands.ADI_STREAM_BURST_DATA, True)
         m_ActiveFX3.ControlEndPt.Value = 0 'DNC
-        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_START_CMD 'Start stream
+        m_ActiveFX3.ControlEndPt.Index = CUShort(StreamCommands.ADI_STREAM_START_CMD) 'Start stream
 
         'Send start stream command to the DUT
         If Not XferControlData(buf, buf.Length, 2000) Then
@@ -194,7 +194,7 @@ Partial Class FX3Connection
         'Configure the endpoint
         ConfigureControlEndpoint(USBCommands.ADI_STREAM_BURST_DATA, True)
         m_ActiveFX3.ControlEndPt.Value = 0
-        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_DONE_CMD
+        m_ActiveFX3.ControlEndPt.Index = CUShort(StreamCommands.ADI_STREAM_DONE_CMD)
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 2000) Then
@@ -339,11 +339,11 @@ Partial Class FX3Connection
         'Configure the control endpoint
         ConfigureControlEndpoint(USBCommands.ADI_STREAM_GENERIC_DATA, True)
         m_ActiveFX3.ControlEndPt.Value = 0
-        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_DONE_CMD
+        m_ActiveFX3.ControlEndPt.Index = CUShort(StreamCommands.ADI_STREAM_DONE_CMD)
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 2000) Then
-            Throw New FX3CommunicationException("ERROR: Timeout occurred when cleaning up a generic stream thread on the FX3")
+            Throw New FX3CommunicationException("ERROR: Timeout occurred when cleaning up a generic stream thread on the FX3!")
         End If
 
     End Sub
@@ -359,8 +359,8 @@ Partial Class FX3Connection
     ''' <param name="numBuffers">The total number of capture sequences to perform</param>
     Public Sub StartGenericStream(addr As IEnumerable(Of AddrDataPair), numCaptures As UInteger, numBuffers As UInteger)
 
-        Dim BytesPerBuffer As Integer
-        BytesPerBuffer = (addr.Count() * numCaptures) * 2
+        Dim BytesPerBuffer As UInteger
+        BytesPerBuffer = CUInt((addr.Count() * numCaptures) * 2UI)
 
         'Validate buffer size
         If addr.Count() * 2 > MaxRegListSize Then
@@ -372,6 +372,7 @@ Partial Class FX3Connection
 
         'Reset frame counter
         m_FramesRead = 0
+
         'Set the total number of frames to read
         m_TotalBuffersToRead = numBuffers
 
@@ -388,6 +389,7 @@ Partial Class FX3Connection
     End Sub
 
     Private Sub GenericStreamSetup(addrData As IEnumerable(Of AddrDataPair), numCaptures As UInteger, numBuffers As UInteger)
+
         'Buffer to store control data
         Dim buf As New List(Of Byte)
 
@@ -407,27 +409,27 @@ Partial Class FX3Connection
         End If
 
         'Add numBuffers
-        buf.Add(numBuffers And &HFF)
-        buf.Add((numBuffers And &HFF00) >> 8)
-        buf.Add((numBuffers And &HFF0000) >> 16)
-        buf.Add((numBuffers And &HFF000000) >> 24)
+        buf.Add(CByte(numBuffers And &HFFUI))
+        buf.Add(CByte((numBuffers And &HFF00UI) >> 8))
+        buf.Add(CByte((numBuffers And &HFF0000UI) >> 16))
+        buf.Add(CByte((numBuffers And &HFF000000UI) >> 24))
 
         'Add numCaptures
-        buf.Add(numCaptures And &HFF)
-        buf.Add((numCaptures And &HFF00) >> 8)
-        buf.Add((numCaptures And &HFF0000) >> 16)
-        buf.Add((numCaptures And &HFF000000) >> 24)
+        buf.Add(CByte(numCaptures And &HFFUI))
+        buf.Add(CByte((numCaptures And &HFF00UI) >> 8))
+        buf.Add(CByte((numCaptures And &HFF0000UI) >> 16))
+        buf.Add(CByte((numCaptures And &HFF000000UI) >> 24))
 
         'Add address list
         For Each item In addrData
             If item.data Is Nothing Then
                 'Read case
                 buf.Add(&H0)
-                buf.Add(item.addr And &H7F)
+                buf.Add(CByte(item.addr And &H7FUI))
             Else
                 'Write case
-                buf.Add(item.data And &HFF)
-                buf.Add(item.addr Or &H80)
+                buf.Add(CByte(item.data And &HFFUI))
+                buf.Add(CByte(item.addr Or &H80UI))
             End If
         Next
 
@@ -436,7 +438,7 @@ Partial Class FX3Connection
 
         'Configure settings to enable/disable streaming
         m_ActiveFX3.ControlEndPt.Value = 0
-        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_START_CMD
+        m_ActiveFX3.ControlEndPt.Index = CUShort(StreamCommands.ADI_STREAM_START_CMD)
 
         'Send start command to the FX3
         If Not XferControlData(buf.ToArray(), buf.Count, 5000) Then
@@ -451,7 +453,7 @@ Partial Class FX3Connection
     ''' and should not be called by itself.
     ''' </summary>
     ''' <param name="BytesPerBuffer">Number of bytes per generic stream buffer</param>
-    Private Sub GenericStreamManager(BytesPerBuffer As Integer)
+    Private Sub GenericStreamManager(BytesPerBuffer As Object)
 
         'Bool to track if transfer from FX3 board is successful
         Dim validTransfer As Boolean = True
@@ -461,6 +463,8 @@ Partial Class FX3Connection
         Dim bufferBuilder As New List(Of UShort)
         'Int to track buffer index
         Dim bufIndex As Integer = 0
+        'bytes per buffer passed as thread arg
+        Dim BytesPerBufferUInt As UInteger = CType(BytesPerBuffer, UInteger)
 
         'Find transfer size and create data buffer
         Dim transferSize As Integer
@@ -492,7 +496,7 @@ Partial Class FX3Connection
                 'Build the output buffer
                 For bufIndex = 0 To (transferSize - 2) Step 2
                     bufferBuilder.Add(BitConverter.ToUInt16(buf, bufIndex))
-                    If bufferBuilder.Count() * 2 >= BytesPerBuffer Then
+                    If bufferBuilder.Count() * 2 >= BytesPerBufferUInt Then
                         EnqueueStreamData(bufferBuilder.ToArray())
                         Interlocked.Increment(m_FramesRead)
                         bufferBuilder.Clear()
@@ -505,7 +509,7 @@ Partial Class FX3Connection
                             Exit While
                         End If
                         'Exit for loop if total integer number of buffers for the USB packet have been read (ignore for case where its more than one packet per buffer)
-                        If (transferSize - bufIndex) < BytesPerBuffer And Not (BytesPerBuffer > transferSize) Then
+                        If (transferSize - bufIndex) < BytesPerBufferUInt And Not (BytesPerBufferUInt > transferSize) Then
                             Exit For
                         End If
                     End If
@@ -553,23 +557,23 @@ Partial Class FX3Connection
         'Validate the current FX3 settings
         ValidateRealTimeStreamConfig()
 
-        buf(0) = numFrames And &HFF
-        buf(1) = (numFrames And &HFF00) >> 8
-        buf(2) = (numFrames And &HFF0000) >> 16
-        buf(3) = (numFrames And &HFF000000) >> 24
-        buf(4) = (m_pinStart)
+        buf(0) = CByte(numFrames And &HFFUI)
+        buf(1) = CByte((numFrames And &HFF00UI) >> 8)
+        buf(2) = CByte((numFrames And &HFF0000UI) >> 16)
+        buf(3) = CByte((numFrames And &HFF000000UI) >> 24)
+        buf(4) = CByte(m_pinStart)
 
         'Reinitialize the thread safe queue
         m_StreamData = New ConcurrentQueue(Of UShort())
 
         'Configure the control endpoint
         ConfigureControlEndpoint(USBCommands.ADI_STREAM_REALTIME, True)
-        m_ActiveFX3.ControlEndPt.Value = m_pinExit
-        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_START_CMD
+        m_ActiveFX3.ControlEndPt.Value = CUShort(m_pinExit)
+        m_ActiveFX3.ControlEndPt.Index = CUShort(StreamCommands.ADI_STREAM_START_CMD)
 
         'Send start stream command to the DUT
         If Not XferControlData(buf, 5, 2000) Then
-            Throw New FX3CommunicationException("ERROR: Timeout occurred while starting real time streaming")
+            Throw New FX3CommunicationException("ERROR: Timeout occurred while starting an ADcmXL real time stream!")
         End If
 
         'Reset number of frames read
@@ -589,7 +593,7 @@ Partial Class FX3Connection
     End Sub
 
     ''' <summary>
-    ''' This function stops real time streaming on the ADcmXLx021 (interface and FX3)
+    ''' This function stops real time streaming on the ADcmXLx021 (stream thread in FX3 API and FX3 firmware)
     ''' </summary>
     Public Sub StopRealTimeStreaming()
 
@@ -601,23 +605,25 @@ Partial Class FX3Connection
 
         'Configure the control endpoint
         ConfigureControlEndpoint(USBCommands.ADI_STREAM_REALTIME, False)
-        m_ActiveFX3.ControlEndPt.Value = m_pinExit
-        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_STOP_CMD
+        m_ActiveFX3.ControlEndPt.Value = CUShort(m_pinExit)
+        m_ActiveFX3.ControlEndPt.Index = CUShort(StreamCommands.ADI_STREAM_STOP_CMD)
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 5000) Then
             Throw New FX3CommunicationException("ERROR: Timeout occurred while stopping a real time stream")
         End If
+
     End Sub
 
     Private Sub RealTimeStreamingDone()
+
         'Buffer to hold command data
         Dim buf(3) As Byte
 
         'Configure the control endpoint
         ConfigureControlEndpoint(USBCommands.ADI_STREAM_REALTIME, True)
-        m_ActiveFX3.ControlEndPt.Value = m_pinExit
-        m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_DONE_CMD
+        m_ActiveFX3.ControlEndPt.Value = CUShort(m_pinExit)
+        m_ActiveFX3.ControlEndPt.Index = CUShort(StreamCommands.ADI_STREAM_DONE_CMD)
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 2000) Then
@@ -778,11 +784,11 @@ Partial Class FX3Connection
                 m_numBadFrames = m_numBadFrames + 1
             End If
             'Parse the frame number
-            expectedFrameNum = (frameNumber + 1) Mod 256
+            expectedFrameNum = CUShort((frameNumber + 1UI) Mod 256UI)
             If PartType = DUTType.ADcmXL1021 Then
-                frameNumber = (frame(8) And &HFF00) >> 8
+                frameNumber = CUShort((frame(8) And &HFF00UI) >> 8)
             Else
-                frameNumber = (frame(0) And &HFF00) >> 8
+                frameNumber = CUShort((frame(0) And &HFF00UI) >> 8)
             End If
             'Check against expected (except on first frame)
             If Not frameNumber = expectedFrameNum And Not firstFrame Then

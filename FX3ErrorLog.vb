@@ -85,8 +85,8 @@ Partial Class FX3Connection
         ConfigureControlEndpoint(USBCommands.ADI_READ_FLASH, False)
 
         'address is passed in value/index
-        FX3ControlEndPt.Value = ByteAddress And &HFFFF
-        FX3ControlEndPt.Index = ByteAddress >> 16
+        FX3ControlEndPt.Value = CUShort(ByteAddress And &HFFFFUI)
+        FX3ControlEndPt.Index = CUShort((ByteAddress >> 16) And &HFFFFUI)
 
         'send command
         If Not XferControlData(buf, ReadLength, 5000) Then
@@ -157,7 +157,7 @@ Partial Class FX3Connection
         Dim bytesToRead As Integer
 
         'specific read length
-        Dim readLen As UInteger
+        Dim readLen As UShort
 
         'read address
         Dim readAddress As UInteger
@@ -175,10 +175,10 @@ Partial Class FX3Connection
             logCount = LOG_CAPACITY
         End If
 
-        bytesToRead = 32 * logCount
+        bytesToRead = CInt(32 * logCount)
         readAddress = LOG_BASE_ADDR
         While bytesToRead > 0
-            readLen = Math.Min(4096, bytesToRead)
+            readLen = CUShort(Math.Min(4096, bytesToRead))
             rawData.AddRange(ReadFlash(readAddress, readLen))
             readAddress += readLen
             bytesToRead -= readLen
@@ -186,9 +186,9 @@ Partial Class FX3Connection
 
         'convert raw byte array to error log object array
         readAddress = 0
-        For i As Integer = 1 To logCount
-            log.Add(New FX3ErrorLog(rawData.GetRange(readAddress, 32).ToArray()))
-            readAddress += 32
+        For i As UInteger = 1 To logCount
+            log.Add(New FX3ErrorLog(rawData.GetRange(CInt(readAddress), 32).ToArray()))
+            readAddress += 32UI
         Next
 
         Return log

@@ -57,7 +57,7 @@ Partial Class FX3Connection
         End Get
         Set(value As Integer)
             If value < 1 Then
-                Throw New FX3ConfigurationException("ERROR: Stream timeout invalid")
+                Throw New FX3ConfigurationException("ERROR: Stream timeout " + value.ToString() + "s invalid!")
             End If
             m_StreamTimeout = value
         End Set
@@ -233,7 +233,7 @@ Partial Class FX3Connection
         'Return upper byte if even address, lower if odd
         If addr Mod 2 = 0 Then
             'Even case
-            Return value And &HFF
+            Return CUShort(value And &HFFUI)
         Else
             'Odd case
             Return (value << 8)
@@ -252,7 +252,7 @@ Partial Class FX3Connection
         Dim buf(5) As Byte
 
         'Status word
-        Dim status As UInt32
+        Dim status As UInteger
 
         'Variables to parse value from the buffer
         Dim returnValue As UShort
@@ -264,7 +264,7 @@ Partial Class FX3Connection
         FX3ControlEndPt.Value = 0
 
         'Set the index to the register address (lower byte)
-        FX3ControlEndPt.Index = addr
+        FX3ControlEndPt.Index = CUShort(addr)
 
         'Transfer the data
         If Not XferControlData(buf, 6, 2000) Then
@@ -296,12 +296,12 @@ Partial Class FX3Connection
         Dim buf(3) As Byte
 
         'status message
-        Dim status As UInt32
+        Dim status As UInteger
 
         'Configure control endpoint for a single byte register write
         ConfigureControlEndpoint(USBCommands.ADI_WRITE_BYTE, False)
-        FX3ControlEndPt.Value = data And &HFFFF
-        FX3ControlEndPt.Index = addr And &HFFFF
+        FX3ControlEndPt.Value = CUShort(data And &HFFFFUI)
+        FX3ControlEndPt.Index = CUShort(addr And &HFFFFUI)
 
         'Transfer data
         If Not XferControlData(buf, 4, 2000) Then
@@ -323,7 +323,7 @@ Partial Class FX3Connection
     Public Sub WriteRegByte(addrData As AddrDataPair) Implements IRegInterface.WriteRegByte
 
         'Make a call to the hardware level WriteRegByte function with the given data
-        WriteRegByte(addrData.addr, addrData.data)
+        WriteRegByte(addrData.addr, CUInt(addrData.data))
 
     End Sub
 
@@ -357,9 +357,12 @@ Partial Class FX3Connection
         Dim resultBuffer As New List(Of UShort)
         'Bytes per USB buffer
         Dim bytesPerUSBBuffer As Integer
+        'transfer size
+        Dim transferSize As Integer
+        'bytes per data ready
+        Dim bytesPerDrTransfer As Integer
 
         'Find transfer size and create data buffer
-        Dim transferSize As Integer
         If m_ActiveFX3.bSuperSpeed Then
             transferSize = 1024
         ElseIf m_ActiveFX3.bHighSpeed Then
@@ -372,14 +375,14 @@ Partial Class FX3Connection
         Dim buf(transferSize - 1) As Byte
 
         'Calculate the number of words to read
-        WordsToRead = addrData.Count() * numCaptures * numBuffers
+        WordsToRead = CInt(addrData.Count() * numCaptures * numBuffers)
 
         'Calculate the bytes per USB buffer
-        Dim bytesPerDrTransfer As Integer = addrData.Count() * numCaptures * 2
+        bytesPerDrTransfer = CInt(addrData.Count() * numCaptures * 2)
         If bytesPerDrTransfer > transferSize Then
             bytesPerUSBBuffer = transferSize
         Else
-            bytesPerUSBBuffer = Math.Floor(transferSize / bytesPerDrTransfer) * bytesPerDrTransfer
+            bytesPerUSBBuffer = CInt(Math.Floor(transferSize / bytesPerDrTransfer) * bytesPerDrTransfer)
         End If
 
         'Stop any previously running stream thread

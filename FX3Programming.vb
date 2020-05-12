@@ -57,7 +57,7 @@ Partial Class FX3Connection
                 m_FX3Connected = True
             Else
                 m_BoardConnecting = True
-                ProgramAppFirmware(tempHandle)
+                ProgramAppFirmware(DirectCast(tempHandle, CyFX3Device))
             End If
         End If
 
@@ -157,10 +157,10 @@ Partial Class FX3Connection
         'Set up data ready pin (pin mapping occure in get board type)
         If m_sensorType <> DeviceType.ADcmXL Then
             'DIO1 for all IMU products
-            m_FX3SPIConfig.DataReadyPin = DIO1
+            m_FX3SPIConfig.DataReadyPin = CType(DIO1, FX3PinObject)
         Else
             'DIO2 for ADcmXL machine health products
-            m_FX3SPIConfig.DataReadyPin = DIO2
+            m_FX3SPIConfig.DataReadyPin = CType(DIO2, FX3PinObject)
         End If
 
         'Make sure that the board SPI parameters match current setting
@@ -261,7 +261,7 @@ Partial Class FX3Connection
         End If
 
         'parse board type result
-        m_ActiveFX3Info.SetBoardType(BitConverter.ToUInt32(buf, 0))
+        m_ActiveFX3Info.SetBoardType(CType(BitConverter.ToUInt32(buf, 0), FX3BoardType))
 
         'parse pin mapping
         RESET_PIN = BitConverter.ToUInt16(buf, 4)
@@ -313,7 +313,7 @@ Partial Class FX3Connection
         End If
 
         'Use event wait handle to wait for a board to be connected running the bootloader firmware. Takes a pseudo-polling approach (WaitOne never runs for more than 3 seconds)
-        numPolls = Math.Floor(TimeoutInSeconds / waitTime)
+        numPolls = CInt(Math.Floor(TimeoutInSeconds / waitTime))
 
         'Ensure that the connect flag isn't erroneously set
         m_BootloaderBoardHandle.Reset()
@@ -567,7 +567,7 @@ Partial Class FX3Connection
         'Check board name and SN
         If usbEvent.FriendlyName = ADIBootloaderName And usbEvent.SerialNum = m_disconnectedFX3SN Then
             'Raise event
-            RaiseEvent DisconnectFinished(m_disconnectedFX3SN, m_disconnectTimer.ElapsedMilliseconds())
+            RaiseEvent DisconnectFinished(m_disconnectedFX3SN, CInt(m_disconnectTimer.ElapsedMilliseconds()))
             'Reset the timer
             m_disconnectTimer.Reset()
             'Reset the disconnected serial number
@@ -581,7 +581,7 @@ Partial Class FX3Connection
         For Each item As CyFX3Device In m_usbList
             If item.FriendlyName = ADIBootloaderName And item.SerialNumber = m_disconnectedFX3SN Then
                 'Raise event
-                RaiseEvent DisconnectFinished(m_disconnectedFX3SN, m_disconnectTimer.ElapsedMilliseconds())
+                RaiseEvent DisconnectFinished(m_disconnectedFX3SN, CInt(m_disconnectTimer.ElapsedMilliseconds()))
                 'Reset the timer
                 m_disconnectTimer.Reset()
                 'Reset the disconnected serial number
@@ -597,7 +597,7 @@ Partial Class FX3Connection
             'The second event is the ADI bootloader being connected (Cypress bootloader -> ADI bootloader)
             If m_disconnectEvents = 1 Then
                 'Raise event
-                RaiseEvent DisconnectFinished(m_disconnectedFX3SN, m_disconnectTimer.ElapsedMilliseconds())
+                RaiseEvent DisconnectFinished(m_disconnectedFX3SN, CInt(m_disconnectTimer.ElapsedMilliseconds()))
                 'Reset the timer
                 m_disconnectTimer.Reset()
                 'Reset the disconnected serial number
@@ -617,7 +617,7 @@ Partial Class FX3Connection
     ''' </summary>
     Private Sub RefreshDeviceList()
         m_usbList = New USBDeviceList(CyConst.DEVICES_CYUSB)
-        For Each item As USBDevice In m_usbList
+        For Each item As CyFX3Device In m_usbList
             'Program any device that enumerates as a stock FX3
             If String.Equals(item.FriendlyName, CypressBootloaderName) Then
                 ProgramFlashFirmware(item)
@@ -696,7 +696,7 @@ Partial Class FX3Connection
 
         'Send board reboot command
         Dim buf(3) As Byte
-        SelectedBoard.ControlEndPt.ReqCode = USBCommands.ADI_HARD_RESET
+        SelectedBoard.ControlEndPt.ReqCode = CByte(USBCommands.ADI_HARD_RESET)
         SelectedBoard.ControlEndPt.ReqType = CyConst.REQ_VENDOR
         SelectedBoard.ControlEndPt.Target = CyConst.TGT_DEVICE
         SelectedBoard.ControlEndPt.Value = 0
@@ -903,7 +903,7 @@ Partial Class FX3Connection
         Dim buf(3) As Byte
 
         'Configure the control endpoint
-        BoardHandle.ControlEndPt.ReqCode = USBCommands.ADI_HARD_RESET
+        BoardHandle.ControlEndPt.ReqCode = CByte(USBCommands.ADI_HARD_RESET)
         BoardHandle.ControlEndPt.ReqType = CyConst.REQ_VENDOR
         BoardHandle.ControlEndPt.Target = CyConst.TGT_ENDPT
         BoardHandle.ControlEndPt.Value = 0
@@ -1013,7 +1013,7 @@ Partial Class FX3Connection
     ''' </summary>
     ''' <param name="Reqcode">The vendor command reqcode to provide</param>
     ''' <param name="toDevice">Whether the transaction is DIR_TO_DEVICE (true) or DIR_FROM_DEVICE(false)</param>
-    Private Sub ConfigureControlEndpoint(ReqCode As UInt16, ToDevice As Boolean)
+    Private Sub ConfigureControlEndpoint(ReqCode As USBCommands, ToDevice As Boolean)
 
         'Validate inputs
         If IsNothing(m_ActiveFX3) Then
@@ -1028,7 +1028,7 @@ Partial Class FX3Connection
         FX3ControlEndPt = m_ActiveFX3.ControlEndPt
 
         'Configure the control endpoint
-        FX3ControlEndPt.ReqCode = ReqCode
+        FX3ControlEndPt.ReqCode = CByte(ReqCode)
         FX3ControlEndPt.ReqType = CyConst.REQ_VENDOR
         FX3ControlEndPt.Target = CyConst.TGT_DEVICE
         FX3ControlEndPt.Value = 0
@@ -1255,7 +1255,7 @@ Partial Class FX3Connection
         FX3ControlEndPt = tempHandle.ControlEndPt
 
         'Configure the control endpoint
-        FX3ControlEndPt.ReqCode = USBCommands.ADI_LED_BLINKING_ON
+        FX3ControlEndPt.ReqCode = CByte(USBCommands.ADI_LED_BLINKING_ON)
         FX3ControlEndPt.ReqType = CyConst.REQ_VENDOR
         FX3ControlEndPt.Target = CyConst.TGT_ENDPT
         FX3ControlEndPt.Value = 0
@@ -1301,7 +1301,7 @@ Partial Class FX3Connection
         FX3ControlEndPt = tempHandle.ControlEndPt
 
         'Configure the control endpoint
-        FX3ControlEndPt.ReqCode = USBCommands.ADI_LED_OFF
+        FX3ControlEndPt.ReqCode = CByte(USBCommands.ADI_LED_OFF)
         FX3ControlEndPt.ReqType = CyConst.REQ_VENDOR
         FX3ControlEndPt.Target = CyConst.TGT_ENDPT
         FX3ControlEndPt.Value = 0
@@ -1347,7 +1347,7 @@ Partial Class FX3Connection
         FX3ControlEndPt = tempHandle.ControlEndPt
 
         'Configure the control endpoint
-        FX3ControlEndPt.ReqCode = USBCommands.ADI_LED_ON
+        FX3ControlEndPt.ReqCode = CByte(USBCommands.ADI_LED_ON)
         FX3ControlEndPt.ReqType = CyConst.REQ_VENDOR
         FX3ControlEndPt.Target = CyConst.TGT_ENDPT
         FX3ControlEndPt.Value = 0

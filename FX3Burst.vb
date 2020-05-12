@@ -64,7 +64,7 @@ Partial Class FX3Connection
     ''' <remarks></remarks>
     Public Property WordCount As Integer
         Get
-            Return (m_BurstByteCount - 2) / 2
+            Return CInt((m_BurstByteCount - 2) / 2)
         End Get
         Set(value As Integer)
             ' Validate and that we have a valid UShort value, as we must convert to UShort for SPI object.  
@@ -104,16 +104,16 @@ Partial Class FX3Connection
             m_TriggerReg = value
             'Set up the MOSI data
             Dim burstMosi As List(Of Byte) = New List(Of Byte)
-            burstMosi.Add(TriggerReg.Address And &HFF)
-            burstMosi.Add((TriggerReg.Address And &HFF00) >> 8)
+            burstMosi.Add(CByte(TriggerReg.Address And &HFFUI))
+            burstMosi.Add(CByte((TriggerReg.Address And &HFF00UI) >> 8))
             m_burstMOSIData = burstMosi.ToArray()
         End Set
     End Property
     Private m_TriggerReg As RegClass
 
     ''' <summary>
-    ''' Data to transmit on the MOSI line during a burst read operation. Is overwriten if
-    ''' you set the trigger reg, since trigger reg is given priority.
+    ''' Data to transmit on the MOSI line during a burst read operation. This value is over written
+    ''' if you set the trigger reg, since trigger reg is given priority.
     ''' </summary>
     ''' <returns></returns>
     Public Property BurstMOSIData As Byte()
