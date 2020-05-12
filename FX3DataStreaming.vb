@@ -363,8 +363,8 @@ Partial Class FX3Connection
         BytesPerBuffer = CUInt((addr.Count() * numCaptures) * 2UI)
 
         'Validate buffer size
-        If addr.Count() * 2 > MaxRegListSize Then
-            Throw New FX3ConfigurationException("ERROR: Generic stream capture size too large- " + (addr.Count() * 2).ToString() + " bytes per register list exceeds maximum size of " + MaxRegListSize.ToString() + " bytes.")
+        If addr.Count() * 2 > MAX_REGLIST_SIZE Then
+            Throw New FX3ConfigurationException("ERROR: Generic stream capture size too large- " + (addr.Count() * 2).ToString() + " bytes per register list exceeds maximum size of " + MAX_REGLIST_SIZE.ToString() + " bytes.")
         End If
 
         'Perform generic stream setup (sends start command to control endpoint)

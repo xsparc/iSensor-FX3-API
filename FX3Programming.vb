@@ -52,7 +52,7 @@ Partial Class FX3Connection
         'Check the active FX3 firmware and compare against the requested serial number
         If String.Equals(tempHandle.SerialNumber, FX3SerialNumber) Then
             'If the board is already programmed and in streamer mode, then don't re-program
-            If String.Equals(tempHandle.FriendlyName, ApplicationName) Then
+            If String.Equals(tempHandle.FriendlyName, APPLICATION_NAME) Then
                 'Set flag indicating that the FX3 successfully connected
                 m_FX3Connected = True
             Else
@@ -70,7 +70,7 @@ Partial Class FX3Connection
             'Create a new thread which waits for the event
             Dim tempThread As Thread = New Thread(Sub()
                                                       'Wait until the board connected event is triggered
-                                                      boardProgrammed = m_AppBoardHandle.WaitOne(TimeSpan.FromMilliseconds(Convert.ToDouble(ProgrammingTimeout)))
+                                                      boardProgrammed = m_AppBoardHandle.WaitOne(TimeSpan.FromMilliseconds(Convert.ToDouble(PROGRAMMING_TIMEOUT)))
                                                       'Stops the execution of the connect function
                                                       originalFrame.Continue = False
                                                   End Sub)
@@ -97,7 +97,7 @@ Partial Class FX3Connection
         RefreshDeviceList()
         For Each item As CyUSBDevice In m_usbList
             'Look for the device we just programmed running the ADI Application firmware
-            If String.Equals(item.FriendlyName, ApplicationName) And String.Equals(item.SerialNumber, FX3SerialNumber) Then
+            If String.Equals(item.FriendlyName, APPLICATION_NAME) And String.Equals(item.SerialNumber, FX3SerialNumber) Then
                 boardProgrammed = True
                 m_ActiveFX3 = CType(item, CyFX3Device)
                 m_ActiveFX3SN = FX3SerialNumber
@@ -232,7 +232,7 @@ Partial Class FX3Connection
         'Check if the board exists
         boardFound = False
         For Each board As CyFX3Device In m_usbList
-            If board.SerialNumber = FX3SerialNumber And board.FriendlyName = ApplicationName Then
+            If board.SerialNumber = FX3SerialNumber And board.FriendlyName = APPLICATION_NAME Then
                 boardFound = True
                 ResetFX3Firmware(board)
                 Exit For
@@ -304,7 +304,7 @@ Partial Class FX3Connection
         'Perform first list parse
         If Not IsNothing(m_usbList) Then
             For Each board As CyFX3Device In m_usbList
-                If board.FriendlyName = ADIBootloaderName Then
+                If board.FriendlyName = ADI_BOOTLOADER_NAME Then
                     Return True
                 End If
             Next
@@ -338,7 +338,7 @@ Partial Class FX3Connection
             'Poll the device list
             RefreshDeviceList()
             For Each board As CyFX3Device In m_usbList
-                If board.FriendlyName = ADIBootloaderName Then
+                If board.FriendlyName = ADI_BOOTLOADER_NAME Then
                     boardattached = True
                 End If
             Next
@@ -405,7 +405,7 @@ Partial Class FX3Connection
 
             'Run through list looking for boards in bootloader mode
             For Each item As CyFX3Device In m_usbList
-                If item.FriendlyName = ADIBootloaderName Then
+                If item.FriendlyName = ADI_BOOTLOADER_NAME Then
                     parsedList.Add(item.SerialNumber)
                 End If
             Next
@@ -425,7 +425,7 @@ Partial Class FX3Connection
 
             'Run through list looking for boards in bootloader mode
             For Each item As CyFX3Device In m_usbList
-                If item.FriendlyName = ApplicationName Then
+                If item.FriendlyName = APPLICATION_NAME Then
                     parsedList.Add(item.SerialNumber)
                 End If
             Next
@@ -518,7 +518,7 @@ Partial Class FX3Connection
         End If
 
         'Determine if disconnect event observed is for the active board
-        If usbEvent.FriendlyName = ApplicationName And usbEvent.SerialNum = m_ActiveFX3SN Then
+        If usbEvent.FriendlyName = APPLICATION_NAME And usbEvent.SerialNum = m_ActiveFX3SN Then
             'This is an unexpected disconnect of the active board
 
             'Set default values for the interface
@@ -555,7 +555,7 @@ Partial Class FX3Connection
         End If
 
         'Generate bootloader connected event flag
-        If usbEvent.FriendlyName = ADIBootloaderName Then
+        If usbEvent.FriendlyName = ADI_BOOTLOADER_NAME Then
             m_BootloaderBoardHandle.Set()
         End If
 
@@ -565,7 +565,7 @@ Partial Class FX3Connection
         End If
 
         'Check board name and SN
-        If usbEvent.FriendlyName = ADIBootloaderName And usbEvent.SerialNum = m_disconnectedFX3SN Then
+        If usbEvent.FriendlyName = ADI_BOOTLOADER_NAME And usbEvent.SerialNum = m_disconnectedFX3SN Then
             'Raise event
             RaiseEvent DisconnectFinished(m_disconnectedFX3SN, CInt(m_disconnectTimer.ElapsedMilliseconds()))
             'Reset the timer
@@ -579,7 +579,7 @@ Partial Class FX3Connection
         'Sometimes when there are multiple boards connected the event handling doesn't work as expected
         'To verify, will manually parse the device list
         For Each item As CyFX3Device In m_usbList
-            If item.FriendlyName = ADIBootloaderName And item.SerialNumber = m_disconnectedFX3SN Then
+            If item.FriendlyName = ADI_BOOTLOADER_NAME And item.SerialNumber = m_disconnectedFX3SN Then
                 'Raise event
                 RaiseEvent DisconnectFinished(m_disconnectedFX3SN, CInt(m_disconnectTimer.ElapsedMilliseconds()))
                 'Reset the timer
@@ -619,9 +619,9 @@ Partial Class FX3Connection
         m_usbList = New USBDeviceList(CyConst.DEVICES_CYUSB)
         For Each item As CyFX3Device In m_usbList
             'Program any device that enumerates as a stock FX3
-            If String.Equals(item.FriendlyName, CypressBootloaderName) Then
+            If String.Equals(item.FriendlyName, CYPRESS_BOOTLOADER_NAME) Then
                 ProgramFlashFirmware(item)
-            ElseIf String.Equals(item.FriendlyName, ADIBootloaderName) Then
+            ElseIf String.Equals(item.FriendlyName, ADI_BOOTLOADER_NAME) Then
                 'Reflash any bootloader device which has an older version than the current
                 Dim programBootloader As Boolean = False
                 Try
@@ -636,9 +636,9 @@ Partial Class FX3Connection
                 If programBootloader Then
                     ProgramFlashFirmware(item)
                 End If
-            ElseIf String.Equals(item.FriendlyName, ApplicationName) Then
+            ElseIf String.Equals(item.FriendlyName, APPLICATION_NAME) Then
                 'Dont need to do anything for application board
-            ElseIf item.FriendlyName = FlashProgrammerName Then
+            ElseIf item.FriendlyName = FLASH_PROGRAMMER_NAME Then
                 'add to program list
                 BootloaderQueue.Add(item)
             Else
@@ -682,7 +682,7 @@ Partial Class FX3Connection
         Dim flashStatus As FX3_FWDWNLOAD_ERROR_CODE = FX3_FWDWNLOAD_ERROR_CODE.SUCCESS
 
         'Check that the cypress bootloader is currently running
-        If Not SelectedBoard.FriendlyName = FlashProgrammerName Then
+        If Not SelectedBoard.FriendlyName = FLASH_PROGRAMMER_NAME Then
             Throw New FX3ProgrammingException("ERROR: Selected FX3 is not in flash programmer mode.")
         End If
 
@@ -748,7 +748,7 @@ Partial Class FX3Connection
         End If
 
         'Make sure the selected board identifies as a "streamer" device running the application firmware
-        If Not String.Equals(m_ActiveFX3.FriendlyName, ApplicationName) Then
+        If Not String.Equals(m_ActiveFX3.FriendlyName, APPLICATION_NAME) Then
             Return False
         End If
 
@@ -929,7 +929,7 @@ Partial Class FX3Connection
 
         'Loop through current device list and reprogram all boards running the ADI Application firmware
         For Each item As CyFX3Device In m_usbList
-            If String.Equals(item.FriendlyName, ApplicationName) Then
+            If String.Equals(item.FriendlyName, APPLICATION_NAME) Then
                 ResetFX3Firmware(item)
                 numBoardsReset = numBoardsReset + 1
             End If
@@ -1243,7 +1243,7 @@ Partial Class FX3Connection
             End If
         Next
 
-        If Not String.Equals(tempHandle.FriendlyName, ADIBootloaderName) Then
+        If Not String.Equals(tempHandle.FriendlyName, ADI_BOOTLOADER_NAME) Then
             Throw New FX3Exception("ERROR: The selected board is not in bootloader mode")
         End If
 
@@ -1289,7 +1289,7 @@ Partial Class FX3Connection
             End If
         Next
 
-        If Not String.Equals(tempHandle.FriendlyName, ADIBootloaderName) Then
+        If Not String.Equals(tempHandle.FriendlyName, ADI_BOOTLOADER_NAME) Then
             Throw New FX3Exception("ERROR: The selected board is not in bootloader mode")
         End If
 
@@ -1335,7 +1335,7 @@ Partial Class FX3Connection
             End If
         Next
 
-        If Not String.Equals(tempHandle.FriendlyName, ADIBootloaderName) Then
+        If Not String.Equals(tempHandle.FriendlyName, ADI_BOOTLOADER_NAME) Then
             Throw New FX3Exception("ERROR: The selected board is not in bootloader mode")
         End If
 
