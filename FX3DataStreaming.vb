@@ -105,18 +105,20 @@ Partial Class FX3Connection
         'Buffer to store command data
         Dim buf(3) As Byte
         Dim status As UInteger
+        Dim code As UShort
 
         'Stop the stream manager thread
         m_StreamThreadRunning = False
 
         'Configure the endpoint
-        ConfigureControlEndpoint(CUShort(ReqCode), False)
+        code = CUShort(ReqCode)
+        ConfigureControlEndpoint(code, False)
         m_ActiveFX3.ControlEndPt.Value = 0
         m_ActiveFX3.ControlEndPt.Index = StreamCommands.ADI_STREAM_STOP_CMD
 
         'Send command to the DUT to stop streaming data
         If Not XferControlData(buf, 4, 5000) Then
-            Throw New FX3CommunicationException("ERROR: Timeout occurred while canceling a stream. Cancel code 0x" + ReqCode.ToString("X4"))
+            Throw New FX3CommunicationException("ERROR: Timeout occurred while canceling a stream. Cancel ReqCode: 0x" + code.ToString("X4"))
         End If
 
         'Read the return values from the buffer
