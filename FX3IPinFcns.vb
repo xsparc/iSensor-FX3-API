@@ -150,7 +150,7 @@ Partial Class FX3Connection
         buf(6) = CByte((delayScaled And &HFF000000UI) >> 24)
 
         'Calculate number of timer rollovers
-        totalTimeout = CULng((timeoutInMs * m_FX3SPIConfig.SecondsToTimerTicks) / 1000)
+        totalTimeout = CULng(timeoutInMs * (m_FX3SPIConfig.SecondsToTimerTicks / 1000))
         timeoutRollovers = CUInt(Math.Floor(totalTimeout / UInteger.MaxValue))
         timeoutTicks = CUInt(totalTimeout Mod UInteger.MaxValue)
 
