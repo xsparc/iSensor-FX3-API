@@ -275,9 +275,9 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
         	/* Pulse drive for a specified amount of time */
         	case ADI_PULSE_DRIVE:
         		/* Read config data into USBBuffer */
-        		CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+        		status = CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
         		/* Run pulse drive function */
-        		status = AdiPulseDrive();
+        		status |= AdiPulseDrive();
         		/* Send back status over the BULK-In endpoint */
         		USBBuffer[0] = status & 0xFF;
         		USBBuffer[1] = (status & 0xFF00) >> 8;
@@ -563,7 +563,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	USBBuffer[1] = (status & 0xFF00) >> 8;
             	USBBuffer[2] = (status & 0xFF0000) >> 16;
             	USBBuffer[3] = (status & 0xFF000000) >> 24;
-            	CyU3PUsbSendEP0Data (wLength, USBBuffer);
+            	CyU3PUsbSendEP0Data(wLength, USBBuffer);
             	break;
 
             case ADI_SET_PIN_RESISTOR:
@@ -573,7 +573,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 				USBBuffer[1] = (status & 0xFF00) >> 8;
 				USBBuffer[2] = (status & 0xFF0000) >> 16;
 				USBBuffer[3] = (status & 0xFF000000) >> 24;
-				CyU3PUsbSendEP0Data (wLength, USBBuffer);
+				CyU3PUsbSendEP0Data(wLength, USBBuffer);
             	break;
 
 			/* Arbitrary flash read command */
@@ -584,7 +584,40 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 			/* Clear flash error log command */
 			case ADI_CLEAR_FLASH_LOG:
 				WriteErrorLogCount(0);
+				status = CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+				break;
+
+			/*Set I2C bit rate */
+			case ADI_I2C_SET_BIT_RATE:
+				status = AdiI2CInit(wIndex << 16 | wValue);
 				CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+				break;
+
+			/* I2C single read */
+			case ADI_I2C_READ_BYTES:
+				status = AdiI2CReadHandler(wLength);
+				break;
+
+			/* I2C single write */
+			case ADI_I2C_WRITE_BYTES:
+				status = AdiI2CWriteHandler(wLength);
+				break;
+
+			/* I2C stream start/stop/cancel */
+			case ADI_I2C_READ_STREAM:
+				switch(wIndex)
+				{
+				case ADI_STREAM_START_CMD:
+					break;
+				case ADI_STREAM_DONE_CMD:
+					break;
+				case ADI_STREAM_STOP_CMD:
+					break;
+				default:
+            		/* Shouldn't get here */
+            		isHandled = CyFalse;
+            		break;
+				}
 				break;
 
 			/* Command to do nothing. Might remove, this isn't really used at all */
