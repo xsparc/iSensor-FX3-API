@@ -52,8 +52,9 @@
 #include "StreamThread.h"
 #include "Flash.h"
 #include "ErrorLog.h"
+#include "I2cFunctions.h"
 
-//Lower level register access includes
+/* Lower level register access includes */
 #include "gpio_regs.h"
 #include "spi_regs.h"
 #include "gctlaon_regs.h"
@@ -61,11 +62,15 @@
 /** Enum for the available FX3 board types */
 typedef enum FX3BoardType
 {
-	/** iSensor FX3 based eval board manufactured by Analog Devices */
-	iSensorFX3Board = 0,
-
 	/** Cypress SuperSpeed Explorer kit board. Can be used with breakout board for iSensors connectors. */
-	CypressFX3Board
+	CypressFX3Board = 0,
+
+	/** Rev. A iSensor FX3 based eval board manufactured by Analog Devices. Does not have I2C pins exposed */
+	iSensorFX3Board_A = 1,
+
+	/** Rev. B iSensor FX3 based eval board manufactured by Analog Devices. Has I2C pins exposed on secondary connector */
+	iSensorFX3Board_B = 2
+
 }FX3BoardType;
 
 /** Enum for the available part (DUT) types */

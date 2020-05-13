@@ -375,10 +375,8 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 
             /* Vendor command to set the DUT supply voltage */
             case ADI_SET_DUT_SUPPLY:
-            	/* parse voltage from vendor request */
-            	DutVoltage voltage = wValue;
-            	/* Set the voltage */
-            	status = AdiSetDutSupply(voltage);
+            	/* Set the voltage (setting is supplied in value field) */
+            	status = AdiSetDutSupply((DutVoltage) wValue);
             	/* Return the status code */
             	USBBuffer[0] = status & 0xFF;
             	USBBuffer[1] = (status & 0xFF00) >> 8;
@@ -1070,7 +1068,7 @@ void AdiAppStart()
     FX3State.BoardType = GetFX3BoardType();
 
     /* Enable 3.3V power supply by driving 5V pin high, then 3.3V pin low */
-    if(FX3State.BoardType == iSensorFX3Board)
+    if(FX3State.BoardType != CypressFX3Board)
     {
     	CyU3PDebugPrint (4, "Analog Devices iSensor FX3 Board Detected! Configuring Power Control Circuit...\r\n");
     	/* Configure power control circuit */
@@ -1432,40 +1430,49 @@ void AdiAppStart()
  **/
 FX3BoardType GetFX3BoardType()
 {
-	uint32_t CTL0RegVal;
+	uint32_t CTL0RegVal, DQ15RegVal;
 	FX3BoardType currentBoard;
 
-	/* Disable CTL0 pull up */
-	GCTL_WPU_CFG &= ~(1 << 17);
+	/* Disable pull up on ID pins (CTL0 and DQ15) */
+	GCTL_WPU_CFG &= ~((1 << 17)|(1 << 15));
 
 	/* Sleep 5us */
 	AdiSleepForMicroSeconds(5);
 
-    /* Configure CTL0 with weak pull down */
-	GCTL_WPD_CFG |= (1 << 17);
+    /* Configure ID pins with weak pull down */
+	GCTL_WPD_CFG |= ((1 << 17)|(1 << 15));
 
 	/* Sleep 5us */
 	AdiSleepForMicroSeconds(5);
 
-	/* Read input stage value on CTL0 */
+	/* Read input stage values */
 	CyU3PGpioSimpleConfig_t gpioConfig;
 	gpioConfig.outValue = CyFalse;
 	gpioConfig.inputEn = CyTrue;
 	gpioConfig.driveLowEn = CyFalse;
 	gpioConfig.driveHighEn = CyFalse;
 	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
-	CyU3PGpioSetSimpleConfig(17, &gpioConfig);
 
+	CyU3PGpioSetSimpleConfig(17, &gpioConfig);
 	CTL0RegVal = GPIO->lpp_gpio_simple[17];
 
-	/* If high then is superspeed explorer*/
+	CyU3PGpioSetSimpleConfig(15, &gpioConfig);
+	DQ15RegVal = GPIO->lpp_gpio_simple[15];
+
+	/* Disable pull down */
+	GCTL_WPD_CFG &= ~((1 << 17)|(1 << 15));
+
+	/* If CTL0 high then is super speed explorer (pull up to SRAM enable) */
 	if(CTL0RegVal & 0x2)
 		currentBoard = CypressFX3Board;
 	else
-		currentBoard = iSensorFX3Board;
-
-	/* Disable pull down */
-	GCTL_WPD_CFG &= ~(1 << 17);
+	{
+		/* iSensor board. Rev B has pull up on DQ15 */
+		if(DQ15RegVal & 0x2)
+			currentBoard = iSensorFX3Board_B;
+		else
+			currentBoard = iSensorFX3Board_A;
+	}
 
 	return currentBoard;
 }
