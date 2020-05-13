@@ -40,8 +40,9 @@ End Enum
 ''' Possible FX3 board types. Used to differentiate iSensors FX3 board from Cypress Explorer kit.
 ''' </summary>
 Public Enum FX3BoardType
-    iSensorFX3Board = 0
-    CypressFX3Board = 1
+    CypressFX3Board = 0
+    iSensorFX3Board_A = 1
+    iSensorFX3Board_B = 2
 End Enum
 
 ''' <summary>
@@ -60,6 +61,20 @@ End Enum
 ''' This enum lists all supported vendor commands for the FX3 firmware. The LED commands can only be used with the ADI bootloader firmware.
 ''' </summary>
 Public Enum USBCommands
+
+    'Request codes 0 - 12 are reserved by USB protocol and handled by RTOS
+
+    'I2C set bit rate command
+    ADI_I2C_SET_BIT_RATE = &H10
+
+    'I2C read command
+    ADI_I2C_READ_BYTES = &H11
+
+    'I2C write command
+    ADI_I2C_WRITE_BYTES = &H12
+
+    'I2C continuous stream read command
+    ADI_I2C_READ_STREAM = &H13
 
     'Return FX3 firmware ID
     ADI_FIRMWARE_ID_CHECK = &HB0
@@ -157,21 +172,21 @@ Public Enum USBCommands
     'Clear error log stored in flash memory
     ADI_CLEAR_FLASH_LOG = &HF2
 
-    '/** Read flash memory */
+    ' Read flash memory
     ADI_READ_FLASH = &HF3
 
     'The following commands are for the ADI bootloader only
 
-    ' Turn on APP_LED_GPIO solid 
+    'Turn on APP_LED_GPIO solid 
     ADI_LED_ON = &HEC
 
-    ' Turn off APP_LED_GPIO 
+    'Turn off APP_LED_GPIO 
     ADI_LED_OFF = &HED
 
-    ' Turn off APP_LED_GPIO blinking 
+    'Turn off APP_LED_GPIO blinking 
     ADI_LED_BLINKING_OFF = &HEE
 
-    ' Turn on APP_LED_GPIO blinking 
+    'Turn on APP_LED_GPIO blinking 
     ADI_LED_BLINKING_ON = &HEF
 
 End Enum
@@ -520,8 +535,11 @@ Public Class FX3SPIConfig
         DrPolarity = True
         DrActive = False
         DataReadyPinFX3GPIO = 4
-        If BoardType = FX3BoardType.CypressFX3Board Then DataReadyPinFX3GPIO = 4
-        If BoardType = FX3BoardType.iSensorFX3Board Then DataReadyPinFX3GPIO = 5
+        If BoardType = FX3BoardType.CypressFX3Board Then
+            DataReadyPinFX3GPIO = 4
+        Else
+            DataReadyPinFX3GPIO = 5
+        End If
 
         If SensorType = DeviceType.ADcmXL Then
             'ADcmXL (machine health)
@@ -529,8 +547,11 @@ Public Class FX3SPIConfig
             ClockFrequency = 14000000
             WordLength = 16
             DUTType = DUTType.ADcmXL3021
-            If BoardType = FX3BoardType.CypressFX3Board Then DataReadyPinFX3GPIO = 3
-            If BoardType = FX3BoardType.iSensorFX3Board Then DataReadyPinFX3GPIO = 4
+            If BoardType = FX3BoardType.CypressFX3Board Then
+                DataReadyPinFX3GPIO = 3
+            Else
+                DataReadyPinFX3GPIO = 4
+            End If
         ElseIf SensorType = DeviceType.IMU Then
             'General IMU
             ClockFrequency = 2000000

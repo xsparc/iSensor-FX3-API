@@ -918,7 +918,7 @@ Public Class FX3Connection
         Set(value As DutVoltage)
 
             'Disable setting if not iSensor board
-            If m_ActiveFX3Info.BoardType <> FX3BoardType.iSensorFX3Board Then
+            If m_ActiveFX3Info.BoardType = FX3BoardType.CypressFX3Board Then
                 Exit Property
             End If
 
