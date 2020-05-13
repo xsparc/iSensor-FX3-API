@@ -216,6 +216,18 @@ typedef struct StreamState
  * Vendor Command Request Code Definitions
  */
 
+/** I2C set bit rate command */
+#define ADI_I2C_SET_BIT_RATE 					(0x10)
+
+/** I2C read command */
+#define ADI_I2C_READ_BYTES						(0x11)
+
+/** I2C write command */
+#define ADI_I2C_WRITE_BYTES 					(0x12)
+
+/** I2C continuous stream read command */
+#define ADI_I2C_READ_STREAM 					(0x13)
+
 /** Return FX3 firmware ID (defined below) */
 #define ADI_FIRMWARE_ID_CHECK					(0xB0)
 

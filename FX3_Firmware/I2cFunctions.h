@@ -15,10 +15,12 @@
   * @brief 		Header file for USB-I2C interfacing module
  **/
 
-
 #ifndef I2CFUNCTIONS_H_
 #define I2CFUNCTIONS_H_
 
-
+/* Public functions */
+void AdiI2CReadHandler(uint16_t RequestLength);
+void AdiI2CWriteHandler(uint16_t RequestLength);
+void AdiI2CInit(uint32_t BitRate);
 
 #endif /* I2CFUNCTIONS_H_ */
