@@ -189,6 +189,9 @@ Public Class FX3Connection
     'Track the supply mode
     Private m_DutSupplyMode As DutVoltage
 
+    'track i2c bit rate setting
+    Private m_i2cbitrate As UInteger
+
     'FX3 Pin GPIO mapping
     Private RESET_PIN As UShort = 10
     Private DIO1_PIN As UShort = 3
@@ -317,6 +320,9 @@ Public Class FX3Connection
         'set watchdog parameters
         m_WatchdogEnable = True
         m_WatchdogTime = 20
+
+        'set i2c parameters (100KHz default)
+        m_i2cbitrate = 100000
 
         m_DutSupplyMode = DutVoltage.On3_3Volts
 

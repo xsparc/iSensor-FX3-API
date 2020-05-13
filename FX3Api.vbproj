@@ -101,6 +101,7 @@
     <Compile Include="FX3DataStructures.vb" />
     <Compile Include="FX3ErrorLog.vb" />
     <Compile Include="FX3Exceptions.vb" />
+    <Compile Include="FX3I2C.vb" />
     <Compile Include="FX3IPinFcns.vb" />
     <Compile Include="FX3IRegInterface.vb" />
     <Compile Include="FX3PinObject.vb" />
