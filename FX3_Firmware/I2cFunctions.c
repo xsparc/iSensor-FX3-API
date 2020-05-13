@@ -17,17 +17,17 @@
 
 #include "I2cFunctions.h"
 
-void AdiI2CReadHandler(uint16_t RequestLength)
+CyU3PReturnStatus_t AdiI2CReadHandler(uint16_t RequestLength)
 {
 
 }
 
-void AdiI2CWriteHandler(uint16_t RequestLength)
+CyU3PReturnStatus_t AdiI2CWriteHandler(uint16_t RequestLength)
 {
 
 }
 
-void AdiI2CInit(uint32_t BitRate)
+CyU3PReturnStatus_t AdiI2CInit(uint32_t BitRate)
 {
 
 }
