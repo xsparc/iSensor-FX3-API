@@ -160,11 +160,70 @@ Partial Class FX3Connection
     ''' <returns>The data read from the I2C slave device</returns>
     Public Function I2CReadBytes(Preamble As I2CPreamble, NumBytes As UInteger, TimeoutInMs As UInteger) As Byte()
 
-        'check inputs
+        'transfer buffer
+        Dim buf As New List(Of Byte)
+
+        'status buffer
+        Dim bulkBuf(511) As Byte
+
+        'transfer size
+        Dim transferSize As Integer
+
+        'track if operation is done
+        Dim transferDone, validTransfer As Boolean
+
+        'track timeout
+        Dim timer As New Stopwatch
+
+        'num read bytes first (0 - 3)
+        buf.Add(CByte(NumBytes And &HFFUI))
+        buf.Add(CByte((NumBytes >> 8) And &HFFUI))
+        buf.Add(CByte((NumBytes >> 16) And &HFFUI))
+        buf.Add(CByte((NumBytes >> 24) And &HFFUI))
+
+        'timeout (4 - 7)
+        buf.Add(CByte(TimeoutInMs And &HFFUI))
+        buf.Add(CByte((TimeoutInMs >> 8) And &HFFUI))
+        buf.Add(CByte((TimeoutInMs >> 16) And &HFFUI))
+        buf.Add(CByte((TimeoutInMs >> 24) And &HFFUI))
+
+        'pre-amble
+        buf.AddRange(Preamble.Serialize())
 
         'send I2C read command over control endpoint
+        ConfigureControlEndpoint(USBCommands.ADI_I2C_READ_BYTES, True)
+        If Not XferControlData(buf.ToArray(), buf.Count, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer timed out while starting I2C read command")
+        End If
 
-        'get data back from bulk endpoint (in 512 byte chunks)
+        'accumulate data over bulk endpoint
+        transferDone = False
+        buf.Clear()
+        timer.Start()
+        While (Not transferDone) And (timer.ElapsedMilliseconds < TimeoutInMs)
+            'check if done
+            If buf.Count >= NumBytes Then
+                transferDone = True
+            Else
+                'get a block of data from bulk in endpoint
+                transferSize = CInt(Math.Min(512, NumBytes - buf.Count))
+                'transfer will run in 512 byte blocks until last transfer, which cleans up remaining data
+                validTransfer = FX3USB.USB.XferData(bulkBuf, transferSize, DataInEndPt)
+                If validTransfer Then
+                    'add all the data received
+                    For i As Integer = 0 To transferSize - 1
+                        buf.Add(bulkBuf(i))
+                    Next
+                End If
+            End If
+        End While
+
+        'check timeout
+        If Not transferDone Then
+            Throw New FX3CommunicationException("ERROR: I2C read timed out. Timeout period " + TimeoutInMs.ToString() + "ms")
+        End If
+
+        Return buf.ToArray()
 
     End Function
 
@@ -176,9 +235,67 @@ Partial Class FX3Connection
     ''' <param name="TimeoutInMs">Write timeout period, in ms</param>
     Public Sub I2CWriteBytes(Preamble As I2CPreamble, WriteData As IEnumerable(Of Byte), TimeoutInMs As UInteger)
 
-        'check inputs
+        'transfer buffer
+        Dim buf As New List(Of Byte)
+
+        'status buffer
+        Dim statusBuf(3) As Byte
+
+        'status
+        Dim status As UInteger
+
+        'track if operation is done
+        Dim transferDone As Boolean
+
+        'track timeout
+        Dim timer As New Stopwatch
+
+        'check that write data is less than (4096 - (11 + 4 + 4)) bytes
+        If WriteData.Count > 4077 Then
+            Throw New FX3ConfigurationException("ERROR: Invalid write data length. Cannot total command transfer size cannot be more than 4096 bytes")
+        End If
+
+        'write data length first (0 - 3)
+        buf.Add(CByte(WriteData.Count And &HFFUI))
+        buf.Add(CByte((WriteData.Count >> 8) And &HFFUI))
+        buf.Add(CByte((WriteData.Count >> 16) And &HFFUI))
+        buf.Add(CByte((WriteData.Count >> 24) And &HFFUI))
+
+        'timeout (4 - 7)
+        buf.Add(CByte(TimeoutInMs And &HFFUI))
+        buf.Add(CByte((TimeoutInMs >> 8) And &HFFUI))
+        buf.Add(CByte((TimeoutInMs >> 16) And &HFFUI))
+        buf.Add(CByte((TimeoutInMs >> 24) And &HFFUI))
+
+        'write data
+        buf.AddRange(WriteData)
+
+        'pre-amble
+        buf.AddRange(Preamble.Serialize())
 
         'send I2C write command + data over control endpoint
+        ConfigureControlEndpoint(USBCommands.ADI_I2C_WRITE_BYTES, True)
+        If Not XferControlData(buf.ToArray(), buf.Count, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer timed out while starting I2C write command")
+        End If
+
+        'wait for done command from bulk endpoint
+        transferDone = False
+        timer.Start()
+        While (Not transferDone) And (timer.ElapsedMilliseconds < TimeoutInMs)
+            transferDone = FX3USB.USB.XferData(statusBuf, 4, DataInEndPt)
+        End While
+
+        'check timeout
+        If Not transferDone Then
+            Throw New FX3CommunicationException("ERROR: I2C write timed out. Timeout period " + TimeoutInMs.ToString() + "ms")
+        End If
+
+        'check status
+        status = BitConverter.ToUInt32(statusBuf, 0)
+        If status <> 0 Then
+            Throw New FX3BadStatusException("ERROR: Bad status code after I2C write. Error code: 0x" + status.ToString("X4"))
+        End If
 
     End Sub
 
@@ -189,9 +306,27 @@ Partial Class FX3Connection
     ''' <param name="BitRate">Bit rate setting</param>
     Private Sub SetI2CBitRate(BitRate As UInteger)
 
-        'send command
+        'transfer buffer
+        Dim buf(3) As Byte
 
-        'check return status
+        'status
+        Dim status As UInteger
+
+        'configure for i2c set bit rate command
+        ConfigureControlEndpoint(USBCommands.ADI_I2C_SET_BIT_RATE, False)
+        FX3ControlEndPt.Value = CUShort(BitRate And &HFFFFUI)
+        FX3ControlEndPt.Index = CUShort((BitRate And &HFFFF0000UI) >> 16)
+
+        'send command
+        If Not XferControlData(buf, 4, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer timed out while setting I2C bit rate")
+        End If
+
+        'check status
+        status = BitConverter.ToUInt32(buf, 0)
+        If status <> 0 Then
+            Throw New FX3BadStatusException("ERROR: Bad status code after setting I2C bit rate. Error code: 0x" + status.ToString("X4"))
+        End If
 
     End Sub
 
