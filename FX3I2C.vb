@@ -3,6 +3,9 @@
 'Date:         5/13/2020
 'Description:  I2C interfacing for the FX3
 
+Imports System.Collections.Concurrent
+Imports System.Threading
+Imports FX3USB
 ''' <summary>
 ''' I2C pre-amble class.
 ''' </summary>
@@ -167,8 +170,6 @@ Partial Class FX3Connection
             m_i2cRetryCount = value
         End Set
     End Property
-
-
 
     ''' <summary>
     ''' Read bytes from an I2C slave device attached to the FX3.
@@ -373,5 +374,141 @@ Partial Class FX3Connection
         End If
 
     End Sub
+
+#Region "I2C Streaming"
+
+    Public Sub StartI2CStream(Preamble As I2CPreamble, BytesPerRead As UInteger, numBuffers As UInteger)
+
+        'transfer buffer
+        Dim buf As New List(Of Byte)
+
+        'status buffer
+        Dim bulkBuf(511) As Byte
+
+        Dim TimeoutInMs As UInteger = CUInt(1000 * m_StreamTimeout)
+
+        'num read bytes first (0 - 3)
+        buf.Add(CByte(BytesPerRead And &HFFUI))
+        buf.Add(CByte((BytesPerRead >> 8) And &HFFUI))
+        buf.Add(CByte((BytesPerRead >> 16) And &HFFUI))
+        buf.Add(CByte((BytesPerRead >> 24) And &HFFUI))
+
+        'timeout (4 - 7)
+        buf.Add(CByte(TimeoutInMs And &HFFUI))
+        buf.Add(CByte((TimeoutInMs >> 8) And &HFFUI))
+        buf.Add(CByte((TimeoutInMs >> 16) And &HFFUI))
+        buf.Add(CByte((TimeoutInMs >> 24) And &HFFUI))
+
+        'pre-amble
+        buf.AddRange(Preamble.Serialize())
+
+        'send I2C stream start command over control endpoint
+        ConfigureControlEndpoint(USBCommands.ADI_I2C_READ_STREAM, True)
+        m_ActiveFX3.ControlEndPt.Index = CUShort(StreamCommands.ADI_STREAM_START_CMD)
+        If Not XferControlData(buf.ToArray(), buf.Count, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer timed out while starting I2C stream")
+        End If
+
+        'set buffers to read
+        m_TotalBuffersToRead = numBuffers
+
+        'Reset frame counter
+        m_FramesRead = 0
+
+        'Set the total number of frames to read
+        m_TotalBuffersToRead = numBuffers
+
+        'Reinitialize the data queue
+        m_StreamData = New ConcurrentQueue(Of UShort())
+
+        'Set the stream type
+        m_StreamType = StreamType.I2CReadStream
+
+        'Start the i2c Stream Thread
+        m_StreamThread = New Thread(AddressOf I2CStreamManager)
+        m_StreamThread.Start(BytesPerRead)
+
+    End Sub
+
+    Private Sub I2CStreamManager(BytesPerBuffer As Object)
+
+        'Bool to track the transfer status
+        Dim transferStatus As Boolean
+        'transfer size
+        Dim transferSize As Integer = CInt(BytesPerBuffer)
+        'Buffer to hold data from the FX3
+        Dim buf(transferSize - 1) As Byte
+        'frame counter
+        Dim frameCounter As UInteger
+        'List used to construct frames out of the output buffer
+        Dim frameBuilder(CInt(Math.Ceiling(transferSize / 2))) As UShort
+
+        '0 buffers -> infinite
+        If m_TotalBuffersToRead < 1 Then
+            m_TotalBuffersToRead = UInteger.MaxValue
+        End If
+
+        'Wait for previous stream thread to exit, if any
+        m_StreamThreadRunning = False
+
+        'Wait until a lock can be acquired on the streaming end point
+        m_StreamMutex.WaitOne()
+
+        'Set the stream thread running state variable
+        m_StreamThreadRunning = True
+        frameCounter = 0
+
+        While m_StreamThreadRunning
+            'transfer data from FX3
+            transferStatus = USB.XferData(buf, transferSize, StreamingEndPt)
+            'Parse bytes into frames and add to m_StreamData if transaction was successful
+            If transferStatus Then
+                'parse buf into ushort array
+                Buffer.BlockCopy(buf, 0, frameBuilder, 0, transferSize)
+                EnqueueStreamData(frameBuilder.ToArray())
+                frameCounter += 1UI
+                'Increment the shared frame counter
+                Interlocked.Increment(m_FramesRead)
+            ElseIf m_StreamThreadRunning Then
+                Console.WriteLine("Transfer failed during I2C stream. Error code: " + StreamingEndPt.LastError.ToString() + " (0x" + StreamingEndPt.LastError.ToString("X4") + ")")
+                'send cancel command
+                CancelStreamImplementation(USBCommands.ADI_I2C_READ_STREAM)
+                'Exit streaming mode if the transfer fails
+                Exit While
+            Else
+                'exiting due to cancel
+                Exit While
+            End If
+
+            If frameCounter >= m_TotalBuffersToRead Then
+                'Stop streaming
+                I2CStreamDone()
+                Exit While
+            End If
+
+        End While
+
+        ExitStreamThread()
+
+    End Sub
+
+    Private Sub I2CStreamDone()
+
+        'Buffer to hold command data
+        Dim buf(3) As Byte
+
+        'Configure the control endpoint
+        ConfigureControlEndpoint(USBCommands.ADI_I2C_READ_STREAM, True)
+        m_ActiveFX3.ControlEndPt.Value = 0
+        m_ActiveFX3.ControlEndPt.Index = CUShort(StreamCommands.ADI_STREAM_DONE_CMD)
+
+        'Send command to the DUT to stop streaming data
+        If Not XferControlData(buf, 4, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Timeout occurred when cleaning up I2C stream thread on the FX3!")
+        End If
+
+    End Sub
+
+#End Region
 
 End Class

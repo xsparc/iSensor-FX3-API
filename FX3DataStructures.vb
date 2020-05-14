@@ -16,6 +16,7 @@ Public Enum StreamType
     RealTimeStream = 2
     GenericStream = 3
     TransferStream = 4
+    I2CReadStream = 5
 End Enum
 
 ''' <summary>
