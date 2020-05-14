@@ -252,7 +252,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 
         	/* Read single word for IRegInterface */
         	case ADI_READ_BYTES:
-        		AdiReadRegBytes(wIndex);
+        		status = AdiReadRegBytes(wIndex);
         		break;
 
         	/* Write single byte for IRegInterface */
@@ -279,14 +279,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
         		/* Run pulse drive function */
         		status |= AdiPulseDrive();
         		/* Send back status over the BULK-In endpoint */
-        		USBBuffer[0] = status & 0xFF;
-        		USBBuffer[1] = (status & 0xFF00) >> 8;
-        		USBBuffer[2] = (status & 0xFF0000) >> 16;
-        		USBBuffer[3] = (status & 0xFF000000) >> 24;
-        		ManualDMABuffer.buffer = USBBuffer;
-        		ManualDMABuffer.size = 4096;
-        		ManualDMABuffer.count = 4;
-        		CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
+        		AdiSendStatus(status, 4, CyFalse);
         		break;
 
         	/* Wait on an edge, with timeout */
@@ -298,11 +291,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
         	/* Set a pin value */
         	case ADI_SET_PIN:
         		status = AdiSetPin(wIndex, (CyBool_t) wValue);
-            	USBBuffer[0] = status & 0xFF;
-            	USBBuffer[1] = (status & 0xFF00) >> 8;
-            	USBBuffer[2] = (status & 0xFF0000) >> 16;
-            	USBBuffer[3] = (status & 0xFF000000) >> 24;
-            	CyU3PUsbSendEP0Data (wLength, USBBuffer);
+        		AdiSendStatus(status, wLength, CyTrue);
         		break;
 
         	/* ID Check */
@@ -315,12 +304,13 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 
             /* Serial Number Check */
             case ADI_SERIAL_NUMBER_CHECK:
-            	status = CyU3PUsbSendEP0Data (32, (uint8_t *)serial_number);
+            	status = CyU3PUsbSendEP0Data(32, (uint8_t *)serial_number);
                 break;
 
+            /* Get firmware build date */
             case ADI_GET_BUILD_DATE:
             	AdiGetBuildDate(USBBuffer);
-            	CyU3PUsbSendEP0Data (wLength, USBBuffer);
+            	CyU3PUsbSendEP0Data(wLength, USBBuffer);
             	break;
 
             /* Hard-reset the FX3 firmware (return to bootloader mode) */
@@ -378,26 +368,18 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	/* Set the voltage (setting is supplied in value field) */
             	status = AdiSetDutSupply((DutVoltage) wValue);
             	/* Return the status code */
-            	USBBuffer[0] = status & 0xFF;
-            	USBBuffer[1] = (status & 0xFF00) >> 8;
-            	USBBuffer[2] = (status & 0xFF0000) >> 16;
-            	USBBuffer[3] = (status & 0xFF000000) >> 24;
-            	CyU3PUsbSendEP0Data (wLength, USBBuffer);
+            	AdiSendStatus(status, wLength, CyTrue);
             	break;
 
             /* Get the current status of the FX3 */
             case ADI_GET_STATUS:
-            	/* Return the status in bytes 0-3 */
-            	USBBuffer[0] = status & 0xFF;
-            	USBBuffer[1] = (status & 0xFF00) >> 8;
-            	USBBuffer[2] = (status & 0xFF0000) >> 16;
-            	USBBuffer[3] = (status & 0xFF000000) >> 24;
+            	/* Return the verbose mode state in USBBuffer byte 4 */
             	USBBuffer[4] = 0;
-            	/* Return the verbose mode state in byte 4 */
 #ifdef VERBOSE_MODE
             	USBBuffer[4] = 1;
 #endif
-            	CyU3PUsbSendEP0Data (wLength, USBBuffer);
+            	/* Return the status in USBBuffer bytes 0-3 */
+            	AdiSendStatus(status, wLength, CyTrue);
             	break;
 
             /* Get the board type and pin mapping info */
@@ -542,36 +524,32 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 				status |= AdiConfigurePWM((CyBool_t) wIndex);
             	break;
 
+            /* 1-4 byte single transfer */
             case ADI_TRANSFER_BYTES:
             	/* Call the transfer bytes function
             	 * upper 2 write bytes are passed in wIndex, lower are passed in wValue */
             	status = AdiTransferBytes(wIndex << 16 | wValue);
             	break;
 
+            /* Bit bang SPI transfer handler */
             case ADI_BITBANG_SPI:
             	/* Call the handler function for the SPI bit bang. Returns data to PC over bulk endpoint */
             	status = CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
             	status |= AdiBitBangSpiHandler();
             	break;
 
+            /* Reset SPI peripheral (to recover from using bit bang SPI) */
             case ADI_RESET_SPI:
             	status = AdiRestartSpi();
-            	/* Return the status in bytes 0-3 */
-            	USBBuffer[0] = status & 0xFF;
-            	USBBuffer[1] = (status & 0xFF00) >> 8;
-            	USBBuffer[2] = (status & 0xFF0000) >> 16;
-            	USBBuffer[3] = (status & 0xFF000000) >> 24;
-            	CyU3PUsbSendEP0Data(wLength, USBBuffer);
+            	/* Return the status over control endpoint */
+            	AdiSendStatus(status, wLength, CyTrue);
             	break;
 
+            /* Enable internal pull up/down resistor on a GPIO */
             case ADI_SET_PIN_RESISTOR:
             	status = AdiSetPinResistor(wIndex, wValue);
-				/* Return the status in bytes 0-3 */
-				USBBuffer[0] = status & 0xFF;
-				USBBuffer[1] = (status & 0xFF00) >> 8;
-				USBBuffer[2] = (status & 0xFF0000) >> 16;
-				USBBuffer[3] = (status & 0xFF000000) >> 24;
-				CyU3PUsbSendEP0Data(wLength, USBBuffer);
+            	/* Return the status over control endpoint */
+            	AdiSendStatus(status, wLength, CyTrue);
             	break;
 
 			/* Arbitrary flash read command */
@@ -588,7 +566,8 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 			/*Set I2C bit rate */
 			case ADI_I2C_SET_BIT_RATE:
 				status = AdiI2CInit(wIndex << 16 | wValue);
-				CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+				/* Return the status over control endpoint */
+				AdiSendStatus(status, wLength, CyTrue);
 				break;
 
 			/* I2C single read */
@@ -664,6 +643,45 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
     return isHandled;
 }
 
+/**
+  * @brief Sends status back to PC over control endpoint or manual bulk in endpoint
+  *
+  * @param status The status code to send back. Is placed in USBBuffer[0-3]
+  *
+  * @param count The number of bytes to send. Must be at least 4
+  *
+  * @param isControlEndpoint Bool indicating if data should be sent over control endpoint or bulk endpoint
+  *
+  * @returns void
+  *
+  * This function will overwrite the data in USBBuffer[0-3]. If you need to send extra
+  * data along with the status, it must be placed starting at USBBuffer[4].
+ **/
+void AdiSendStatus(uint32_t status, uint16_t count, CyBool_t isControlEndpoint)
+{
+	/* Clamp count */
+	if(count < 4)
+		count = 4;
+
+	/* Load status to USB Buffer */
+	USBBuffer[0] = status & 0xFF;
+	USBBuffer[1] = (status & 0xFF00) >> 8;
+	USBBuffer[2] = (status & 0xFF0000) >> 16;
+	USBBuffer[3] = (status & 0xFF000000) >> 24;
+
+	/* Perform transfer */
+	if(isControlEndpoint)
+	{
+		CyU3PUsbSendEP0Data(count, USBBuffer);
+	}
+	else
+	{
+		ManualDMABuffer.buffer = USBBuffer;
+		ManualDMABuffer.size = 4096;
+		ManualDMABuffer.count = count;
+		CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
+	}
+}
 
 /**
   * @brief Configures the FX3 watchdog timer based on the current board state.

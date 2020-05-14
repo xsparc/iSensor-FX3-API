@@ -419,6 +419,7 @@ void WatchDogTimerCb (uint32_t nParam);
 void AdiGetBuildDate(uint8_t * outBuf);
 void AdiGetBoardPinInfo(uint8_t * outBuf);
 FX3BoardType GetFX3BoardType();
+void AdiSendStatus(uint32_t status, uint16_t count, CyBool_t isControlEndpoint);
 
 #include <cyu3externcend.h>
 
