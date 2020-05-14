@@ -835,6 +835,36 @@ Public Class FX3Connection
     'The functions in this region are not a part of the IDutInterface, and are specific to the FX3 board
 
     ''' <summary>
+    ''' This function reads the current value from the 10MHz timer running on the FX3
+    ''' </summary>
+    ''' <returns>The 32-bit timer value</returns>
+    Public Function GetTimerValue() As UInteger
+
+        'status code from FX3
+        Dim status As UInteger
+
+        'Create buffer for transfer
+        Dim buf(7) As Byte
+
+        ConfigureControlEndpoint(USBCommands.ADI_READ_TIMER_VALUE, False)
+
+        'Transfer data from the FX3
+        If Not XferControlData(buf, 8, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer to read timer value timed out!")
+        End If
+
+        'parse status
+        status = BitConverter.ToUInt32(buf, 0)
+        If status <> 0 Then
+            Throw New FX3BadStatusException("ERROR: Bad status code after reading timer. Error code: 0x" + status.ToString("X4"))
+        End If
+
+        'return timer value (stored in bytes 4 - 7)
+        Return BitConverter.ToUInt32(buf, 4)
+
+    End Function
+
+    ''' <summary>
     ''' Set the FX3 GPIO input stage pull up or pull down resistor setting. All FX3 GPIOs have a software configurable
     ''' pull up / pull down resistor (10KOhm).
     ''' </summary>
