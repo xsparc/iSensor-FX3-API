@@ -350,6 +350,10 @@ Partial Class FX3Connection
 
     End Sub
 
+    ''' <summary>
+    ''' Helper function to set i2c retry count in case of NAK on FX3
+    ''' </summary>
+    ''' <param name="Count">Number of times to transfer</param>
     Private Sub SetI2CRetryCount(Count As UShort)
 
         'transfer buffer
@@ -377,6 +381,14 @@ Partial Class FX3Connection
 
 #Region "I2C Streaming"
 
+    ''' <summary>
+    ''' Start an asynchronous I2C read stream. This stream runs on the stream thread
+    ''' and places all data in a thread safe queue. The data can be retrieved using
+    ''' GetI2CBuffer()
+    ''' </summary>
+    ''' <param name="Preamble">The preamble to send at the start of the read</param>
+    ''' <param name="BytesPerRead">Number of read bytes following the preamble</param>
+    ''' <param name="numBuffers">Total number of separate I2C transactions to send</param>
     Public Sub StartI2CStream(Preamble As I2CPreamble, BytesPerRead As UInteger, numBuffers As UInteger)
 
         'transfer buffer
@@ -430,6 +442,10 @@ Partial Class FX3Connection
 
     End Sub
 
+    ''' <summary>
+    ''' Stream thread function for I2C stream
+    ''' </summary>
+    ''' <param name="BytesPerBuffer">Number of bytes to read</param>
     Private Sub I2CStreamManager(BytesPerBuffer As Object)
 
         'Bool to track the transfer status
@@ -489,6 +505,9 @@ Partial Class FX3Connection
 
     End Sub
 
+    ''' <summary>
+    ''' Cleanup function when I2C stream is done
+    ''' </summary>
     Private Sub I2CStreamDone()
 
         'Buffer to hold command data
