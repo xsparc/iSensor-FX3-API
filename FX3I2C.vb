@@ -414,6 +414,12 @@ Partial Class FX3Connection
         'pre-amble
         buf.AddRange(Preamble.Serialize())
 
+        'add numBuffers
+        buf.Add(CByte(numBuffers And &HFFUI))
+        buf.Add(CByte((numBuffers >> 8) And &HFFUI))
+        buf.Add(CByte((numBuffers >> 16) And &HFFUI))
+        buf.Add(CByte((numBuffers >> 24) And &HFFUI))
+
         'send I2C stream start command over control endpoint
         ConfigureControlEndpoint(USBCommands.ADI_I2C_READ_STREAM, True)
         m_ActiveFX3.ControlEndPt.Index = CUShort(StreamCommands.ADI_STREAM_START_CMD)
