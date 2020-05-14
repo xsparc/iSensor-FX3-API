@@ -267,11 +267,11 @@ Partial Class FX3Connection
         buf.Add(CByte((TimeoutInMs >> 16) And &HFFUI))
         buf.Add(CByte((TimeoutInMs >> 24) And &HFFUI))
 
-        'write data
-        buf.AddRange(WriteData)
-
         'pre-amble
         buf.AddRange(Preamble.Serialize())
+
+        'write data
+        buf.AddRange(WriteData)
 
         'send I2C write command + data over control endpoint
         ConfigureControlEndpoint(USBCommands.ADI_I2C_WRITE_BYTES, True)
