@@ -192,6 +192,9 @@ Public Class FX3Connection
     'track i2c bit rate setting
     Private m_i2cbitrate As UInteger
 
+    'i2c retry count after NAK
+    Private m_i2cRetryCount As UShort
+
     'FX3 Pin GPIO mapping
     Private RESET_PIN As UShort = 10
     Private DIO1_PIN As UShort = 3
@@ -323,6 +326,7 @@ Public Class FX3Connection
 
         'set i2c parameters (100KHz default)
         m_i2cbitrate = 100000
+        m_i2cRetryCount = 1
 
         m_DutSupplyMode = DutVoltage.On3_3Volts
 

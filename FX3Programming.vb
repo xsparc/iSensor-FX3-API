@@ -166,6 +166,10 @@ Partial Class FX3Connection
         'Make sure that the board SPI parameters match current setting
         WriteBoardSpiParameters()
 
+        'make sure board i2c parameters match API
+        SetI2CBitRate(m_i2cbitrate)
+        SetI2CRetryCount(m_i2cRetryCount)
+
         'Set the application firmware boot time
         SetBootTimeStamp()
 

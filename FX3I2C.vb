@@ -152,6 +152,25 @@ Partial Class FX3Connection
     End Property
 
     ''' <summary>
+    ''' Get/Set the FX3 I2C retry count. This is 
+    ''' </summary>
+    ''' <returns></returns>
+    Public Property I2CRetryCount As UShort
+        Get
+            Return m_i2cRetryCount
+        End Get
+        Set(value As UShort)
+            'send command to update FX3 I2C config
+            SetI2CRetryCount(value)
+
+            'save setting
+            m_i2cRetryCount = value
+        End Set
+    End Property
+
+
+
+    ''' <summary>
     ''' Read bytes from an I2C slave device attached to the FX3.
     ''' </summary>
     ''' <param name="Preamble">The I2C preamble to transmit at the start of the read operation</param>
@@ -326,6 +345,31 @@ Partial Class FX3Connection
         status = BitConverter.ToUInt32(buf, 0)
         If status <> 0 Then
             Throw New FX3BadStatusException("ERROR: Bad status code after setting I2C bit rate. Error code: 0x" + status.ToString("X4"))
+        End If
+
+    End Sub
+
+    Private Sub SetI2CRetryCount(Count As UShort)
+
+        'transfer buffer
+        Dim buf(3) As Byte
+
+        'status
+        Dim status As UInteger
+
+        'configure for i2c set bit rate command
+        ConfigureControlEndpoint(USBCommands.ADI_I2C_RETRY_COUNT, False)
+        FX3ControlEndPt.Value = Count
+
+        'send command
+        If Not XferControlData(buf, 4, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer timed out while setting I2C retry count")
+        End If
+
+        'check status
+        status = BitConverter.ToUInt32(buf, 0)
+        If status <> 0 Then
+            Throw New FX3BadStatusException("ERROR: Bad status code after setting I2C retry count. Error code: 0x" + status.ToString("X4"))
         End If
 
     End Sub

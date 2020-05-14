@@ -76,6 +76,9 @@ Public Enum USBCommands
     'I2C continuous stream read command
     ADI_I2C_READ_STREAM = &H13
 
+    'I2C set rety count after slave sends NAK
+    ADI_I2C_RETRY_COUNT = &H14
+
     'Return FX3 firmware ID
     ADI_FIRMWARE_ID_CHECK = &HB0
 
