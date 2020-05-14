@@ -361,6 +361,8 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             /* Read the value from the complex GPIO timer */
             case ADI_READ_TIMER_VALUE:
             	status = AdiReadTimerValue();
+            	/* Send back status + timer value */
+            	AdiSendStatus(status, 8, CyTrue);
             	break;
 
             /* Vendor command to set the DUT supply voltage */
@@ -529,6 +531,8 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	/* Call the transfer bytes function
             	 * upper 2 write bytes are passed in wIndex, lower are passed in wValue */
             	status = AdiTransferBytes(wIndex << 16 | wValue);
+            	/* Send status and 4 bytes data back */
+            	AdiSendStatus(status, 8, CyTrue);
             	break;
 
             /* Bit bang SPI transfer handler */
