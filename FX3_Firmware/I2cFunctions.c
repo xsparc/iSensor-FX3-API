@@ -43,7 +43,7 @@ CyU3PReturnStatus_t AdiI2CReadHandler(uint16_t RequestLength)
 	ParseUSBBuffer(&timeout, &numBytes, &preamble);
 
 	/* Perform transfer */
-	status = CyU3PI2cReceiveBytes(&preamble, BulkBuffer, numBytes, 1);
+	status = CyU3PI2cReceiveBytes(&preamble, BulkBuffer, numBytes, FX3State.I2CRetryCount);
 	if(status != CY_U3P_SUCCESS)
 		return status;
 
@@ -76,7 +76,7 @@ CyU3PReturnStatus_t AdiI2CWriteHandler(uint16_t RequestLength)
 	/* Get index within USB buffer where write data starts */
 	bufIndex = USBBuffer + index;
 
-	status = CyU3PI2cTransmitBytes(&preamble, bufIndex, numBytes, 1);
+	status = CyU3PI2cTransmitBytes(&preamble, bufIndex, numBytes, FX3State.I2CRetryCount);
 	if(status != CY_U3P_SUCCESS)
 		AdiLogError(I2cFunctions_c, __LINE__, status);
 

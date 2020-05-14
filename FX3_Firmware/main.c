@@ -574,6 +574,12 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 				AdiSendStatus(status, wLength, CyTrue);
 				break;
 
+			/* I2C retry count property */
+			case ADI_I2C_RETRY_COUNT:
+				FX3State.I2CRetryCount = wValue;
+				AdiSendStatus(status, wLength, CyTrue);
+				break;
+
 			/* I2C single read */
 			case ADI_I2C_READ_BYTES:
 				status = AdiI2CReadHandler(wLength);

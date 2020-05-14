@@ -175,6 +175,12 @@ typedef struct BoardState
 	/** The pin map of the currently programmed board */
 	FX3PinMap PinMap;
 
+	/** I2C interface bit rate */
+	uint32_t I2CBitRate;
+
+	/** I2C retry count after slave device sends NAK */
+	uint16_t I2CRetryCount;
+
 }BoardState;
 
 /** @brief Struct to store the current data stream state information */
@@ -232,6 +238,9 @@ typedef struct StreamState
 
 /** I2C continuous stream read command */
 #define ADI_I2C_READ_STREAM 					(0x13)
+
+/** I2C set rety count after slave sends NAK */
+#define ADI_I2C_RETRY_COUNT						(0x14)
 
 /** Return FX3 firmware ID (defined below) */
 #define ADI_FIRMWARE_ID_CHECK					(0xB0)
@@ -351,8 +360,17 @@ typedef struct StreamState
 /** Complex GPIO assigned as a timer input */
 #define ADI_TIMER_PIN							(0x8)
 
-/** COmplex GPIO index for the timer input (ADI_TIMER_PIN % 8) */
+/** Complex GPIO index for the timer input (ADI_TIMER_PIN % 8) */
 #define ADI_TIMER_PIN_INDEX						(0x0)
+
+/** ID pin 0 (CTL0 - iSensor board vs cypress dev board) */
+#define ADI_ID_PIN_0							17
+
+/** ID pin 1 (iSensor board rev A vs rev B (w/ I2C) */
+#define ADI_ID_PIN_1							15
+
+/** Flash write enable pin */
+#define ADI_FLASH_WRITE_ENABLE_PIN				18
 
 /*
  * Endpoint Related Defines
