@@ -24,9 +24,6 @@ extern CyU3PDmaBuffer_t ManualDMABuffer;
 extern CyU3PDmaChannel ChannelToPC;
 extern BoardState FX3State;
 
-/* Private function prototypes */
-uint32_t ParseUSBBuffer(uint32_t * timeout, uint32_t * numBytes, CyU3PI2cPreamble_t * preamble);
-
 CyU3PReturnStatus_t AdiI2CReadHandler(uint16_t RequestLength)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -41,6 +38,12 @@ CyU3PReturnStatus_t AdiI2CReadHandler(uint16_t RequestLength)
 
 	/* Parse USB Buffer */
 	ParseUSBBuffer(&timeout, &numBytes, &preamble);
+
+	/* If DrActive set wait for data ready to reach desired polarity */
+	if(FX3State.DrActive)
+	{
+
+	}
 
 	/* Perform transfer */
 	status = CyU3PI2cReceiveBytes(&preamble, BulkBuffer, numBytes, FX3State.I2CRetryCount);
@@ -83,7 +86,7 @@ CyU3PReturnStatus_t AdiI2CWriteHandler(uint16_t RequestLength)
 	return status;
 }
 
-CyU3PReturnStatus_t AdiI2CInit(uint32_t BitRate)
+CyU3PReturnStatus_t AdiI2CInit(uint32_t BitRate, CyBool_t isDMA)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
     CyU3PI2cConfig_t i2cConfig;
@@ -111,7 +114,7 @@ CyU3PReturnStatus_t AdiI2CInit(uint32_t BitRate)
     i2cConfig.bitRate    = BitRate;
     i2cConfig.busTimeout = 0xFFFFFFFF;
     i2cConfig.dmaTimeout = 0xFFFF;
-    i2cConfig.isDma      = CyFalse; /* Register mode */
+    i2cConfig.isDma      = isDMA;
     status = CyU3PI2cSetConfig (&i2cConfig, NULL);
 
     /* Save bit rate */

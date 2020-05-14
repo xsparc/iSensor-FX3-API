@@ -30,6 +30,7 @@ CyU3PReturnStatus_t AdiGenericStreamWork();
 CyU3PReturnStatus_t AdiRealTimeStreamWork();
 CyU3PReturnStatus_t AdiBurstStreamWork();
 CyU3PReturnStatus_t AdiTransferStreamWork();
+CyU3PReturnStatus_t AdiI2CStreamWork();
 
 /** StreamThread allocated stack size (2KB) */
 #define STREAMTHREAD_STACK					(0x0800)

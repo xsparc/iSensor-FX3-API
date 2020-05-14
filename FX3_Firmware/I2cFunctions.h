@@ -23,6 +23,7 @@
 /* Public functions */
 CyU3PReturnStatus_t AdiI2CReadHandler(uint16_t RequestLength);
 CyU3PReturnStatus_t AdiI2CWriteHandler(uint16_t RequestLength);
-CyU3PReturnStatus_t AdiI2CInit(uint32_t BitRate);
+CyU3PReturnStatus_t AdiI2CInit(uint32_t BitRate, CyBool_t isDMA);
+uint32_t ParseUSBBuffer(uint32_t * timeout, uint32_t * numBytes, CyU3PI2cPreamble_t * preamble);
 
 #endif /* I2CFUNCTIONS_H_ */

@@ -75,7 +75,7 @@ CyU3PReturnStatus_t AdiStopAnyDataStream()
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
 	/* Set the event mask to the stream enable events */
-	uint32_t eventMask = ADI_GENERIC_STREAM_ENABLE|ADI_RT_STREAM_ENABLE|ADI_BURST_STREAM_ENABLE|ADI_TRANSFER_STREAM_ENABLE;
+	uint32_t eventMask = ADI_GENERIC_STREAM_ENABLE|ADI_RT_STREAM_ENABLE|ADI_BURST_STREAM_ENABLE|ADI_TRANSFER_STREAM_ENABLE|ADI_I2C_STREAM_ENABLE;
 
 	/* Variable to receive the event arguments into */
 	uint32_t eventFlags;
@@ -140,6 +140,86 @@ CyBool_t AdiPrintStreamState()
 #endif
 
 	return verboseMode;
+}
+
+CyU3PReturnStatus_t AdiI2CStreamStart()
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+	uint32_t timeout, index;
+	uint16_t bytesRead;
+	CyU3PDmaChannelConfig_t i2cDmaConfig;
+
+	/* Get USB Data */
+	CyU3PUsbGetEP0Data(StreamThreadState.TransferByteLength, USBBuffer, &bytesRead);
+
+	/* Parse USB data (number of bytes placed in numcaptures) */
+	index = ParseUSBBuffer(&timeout, &StreamThreadState.NumCaptures, &StreamThreadState.I2CStreamPreamble);
+
+	/* Number of buffers to capture follows after I2C read stream request data */
+	StreamThreadState.NumBuffers = USBBuffer[index];
+	StreamThreadState.NumBuffers |= (USBBuffer[index + 1] << 8);
+	StreamThreadState.NumBuffers |= (USBBuffer[index + 2] << 16);
+	StreamThreadState.NumBuffers |= (USBBuffer[index + 3] << 24);
+
+	/* Disable VBUS ISR */
+	CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
+
+	/* Disable GPIO interrupt before attaching interrupt to pin */
+	CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
+
+	/*Re-init I2C block in DMA mode */
+	AdiI2CInit(FX3State.I2CBitRate, CyTrue);
+
+	/* Configure StreamChannel for I2C to USB automatic DMA */
+    CyU3PMemSet ((uint8_t *)&i2cDmaConfig, 0, sizeof(i2cDmaConfig));
+    i2cDmaConfig.size           = StreamThreadState.NumCaptures;
+    i2cDmaConfig.count          = 16;
+    i2cDmaConfig.prodAvailCount = 0;
+    i2cDmaConfig.dmaMode        = CY_U3P_DMA_MODE_BYTE;
+    i2cDmaConfig.prodHeader     = 0;
+    i2cDmaConfig.prodFooter     = 0;
+    i2cDmaConfig.consHeader     = 0;
+    i2cDmaConfig.notification   = 0;
+    i2cDmaConfig.cb             = NULL;
+    i2cDmaConfig.prodSckId = CY_U3P_LPP_SOCKET_I2C_PROD;
+    i2cDmaConfig.consSckId = CY_U3P_UIB_SOCKET_CONS_1;
+    status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_AUTO, &i2cDmaConfig);
+	if(status != CY_U3P_SUCCESS)
+	{
+		AdiLogError(StreamFunctions_c, __LINE__, status);
+		AdiAppErrorHandler(status);
+	}
+
+	/* Set the burst stream flag to notify the streaming thread it should take over */
+	CyU3PEventSet (&EventHandler, ADI_I2C_STREAM_ENABLE, CYU3P_EVENT_OR);
+
+	return status;
+}
+
+CyU3PReturnStatus_t AdiI2CStreamFinished()
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+
+    /* Destroy the stream DMA channel */
+    status = CyU3PDmaChannelDestroy(&StreamingChannel);
+
+	/* Flush the streaming end point */
+	status |= CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
+
+	/* Re-init I2C in register mode */
+	AdiI2CInit(FX3State.I2CBitRate, CyFalse);
+
+	/* Clear all interrupt flags */
+	CyU3PVicClearInt();
+
+	/* Re-enable relevant ISRs */
+	CyU3PVicEnableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
+	CyU3PVicEnableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
+
+	/* Clear stream kill flag */
+	KillStreamEarly = CyFalse;
+
+	return status;
 }
 
 /**
@@ -584,25 +664,8 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
 
 	/* Make sure the global data ready pin is configured as an input and attach the interrupt to the correct edge */
-	CyU3PGpioSimpleConfig_t gpioConfig;
-	gpioConfig.outValue = CyTrue;
-	gpioConfig.inputEn = CyTrue;
-	gpioConfig.driveLowEn = CyFalse;
-	gpioConfig.driveHighEn = CyFalse;
-	if (FX3State.DrPolarity)
-	{
-		gpioConfig.intrMode = CY_U3P_GPIO_INTR_POS_EDGE;
-	}
-	else
-	{
-		gpioConfig.intrMode = CY_U3P_GPIO_INTR_NEG_EDGE;
-	}
-	status = CyU3PGpioSetSimpleConfig(FX3State.DrPin, &gpioConfig);
-	if(status != CY_U3P_SUCCESS)
-	{
-		AdiLogError(StreamFunctions_c, __LINE__, status);
-		AdiAppErrorHandler(status);
-	}
+	if(FX3State.DrActive)
+		AdiConfigureDrPin();
 
 	/* Get the number of buffers, trigger word, and transfer length from the control endpoint */
 	CyU3PUsbGetEP0Data(StreamThreadState.TransferWordLength, USBBuffer, &bytesRead);

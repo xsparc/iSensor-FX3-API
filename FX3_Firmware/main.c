@@ -569,7 +569,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 
 			/*Set I2C bit rate */
 			case ADI_I2C_SET_BIT_RATE:
-				status = AdiI2CInit(wIndex << 16 | wValue);
+				status = AdiI2CInit(wIndex << 16 | wValue, CyFalse);
 				/* Return the status over control endpoint */
 				AdiSendStatus(status, wLength, CyTrue);
 				break;
@@ -592,20 +592,31 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 				AdiSendStatus(status, 4, CyFalse);
 				break;
 
-			/* I2C stream start/stop/cancel */
+			/* I2C read stream start/done/cancel */
 			case ADI_I2C_READ_STREAM:
 				switch(wIndex)
 				{
 				case ADI_STREAM_START_CMD:
+					status = CyU3PEventSet(&EventHandler, ADI_I2C_STREAM_START, CYU3P_EVENT_OR);
+					StreamThreadState.TransferByteLength = wLength;
 					break;
 				case ADI_STREAM_DONE_CMD:
+					/* Get the data from the control endpoint */
+					status = CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+					/* Set stream done event */
+					status |= CyU3PEventSet(&EventHandler, ADI_I2C_STREAM_DONE, CYU3P_EVENT_OR);
 					break;
 				case ADI_STREAM_STOP_CMD:
+					status = CyU3PEventSet(&EventHandler, ADI_I2C_STREAM_STOP, CYU3P_EVENT_OR);
 					break;
 				default:
             		/* Shouldn't get here */
             		isHandled = CyFalse;
             		break;
+				}
+				if (status != CY_U3P_SUCCESS)
+				{
+					AdiLogError(Main_c, __LINE__, status);
 				}
 				break;
 
@@ -1341,7 +1352,7 @@ void AdiAppStart()
 
     /* Configure I2C */
     FX3State.I2CBitRate = 100000;
-    AdiI2CInit(100000);
+    AdiI2CInit(100000, CyFalse);
 
     /* Configure global, user event flags */
 

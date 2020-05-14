@@ -221,6 +221,10 @@ typedef struct StreamState
 
 	/** Number of bytes per USB packet in generic data stream mode */
 	uint16_t BytesPerUsbPacket;
+
+	/** Preamble for I2C stream */
+	CyU3PI2cPreamble_t I2CStreamPreamble;
+
 }StreamState;
 
 /*

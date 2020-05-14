@@ -22,23 +22,27 @@
 /* Include the main header file */
 #include "main.h"
 
-//Real-time data stream functions.
+/* Real-time data stream functions. */
 CyU3PReturnStatus_t AdiRealTimeStreamStart();
 CyU3PReturnStatus_t AdiRealTimeStreamFinished();
 
-//Generic data stream functions.
+/* Generic data stream functions. */
 CyU3PReturnStatus_t AdiGenericStreamStart();
 CyU3PReturnStatus_t AdiGenericStreamFinished();
 
-//Transfer stream functions
+/* Transfer stream functions */
 CyU3PReturnStatus_t AdiTransferStreamStart();
 CyU3PReturnStatus_t AdiTransferStreamFinished();
 
-//Burst stream functions.
+/* Burst stream functions. */
 CyU3PReturnStatus_t AdiBurstStreamStart();
 CyU3PReturnStatus_t AdiBurstStreamFinished();
 
-//General stream functions.
+/* I2C stream functions */
+CyU3PReturnStatus_t AdiI2CStreamStart();
+CyU3PReturnStatus_t AdiI2CStreamFinished();
+
+/* General stream functions. */
 CyU3PReturnStatus_t AdiStopAnyDataStream();
 CyBool_t AdiPrintStreamState();
 CyU3PReturnStatus_t AdiConfigureDrPin();

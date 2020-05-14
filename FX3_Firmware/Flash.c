@@ -130,7 +130,7 @@ void AdiFlashDeInit()
 	CyU3PDmaChannelDestroy(&flashTxHandle);
 	CyU3PDmaChannelDestroy(&flashRxHandle);
 	/* Re-init I2C for use in register mode */
-	AdiI2CInit(FX3State.I2CBitRate);
+	AdiI2CInit(FX3State.I2CBitRate, CyFalse);
 }
 
 /**
@@ -282,7 +282,7 @@ static CyU3PReturnStatus_t FlashTransfer(uint32_t Address, uint16_t NumBytes, ui
             buf_p.count = FLASH_PAGE_SIZE;
 
             /* Send read command */
-            status = CyU3PI2cSendCommand (&preamble, dmaCount, CyTrue);
+            status = CyU3PI2cSendCommand(&preamble, dmaCount, CyTrue);
 #ifdef VERBOSE_MODE
             if(status != CY_U3P_SUCCESS)
             	CyU3PDebugPrint (4, "I2C send read command failed: 0x%x\r\n", status);
