@@ -60,7 +60,11 @@ typedef enum FileIdentifier
 	Flash_c = 7,
 
 	/** Error originated from ErrorLog.c */
-	ErrorLog_c = 8
+	ErrorLog_c = 8,
+
+	/** Error originating from I2cFunctions.c */
+	I2cFunctions_c = 9
+
 }FileIdentifier;
 
 /**
