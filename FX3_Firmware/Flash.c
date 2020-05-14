@@ -143,10 +143,19 @@ void AdiFlashDeInit()
   * @param WriteBuf RAM buffer containing data to be written to flash
   *
   * @return void
+  *
+  * This function controls the flash write enable signal. This write enable
+  * signal is used to prevent un-intended writes the flash from user space,
+  * via I2C functions.
  **/
 void AdiFlashWrite(uint32_t Address, uint16_t NumBytes, uint8_t* WriteBuf)
 {
+	/* Enable flash for write */
+	CyU3PGpioSimpleSetValue(ADI_FLASH_WRITE_ENABLE_PIN, CyFalse);
+	/* Perform write */
 	FlashTransfer(Address, NumBytes, WriteBuf, CyFalse);
+	/* Lock flash */
+	CyU3PGpioSimpleSetValue(ADI_FLASH_WRITE_ENABLE_PIN, CyTrue);
 }
 
 /**

@@ -1113,6 +1113,11 @@ void AdiAppStart()
     	status = CyU3PGpioSetSimpleConfig(ADI_5V_EN, &gpioConfig);
     	gpioConfig.outValue = CyFalse;
     	status = CyU3PGpioSetSimpleConfig(ADI_3_3V_EN, &gpioConfig);
+    	/* Configure flash write enable (pull up, output set high) */
+		CyU3PDeviceGpioOverride(ADI_FLASH_WRITE_ENABLE_PIN, CyTrue);
+		gpioConfig.outValue = CyTrue;
+		status = CyU3PGpioSetSimpleConfig(ADI_FLASH_WRITE_ENABLE_PIN, &gpioConfig);
+		GCTL_WPU_CFG |= (1 << ADI_FLASH_WRITE_ENABLE_PIN);
     	/* Map pin assignments */
     	FX3State.PinMap.ADI_PIN_RESET = 1;
     	FX3State.PinMap.ADI_PIN_DIO4 = 2;
@@ -1468,13 +1473,13 @@ FX3BoardType GetFX3BoardType()
 	FX3BoardType currentBoard;
 
 	/* Disable pull up on ID pins (CTL0 and DQ15) */
-	GCTL_WPU_CFG &= ~((1 << 17)|(1 << 15));
+	GCTL_WPU_CFG &= ~((1 << ADI_ID_PIN_0)|(1 << ADI_ID_PIN_1));
 
 	/* Sleep 5us */
 	AdiSleepForMicroSeconds(5);
 
     /* Configure ID pins with weak pull down */
-	GCTL_WPD_CFG |= ((1 << 17)|(1 << 15));
+	GCTL_WPD_CFG |= ((1 << ADI_ID_PIN_0)|(1 << ADI_ID_PIN_1));
 
 	/* Sleep 5us */
 	AdiSleepForMicroSeconds(5);
@@ -1488,13 +1493,13 @@ FX3BoardType GetFX3BoardType()
 	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
 
 	CyU3PGpioSetSimpleConfig(17, &gpioConfig);
-	CTL0RegVal = GPIO->lpp_gpio_simple[17];
+	CTL0RegVal = GPIO->lpp_gpio_simple[ADI_ID_PIN_0];
 
 	CyU3PGpioSetSimpleConfig(15, &gpioConfig);
-	DQ15RegVal = GPIO->lpp_gpio_simple[15];
+	DQ15RegVal = GPIO->lpp_gpio_simple[ADI_ID_PIN_1];
 
 	/* Disable pull down */
-	GCTL_WPD_CFG &= ~((1 << 17)|(1 << 15));
+	GCTL_WPD_CFG &= ~((1 << ADI_ID_PIN_0)|(1 << ADI_ID_PIN_1));
 
 	/* If CTL0 high then is super speed explorer (pull up to SRAM enable) */
 	if(CTL0RegVal & 0x2)
