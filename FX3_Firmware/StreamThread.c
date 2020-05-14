@@ -119,7 +119,7 @@ CyU3PReturnStatus_t AdiI2CStreamWork()
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
 	/* Track the number of buffers read */
-	static uint32_t numBuffersRead;
+	static uint32_t numBuffersRead = 0;
 
 	/* Wait for DR if enabled */
 	if (FX3State.DrActive)
@@ -141,6 +141,9 @@ CyU3PReturnStatus_t AdiI2CStreamWork()
 	{
 		/* Reset values */
 		numBuffersRead = 0;
+
+		/* Set channel wrap up */
+		CyU3PDmaChannelSetWrapUp(&StreamingChannel);
 
 		/* Set stream done flag if kill early event was processed (otherwise must be explicitly invoked by FX3 API) */
 		if(KillStreamEarly)
