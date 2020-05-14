@@ -380,7 +380,7 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 #ifdef VERBOSE_MODE
             	USBBuffer[4] = 1;
 #endif
-            	/* Return the status in USBBuffer bytes 0-3 */
+            	/* Return the status in USBBuffer bytes 0-3. Total return data 5 bytes */
             	AdiSendStatus(status, wLength, CyTrue);
             	break;
 
@@ -582,6 +582,8 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 			/* I2C single write */
 			case ADI_I2C_WRITE_BYTES:
 				status = AdiI2CWriteHandler(wLength);
+				/* Send back status indicating operation is done */
+				AdiSendStatus(status, 4, CyFalse);
 				break;
 
 			/* I2C stream start/stop/cancel */
@@ -1325,6 +1327,10 @@ void AdiAppStart()
     	AdiLogError(Main_c, __LINE__, status);
     	AdiAppErrorHandler(status);
     }
+
+    /* Configure I2C */
+    FX3State.I2CBitRate = 100000;
+    AdiI2CInit(100000);
 
     /* Configure global, user event flags */
 

@@ -24,6 +24,9 @@ static CyU3PReturnStatus_t FlashTransfer(uint32_t Address, uint16_t NumBytes, ui
 /** Global USB Buffer (Control Endpoint) */
 extern uint8_t USBBuffer[4096];
 
+/** FX3 state */
+extern BoardState FX3State;
+
 /** I2C Tx DMA channel handle */
 static CyU3PDmaChannel flashTxHandle;
 
@@ -47,6 +50,7 @@ CyU3PReturnStatus_t AdiFlashInit()
     CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
     /* Initialize and configure the I2C master module. */
+    CyU3PI2cDeInit();
     status = CyU3PI2cInit();
     if (status != CY_U3P_SUCCESS)
     {
@@ -125,6 +129,8 @@ void AdiFlashDeInit()
 	CyU3PI2cDeInit();
 	CyU3PDmaChannelDestroy(&flashTxHandle);
 	CyU3PDmaChannelDestroy(&flashRxHandle);
+	/* Re-init I2C for use in register mode */
+	AdiI2CInit(FX3State.I2CBitRate);
 }
 
 /**
