@@ -24,6 +24,16 @@ extern CyU3PDmaBuffer_t ManualDMABuffer;
 extern CyU3PDmaChannel ChannelToPC;
 extern BoardState FX3State;
 
+/**
+  * @brief Handler for I2C read command from control endpoint
+  *
+  * @param RequestLength Number of bytes received over control endpoint
+  *
+  * @return A status code indicating the success of the I2C read command
+  *
+  * This function uses the I2C peripheral in register mode to perform a
+  * single transfer.
+ **/
 CyU3PReturnStatus_t AdiI2CReadHandler(uint16_t RequestLength)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -37,7 +47,7 @@ CyU3PReturnStatus_t AdiI2CReadHandler(uint16_t RequestLength)
 		return status;
 
 	/* Parse USB Buffer */
-	ParseUSBBuffer(&timeout, &numBytes, &preamble);
+	I2CParseUSBBuffer(&timeout, &numBytes, &preamble);
 
 	/* Perform transfer */
 	status = CyU3PI2cReceiveBytes(&preamble, BulkBuffer, numBytes, FX3State.I2CRetryCount);
@@ -54,6 +64,16 @@ CyU3PReturnStatus_t AdiI2CReadHandler(uint16_t RequestLength)
 	return status;
 }
 
+/**
+  * @brief Handler for I2C write command from control endpoint
+  *
+  * @param RequestLength Number of bytes received over control endpoint
+  *
+  * @return A status code indicating the success of the I2C write command
+  *
+  * This function uses the I2C peripheral in register mode to perform a
+  * single transfer.
+ **/
 CyU3PReturnStatus_t AdiI2CWriteHandler(uint16_t RequestLength)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -68,7 +88,7 @@ CyU3PReturnStatus_t AdiI2CWriteHandler(uint16_t RequestLength)
 		return status;
 
 	/* Parse USB Buffer */
-	index = ParseUSBBuffer(&timeout, &numBytes, &preamble);
+	index = I2CParseUSBBuffer(&timeout, &numBytes, &preamble);
 
 	/* Get index within USB buffer where write data starts */
 	bufIndex = USBBuffer + index;
@@ -80,6 +100,15 @@ CyU3PReturnStatus_t AdiI2CWriteHandler(uint16_t RequestLength)
 	return status;
 }
 
+/**
+  * @brief Init I2C peripheral
+  *
+  * @param BitRate Bit rate to configure I2C peripheral for (100KHz - 1MHz)
+  *
+  * @param isDMA If the I2C peripheral should be configured for DMA
+  *
+  * @return A status code indicating the success of I2C init operation.
+ **/
 CyU3PReturnStatus_t AdiI2CInit(uint32_t BitRate, CyBool_t isDMA)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -118,7 +147,18 @@ CyU3PReturnStatus_t AdiI2CInit(uint32_t BitRate, CyBool_t isDMA)
 	return status;
 }
 
-uint32_t ParseUSBBuffer(uint32_t * timeout, uint32_t * numBytes, CyU3PI2cPreamble_t * preamble)
+/**
+  * @brief Parses I2C command data from the USB Buffer.
+  *
+  * @param timeout
+  *
+  * @param numBytes
+  *
+  * @param preamble
+  *
+  * @return Index for the start of the I2C transmit data (if it exists)
+ **/
+uint32_t I2CParseUSBBuffer(uint32_t * timeout, uint32_t * numBytes, CyU3PI2cPreamble_t * preamble)
 {
 	uint32_t index;
 

@@ -46,7 +46,6 @@ CyU3PReturnStatus_t AdiI2CStreamFinished();
 CyU3PReturnStatus_t AdiStopAnyDataStream();
 CyBool_t AdiPrintStreamState();
 CyU3PReturnStatus_t AdiConfigureDrPin();
-void AdiReturnStreamCancelStatus(CyU3PReturnStatus_t status);
 
 /* Config functions */
 void AdiConfigStreamStallTimer();

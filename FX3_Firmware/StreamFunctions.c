@@ -93,30 +93,10 @@ CyU3PReturnStatus_t AdiStopAnyDataStream()
 	KillStreamEarly = CyTrue;
 
 	/* Return status over USB */
-	AdiReturnStreamCancelStatus(status);
+	AdiSendStatus(status, 4, CyTrue);
 
 	/* return status code */
 	return status;
-}
-
-/**
-  * @brief Return a status code over control endpoint (4 bytes)
-  *
-  * @param status The status code to send over the control endpoint
-  *
-  * @return void
-  *
-  * This function is called by the FX3 API stream cancel command. That command
-  * is set up as a "FromDevice" transfer.
- **/
-void AdiReturnStreamCancelStatus(CyU3PReturnStatus_t status)
-{
-	/* Send status back over control endpoint to end USB transaction and signal cancel was completed successfully */
-	USBBuffer[0] = status & 0xFF;
-	USBBuffer[1] = (status & 0xFF00) >> 8;
-	USBBuffer[2] = (status & 0xFF0000) >> 16;
-	USBBuffer[3] = (status & 0xFF000000) >> 24;
-	CyU3PUsbSendEP0Data (4, USBBuffer);
 }
 
 /**
@@ -142,6 +122,16 @@ CyBool_t AdiPrintStreamState()
 	return verboseMode;
 }
 
+/**
+  * @brief Starts an I2C read stream.
+  *
+  * @return A status code indicating the success of the I2C stream start.
+  *
+  * This function reads the I2C stream start request in from the control
+  * endpoint. It parses out the stream parameters from the buffer and
+  * configures the Stream DMA channel for I2C -> USB, with an infinite
+  * transfer.
+ **/
 CyU3PReturnStatus_t AdiI2CStreamStart()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -153,7 +143,7 @@ CyU3PReturnStatus_t AdiI2CStreamStart()
 	CyU3PUsbGetEP0Data(StreamThreadState.TransferByteLength, USBBuffer, &bytesRead);
 
 	/* Parse USB data (number of bytes placed in numcaptures) */
-	index = ParseUSBBuffer(&timeout, &StreamThreadState.NumCaptures, &StreamThreadState.I2CStreamPreamble);
+	index = I2CParseUSBBuffer(&timeout, &StreamThreadState.NumCaptures, &StreamThreadState.I2CStreamPreamble);
 
 	/* Number of buffers to capture follows after I2C read stream request data */
 	StreamThreadState.NumBuffers = USBBuffer[index];
@@ -214,6 +204,15 @@ CyU3PReturnStatus_t AdiI2CStreamStart()
 	return status;
 }
 
+/**
+  * @brief Cleans up an I2C read stream.
+  *
+  * @return A status code indicating the success of the I2C stream clean up.
+  *
+  * This function detroys the StreamingChannel DMA which was set up to allow
+  * I2C -> USB DMA. It also flushes the relevant endpoint and reconfigures the
+  * I2C to operate in register mode.
+ **/
 CyU3PReturnStatus_t AdiI2CStreamFinished()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
