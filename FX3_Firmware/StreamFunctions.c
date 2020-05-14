@@ -167,8 +167,12 @@ CyU3PReturnStatus_t AdiI2CStreamStart()
 	/* Disable GPIO interrupt before attaching interrupt to pin */
 	CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
 
-	/*Re-init I2C block in DMA mode */
+	/* Re-init I2C block in DMA mode */
 	AdiI2CInit(FX3State.I2CBitRate, CyTrue);
+
+	/* Configure data ready interrupts */
+	if(FX3State.DrActive)
+		AdiConfigureDrPin();
 
 	/* Configure StreamChannel for I2C to USB automatic DMA */
     CyU3PMemSet ((uint8_t *)&i2cDmaConfig, 0, sizeof(i2cDmaConfig));
@@ -184,6 +188,20 @@ CyU3PReturnStatus_t AdiI2CStreamStart()
     i2cDmaConfig.prodSckId = CY_U3P_LPP_SOCKET_I2C_PROD;
     i2cDmaConfig.consSckId = CY_U3P_UIB_SOCKET_CONS_1;
     status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_AUTO, &i2cDmaConfig);
+	if(status != CY_U3P_SUCCESS)
+	{
+		AdiLogError(StreamFunctions_c, __LINE__, status);
+		AdiAppErrorHandler(status);
+	}
+
+	/* Log stream state in vebose mode */
+	AdiPrintStreamState();
+
+	/* Flush streaming endpoint */
+	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
+
+	/* Enable an infinite DMA transfer on the streaming channel */
+	status = CyU3PDmaChannelSetXfer(&StreamingChannel, 0);
 	if(status != CY_U3P_SUCCESS)
 	{
 		AdiLogError(StreamFunctions_c, __LINE__, status);

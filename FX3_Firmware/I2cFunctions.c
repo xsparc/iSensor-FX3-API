@@ -39,12 +39,6 @@ CyU3PReturnStatus_t AdiI2CReadHandler(uint16_t RequestLength)
 	/* Parse USB Buffer */
 	ParseUSBBuffer(&timeout, &numBytes, &preamble);
 
-	/* If DrActive set wait for data ready to reach desired polarity */
-	if(FX3State.DrActive)
-	{
-
-	}
-
 	/* Perform transfer */
 	status = CyU3PI2cReceiveBytes(&preamble, BulkBuffer, numBytes, FX3State.I2CRetryCount);
 	if(status != CY_U3P_SUCCESS)
