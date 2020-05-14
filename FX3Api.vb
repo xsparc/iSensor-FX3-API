@@ -114,6 +114,9 @@ Public Class FX3Connection
     'Thread safe queue to store transfer data for the ISpi32Interface
     Private m_TransferStreamData As ConcurrentQueue(Of UInteger())
 
+    'Thread safe queue to store byte data received from I2C stream
+    Private m_I2CStreamData As ConcurrentQueue(Of Byte())
+
     'Tracks the number of frames read in from DUT in real time mode
     Private m_FramesRead As Long = 0
 

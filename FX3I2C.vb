@@ -419,7 +419,7 @@ Partial Class FX3Connection
         m_TotalBuffersToRead = numBuffers
 
         'Reinitialize the data queue
-        m_StreamData = New ConcurrentQueue(Of UShort())
+        m_I2CStreamData = New ConcurrentQueue(Of Byte())
 
         'Set the stream type
         m_StreamType = StreamType.I2CReadStream
@@ -440,8 +440,6 @@ Partial Class FX3Connection
         Dim buf(transferSize - 1) As Byte
         'frame counter
         Dim frameCounter As UInteger
-        'List used to construct frames out of the output buffer
-        Dim frameBuilder(CInt(Math.Ceiling(transferSize / 2))) As UShort
 
         '0 buffers -> infinite
         If m_TotalBuffersToRead < 1 Then
@@ -463,9 +461,8 @@ Partial Class FX3Connection
             transferStatus = USB.XferData(buf, transferSize, StreamingEndPt)
             'Parse bytes into frames and add to m_StreamData if transaction was successful
             If transferStatus Then
-                'parse buf into ushort array
-                Buffer.BlockCopy(buf, 0, frameBuilder, 0, transferSize)
-                EnqueueStreamData(frameBuilder.ToArray())
+                m_I2CStreamData.Enqueue(buf.ToArray())
+                RaiseEvent NewBufferAvailable(m_I2CStreamData.Count)
                 frameCounter += 1UI
                 'Increment the shared frame counter
                 Interlocked.Increment(m_FramesRead)
@@ -508,6 +505,25 @@ Partial Class FX3Connection
         End If
 
     End Sub
+
+    ''' <summary>
+    ''' Get I2C buffer from I2C read stream
+    ''' </summary>
+    ''' <returns>I2C data read</returns>
+    Public Function GetI2CBuffer() As Byte()
+
+        Dim buf As Byte() = Nothing
+
+        If IsNothing(m_I2CStreamData) Then
+            Return Nothing
+        End If
+
+        If m_I2CStreamData.Count = 0 Then Return Nothing
+
+        m_I2CStreamData.TryDequeue(buf)
+        Return buf
+
+    End Function
 
 #End Region
 
