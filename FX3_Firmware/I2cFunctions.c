@@ -32,7 +32,8 @@ extern BoardState FX3State;
   * @return A status code indicating the success of the I2C read command
   *
   * This function uses the I2C peripheral in register mode to perform a
-  * single transfer.
+  * single transfer. The number of bytes read in a single transfer
+  * can be 0 bytes - 12KB.
  **/
 CyU3PReturnStatus_t AdiI2CReadHandler(uint16_t RequestLength)
 {
@@ -48,6 +49,10 @@ CyU3PReturnStatus_t AdiI2CReadHandler(uint16_t RequestLength)
 
 	/* Parse USB Buffer */
 	I2CParseUSBBuffer(&timeout, &numBytes, &preamble);
+
+	/* Clamp numbytes */
+	if(numBytes > 12288)
+		numBytes = 12288;
 
 	/* Perform transfer */
 	status = CyU3PI2cReceiveBytes(&preamble, BulkBuffer, numBytes, FX3State.I2CRetryCount);
@@ -72,7 +77,8 @@ CyU3PReturnStatus_t AdiI2CReadHandler(uint16_t RequestLength)
   * @return A status code indicating the success of the I2C write command
   *
   * This function uses the I2C peripheral in register mode to perform a
-  * single transfer.
+  * single transfer. The number of bytes written in a single transfer is
+  * limited to ~4070.
  **/
 CyU3PReturnStatus_t AdiI2CWriteHandler(uint16_t RequestLength)
 {
@@ -148,13 +154,13 @@ CyU3PReturnStatus_t AdiI2CInit(uint32_t BitRate, CyBool_t isDMA)
 }
 
 /**
-  * @brief Parses I2C command data from the USB Buffer.
+  * @brief Parses I2C command data from the USB Buffer. Used for read/write/stream
   *
-  * @param timeout
+  * @param timeout Timeout value for I2C transaction. Return by reference.
   *
-  * @param numBytes
+  * @param numBytes Number of bytes field in USBBuffer. Return by reference
   *
-  * @param preamble
+  * @param preamble I2C preamble struct stored in USBBuffer. Return by reference
   *
   * @return Index for the start of the I2C transmit data (if it exists)
  **/
