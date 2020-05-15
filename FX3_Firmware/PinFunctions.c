@@ -1149,27 +1149,22 @@ CyU3PReturnStatus_t AdiPinRead(uint16_t pin)
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	CyBool_t pinValue = CyFalse;
 
-	/* get the pin value */
-	status = CyU3PGpioSimpleGetValue(pin, &pinValue);
-	if(status != CY_U3P_SUCCESS)
+	/* Configure pin as input and sample the pin value */
+	CyU3PGpioSimpleConfig_t gpioConfig;
+	gpioConfig.outValue = CyFalse;
+	gpioConfig.inputEn = CyTrue;
+	gpioConfig.driveLowEn = CyFalse;
+	gpioConfig.driveHighEn = CyFalse;
+	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+	status = CyU3PGpioSetSimpleConfig(pin, &gpioConfig);
+	/* If the config is successful, read the pin value */
+	if(status == CY_U3P_SUCCESS)
 	{
-		/* If the initial pin read fails reconfigure the pin as in input */
-		CyU3PGpioSimpleConfig_t gpioConfig;
-		gpioConfig.outValue = CyFalse;
-		gpioConfig.inputEn = CyTrue;
-		gpioConfig.driveLowEn = CyFalse;
-		gpioConfig.driveHighEn = CyFalse;
-		gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
-		status = CyU3PGpioSetSimpleConfig(pin, &gpioConfig);
-		/* If the config is successful, read the pin value */
-		if(status == CY_U3P_SUCCESS)
-		{
-			status = CyU3PGpioSimpleGetValue(pin, &pinValue);
-		}
-		else
-		{
-			AdiLogError(PinFunctions_c, __LINE__, status);
-		}
+		status = CyU3PGpioSimpleGetValue(pin, &pinValue);
+	}
+	else
+	{
+		AdiLogError(PinFunctions_c, __LINE__, status);
 	}
 
 	/* Put pin register value in output buffer */
