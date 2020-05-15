@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.7.0-pub</span>
+   &#160;<span id="projectnumber">v2.8.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -110,6 +110,10 @@ Data Fields</h2></td></tr>
 <tr class="separator:ae6700349eea81bfe75c19027cbaf9d32"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9a4f0fac9897ecf1c92d9a430e45d738"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_f_x3_pin_map.html">FX3PinMap</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_board_state.html#a9a4f0fac9897ecf1c92d9a430e45d738">PinMap</a></td></tr>
 <tr class="separator:a9a4f0fac9897ecf1c92d9a430e45d738"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31cefe75593979e677cb22db7359149c"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_board_state.html#a31cefe75593979e677cb22db7359149c">I2CBitRate</a></td></tr>
+<tr class="separator:a31cefe75593979e677cb22db7359149c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3abf7e92825e2f2522f990da0c5210b6"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_board_state.html#a3abf7e92825e2f2522f990da0c5210b6">I2CRetryCount</a></td></tr>
+<tr class="separator:a3abf7e92825e2f2522f990da0c5210b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Struct to store the current board state (SPI config, USB speed, etc) </p>
@@ -231,6 +235,36 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Track the part type </p>
+
+</div>
+</div>
+<a id="a31cefe75593979e677cb22db7359149c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a31cefe75593979e677cb22db7359149c">&#9670;&nbsp;</a></span>I2CBitRate</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t I2CBitRate</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>I2C interface bit rate </p>
+
+</div>
+</div>
+<a id="a3abf7e92825e2f2522f990da0c5210b6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3abf7e92825e2f2522f990da0c5210b6">&#9670;&nbsp;</a></span>I2CRetryCount</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint16_t I2CRetryCount</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>I2C retry count after slave device sends NAK </p>
 
 </div>
 </div>

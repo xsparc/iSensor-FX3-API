@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.7.0-pub</span>
+   &#160;<span id="projectnumber">v2.8.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -106,6 +106,7 @@ $(function() {
 <code>#include &quot;<a class="el" href="_stream_thread_8h_source.html">StreamThread.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="_flash_8h_source.html">Flash.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="_error_log_8h_source.html">ErrorLog.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="_i2c_functions_8h_source.html">I2cFunctions.h</a>&quot;</code><br />
 <code>#include &quot;gpio_regs.h&quot;</code><br />
 <code>#include &quot;spi_regs.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="gctlaon__regs_8h_source.html">gctlaon_regs.h</a>&quot;</code><br />
@@ -127,6 +128,16 @@ Data Structures</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
+<tr class="memitem:a9e4cb44b63901e5c6ebeec5ca3fa6535"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a9e4cb44b63901e5c6ebeec5ca3fa6535">ADI_I2C_SET_BIT_RATE</a>&#160;&#160;&#160;(0x10)</td></tr>
+<tr class="separator:a9e4cb44b63901e5c6ebeec5ca3fa6535"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0867926a9244571e38ec9e38a46739a7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a0867926a9244571e38ec9e38a46739a7">ADI_I2C_READ_BYTES</a>&#160;&#160;&#160;(0x11)</td></tr>
+<tr class="separator:a0867926a9244571e38ec9e38a46739a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a173d02833fb020d122e972490a597a6d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a173d02833fb020d122e972490a597a6d">ADI_I2C_WRITE_BYTES</a>&#160;&#160;&#160;(0x12)</td></tr>
+<tr class="separator:a173d02833fb020d122e972490a597a6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af633a96279605da8059c9c94fd78b214"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#af633a96279605da8059c9c94fd78b214">ADI_I2C_READ_STREAM</a>&#160;&#160;&#160;(0x13)</td></tr>
+<tr class="separator:af633a96279605da8059c9c94fd78b214"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a47e951cf306a6ca4572536e60847d4a2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a47e951cf306a6ca4572536e60847d4a2">ADI_I2C_RETRY_COUNT</a>&#160;&#160;&#160;(0x14)</td></tr>
+<tr class="separator:a47e951cf306a6ca4572536e60847d4a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a386c5f7f4999ca865cf45f1fa983cbcc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a386c5f7f4999ca865cf45f1fa983cbcc">ADI_FIRMWARE_ID_CHECK</a>&#160;&#160;&#160;(0xB0)</td></tr>
 <tr class="separator:a386c5f7f4999ca865cf45f1fa983cbcc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a65ae710b10dfc47626b17f7edb54be9f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a65ae710b10dfc47626b17f7edb54be9f">ADI_HARD_RESET</a>&#160;&#160;&#160;(0xB1)</td></tr>
@@ -205,6 +216,12 @@ Macros</h2></td></tr>
 <tr class="separator:ab0ef8204dae6c6ae26cbeb72d0ebec67"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9422d5962152028e0f240088325a42de"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a9422d5962152028e0f240088325a42de">ADI_TIMER_PIN_INDEX</a>&#160;&#160;&#160;(0x0)</td></tr>
 <tr class="separator:a9422d5962152028e0f240088325a42de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afdfc960667d11f1b5452bc0fce068ff6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#afdfc960667d11f1b5452bc0fce068ff6">ADI_ID_PIN_0</a>&#160;&#160;&#160;17</td></tr>
+<tr class="separator:afdfc960667d11f1b5452bc0fce068ff6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a670d7a38288543895baebc0e29135164"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a670d7a38288543895baebc0e29135164">ADI_ID_PIN_1</a>&#160;&#160;&#160;15</td></tr>
+<tr class="separator:a670d7a38288543895baebc0e29135164"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6f3da7a9bc3bd230c3bad606599f988e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a6f3da7a9bc3bd230c3bad606599f988e">ADI_FLASH_WRITE_ENABLE_PIN</a>&#160;&#160;&#160;18</td></tr>
+<tr class="separator:a6f3da7a9bc3bd230c3bad606599f988e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6336391fa504c15c2eb6a066d14b9d48"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a6336391fa504c15c2eb6a066d14b9d48">ADI_STREAMING_ENDPOINT</a>&#160;&#160;&#160;(0x81)</td></tr>
 <tr class="separator:a6336391fa504c15c2eb6a066d14b9d48"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afcccb969576e63dcc7a9c705fd60eff0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#afcccb969576e63dcc7a9c705fd60eff0">ADI_FROM_PC_ENDPOINT</a>&#160;&#160;&#160;(0x1)</td></tr>
@@ -243,8 +260,9 @@ typedef struct <a class="el" href="struct_stream_state.html">StreamState</a>&#16
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:a5d0d41db1886fb75e6a09e4b74cdbc54"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54">FX3BoardType</a> { <a class="el" href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54a6fd1f5e42997c298e2f8de97ab435ac4">iSensorFX3Board</a> = 0, 
-<a class="el" href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54a060e1c60a58050eb2c766be3cfc4e58a">CypressFX3Board</a>
+<tr class="memitem:a5d0d41db1886fb75e6a09e4b74cdbc54"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54">FX3BoardType</a> { <a class="el" href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54a060e1c60a58050eb2c766be3cfc4e58a">CypressFX3Board</a> = 0, 
+<a class="el" href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54a8c076c3e8f05610b52fbdbd5c9570444">iSensorFX3Board_A</a> = 1, 
+<a class="el" href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54ae82620a4320b33be645f5738070c6cdd">iSensorFX3Board_B</a> = 2
  }</td></tr>
 <tr class="separator:a5d0d41db1886fb75e6a09e4b74cdbc54"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa9d2dbcc17573220271f7d1bd532213d"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#aa9d2dbcc17573220271f7d1bd532213d">PartTye</a> { <br />
@@ -299,6 +317,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a7774dffb535ccfdcea7557e9adcedec6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54">FX3BoardType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a7774dffb535ccfdcea7557e9adcedec6">GetFX3BoardType</a> ()</td></tr>
 <tr class="memdesc:a7774dffb535ccfdcea7557e9adcedec6"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function determines the type of the connected FX3 board.  <a href="#a7774dffb535ccfdcea7557e9adcedec6">More...</a><br /></td></tr>
 <tr class="separator:a7774dffb535ccfdcea7557e9adcedec6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa2fad3b6760da6ae249c937cc50e9a20"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#aa2fad3b6760da6ae249c937cc50e9a20">AdiSendStatus</a> (uint32_t status, uint16_t count, CyBool_t isControlEndpoint)</td></tr>
+<tr class="memdesc:aa2fad3b6760da6ae249c937cc50e9a20"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sends status back to PC over control endpoint or manual bulk in endpoint.  <a href="#aa2fad3b6760da6ae249c937cc50e9a20">More...</a><br /></td></tr>
+<tr class="separator:aa2fad3b6760da6ae249c937cc50e9a20"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -406,6 +427,21 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 </div>
 </div>
+<a id="a6f3da7a9bc3bd230c3bad606599f988e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6f3da7a9bc3bd230c3bad606599f988e">&#9670;&nbsp;</a></span>ADI_FLASH_WRITE_ENABLE_PIN</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_FLASH_WRITE_ENABLE_PIN&#160;&#160;&#160;18</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Flash write enable pin </p>
+
+</div>
+</div>
 <a id="afcccb969576e63dcc7a9c705fd60eff0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afcccb969576e63dcc7a9c705fd60eff0">&#9670;&nbsp;</a></span>ADI_FROM_PC_ENDPOINT</h2>
 
@@ -493,6 +529,111 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
       </table>
 </div><div class="memdoc">
 <p>Hard-reset the FX3 firmware (return to bootloader mode) </p>
+
+</div>
+</div>
+<a id="a0867926a9244571e38ec9e38a46739a7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0867926a9244571e38ec9e38a46739a7">&#9670;&nbsp;</a></span>ADI_I2C_READ_BYTES</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_I2C_READ_BYTES&#160;&#160;&#160;(0x11)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>I2C read command </p>
+
+</div>
+</div>
+<a id="af633a96279605da8059c9c94fd78b214"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af633a96279605da8059c9c94fd78b214">&#9670;&nbsp;</a></span>ADI_I2C_READ_STREAM</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_I2C_READ_STREAM&#160;&#160;&#160;(0x13)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>I2C continuous stream read command </p>
+
+</div>
+</div>
+<a id="a47e951cf306a6ca4572536e60847d4a2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a47e951cf306a6ca4572536e60847d4a2">&#9670;&nbsp;</a></span>ADI_I2C_RETRY_COUNT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_I2C_RETRY_COUNT&#160;&#160;&#160;(0x14)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>I2C set rety count after slave sends NAK </p>
+
+</div>
+</div>
+<a id="a9e4cb44b63901e5c6ebeec5ca3fa6535"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9e4cb44b63901e5c6ebeec5ca3fa6535">&#9670;&nbsp;</a></span>ADI_I2C_SET_BIT_RATE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_I2C_SET_BIT_RATE&#160;&#160;&#160;(0x10)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>I2C set bit rate command </p>
+
+</div>
+</div>
+<a id="a173d02833fb020d122e972490a597a6d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a173d02833fb020d122e972490a597a6d">&#9670;&nbsp;</a></span>ADI_I2C_WRITE_BYTES</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_I2C_WRITE_BYTES&#160;&#160;&#160;(0x12)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>I2C write command </p>
+
+</div>
+</div>
+<a id="afdfc960667d11f1b5452bc0fce068ff6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afdfc960667d11f1b5452bc0fce068ff6">&#9670;&nbsp;</a></span>ADI_ID_PIN_0</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_ID_PIN_0&#160;&#160;&#160;17</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>ID pin 0 (CTL0 - iSensor board vs cypress dev board) </p>
+
+</div>
+</div>
+<a id="a670d7a38288543895baebc0e29135164"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a670d7a38288543895baebc0e29135164">&#9670;&nbsp;</a></span>ADI_ID_PIN_1</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_ID_PIN_1&#160;&#160;&#160;15</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>ID pin 1 (iSensor board rev A vs rev B (w/ I2C) </p>
 
 </div>
 </div>
@@ -867,7 +1008,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
         </tr>
       </table>
 </div><div class="memdoc">
-<p>COmplex GPIO index for the timer input (ADI_TIMER_PIN % 8) </p>
+<p>Complex GPIO index for the timer input (ADI_TIMER_PIN % 8) </p>
 
 </div>
 </div>
@@ -1096,9 +1237,11 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 </div><div class="memdoc">
 <p>Enum for the available FX3 board types </p>
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a5d0d41db1886fb75e6a09e4b74cdbc54a6fd1f5e42997c298e2f8de97ab435ac4"></a>iSensorFX3Board&#160;</td><td class="fielddoc"><p>iSensor FX3 based eval board manufactured by Analog Devices </p>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a5d0d41db1886fb75e6a09e4b74cdbc54a060e1c60a58050eb2c766be3cfc4e58a"></a>CypressFX3Board&#160;</td><td class="fielddoc"><p>Cypress SuperSpeed Explorer kit board. Can be used with breakout board for iSensors connectors. </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a5d0d41db1886fb75e6a09e4b74cdbc54a060e1c60a58050eb2c766be3cfc4e58a"></a>CypressFX3Board&#160;</td><td class="fielddoc"><p>Cypress SuperSpeed Explorer kit board. Can be used with breakout board for iSensors connectors. </p>
+<tr><td class="fieldname"><a id="a5d0d41db1886fb75e6a09e4b74cdbc54a8c076c3e8f05610b52fbdbd5c9570444"></a>iSensorFX3Board_A&#160;</td><td class="fielddoc"><p>Rev. A iSensor FX3 based eval board manufactured by Analog Devices. Does not have I2C pins exposed </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a5d0d41db1886fb75e6a09e4b74cdbc54ae82620a4320b33be645f5738070c6cdd"></a>iSensorFX3Board_B&#160;</td><td class="fielddoc"><p>Rev. B iSensor FX3 based eval board manufactured by Analog Devices. Has I2C pins exposed on secondary connector </p>
 </td></tr>
 </table>
 
@@ -1414,6 +1557,52 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Returns true so that the USB driver always stays in high power state. </dd></dl>
+
+</div>
+</div>
+<a id="aa2fad3b6760da6ae249c937cc50e9a20"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa2fad3b6760da6ae249c937cc50e9a20">&#9670;&nbsp;</a></span>AdiSendStatus()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void AdiSendStatus </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>status</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">CyBool_t&#160;</td>
+          <td class="paramname"><em>isControlEndpoint</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sends status back to PC over control endpoint or manual bulk in endpoint. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">status</td><td>The status code to send back. Is placed in USBBuffer[0-3]</td></tr>
+    <tr><td class="paramname">count</td><td>The number of bytes to send. Must be at least 4</td></tr>
+    <tr><td class="paramname">isControlEndpoint</td><td>Bool indicating if data should be sent over control endpoint or bulk endpoint</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>void</dd></dl>
+<p>This function will overwrite the data in USBBuffer[0-3]. If you need to send extra data along with the status, it must be placed starting at USBBuffer[4]. </p>
 
 </div>
 </div>

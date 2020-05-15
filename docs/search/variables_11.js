@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['watchdogenabled',['WatchDogEnabled',['../struct_board_state.html#aab088ef1de521bab22818bf4d00addf9',1,'BoardState']]],
-  ['watchdogperiodms',['WatchDogPeriodMs',['../struct_board_state.html#a2bca4fcdf76d06297a44cb6f31e02eb4',1,'BoardState']]],
-  ['watchdogticks',['WatchDogTicks',['../struct_board_state.html#a68c0f33ee25d0d5d303c417e522dbcfb',1,'BoardState']]],
-  ['watchdogtimer',['WatchdogTimer',['../main_8c.html#a7467952d7e641e0e3c09eb00ce503380',1,'main.c']]]
+  ['usbbuffer',['USBBuffer',['../_flash_8c.html#af61156727a983c3f2ebfd9ae0e5bac71',1,'USBBuffer():&#160;Flash.c'],['../_i2c_functions_8c.html#af61156727a983c3f2ebfd9ae0e5bac71',1,'USBBuffer():&#160;I2cFunctions.c'],['../_pin_functions_8c.html#af61156727a983c3f2ebfd9ae0e5bac71',1,'USBBuffer():&#160;PinFunctions.c'],['../_spi_functions_8c.html#af61156727a983c3f2ebfd9ae0e5bac71',1,'USBBuffer():&#160;SpiFunctions.c'],['../_stream_functions_8c.html#af61156727a983c3f2ebfd9ae0e5bac71',1,'USBBuffer():&#160;StreamFunctions.c'],['../_stream_thread_8c.html#af61156727a983c3f2ebfd9ae0e5bac71',1,'USBBuffer():&#160;StreamThread.c']]],
+  ['usbbuffersize',['UsbBufferSize',['../struct_board_state.html#a7ecc16e123ad5c0963d236b46e7974c1',1,'BoardState']]]
 ];

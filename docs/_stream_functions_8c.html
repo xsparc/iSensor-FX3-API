@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.7.0-pub</span>
+   &#160;<span id="projectnumber">v2.8.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -88,12 +88,15 @@ Functions</h2></td></tr>
 <tr class="memitem:a7befd6a3d6f0785d3ee11f37bef66c54"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_functions_8c.html#a7befd6a3d6f0785d3ee11f37bef66c54">AdiStopAnyDataStream</a> ()</td></tr>
 <tr class="memdesc:a7befd6a3d6f0785d3ee11f37bef66c54"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function sets a flag to notify the streaming thread that the user requested to cancel streaming.  <a href="#a7befd6a3d6f0785d3ee11f37bef66c54">More...</a><br /></td></tr>
 <tr class="separator:a7befd6a3d6f0785d3ee11f37bef66c54"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7df732c976114a54e6947c122b128dd8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_functions_8c.html#a7df732c976114a54e6947c122b128dd8">AdiReturnStreamCancelStatus</a> (CyU3PReturnStatus_t status)</td></tr>
-<tr class="memdesc:a7df732c976114a54e6947c122b128dd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a status code over control endpoint (4 bytes)  <a href="#a7df732c976114a54e6947c122b128dd8">More...</a><br /></td></tr>
-<tr class="separator:a7df732c976114a54e6947c122b128dd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a44b20c4d8d2c75500c589779963ae8ba"><td class="memItemLeft" align="right" valign="top">CyBool_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_functions_8c.html#a44b20c4d8d2c75500c589779963ae8ba">AdiPrintStreamState</a> ()</td></tr>
 <tr class="memdesc:a44b20c4d8d2c75500c589779963ae8ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function prints all the stream state variables to the terminal if VERBOSE_MODE is defined.  <a href="#a44b20c4d8d2c75500c589779963ae8ba">More...</a><br /></td></tr>
 <tr class="separator:a44b20c4d8d2c75500c589779963ae8ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a674b68725b4090cf8f1560d0d19bfc0b"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_functions_8c.html#a674b68725b4090cf8f1560d0d19bfc0b">AdiI2CStreamStart</a> ()</td></tr>
+<tr class="memdesc:a674b68725b4090cf8f1560d0d19bfc0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Starts an I2C read stream.  <a href="#a674b68725b4090cf8f1560d0d19bfc0b">More...</a><br /></td></tr>
+<tr class="separator:a674b68725b4090cf8f1560d0d19bfc0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe91c220ffa7894a808b88eabb59f261"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_functions_8c.html#abe91c220ffa7894a808b88eabb59f261">AdiI2CStreamFinished</a> ()</td></tr>
+<tr class="memdesc:abe91c220ffa7894a808b88eabb59f261"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cleans up an I2C read stream.  <a href="#abe91c220ffa7894a808b88eabb59f261">More...</a><br /></td></tr>
+<tr class="separator:abe91c220ffa7894a808b88eabb59f261"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad691192687ea7f683ced5ecdc7d96386"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_functions_8c.html#ad691192687ea7f683ced5ecdc7d96386">AdiTransferStreamStart</a> ()</td></tr>
 <tr class="memdesc:ad691192687ea7f683ced5ecdc7d96386"><td class="mdescLeft">&#160;</td><td class="mdescRight">Starts a protocol agnostic SPI transfer stream.  <a href="#ad691192687ea7f683ced5ecdc7d96386">More...</a><br /></td></tr>
 <tr class="separator:ad691192687ea7f683ced5ecdc7d96386"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -279,6 +282,48 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 </div>
 </div>
+<a id="abe91c220ffa7894a808b88eabb59f261"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abe91c220ffa7894a808b88eabb59f261">&#9670;&nbsp;</a></span>AdiI2CStreamFinished()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">CyU3PReturnStatus_t AdiI2CStreamFinished </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Cleans up an I2C read stream. </p>
+<dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the I2C stream clean up.</dd></dl>
+<p>This function detroys the StreamingChannel DMA which was set up to allow I2C -&gt; USB DMA. It also flushes the relevant endpoint and reconfigures the I2C to operate in register mode. </p>
+
+</div>
+</div>
+<a id="a674b68725b4090cf8f1560d0d19bfc0b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a674b68725b4090cf8f1560d0d19bfc0b">&#9670;&nbsp;</a></span>AdiI2CStreamStart()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">CyU3PReturnStatus_t AdiI2CStreamStart </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Starts an I2C read stream. </p>
+<dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the I2C stream start.</dd></dl>
+<p>This function reads the I2C stream start request in from the control endpoint. It parses out the stream parameters from the buffer and configures the Stream DMA channel for I2C -&gt; USB, with an infinite transfer. </p>
+
+</div>
+</div>
 <a id="a44b20c4d8d2c75500c589779963ae8ba"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a44b20c4d8d2c75500c589779963ae8ba">&#9670;&nbsp;</a></span>AdiPrintStreamState()</h2>
 
@@ -339,34 +384,6 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 <p>Starts a real time stream for ADcmXLx021 DUTs. </p>
 <dl class="section return"><dt>Returns</dt><dd>The status of starting a real-time stream.</dd></dl>
 <p>This function kicks off a real-time stream by configuring interrupts, SPI, and end points. It also optionally toggles the SYNC/RTS pin if requested. At the end of the function, the bit assigned to enable the capture thread is toggled to signal the streaming thread to start producing data. </p>
-
-</div>
-</div>
-<a id="a7df732c976114a54e6947c122b128dd8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7df732c976114a54e6947c122b128dd8">&#9670;&nbsp;</a></span>AdiReturnStreamCancelStatus()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void AdiReturnStreamCancelStatus </td>
-          <td>(</td>
-          <td class="paramtype">CyU3PReturnStatus_t&#160;</td>
-          <td class="paramname"><em>status</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Return a status code over control endpoint (4 bytes) </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">status</td><td>The status code to send over the control endpoint</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>void</dd></dl>
-<p>This function is called by the FX3 API stream cancel command. That command is set up as a "FromDevice" transfer. </p>
 
 </div>
 </div>

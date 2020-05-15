@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['usbbuffer',['USBBuffer',['../_flash_8c.html#af61156727a983c3f2ebfd9ae0e5bac71',1,'USBBuffer():&#160;Flash.c'],['../_pin_functions_8c.html#af61156727a983c3f2ebfd9ae0e5bac71',1,'USBBuffer():&#160;PinFunctions.c'],['../_spi_functions_8c.html#af61156727a983c3f2ebfd9ae0e5bac71',1,'USBBuffer():&#160;SpiFunctions.c'],['../_stream_functions_8c.html#af61156727a983c3f2ebfd9ae0e5bac71',1,'USBBuffer():&#160;StreamFunctions.c'],['../_stream_thread_8c.html#af61156727a983c3f2ebfd9ae0e5bac71',1,'USBBuffer():&#160;StreamThread.c']]],
-  ['usbbuffersize',['UsbBufferSize',['../struct_board_state.html#a7ecc16e123ad5c0963d236b46e7974c1',1,'BoardState']]]
+  ['temp',['Temp',['../struct_error_msg.html#a5eb1cf866a566d28e7da10cea574527d',1,'ErrorMsg']]],
+  ['timerpinconfig',['TimerPinConfig',['../struct_board_state.html#a117c97345beb41588f612505e683e3f0',1,'BoardState']]],
+  ['transferbytelength',['TransferByteLength',['../struct_stream_state.html#a1e53fec134265a5e8a4ab296e64f4f41',1,'StreamState']]],
+  ['transferwordlength',['TransferWordLength',['../struct_stream_state.html#a9461fa46b20c26a392cb320c17486feb',1,'StreamState']]]
 ];

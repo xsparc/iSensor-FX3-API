@@ -1,8 +1,6 @@
 var searchData=
 [
-  ['pinexitenable',['PinExitEnable',['../struct_stream_state.html#adff3a3ce23fd26136d0354f2d518c164',1,'StreamState']]],
-  ['pinhighmask',['PinHighMask',['../_spi_functions_8c.html#a3f5779ac2868e133a5b3540ef1b6e844',1,'SpiFunctions.c']]],
-  ['pinlowmask',['PinLowMask',['../_spi_functions_8c.html#a8a3f02833329ca1f4fe4da615136ebd7',1,'SpiFunctions.c']]],
-  ['pinmap',['PinMap',['../struct_board_state.html#a9a4f0fac9897ecf1c92d9a430e45d738',1,'BoardState']]],
-  ['pinstartenable',['PinStartEnable',['../struct_stream_state.html#a15dc4ab7ae466aaff3ea8e36a5b496c5',1,'StreamState']]]
+  ['numbuffers',['NumBuffers',['../struct_stream_state.html#aac46e6503d65bc2bdd8b5f338fde7a3d',1,'StreamState']]],
+  ['numcaptures',['NumCaptures',['../struct_stream_state.html#a0a4365d72019a9a26b3b73f80b76b39f',1,'StreamState']]],
+  ['numrealtimecaptures',['NumRealTimeCaptures',['../struct_stream_state.html#ae7508d498a6d9019fdf897002babe7ed',1,'StreamState']]]
 ];

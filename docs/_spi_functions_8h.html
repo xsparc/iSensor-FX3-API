@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.7.0-pub</span>
+   &#160;<span id="projectnumber">v2.8.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -585,7 +585,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the function.</dd></dl>
-<p>This function performs a bi-directional SPI transfer, on up to 4 bytes of data. The transfer length is determined by the current SPI config word length setting. The status and data received on the MISO line are sent to the PC over EP0 following the transfer. </p>
+<p>This function performs a bi-directional SPI transfer, on up to 4 bytes of data. The transfer length is determined by the current SPI config word length setting. The data received on the MISO line is placed in USBBuffer[4 - 7] following the transfer. </p>
 
 </div>
 </div>

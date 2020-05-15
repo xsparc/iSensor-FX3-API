@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.7.0-pub</span>
+   &#160;<span id="projectnumber">v2.8.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -85,6 +85,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a7705f9deff41eda1e466279dd336b5ef"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_thread_8c.html#a7705f9deff41eda1e466279dd336b5ef">AdiStreamThreadEntry</a> (uint32_t input)</td></tr>
 <tr class="memdesc:a7705f9deff41eda1e466279dd336b5ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">The entry point function for the StreamThread. Handles all streaming data captures.  <a href="#a7705f9deff41eda1e466279dd336b5ef">More...</a><br /></td></tr>
 <tr class="separator:a7705f9deff41eda1e466279dd336b5ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a884abd7d1337c955ab8b0d09e698982c"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_thread_8c.html#a884abd7d1337c955ab8b0d09e698982c">AdiI2CStreamWork</a> ()</td></tr>
+<tr class="memdesc:a884abd7d1337c955ab8b0d09e698982c"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the worker function for the I2C read stream.  <a href="#a884abd7d1337c955ab8b0d09e698982c">More...</a><br /></td></tr>
+<tr class="separator:a884abd7d1337c955ab8b0d09e698982c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab226153019961463f242b1753cd49343"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_stream_thread_8c.html#ab226153019961463f242b1753cd49343">AdiGenericStreamWork</a> ()</td></tr>
 <tr class="memdesc:ab226153019961463f242b1753cd49343"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the worker function for the generic stream.  <a href="#ab226153019961463f242b1753cd49343">More...</a><br /></td></tr>
 <tr class="separator:ab226153019961463f242b1753cd49343"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -166,6 +169,27 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 <p>This is the worker function for the generic stream. </p>
 <dl class="section return"><dt>Returns</dt><dd>A status code representing the success of the generic stream operation.</dd></dl>
 <p>This function performs all the SPI and USB transfers for a single "buffer" of a generic stream. One buffer is considered to be numCapture reads of the register list provided. </p>
+
+</div>
+</div>
+<a id="a884abd7d1337c955ab8b0d09e698982c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a884abd7d1337c955ab8b0d09e698982c">&#9670;&nbsp;</a></span>AdiI2CStreamWork()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">CyU3PReturnStatus_t AdiI2CStreamWork </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This is the worker function for the I2C read stream. </p>
+<dl class="section return"><dt>Returns</dt><dd>A status code representing the success of the I2C stream operation.</dd></dl>
+<p>This function performs all the I2C and USB transfers for a single "buffer" of an I2C read stream. The size of each buffer is the number of read bytes requested in the stream start </p>
 
 </div>
 </div>

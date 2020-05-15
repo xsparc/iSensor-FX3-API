@@ -4,7 +4,7 @@ var searchData=
   ['main_2ec',['main.c',['../main_8c.html',1,'']]],
   ['main_2eh',['main.h',['../main_8h.html',1,'']]],
   ['main_5fc',['Main_c',['../_error_log_8h.html#a961bfce4003ed3e90785c485090db4f7a54a353d1760597ae87f14cf82a01353c',1,'ErrorLog.h']]],
-  ['manualdmabuffer',['ManualDMABuffer',['../main_8c.html#a495399a2f10b8f42901a3e592759685b',1,'ManualDMABuffer():&#160;main.c'],['../_pin_functions_8c.html#a495399a2f10b8f42901a3e592759685b',1,'ManualDMABuffer():&#160;main.c'],['../_spi_functions_8c.html#a495399a2f10b8f42901a3e592759685b',1,'ManualDMABuffer():&#160;main.c']]],
+  ['manualdmabuffer',['ManualDMABuffer',['../_i2c_functions_8c.html#a495399a2f10b8f42901a3e592759685b',1,'ManualDMABuffer():&#160;main.c'],['../main_8c.html#a495399a2f10b8f42901a3e592759685b',1,'ManualDMABuffer():&#160;main.c'],['../_pin_functions_8c.html#a495399a2f10b8f42901a3e592759685b',1,'ManualDMABuffer():&#160;main.c'],['../_spi_functions_8c.html#a495399a2f10b8f42901a3e592759685b',1,'ManualDMABuffer():&#160;main.c']]],
   ['memorytospi',['MemoryToSPI',['../main_8c.html#af72f4fb79889fd9a2a5ef1e62e72c738',1,'MemoryToSPI():&#160;main.c'],['../_stream_functions_8c.html#af72f4fb79889fd9a2a5ef1e62e72c738',1,'MemoryToSPI():&#160;main.c'],['../_stream_thread_8c.html#af72f4fb79889fd9a2a5ef1e62e72c738',1,'MemoryToSPI():&#160;main.c']]],
   ['miso',['MISO',['../struct_bit_bang_spi_conf.html#af69c9b0176b31177e60b189a0e9fa6b1',1,'BitBangSpiConf']]],
   ['misopin',['MISOPin',['../_spi_functions_8c.html#a89791c056d4950993b754594c21f35ab',1,'SpiFunctions.c']]],

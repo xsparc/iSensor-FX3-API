@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['line',['Line',['../struct_error_msg.html#a9c7a78e876a7dfb279a16029f915463f',1,'ErrorMsg']]],
-  ['logbuffer',['LogBuffer',['../_error_log_8c.html#a0cd2b15d95a6ccbae328ed6b84606f78',1,'ErrorLog.c']]]
+  ['killstreamearly',['KillStreamEarly',['../main_8c.html#a588a5b1b27013a3c880a0c031d6b7f3a',1,'KillStreamEarly():&#160;main.c'],['../_stream_functions_8c.html#a588a5b1b27013a3c880a0c031d6b7f3a',1,'KillStreamEarly():&#160;main.c'],['../_stream_thread_8c.html#a588a5b1b27013a3c880a0c031d6b7f3a',1,'KillStreamEarly():&#160;main.c']]]
 ];

@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.7.0-pub</span>
+   &#160;<span id="projectnumber">v2.8.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -122,6 +122,14 @@ Macros</h2></td></tr>
 <tr class="separator:a2f7e625a1da198129d1782f28e10f2d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a47ab81d326526f0abfd33e81a1c87916"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_app_thread_8h.html#a47ab81d326526f0abfd33e81a1c87916">ADI_TRANSFER_STREAM_ENABLE</a>&#160;&#160;&#160;(1 &lt;&lt; 16)</td></tr>
 <tr class="separator:a47ab81d326526f0abfd33e81a1c87916"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa58a1c9ac515ffc13024a2246e559ae9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_app_thread_8h.html#aa58a1c9ac515ffc13024a2246e559ae9">ADI_I2C_STREAM_START</a>&#160;&#160;&#160;(1 &lt;&lt; 17)</td></tr>
+<tr class="separator:aa58a1c9ac515ffc13024a2246e559ae9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc3628b59b6e0bc4c6a65933ab9e9aaa"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_app_thread_8h.html#adc3628b59b6e0bc4c6a65933ab9e9aaa">ADI_I2C_STREAM_STOP</a>&#160;&#160;&#160;(1 &lt;&lt; 18)</td></tr>
+<tr class="separator:adc3628b59b6e0bc4c6a65933ab9e9aaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13c57dad61581b1f21ce55945d0b2ca5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_app_thread_8h.html#a13c57dad61581b1f21ce55945d0b2ca5">ADI_I2C_STREAM_DONE</a>&#160;&#160;&#160;(1 &lt;&lt; 19)</td></tr>
+<tr class="separator:a13c57dad61581b1f21ce55945d0b2ca5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc3e5b0005e7c5ce7ad14123a90d972b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_app_thread_8h.html#abc3e5b0005e7c5ce7ad14123a90d972b">ADI_I2C_STREAM_ENABLE</a>&#160;&#160;&#160;(1 &lt;&lt; 20)</td></tr>
+<tr class="separator:abc3e5b0005e7c5ce7ad14123a90d972b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
@@ -262,6 +270,66 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
       </table>
 </div><div class="memdoc">
 <p>Event handler bit for asynchronously stopping a generic stream </p>
+
+</div>
+</div>
+<a id="a13c57dad61581b1f21ce55945d0b2ca5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a13c57dad61581b1f21ce55945d0b2ca5">&#9670;&nbsp;</a></span>ADI_I2C_STREAM_DONE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_I2C_STREAM_DONE&#160;&#160;&#160;(1 &lt;&lt; 19)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>I2C read stream done </p>
+
+</div>
+</div>
+<a id="abc3e5b0005e7c5ce7ad14123a90d972b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abc3e5b0005e7c5ce7ad14123a90d972b">&#9670;&nbsp;</a></span>ADI_I2C_STREAM_ENABLE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_I2C_STREAM_ENABLE&#160;&#160;&#160;(1 &lt;&lt; 20)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>I2C read stream enable </p>
+
+</div>
+</div>
+<a id="aa58a1c9ac515ffc13024a2246e559ae9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa58a1c9ac515ffc13024a2246e559ae9">&#9670;&nbsp;</a></span>ADI_I2C_STREAM_START</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_I2C_STREAM_START&#160;&#160;&#160;(1 &lt;&lt; 17)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Start I2C read stream </p>
+
+</div>
+</div>
+<a id="adc3628b59b6e0bc4c6a65933ab9e9aaa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc3628b59b6e0bc4c6a65933ab9e9aaa">&#9670;&nbsp;</a></span>ADI_I2C_STREAM_STOP</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_I2C_STREAM_STOP&#160;&#160;&#160;(1 &lt;&lt; 18)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Stop I2C read stream </p>
 
 </div>
 </div>
