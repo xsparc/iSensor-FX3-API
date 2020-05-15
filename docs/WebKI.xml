@@ -28,6 +28,11 @@
   <HelpKINode Title="ADI_GET_BUILD_DATE enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="ADI_GET_STATUS enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="ADI_HARD_RESET enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
+  <HelpKINode Title="ADI_I2C_READ_BYTES enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
+  <HelpKINode Title="ADI_I2C_READ_STREAM enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
+  <HelpKINode Title="ADI_I2C_RETRY_COUNT enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
+  <HelpKINode Title="ADI_I2C_SET_BIT_RATE enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
+  <HelpKINode Title="ADI_I2C_WRITE_BYTES enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="ADI_LED_BLINKING_OFF enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="ADI_LED_BLINKING_ON enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
   <HelpKINode Title="ADI_LED_OFF enumeration member" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
@@ -126,6 +131,7 @@
   <HelpKINode Title="DataReadyPin property" Url="html/7bedeb2a-d22c-5e87-621c-9c13a23aae7e.htm" />
   <HelpKINode Title="DataReadyPinFX3GPIO property" Url="html/e3994d9d-fc1d-f923-64f3-9ce6f5276269.htm" />
   <HelpKINode Title="Description field" Url="html/6f172777-b7f7-0762-ea61-58bbb85a3f9c.htm" />
+  <HelpKINode Title="DeviceAddress property" Url="html/ef03ccfd-445f-f696-b1bf-c488caa31159.htm" />
   <HelpKINode Title="DeviceType enumeration" Url="html/ff5bd0a4-5894-648c-a639-f210d1d45fd6.htm" />
   <HelpKINode Title="DIO1 property" Url="html/bcfc08bd-bff7-ed18-25c4-cbe6cec2b520.htm" />
   <HelpKINode Title="DIO2 property" Url="html/c26d9c4a-1b40-0d99-6147-850f68e42d46.htm" />
@@ -171,6 +177,7 @@
   <HelpKINode Title="FX3Api.FX3PinResistorSetting enumeration" Url="html/43c2aa87-dcdc-3866-e332-9cb18194cbdc.htm" />
   <HelpKINode Title="FX3Api.FX3ProgrammingException class" Url="html/16a39d22-24a2-be91-e5cf-fa5ab779db9e.htm" />
   <HelpKINode Title="FX3Api.FX3SPIConfig class" Url="html/8e72f395-0ddd-51f7-906f-74fb7c11ea45.htm" />
+  <HelpKINode Title="FX3Api.I2CPreamble class" Url="html/913619f5-4c83-117a-b370-143cf4f99c0d.htm" />
   <HelpKINode Title="FX3Api.PinList class" Url="html/444c4859-5384-fa00-cb9d-f46332154db8.htm" />
   <HelpKINode Title="FX3Api.PinPWMInfo class" Url="html/e31bf2a8-b37c-c3e5-a5ae-f2095cf377d3.htm" />
   <HelpKINode Title="FX3Api.SpiChipselectControl enumeration" Url="html/9fbee395-4951-0907-af42-9fe9a28388a9.htm" />
@@ -310,10 +317,16 @@
   <HelpKINode Title="FX3Connection.GetErrorLogCount method" Url="html/869a5b14-0f8e-d79e-4834-b1fb64f07673.htm" />
   <HelpKINode Title="FX3Connection.GetFirmwareVersion property" Url="html/a6d7d534-1e91-c21c-5573-8a4bbd2c1b80.htm" />
   <HelpKINode Title="FX3Connection.GetFX3ApiInfo property" Url="html/a033c331-624a-1791-cf31-ab7e1f365ced.htm" />
+  <HelpKINode Title="FX3Connection.GetI2CBuffer method" Url="html/aa792fcd-93a8-db57-939c-90268513bd69.htm" />
   <HelpKINode Title="FX3Connection.GetNumBuffersRead property" Url="html/f840778c-5819-eca2-7cd2-c51ffa8488f8.htm" />
   <HelpKINode Title="FX3Connection.GetPinPWMInfo method" Url="html/dc3151b3-bdff-ae79-87df-171b9403b17f.htm" />
   <HelpKINode Title="FX3Connection.GetStreamDataPacketU16 method" Url="html/c6a66559-824f-4fbf-0fa6-8aa54f486d13.htm" />
   <HelpKINode Title="FX3Connection.GetTargetSerialNumber property" Url="html/cc91d8ae-630b-17e6-37c3-8892995359c5.htm" />
+  <HelpKINode Title="FX3Connection.GetTimerValue method" Url="html/c93809d2-b137-b4b8-1ae5-fd95d7a347af.htm" />
+  <HelpKINode Title="FX3Connection.I2CBitRate property" Url="html/87b29b64-a6c9-5e8a-9994-78aca3dc9041.htm" />
+  <HelpKINode Title="FX3Connection.I2CReadBytes method" Url="html/ea954d82-dae6-dc07-14b2-2d6bd5a20208.htm" />
+  <HelpKINode Title="FX3Connection.I2CRetryCount property" Url="html/66517eae-fb03-d676-35dc-4204c911f7e7.htm" />
+  <HelpKINode Title="FX3Connection.I2CWriteBytes method" Url="html/3bdb9b89-7f53-1c6a-bdc7-d92e0b3bf335.htm" />
   <HelpKINode Title="FX3Connection.IsLSBFirst property" Url="html/f37c14dd-441b-f398-e41c-1f80b6033194.htm" />
   <HelpKINode Title="FX3Connection.ISpi32StopStream method" Url="html/52a3102f-a983-352b-9eb6-7477399b0856.htm" />
   <HelpKINode Title="FX3Connection.isPWMPin method" Url="html/fe7d19f7-40da-11f1-de8d-42c07116628f.htm" />
@@ -355,6 +368,7 @@
   <HelpKINode Title="FX3Connection.StartBufferedStream method" Url="html/0cf0c7de-122c-a8dc-d8b2-6ab037124a13.htm" />
   <HelpKINode Title="FX3Connection.StartBurstStream method" Url="html/b14aca4a-b866-baab-6f17-52b7a04f7b0c.htm" />
   <HelpKINode Title="FX3Connection.StartGenericStream method" Url="html/861e5663-3039-cbca-2e1d-33865390bba2.htm" />
+  <HelpKINode Title="FX3Connection.StartI2CStream method" Url="html/b4d3ea2f-4daa-ed76-8ace-a17c1ef8da5a.htm" />
   <HelpKINode Title="FX3Connection.StartPWM method" Url="html/8358c89e-ed27-5b1d-0622-6b5b8f5e7a17.htm" />
   <HelpKINode Title="FX3Connection.StartRealTimeStreaming method" Url="html/2edcb204-8c49-d289-b966-ae0616c3519c.htm" />
   <HelpKINode Title="FX3Connection.StartStream method" Url="html/d20424b6-ec7c-f4ce-6c15-1ad377a54a18.htm" />
@@ -463,6 +477,7 @@
   <HelpKINode Title="GetErrorLogCount method" Url="html/869a5b14-0f8e-d79e-4834-b1fb64f07673.htm" />
   <HelpKINode Title="GetFirmwareVersion property" Url="html/a6d7d534-1e91-c21c-5573-8a4bbd2c1b80.htm" />
   <HelpKINode Title="GetFX3ApiInfo property" Url="html/a033c331-624a-1791-cf31-ab7e1f365ced.htm" />
+  <HelpKINode Title="GetI2CBuffer method" Url="html/aa792fcd-93a8-db57-939c-90268513bd69.htm" />
   <HelpKINode Title="GetNumBuffersRead property" Url="html/f840778c-5819-eca2-7cd2-c51ffa8488f8.htm" />
   <HelpKINode Title="GetParameterArray method" Url="html/26d0f519-bf2f-03bb-c522-995bd3050045.htm" />
   <HelpKINode Title="GetPinPWMInfo method">
@@ -471,10 +486,28 @@
   </HelpKINode>
   <HelpKINode Title="GetStreamDataPacketU16 method" Url="html/c6a66559-824f-4fbf-0fa6-8aa54f486d13.htm" />
   <HelpKINode Title="GetTargetSerialNumber property" Url="html/cc91d8ae-630b-17e6-37c3-8892995359c5.htm" />
+  <HelpKINode Title="GetTimerValue method" Url="html/c93809d2-b137-b4b8-1ae5-fd95d7a347af.htm" />
   <HelpKINode Title="GitBranch property" Url="html/f26ec043-0ac7-d293-acf9-8bf94e7d5b37.htm" />
   <HelpKINode Title="GitCommitSHA1 property" Url="html/bfb4ec2d-4672-2746-cbb6-f5cfa1a4313f.htm" />
   <HelpKINode Title="GitCommitURL property" Url="html/a4b8dfbc-0886-4512-c8d7-bb556e6d9651.htm" />
   <HelpKINode Title="GitURL property" Url="html/a13eeff7-20a4-473b-68e6-19ef1aae81b0.htm" />
+  <HelpKINode Title="I2CBitRate property" Url="html/87b29b64-a6c9-5e8a-9994-78aca3dc9041.htm" />
+  <HelpKINode Title="I2CPreamble class">
+    <HelpKINode Title="I2CPreamble Class" Url="html/913619f5-4c83-117a-b370-143cf4f99c0d.htm" />
+    <HelpKINode Title="constructor" Url="html/796b1581-af0b-7930-9d89-f54d7762835d.htm" />
+    <HelpKINode Title="fields" Url="html/39b2ffff-b4d4-348c-05d1-0d52cbd17cdd.htm" />
+    <HelpKINode Title="methods" Url="html/7cf9a057-ee8e-2dda-4ff5-6136641fd014.htm" />
+    <HelpKINode Title="properties" Url="html/97ccb035-656f-f6f8-8102-6a9ec207fa62.htm" />
+  </HelpKINode>
+  <HelpKINode Title="I2CPreamble.DeviceAddress property" Url="html/ef03ccfd-445f-f696-b1bf-c488caa31159.htm" />
+  <HelpKINode Title="I2CPreamble.I2CPreamble constructor" Url="html/796b1581-af0b-7930-9d89-f54d7762835d.htm" />
+  <HelpKINode Title="I2CPreamble.PreambleData field" Url="html/1371ad76-14fd-0b24-5794-cdb3729f45b9.htm" />
+  <HelpKINode Title="I2CPreamble.StartMask property" Url="html/44db48f9-3d61-7852-dfd8-1e8a37a37d70.htm" />
+  <HelpKINode Title="I2CPreamble.StopMask property" Url="html/17772e11-4e41-cd3b-fcec-9024a503b56f.htm" />
+  <HelpKINode Title="I2CReadBytes method" Url="html/ea954d82-dae6-dc07-14b2-2d6bd5a20208.htm" />
+  <HelpKINode Title="I2CReadStream enumeration member" Url="html/8001ed3d-aab3-d9a9-516a-2fc3368c0259.htm" />
+  <HelpKINode Title="I2CRetryCount property" Url="html/66517eae-fb03-d676-35dc-4204c911f7e7.htm" />
+  <HelpKINode Title="I2CWriteBytes method" Url="html/3bdb9b89-7f53-1c6a-bdc7-d92e0b3bf335.htm" />
   <HelpKINode Title="IdealDutyCycle property" Url="html/c823b44d-b278-50d8-5aad-b9efd27dc1a1.htm" />
   <HelpKINode Title="IdealFrequency property" Url="html/0347786b-a207-cf72-1de4-3a0a9dc1c313.htm" />
   <HelpKINode Title="IMU enumeration member">
@@ -482,7 +515,8 @@
     <HelpKINode Title="DUTType Enumeration" Url="html/a664dc00-67b0-e1cf-2c27-cb6c9cf0cba5.htm" />
   </HelpKINode>
   <HelpKINode Title="Invert property" Url="html/4fcc6d29-cd04-50cc-c5d2-b71d3063e938.htm" />
-  <HelpKINode Title="iSensorFX3Board enumeration member" Url="html/7bbd69cb-7041-ec59-4c56-ec5da4661e1e.htm" />
+  <HelpKINode Title="iSensorFX3Board_A enumeration member" Url="html/7bbd69cb-7041-ec59-4c56-ec5da4661e1e.htm" />
+  <HelpKINode Title="iSensorFX3Board_B enumeration member" Url="html/7bbd69cb-7041-ec59-4c56-ec5da4661e1e.htm" />
   <HelpKINode Title="IsLSBFirst field" Url="html/89da7013-d887-6e84-3a09-fbfc42385b72.htm" />
   <HelpKINode Title="IsLSBFirst property" Url="html/f37c14dd-441b-f398-e41c-1f80b6033194.htm" />
   <HelpKINode Title="ISpi32StopStream method" Url="html/52a3102f-a983-352b-9eb6-7477399b0856.htm" />
@@ -534,6 +568,7 @@
   <HelpKINode Title="PinPWMInfo.RealFrequency property" Url="html/9d660b67-3b16-3eb1-0eda-5b3279228165.htm" />
   <HelpKINode Title="PinPWMInfo.ToString method" Url="html/228530e5-2a58-8c1b-5787-9b97a83ee0aa.htm" />
   <HelpKINode Title="PinStart property" Url="html/2de991c2-5a59-a394-9329-9e3a023b9669.htm" />
+  <HelpKINode Title="PreambleData field" Url="html/1371ad76-14fd-0b24-5794-cdb3729f45b9.htm" />
   <HelpKINode Title="PullDown enumeration member" Url="html/43c2aa87-dcdc-3866-e332-9cb18194cbdc.htm" />
   <HelpKINode Title="PullUp enumeration member" Url="html/43c2aa87-dcdc-3866-e332-9cb18194cbdc.htm" />
   <HelpKINode Title="PulseDrive method" Url="html/80d24cdc-deef-3180-0111-e36fa9384cf1.htm" />
@@ -557,8 +592,8 @@
   <HelpKINode Title="ResetPin property" Url="html/323fa924-24da-f60d-2c4d-b0e63c274ee7.htm" />
   <HelpKINode Title="RestoreHardwareSpi method" Url="html/7bffc307-014c-a89b-8d5c-9978358c74bb.htm" />
   <HelpKINode Title="SCLK field" Url="html/bca90136-f9a9-b710-6290-c4e2455818c2.htm" />
-  <HelpKINode Title="SCLKFrequency property" Url="html/705196d0-12a4-0bd3-2faa-f275f3ce5943.htm" />
   <HelpKINode Title="SclkFrequency property" Url="html/6c81a4f6-5c6c-36a0-9c51-90450e3a156a.htm" />
+  <HelpKINode Title="SCLKFrequency property" Url="html/705196d0-12a4-0bd3-2faa-f275f3ce5943.htm" />
   <HelpKINode Title="SCLKHalfPeriodTicks field" Url="html/8b8fd904-046d-798e-6492-b3b786d4e65b.htm" />
   <HelpKINode Title="SecondsToTimerTicks field" Url="html/e336c5ce-fc50-16cc-aa46-21cd4e3927ef.htm" />
   <HelpKINode Title="SensorType property" Url="html/9e341986-58e8-d7fe-7994-f5dc0f2913f7.htm" />
@@ -589,9 +624,12 @@
   <HelpKINode Title="StartBufferedStream method" Url="html/0cf0c7de-122c-a8dc-d8b2-6ab037124a13.htm" />
   <HelpKINode Title="StartBurstStream method" Url="html/b14aca4a-b866-baab-6f17-52b7a04f7b0c.htm" />
   <HelpKINode Title="StartGenericStream method" Url="html/861e5663-3039-cbca-2e1d-33865390bba2.htm" />
+  <HelpKINode Title="StartI2CStream method" Url="html/b4d3ea2f-4daa-ed76-8ace-a17c1ef8da5a.htm" />
+  <HelpKINode Title="StartMask property" Url="html/44db48f9-3d61-7852-dfd8-1e8a37a37d70.htm" />
   <HelpKINode Title="StartPWM method" Url="html/8358c89e-ed27-5b1d-0622-6b5b8f5e7a17.htm" />
   <HelpKINode Title="StartRealTimeStreaming method" Url="html/2edcb204-8c49-d289-b966-ae0616c3519c.htm" />
   <HelpKINode Title="StartStream method" Url="html/d20424b6-ec7c-f4ce-6c15-1ad377a54a18.htm" />
+  <HelpKINode Title="StopMask property" Url="html/17772e11-4e41-cd3b-fcec-9024a503b56f.htm" />
   <HelpKINode Title="StopPWM method" Url="html/e986b4a1-c3c5-b184-a03e-35dbacc81e05.htm" />
   <HelpKINode Title="StopRealTimeStreaming method" Url="html/c2c1b045-c7b9-563c-c316-d8d9827c26f1.htm" />
   <HelpKINode Title="StopStream method" Url="html/47cb4928-2637-9c27-ed27-d149550fe939.htm" />

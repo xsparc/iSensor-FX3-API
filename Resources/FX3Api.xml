@@ -248,6 +248,12 @@ FX3Api
  </summary>
  <param name="clockFrequency">The SPI clock frequency, if it needs to be set</param>
 </member>
+<member name="M:FX3Api.FX3Connection.GetTimerValue">
+ <summary>
+ This function reads the current value from the 10MHz timer running on the FX3
+ </summary>
+ <returns>The 32-bit timer value</returns>
+</member>
 <member name="M:FX3Api.FX3Connection.SetPinResistorSetting(AdisApi.IPinObject,FX3Api.FX3PinResistorSetting)">
  <summary>
  Set the FX3 GPIO input stage pull up or pull down resistor setting. All FX3 GPIOs have a software configurable
@@ -323,15 +329,15 @@ FX3Api
 </member>
 <member name="P:FX3Api.FX3Connection.PinExit">
  <summary>
- Gets and sets the pin exit configuration for exiting real-time stream mode. 
+ Gets and sets the sync pin exit configuration for exiting real-time stream mode on ADcmXL DUT's.
  </summary>
- <returns>Pin exit configuration (0 = Pin Exit Disabled, 1 = Pin Exit Enabled)</returns>
+ <returns>RTS pin exit configuration (false = Pin Exit Disabled, true = Pin Exit Enabled)</returns>
 </member>
 <member name="P:FX3Api.FX3Connection.PinStart">
  <summary>
- Gets and sets the pin start configuration for starting real-time stream mode.
+ Gets and sets the sync pin start configuration for starting real-time stream mode on ADcmXL DUT's.
  </summary>
- <returns>Pin start configuration (0 = Pin Start Disabled, 1 = Pin Start Enabled</returns>
+ <returns>RTS pin start configuration (false = Pin Start Disabled, true = Pin Start Enabled</returns>
 </member>
 <member name="P:FX3Api.FX3Connection.BufferAvailable">
  <summary>
@@ -396,7 +402,7 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  <summary>
  Read a standard iSensors 16-bit register using a bitbang SPI connection
  </summary>
- <param name="addr">The address of the register to read</param>
+ <param name="addr">The address of the register to read (7 bit) </param>
  <returns>The register value</returns>
 </member>
 <member name="M:FX3Api.FX3Connection.BitBangWriteRegByte(System.Byte,System.Byte)">
@@ -481,8 +487,8 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
 </member>
 <member name="P:FX3Api.FX3Connection.BurstMOSIData">
  <summary>
- Data to transmit on the MOSI line during a burst read operation. Is overwriten if
- you set the trigger reg, since trigger reg is given priority.
+ Data to transmit on the MOSI line during a burst read operation. This value is over written
+ if you set the trigger reg, since trigger reg is given priority.
  </summary>
  <returns></returns>
 </member>
@@ -558,7 +564,7 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  <param name="numCaptures">The number of captures of the register list per data ready</param>
  <param name="numBuffers">The total number of capture sequences to perform</param>
 </member>
-<member name="M:FX3Api.FX3Connection.GenericStreamManager(System.Int32)">
+<member name="M:FX3Api.FX3Connection.GenericStreamManager(System.Object)">
  <summary>
  This function pulls generic stream data from the FX3 over a bulk endpoint (DataIn). It is intended to run in its own thread,
  and should not be called by itself.
@@ -577,7 +583,7 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
 </member>
 <member name="M:FX3Api.FX3Connection.StopRealTimeStreaming">
  <summary>
- This function stops real time streaming on the ADcmXLx021 (interface and FX3)
+ This function stops real time streaming on the ADcmXLx021 (stream thread in FX3 API and FX3 firmware)
  </summary>
 </member>
 <member name="M:FX3Api.FX3Connection.RealTimeStreamManager">
@@ -621,6 +627,74 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  Gets the current error log from FX3 flash memory
  </summary>
  <returns>The stored error log, as a list of FX3ErrorLog objects</returns>
+</member>
+<member name="P:FX3Api.FX3Connection.I2CBitRate">
+ <summary>
+ Get/Set the FX3 I2C bit rate. Valid range 100KHz - 1MHz. Defaults to 100KHz
+ </summary>
+ <returns>Current I2C bit rate setting</returns>
+</member>
+<member name="P:FX3Api.FX3Connection.I2CRetryCount">
+ <summary>
+ Get/Set the FX3 I2C retry count. This is 
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:FX3Api.FX3Connection.I2CReadBytes(FX3Api.I2CPreamble,System.UInt32,System.UInt32)">
+ <summary>
+ Read bytes from an I2C slave device attached to the FX3.
+ </summary>
+ <param name="Preamble">The I2C preamble to transmit at the start of the read operation</param>
+ <param name="NumBytes">The number of bytes to read over I2C after sending the preamble</param>
+ <param name="TimeoutInMs">Read timeout period, in ms</param>
+ <returns>The data read from the I2C slave device</returns>
+</member>
+<member name="M:FX3Api.FX3Connection.I2CWriteBytes(FX3Api.I2CPreamble,System.Collections.Generic.IEnumerable{System.Byte},System.UInt32)">
+ <summary>
+ Write bytes to an I2C slave device attached to the FX3
+ </summary>
+ <param name="Preamble">The I2C preamble to transmit at the start of the write operation</param>
+ <param name="WriteData">The write data to transmit on SDA after finishing the preamble</param>
+ <param name="TimeoutInMs">Write timeout period, in ms</param>
+</member>
+<member name="M:FX3Api.FX3Connection.SetI2CBitRate(System.UInt32)">
+ <summary>
+ Helper function to set i2c bit rate on FX3
+ </summary>
+ <param name="BitRate">Bit rate setting</param>
+</member>
+<member name="M:FX3Api.FX3Connection.SetI2CRetryCount(System.UInt16)">
+ <summary>
+ Helper function to set i2c retry count in case of NAK on FX3
+ </summary>
+ <param name="Count">Number of times to transfer</param>
+</member>
+<member name="M:FX3Api.FX3Connection.StartI2CStream(FX3Api.I2CPreamble,System.UInt32,System.UInt32)">
+ <summary>
+ Start an asynchronous I2C read stream. This stream runs on the stream thread
+ and places all data in a thread safe queue. The data can be retrieved using
+ GetI2CBuffer()
+ </summary>
+ <param name="Preamble">The preamble to send at the start of the read</param>
+ <param name="BytesPerRead">Number of read bytes following the preamble</param>
+ <param name="numBuffers">Total number of separate I2C transactions to send</param>
+</member>
+<member name="M:FX3Api.FX3Connection.I2CStreamManager(System.Object)">
+ <summary>
+ Stream thread function for I2C stream
+ </summary>
+ <param name="BytesPerBuffer">Number of bytes to read</param>
+</member>
+<member name="M:FX3Api.FX3Connection.I2CStreamDone">
+ <summary>
+ Cleanup function when I2C stream is done
+ </summary>
+</member>
+<member name="M:FX3Api.FX3Connection.GetI2CBuffer">
+ <summary>
+ Get I2C buffer from I2C read stream
+ </summary>
+ <returns>I2C data read</returns>
 </member>
 <member name="M:FX3Api.FX3Connection.PulseDrive(AdisApi.IPinObject,System.UInt32,System.Double,System.UInt32)">
  <summary>
@@ -1188,7 +1262,7 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  <param name="Timeout">The timeout time (in milliseconds)</param>
  <returns>Returns a boolean indicating if the transfer timed out or not</returns>
 </member>
-<member name="M:FX3Api.FX3Connection.ConfigureControlEndpoint(System.UInt16,System.Boolean)">
+<member name="M:FX3Api.FX3Connection.ConfigureControlEndpoint(FX3Api.USBCommands,System.Boolean)">
  <summary>
  Validates that the control endpoint is enumerated and configures it with some default values
  </summary>
@@ -1557,7 +1631,7 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  <summary>
  Property to get/set the data ready FX3 GPIO number
  </summary>
- <returns>The GPIO number, as a UINT16</returns>
+ <returns>The GPIO number, as a UInteger</returns>
 </member>
 <member name="M:FX3Api.FX3SPIConfig.#ctor(FX3Api.DeviceType,FX3Api.FX3BoardType)">
  <summary>
@@ -1959,6 +2033,64 @@ Limit crc accumulation to 16 bits to prevent U32 overflow.
  </summary>
  <param name="message">The message to pass with the exception</param>
  <param name="innerException">The lower level exception to pass up</param>
+</member>
+<member name="T:FX3Api.I2CPreamble">
+ <summary>
+ I2C pre-amble class.
+ </summary>
+</member>
+<member name="M:FX3Api.I2CPreamble.#ctor">
+ <summary>
+ I2C Preamble constructor. Initializes all fields to zero
+ </summary>
+</member>
+<member name="F:FX3Api.I2CPreamble.PreambleData">
+ <summary>
+ The bytes to transmit following the device address and R/W bit.
+ The maximum size of this list is 7 bytes, giving 8 total bytes 
+ transmitted as part of the pre-amble.
+ </summary>
+</member>
+<member name="P:FX3Api.I2CPreamble.DeviceAddress">
+ <summary>
+ This is the 7-bit slave address for the device to access on the I2C bus.
+ The address value must be left justified, with a zero in the least significant
+ bit. The address bits (starting at DeviceAddress bit 7) are the first data transmitted
+ by the FX3 when starting an I2C transaction. A R/W bit (generated by the firmware)
+ follows the seven device address bits to complete the first byte.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:FX3Api.I2CPreamble.StopMask">
+ <summary>
+ This field controls the stop condition sent after every byte of preamble
+ data. The device address is the first byte of data, following by up to 
+ seven additional bytes in PreAmbleData. For example, setting StopMask to
+ 0x01 will cause a stop condition to be generated after sending DeviceAddress, while
+ setting StopMask to 0x02 will cause a stop condition to be generated after 
+ sending PreambleData[0], and so on. Note, setting a bit in StopMask will cause 
+ the corresponding bit in StartMask to be cleared, if it is also set.
+ </summary>
+ <returns>The 8 bit preamble stop mask</returns>
+</member>
+<member name="P:FX3Api.I2CPreamble.StartMask">
+ <summary>
+ This field controls the start condition sent after every byte of preamble
+ data. The device address is the first byte of data, following by up to 
+ seven additional bytes in PreAmbleData. For example, setting StartMask to
+ 0x04 will cause a start condition to be generated after sending PreambleData[1], while
+ setting StartMask to 0x08 will cause a start condition to be generated after 
+ sending PreambleData[2], and so on. Note, setting a bit in StartMask will cause 
+ the corresponding bit in StopMask to be cleared, if it is also set.
+ </summary>
+ <returns>The 8 bit preamble start mask</returns>
+</member>
+<member name="M:FX3Api.I2CPreamble.Serialize">
+ <summary>
+ Helper function to serialize an I2C preamble. Puts the 
+ preamble into a byte array which can be sent over USB
+ </summary>
+ <returns>Byte array containing the pre-amble</returns>
 </member>
 <member name="T:FX3Api.FX3PinObject">
  <summary>
