@@ -193,6 +193,8 @@ Partial Class FX3Connection
                 StopRealTimeStreaming()
             Case StreamType.TransferStream
                 CancelStreamImplementation(USBCommands.ADI_TRANSFER_STREAM)
+            Case StreamType.I2CReadStream
+                CancelStreamImplementation(USBCommands.ADI_I2C_READ_STREAM)
             Case Else
                 m_StreamType = StreamType.None
         End Select

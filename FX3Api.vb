@@ -114,6 +114,9 @@ Public Class FX3Connection
     'Thread safe queue to store transfer data for the ISpi32Interface
     Private m_TransferStreamData As ConcurrentQueue(Of UInteger())
 
+    'Thread safe queue to store byte data received from I2C stream
+    Private m_I2CStreamData As ConcurrentQueue(Of Byte())
+
     'Tracks the number of frames read in from DUT in real time mode
     Private m_FramesRead As Long = 0
 
@@ -188,6 +191,12 @@ Public Class FX3Connection
 
     'Track the supply mode
     Private m_DutSupplyMode As DutVoltage
+
+    'track i2c bit rate setting
+    Private m_i2cbitrate As UInteger
+
+    'i2c retry count after NAK
+    Private m_i2cRetryCount As UShort
 
     'FX3 Pin GPIO mapping
     Private RESET_PIN As UShort = 10
@@ -317,6 +326,10 @@ Public Class FX3Connection
         'set watchdog parameters
         m_WatchdogEnable = True
         m_WatchdogTime = 20
+
+        'set i2c parameters (100KHz default)
+        m_i2cbitrate = 100000
+        m_i2cRetryCount = 1
 
         m_DutSupplyMode = DutVoltage.On3_3Volts
 
@@ -829,6 +842,36 @@ Public Class FX3Connection
     'The functions in this region are not a part of the IDutInterface, and are specific to the FX3 board
 
     ''' <summary>
+    ''' This function reads the current value from the 10MHz timer running on the FX3
+    ''' </summary>
+    ''' <returns>The 32-bit timer value</returns>
+    Public Function GetTimerValue() As UInteger
+
+        'status code from FX3
+        Dim status As UInteger
+
+        'Create buffer for transfer
+        Dim buf(7) As Byte
+
+        ConfigureControlEndpoint(USBCommands.ADI_READ_TIMER_VALUE, False)
+
+        'Transfer data from the FX3
+        If Not XferControlData(buf, 8, 2000) Then
+            Throw New FX3CommunicationException("ERROR: Control endpoint transfer to read timer value timed out!")
+        End If
+
+        'parse status
+        status = BitConverter.ToUInt32(buf, 0)
+        If status <> 0 Then
+            Throw New FX3BadStatusException("ERROR: Bad status code after reading timer. Error code: 0x" + status.ToString("X4"))
+        End If
+
+        'return timer value (stored in bytes 4 - 7)
+        Return BitConverter.ToUInt32(buf, 4)
+
+    End Function
+
+    ''' <summary>
     ''' Set the FX3 GPIO input stage pull up or pull down resistor setting. All FX3 GPIOs have a software configurable
     ''' pull up / pull down resistor (10KOhm).
     ''' </summary>
@@ -912,7 +955,7 @@ Public Class FX3Connection
         Set(value As DutVoltage)
 
             'Disable setting if not iSensor board
-            If m_ActiveFX3Info.BoardType <> FX3BoardType.iSensorFX3Board Then
+            If m_ActiveFX3Info.BoardType = FX3BoardType.CypressFX3Board Then
                 Exit Property
             End If
 

@@ -252,7 +252,7 @@ Partial Class FX3Connection
 
         'Set total frames (infinite if less than 1)
         If m_TotalBuffersToRead < 1 Then
-            m_TotalBuffersToRead = Int32.MaxValue
+            m_TotalBuffersToRead = UInteger.MaxValue
         End If
 
         'Determine the frame length (in bytes) based on configured word count plus trigger word
