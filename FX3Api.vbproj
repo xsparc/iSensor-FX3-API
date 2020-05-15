@@ -71,6 +71,10 @@
     <Reference Include="RegMapClasses">
       <HintPath>Resources\RegMapClasses.dll</HintPath>
     </Reference>
+    <Reference Include="StreamDataLogger, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Resources\StreamDataLogger.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
@@ -165,12 +169,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="bin\CurrentURL.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\StreamDataLogger\StreamDataLogger.vbproj">
-      <Project>{6c4fda58-8972-43a9-9452-d76e54f8f0fb}</Project>
-      <Name>StreamDataLogger</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <PropertyGroup>
