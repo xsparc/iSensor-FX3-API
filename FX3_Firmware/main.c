@@ -252,12 +252,12 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 
         	/* Read single word for IRegInterface */
         	case ADI_READ_BYTES:
-        		AdiReadRegBytes(wIndex);
+        		status = AdiReadRegBytes(wIndex);
         		break;
 
         	/* Write single byte for IRegInterface */
         	case ADI_WRITE_BYTE:
-        		AdiWriteRegByte(wIndex, wValue & 0xFF);
+        		status = AdiWriteRegByte(wIndex, wValue & 0xFF);
         		break;
 
         	/* Set the application boot time */
@@ -275,18 +275,11 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
         	/* Pulse drive for a specified amount of time */
         	case ADI_PULSE_DRIVE:
         		/* Read config data into USBBuffer */
-        		CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+        		status = CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
         		/* Run pulse drive function */
-        		status = AdiPulseDrive();
+        		status |= AdiPulseDrive();
         		/* Send back status over the BULK-In endpoint */
-        		USBBuffer[0] = status & 0xFF;
-        		USBBuffer[1] = (status & 0xFF00) >> 8;
-        		USBBuffer[2] = (status & 0xFF0000) >> 16;
-        		USBBuffer[3] = (status & 0xFF000000) >> 24;
-        		ManualDMABuffer.buffer = USBBuffer;
-        		ManualDMABuffer.size = 4096;
-        		ManualDMABuffer.count = 4;
-        		CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
+        		AdiSendStatus(status, 4, CyFalse);
         		break;
 
         	/* Wait on an edge, with timeout */
@@ -298,20 +291,12 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
         	/* Set a pin value */
         	case ADI_SET_PIN:
         		status = AdiSetPin(wIndex, (CyBool_t) wValue);
-            	USBBuffer[0] = status & 0xFF;
-            	USBBuffer[1] = (status & 0xFF00) >> 8;
-            	USBBuffer[2] = (status & 0xFF0000) >> 16;
-            	USBBuffer[3] = (status & 0xFF000000) >> 24;
-            	CyU3PUsbSendEP0Data (wLength, USBBuffer);
+        		AdiSendStatus(status, wLength, CyTrue);
         		break;
 
         	/* ID Check */
             case ADI_FIRMWARE_ID_CHECK:
                 status = CyU3PUsbSendEP0Data (32, (uint8_t *)FirmwareID);
-            	if (status != CY_U3P_SUCCESS)
-            	{
-            		isHandled = CyFalse;
-            	}
 #ifdef VERBOSE_MODE
             	CyU3PDebugPrint (4, "Firmware ID: %s\r\n", FirmwareID);
 #endif
@@ -319,17 +304,13 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 
             /* Serial Number Check */
             case ADI_SERIAL_NUMBER_CHECK:
-            	status = CyU3PUsbSendEP0Data (32, (uint8_t *)serial_number);
-            	if (status != CY_U3P_SUCCESS)
-            	{
-            		isHandled = CyFalse;
-            	}
+            	status = CyU3PUsbSendEP0Data(32, (uint8_t *)serial_number);
                 break;
 
+            /* Get firmware build date */
             case ADI_GET_BUILD_DATE:
             	AdiGetBuildDate(USBBuffer);
-            	CyU3PUsbSendEP0Data (wLength, USBBuffer);
-            	isHandled = CyTrue;
+            	CyU3PUsbSendEP0Data(wLength, USBBuffer);
             	break;
 
             /* Hard-reset the FX3 firmware (return to bootloader mode) */
@@ -365,75 +346,48 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             /* Read a GPIO pin specified by index */
             case ADI_READ_PIN:
             	status = AdiPinRead(wIndex);
-            	if (status != CY_U3P_SUCCESS)
-            	{
-            		isHandled = CyFalse;
-            	}
             	break;
 
             /* Measure pin delay */
             case ADI_PIN_DELAY_MEASURE:
             	status = AdiMeasurePinDelay(wLength);
-            	if (status != CY_U3P_SUCCESS)
-            	{
-            		isHandled = CyFalse;
-            	}
             	break;
 
             /* Read the current SPI config */
             case ADI_READ_SPI_CONFIG:
             	status = AdiGetSpiSettings();
-            	if (status != CY_U3P_SUCCESS)
-            	{
-            		isHandled = CyFalse;
-            	}
             	break;
 
             /* Read the value from the complex GPIO timer */
             case ADI_READ_TIMER_VALUE:
             	status = AdiReadTimerValue();
-            	if (status != CY_U3P_SUCCESS)
-            	{
-            		isHandled = CyFalse;
-            	}
+            	/* Send back status + timer value */
+            	AdiSendStatus(status, 8, CyTrue);
             	break;
 
             /* Vendor command to set the DUT supply voltage */
             case ADI_SET_DUT_SUPPLY:
-            	/* Set the handled flag to true */
-            	isHandled = CyTrue;
-            	/* parse voltage from vendor request */
-            	DutVoltage voltage = wValue;
-            	/* Set the voltage */
-            	status = AdiSetDutSupply(voltage);
+            	/* Set the voltage (setting is supplied in value field) */
+            	status = AdiSetDutSupply((DutVoltage) wValue);
             	/* Return the status code */
-            	USBBuffer[0] = status & 0xFF;
-            	USBBuffer[1] = (status & 0xFF00) >> 8;
-            	USBBuffer[2] = (status & 0xFF0000) >> 16;
-            	USBBuffer[3] = (status & 0xFF000000) >> 24;
-            	CyU3PUsbSendEP0Data (wLength, USBBuffer);
+            	AdiSendStatus(status, wLength, CyTrue);
             	break;
 
             /* Get the current status of the FX3 */
             case ADI_GET_STATUS:
-            	/* Return the status in bytes 0-3 */
-            	USBBuffer[0] = status & 0xFF;
-            	USBBuffer[1] = (status & 0xFF00) >> 8;
-            	USBBuffer[2] = (status & 0xFF0000) >> 16;
-            	USBBuffer[3] = (status & 0xFF000000) >> 24;
+            	/* Return the verbose mode state in USBBuffer byte 4 */
             	USBBuffer[4] = 0;
-            	/* Return the verbose mode state in byte 4 */
 #ifdef VERBOSE_MODE
             	USBBuffer[4] = 1;
 #endif
-            	CyU3PUsbSendEP0Data (wLength, USBBuffer);
+            	/* Return the status in USBBuffer bytes 0-3. Total return data 5 bytes */
+            	AdiSendStatus(status, wLength, CyTrue);
             	break;
 
             /* Get the board type and pin mapping info */
             case ADI_GET_BOARD_TYPE:
             	AdiGetBoardPinInfo(USBBuffer);
-            	CyU3PUsbSendEP0Data (wLength, USBBuffer);
-            	isHandled = CyTrue;
+            	status = CyU3PUsbSendEP0Data(wLength, USBBuffer);
             	break;
 
             /* Generic stream is a register stream triggered on data ready */
@@ -443,16 +397,16 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	{
             	case ADI_STREAM_START_CMD:
             		/* Get the data from the control endpoint */
-            		CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+            		status = CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
             		/* Set the generic stream start event */
-            		status = CyU3PEventSet(&EventHandler, ADI_GENERIC_STREAM_START, CYU3P_EVENT_OR);
+            		status |= CyU3PEventSet(&EventHandler, ADI_GENERIC_STREAM_START, CYU3P_EVENT_OR);
             		StreamThreadState.TransferByteLength = wLength;
             		break;
             	case ADI_STREAM_DONE_CMD:
             		/* Get the data from the control endpoint */
-            		CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+            		status = CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
             		/* Set the stream done event */
-            		status = CyU3PEventSet(&EventHandler, ADI_GENERIC_STREAM_DONE, CYU3P_EVENT_OR);
+            		status |= CyU3PEventSet(&EventHandler, ADI_GENERIC_STREAM_DONE, CYU3P_EVENT_OR);
             		break;
             	case ADI_STREAM_STOP_CMD:
             		status = CyU3PEventSet(&EventHandler, ADI_GENERIC_STREAM_STOP, CYU3P_EVENT_OR);
@@ -464,10 +418,8 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	}
             	if (status != CY_U3P_SUCCESS)
             	{
-            		isHandled = CyFalse;
 					AdiLogError(Main_c, __LINE__, status);
             	}
-
             	break;
 
 			/* Burst stream control for IMUs */
@@ -483,9 +435,9 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             		break;
             	case ADI_STREAM_DONE_CMD:
             		/* Get the data from the control endpoint */
-            		CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+            		status = CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
             		/* Set event handler*/
-            		status = CyU3PEventSet(&EventHandler, ADI_BURST_STREAM_DONE, CYU3P_EVENT_OR);
+            		status |= CyU3PEventSet(&EventHandler, ADI_BURST_STREAM_DONE, CYU3P_EVENT_OR);
             		break;
             	case ADI_STREAM_STOP_CMD:
             		status = CyU3PEventSet(&EventHandler, ADI_BURST_STREAM_STOP, CYU3P_EVENT_OR);
@@ -497,7 +449,6 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
             	}
 				if (status != CY_U3P_SUCCESS)
 				{
-					isHandled = CyFalse;
 					AdiLogError(Main_c, __LINE__, status);
 				}
 				break;
@@ -513,9 +464,9 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 					break;
 				case ADI_STREAM_DONE_CMD:
             		/* Get the data from the control endpoint */
-            		CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+            		status = CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
             		/* Set stream done event */
-					status = CyU3PEventSet(&EventHandler, ADI_RT_STREAM_DONE, CYU3P_EVENT_OR);
+					status |= CyU3PEventSet(&EventHandler, ADI_RT_STREAM_DONE, CYU3P_EVENT_OR);
 					break;
 				case ADI_STREAM_STOP_CMD:
 					status = CyU3PEventSet(&EventHandler, ADI_RT_STREAM_STOP, CYU3P_EVENT_OR);
@@ -527,7 +478,6 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 				}
 				if (status != CY_U3P_SUCCESS)
 				{
-					isHandled = CyFalse;
 					AdiLogError(Main_c, __LINE__, status);
 				}
 				break;
@@ -542,9 +492,9 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 					break;
 				case ADI_STREAM_DONE_CMD:
             		/* Get the data from the control endpoint */
-            		CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+            		status = CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
             		/* Set stream done event */
-					status = CyU3PEventSet(&EventHandler, ADI_TRANSFER_STREAM_DONE, CYU3P_EVENT_OR);
+					status |= CyU3PEventSet(&EventHandler, ADI_TRANSFER_STREAM_DONE, CYU3P_EVENT_OR);
 					break;
 				case ADI_STREAM_STOP_CMD:
 					status = CyU3PEventSet(&EventHandler, ADI_TRANSFER_STREAM_STOP, CYU3P_EVENT_OR);
@@ -556,7 +506,6 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 				}
 				if (status != CY_U3P_SUCCESS)
 				{
-					isHandled = CyFalse;
 					AdiLogError(Main_c, __LINE__, status);
 				}
 				break;
@@ -564,66 +513,116 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 			/* Get the measured DR frequency */
             case ADI_MEASURE_DR:
             	/* Read config data into USBBuffer */
-				CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+				status = CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
 				/* Run pulse drive function */
-				status = AdiMeasurePinFreq();
+				status |= AdiMeasurePinFreq();
 				break;
 
 			/* PWM configuration */
             case ADI_PWM_CMD:
             	/* Read config data into USBBuffer */
-				CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+				status = CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
 				/* Run pulse drive function (index = 1 to enable, 0 to disable) */
-				status = AdiConfigurePWM((CyBool_t) wIndex);
+				status |= AdiConfigurePWM((CyBool_t) wIndex);
             	break;
 
+            /* 1-4 byte single transfer */
             case ADI_TRANSFER_BYTES:
             	/* Call the transfer bytes function
             	 * upper 2 write bytes are passed in wIndex, lower are passed in wValue */
             	status = AdiTransferBytes(wIndex << 16 | wValue);
+            	/* Send status and 4 bytes data back */
+            	AdiSendStatus(status, 8, CyTrue);
             	break;
 
+            /* Bit bang SPI transfer handler */
             case ADI_BITBANG_SPI:
             	/* Call the handler function for the SPI bit bang. Returns data to PC over bulk endpoint */
-            	CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
-            	status = AdiBitBangSpiHandler();
+            	status = CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+            	status |= AdiBitBangSpiHandler();
             	break;
 
+            /* Reset SPI peripheral (to recover from using bit bang SPI) */
             case ADI_RESET_SPI:
             	status = AdiRestartSpi();
-            	/* Return the status in bytes 0-3 */
-            	USBBuffer[0] = status & 0xFF;
-            	USBBuffer[1] = (status & 0xFF00) >> 8;
-            	USBBuffer[2] = (status & 0xFF0000) >> 16;
-            	USBBuffer[3] = (status & 0xFF000000) >> 24;
-            	CyU3PUsbSendEP0Data (wLength, USBBuffer);
+            	/* Return the status over control endpoint */
+            	AdiSendStatus(status, wLength, CyTrue);
             	break;
 
+            /* Enable internal pull up/down resistor on a GPIO */
             case ADI_SET_PIN_RESISTOR:
             	status = AdiSetPinResistor(wIndex, wValue);
-				/* Return the status in bytes 0-3 */
-				USBBuffer[0] = status & 0xFF;
-				USBBuffer[1] = (status & 0xFF00) >> 8;
-				USBBuffer[2] = (status & 0xFF0000) >> 16;
-				USBBuffer[3] = (status & 0xFF000000) >> 24;
-				CyU3PUsbSendEP0Data (wLength, USBBuffer);
+            	/* Return the status over control endpoint */
+            	AdiSendStatus(status, wLength, CyTrue);
             	break;
-
-			/* Command to do nothing. Might remove, this isn't really used at all */
-			case ADI_NULL_COMMAND:
-				isHandled = CyTrue;
-				break;
 
 			/* Arbitrary flash read command */
 			case ADI_READ_FLASH:
 				AdiFlashReadHandler((wIndex << 16) | wValue, wLength);
-				isHandled = CyTrue;
 				break;
 
 			/* Clear flash error log command */
 			case ADI_CLEAR_FLASH_LOG:
 				WriteErrorLogCount(0);
-				CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+				status = CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+				break;
+
+			/*Set I2C bit rate */
+			case ADI_I2C_SET_BIT_RATE:
+				status = AdiI2CInit(wIndex << 16 | wValue, CyFalse);
+				/* Return the status over control endpoint */
+				AdiSendStatus(status, wLength, CyTrue);
+				break;
+
+			/* I2C retry count property */
+			case ADI_I2C_RETRY_COUNT:
+				FX3State.I2CRetryCount = wValue;
+				AdiSendStatus(status, wLength, CyTrue);
+				break;
+
+			/* I2C single read */
+			case ADI_I2C_READ_BYTES:
+				status = AdiI2CReadHandler(wLength);
+				break;
+
+			/* I2C single write */
+			case ADI_I2C_WRITE_BYTES:
+				status = AdiI2CWriteHandler(wLength);
+				/* Send back status indicating operation is done */
+				AdiSendStatus(status, 4, CyFalse);
+				break;
+
+			/* I2C read stream start/done/cancel */
+			case ADI_I2C_READ_STREAM:
+				switch(wIndex)
+				{
+				case ADI_STREAM_START_CMD:
+					status = CyU3PEventSet(&EventHandler, ADI_I2C_STREAM_START, CYU3P_EVENT_OR);
+					StreamThreadState.TransferByteLength = wLength;
+					break;
+				case ADI_STREAM_DONE_CMD:
+					/* Get the data from the control endpoint */
+					status = CyU3PUsbGetEP0Data(wLength, USBBuffer, bytesRead);
+					/* Set stream done event */
+					status |= CyU3PEventSet(&EventHandler, ADI_I2C_STREAM_DONE, CYU3P_EVENT_OR);
+					break;
+				case ADI_STREAM_STOP_CMD:
+					status = CyU3PEventSet(&EventHandler, ADI_I2C_STREAM_STOP, CYU3P_EVENT_OR);
+					break;
+				default:
+            		/* Shouldn't get here */
+            		isHandled = CyFalse;
+            		break;
+				}
+				if (status != CY_U3P_SUCCESS)
+				{
+					AdiLogError(Main_c, __LINE__, status);
+				}
+				break;
+
+			/* Command to do nothing. Might remove, this isn't really used at all */
+			case ADI_NULL_COMMAND:
+				isHandled = CyTrue;
 				break;
 
             default:
@@ -667,6 +666,45 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
     return isHandled;
 }
 
+/**
+  * @brief Sends status back to PC over control endpoint or manual bulk in endpoint
+  *
+  * @param status The status code to send back. Is placed in USBBuffer[0-3]
+  *
+  * @param count The number of bytes to send. Must be at least 4
+  *
+  * @param isControlEndpoint Bool indicating if data should be sent over control endpoint or bulk endpoint
+  *
+  * @returns void
+  *
+  * This function will overwrite the data in USBBuffer[0-3]. If you need to send extra
+  * data along with the status, it must be placed starting at USBBuffer[4].
+ **/
+void AdiSendStatus(uint32_t status, uint16_t count, CyBool_t isControlEndpoint)
+{
+	/* Clamp count */
+	if(count < 4)
+		count = 4;
+
+	/* Load status to USB Buffer */
+	USBBuffer[0] = status & 0xFF;
+	USBBuffer[1] = (status & 0xFF00) >> 8;
+	USBBuffer[2] = (status & 0xFF0000) >> 16;
+	USBBuffer[3] = (status & 0xFF000000) >> 24;
+
+	/* Perform transfer */
+	if(isControlEndpoint)
+	{
+		CyU3PUsbSendEP0Data(count, USBBuffer);
+	}
+	else
+	{
+		ManualDMABuffer.buffer = USBBuffer;
+		ManualDMABuffer.size = 4096;
+		ManualDMABuffer.count = count;
+		CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
+	}
+}
 
 /**
   * @brief Configures the FX3 watchdog timer based on the current board state.
@@ -1071,7 +1109,7 @@ void AdiAppStart()
     FX3State.BoardType = GetFX3BoardType();
 
     /* Enable 3.3V power supply by driving 5V pin high, then 3.3V pin low */
-    if(FX3State.BoardType == iSensorFX3Board)
+    if(FX3State.BoardType != CypressFX3Board)
     {
     	CyU3PDebugPrint (4, "Analog Devices iSensor FX3 Board Detected! Configuring Power Control Circuit...\r\n");
     	/* Configure power control circuit */
@@ -1086,6 +1124,11 @@ void AdiAppStart()
     	status = CyU3PGpioSetSimpleConfig(ADI_5V_EN, &gpioConfig);
     	gpioConfig.outValue = CyFalse;
     	status = CyU3PGpioSetSimpleConfig(ADI_3_3V_EN, &gpioConfig);
+    	/* Configure flash write enable (pull up, output set high) */
+		CyU3PDeviceGpioOverride(ADI_FLASH_WRITE_ENABLE_PIN, CyTrue);
+		gpioConfig.outValue = CyTrue;
+		status = CyU3PGpioSetSimpleConfig(ADI_FLASH_WRITE_ENABLE_PIN, &gpioConfig);
+		GCTL_WPU_CFG |= (1 << ADI_FLASH_WRITE_ENABLE_PIN);
     	/* Map pin assignments */
     	FX3State.PinMap.ADI_PIN_RESET = 1;
     	FX3State.PinMap.ADI_PIN_DIO4 = 2;
@@ -1307,6 +1350,10 @@ void AdiAppStart()
     	AdiAppErrorHandler(status);
     }
 
+    /* Configure I2C */
+    FX3State.I2CBitRate = 100000;
+    AdiI2CInit(100000, CyFalse);
+
     /* Configure global, user event flags */
 
 	/* Create the stream/general use event handler */
@@ -1433,40 +1480,49 @@ void AdiAppStart()
  **/
 FX3BoardType GetFX3BoardType()
 {
-	uint32_t CTL0RegVal;
+	uint32_t CTL0RegVal, DQ15RegVal;
 	FX3BoardType currentBoard;
 
-	/* Disable CTL0 pull up */
-	GCTL_WPU_CFG &= ~(1 << 17);
+	/* Disable pull up on ID pins (CTL0 and DQ15) */
+	GCTL_WPU_CFG &= ~((1 << ADI_ID_PIN_0)|(1 << ADI_ID_PIN_1));
 
 	/* Sleep 5us */
 	AdiSleepForMicroSeconds(5);
 
-    /* Configure CTL0 with weak pull down */
-	GCTL_WPD_CFG |= (1 << 17);
+    /* Configure ID pins with weak pull down */
+	GCTL_WPD_CFG |= ((1 << ADI_ID_PIN_0)|(1 << ADI_ID_PIN_1));
 
 	/* Sleep 5us */
 	AdiSleepForMicroSeconds(5);
 
-	/* Read input stage value on CTL0 */
+	/* Read input stage values */
 	CyU3PGpioSimpleConfig_t gpioConfig;
 	gpioConfig.outValue = CyFalse;
 	gpioConfig.inputEn = CyTrue;
 	gpioConfig.driveLowEn = CyFalse;
 	gpioConfig.driveHighEn = CyFalse;
 	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+
 	CyU3PGpioSetSimpleConfig(17, &gpioConfig);
+	CTL0RegVal = GPIO->lpp_gpio_simple[ADI_ID_PIN_0];
 
-	CTL0RegVal = GPIO->lpp_gpio_simple[17];
+	CyU3PGpioSetSimpleConfig(15, &gpioConfig);
+	DQ15RegVal = GPIO->lpp_gpio_simple[ADI_ID_PIN_1];
 
-	/* If high then is superspeed explorer*/
+	/* Disable pull down */
+	GCTL_WPD_CFG &= ~((1 << ADI_ID_PIN_0)|(1 << ADI_ID_PIN_1));
+
+	/* If CTL0 high then is super speed explorer (pull up to SRAM enable) */
 	if(CTL0RegVal & 0x2)
 		currentBoard = CypressFX3Board;
 	else
-		currentBoard = iSensorFX3Board;
-
-	/* Disable pull down */
-	GCTL_WPD_CFG &= ~(1 << 17);
+	{
+		/* iSensor board. Rev B has pull up on DQ15 */
+		if(DQ15RegVal & 0x2)
+			currentBoard = iSensorFX3Board_B;
+		else
+			currentBoard = iSensorFX3Board_A;
+	}
 
 	return currentBoard;
 }

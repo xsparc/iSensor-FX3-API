@@ -1217,11 +1217,10 @@ CyU3PReturnStatus_t AdiReadTimerValue()
 	{
 		AdiLogError(PinFunctions_c, __LINE__, status);
 	}
-	USBBuffer[0] = timerValue & 0xFF;
-	USBBuffer[1] = (timerValue & 0xFF00) >> 8;
-	USBBuffer[2] = (timerValue & 0xFF0000) >> 16;
-	USBBuffer[3] = (timerValue & 0xFF000000) >> 24;
-	status = CyU3PUsbSendEP0Data (4, USBBuffer);
+	USBBuffer[4] = timerValue & 0xFF;
+	USBBuffer[5] = (timerValue & 0xFF00) >> 8;
+	USBBuffer[6] = (timerValue & 0xFF0000) >> 16;
+	USBBuffer[7] = (timerValue & 0xFF000000) >> 24;
 	return status;
 }
 

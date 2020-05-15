@@ -565,8 +565,8 @@ void AdiPrintSpiConfig(CyU3PSpiConfig_t config)
   * @return A status code indicating the success of the function.
   *
   * This function performs a bi-directional SPI transfer, on up to 4 bytes of data. The transfer length is
-  * determined by the current SPI config word length setting. The status and data received on the MISO line
-  * are sent to the PC over EP0 following the transfer.
+  * determined by the current SPI config word length setting. The data received on the MISO line is placed
+  * in USBBuffer[4 - 7] following the transfer.
  **/
 CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData)
 {
@@ -591,16 +591,11 @@ CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData)
 		AdiLogError(SpiFunctions_c, __LINE__, status);
 	}
 
-	/* Send status and data back via control endpoint */
-	USBBuffer[0] = status & 0xFF;
-	USBBuffer[1] = (status & 0xFF00) >> 8;
-	USBBuffer[2] = (status & 0xFF0000) >> 16;
-	USBBuffer[3] = (status & 0xFF000000) >> 24;
+	/* Load read data to be sent back via control endpoint */
 	USBBuffer[4] = readBuffer[0];
 	USBBuffer[5] = readBuffer[1];
 	USBBuffer[6] = readBuffer[2];
 	USBBuffer[7] = readBuffer[3];
-	CyU3PUsbSendEP0Data (8, USBBuffer);
 
 	/* Return status code  */
 	return status;

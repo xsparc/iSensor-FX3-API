@@ -88,4 +88,16 @@ void AdiAppInit();
 /** Event handler bit for continuing a transfer stream after one "buffer", within the StreamThread */
 #define ADI_TRANSFER_STREAM_ENABLE				(1 << 16)
 
+/** Start I2C read stream */
+#define ADI_I2C_STREAM_START					(1 << 17)
+
+/** Stop I2C read stream */
+#define ADI_I2C_STREAM_STOP						(1 << 18)
+
+/** I2C read stream done */
+#define ADI_I2C_STREAM_DONE						(1 << 19)
+
+/** I2C read stream enable */
+#define ADI_I2C_STREAM_ENABLE					(1 << 20)
+
 #endif

@@ -269,6 +269,7 @@ void AdiAppInit ()
  **/
 void AdiAppThreadEntry (uint32_t input)
 {
+	/* Events to trigger from */
     uint32_t eventMask =
     		ADI_RT_STREAM_DONE |
     		ADI_RT_STREAM_START |
@@ -281,7 +282,12 @@ void AdiAppThreadEntry (uint32_t input)
     		ADI_BURST_STREAM_STOP |
     		ADI_TRANSFER_STREAM_DONE |
     		ADI_TRANSFER_STREAM_START |
-    		ADI_TRANSFER_STREAM_STOP;
+    		ADI_TRANSFER_STREAM_STOP |
+    		ADI_I2C_STREAM_DONE |
+    		ADI_I2C_STREAM_START |
+    		ADI_I2C_STREAM_STOP;
+
+    /* Event flags */
     uint32_t eventFlag;
 
     /* Initialize UART debugging */
@@ -384,6 +390,29 @@ void AdiAppThreadEntry (uint32_t input)
 				AdiBurstStreamFinished();
 #ifdef VERBOSE_MODE
 				CyU3PDebugPrint (4, "Burst data stream cleanup finished.\r\n");
+#endif
+			}
+
+			/* Handle i2c read stream commands */
+			if (eventFlag & ADI_I2C_STREAM_START)
+			{
+				AdiI2CStreamStart();
+#ifdef VERBOSE_MODE
+				CyU3PDebugPrint (4, "I2C read stream start command received.\r\n");
+#endif
+			}
+			if (eventFlag & ADI_I2C_STREAM_STOP)
+			{
+				AdiStopAnyDataStream();
+#ifdef VERBOSE_MODE
+				CyU3PDebugPrint (4, "Stop I2C read stream command detected.\r\n");
+#endif
+			}
+			if (eventFlag & ADI_I2C_STREAM_DONE)
+			{
+				AdiI2CStreamFinished();
+#ifdef VERBOSE_MODE
+				CyU3PDebugPrint (4, "I2C read stream cleanup finished.\r\n");
 #endif
 			}
 

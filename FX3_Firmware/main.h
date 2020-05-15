@@ -52,8 +52,9 @@
 #include "StreamThread.h"
 #include "Flash.h"
 #include "ErrorLog.h"
+#include "I2cFunctions.h"
 
-//Lower level register access includes
+/* Lower level register access includes */
 #include "gpio_regs.h"
 #include "spi_regs.h"
 #include "gctlaon_regs.h"
@@ -61,11 +62,15 @@
 /** Enum for the available FX3 board types */
 typedef enum FX3BoardType
 {
-	/** iSensor FX3 based eval board manufactured by Analog Devices */
-	iSensorFX3Board = 0,
-
 	/** Cypress SuperSpeed Explorer kit board. Can be used with breakout board for iSensors connectors. */
-	CypressFX3Board
+	CypressFX3Board = 0,
+
+	/** Rev. A iSensor FX3 based eval board manufactured by Analog Devices. Does not have I2C pins exposed */
+	iSensorFX3Board_A = 1,
+
+	/** Rev. B iSensor FX3 based eval board manufactured by Analog Devices. Has I2C pins exposed on secondary connector */
+	iSensorFX3Board_B = 2
+
 }FX3BoardType;
 
 /** Enum for the available part (DUT) types */
@@ -170,6 +175,12 @@ typedef struct BoardState
 	/** The pin map of the currently programmed board */
 	FX3PinMap PinMap;
 
+	/** I2C interface bit rate */
+	uint32_t I2CBitRate;
+
+	/** I2C retry count after slave device sends NAK */
+	uint16_t I2CRetryCount;
+
 }BoardState;
 
 /** @brief Struct to store the current data stream state information */
@@ -210,11 +221,30 @@ typedef struct StreamState
 
 	/** Number of bytes per USB packet in generic data stream mode */
 	uint16_t BytesPerUsbPacket;
+
+	/** Preamble for I2C stream */
+	CyU3PI2cPreamble_t I2CStreamPreamble;
+
 }StreamState;
 
 /*
  * Vendor Command Request Code Definitions
  */
+
+/** I2C set bit rate command */
+#define ADI_I2C_SET_BIT_RATE 					(0x10)
+
+/** I2C read command */
+#define ADI_I2C_READ_BYTES						(0x11)
+
+/** I2C write command */
+#define ADI_I2C_WRITE_BYTES 					(0x12)
+
+/** I2C continuous stream read command */
+#define ADI_I2C_READ_STREAM 					(0x13)
+
+/** I2C set rety count after slave sends NAK */
+#define ADI_I2C_RETRY_COUNT						(0x14)
 
 /** Return FX3 firmware ID (defined below) */
 #define ADI_FIRMWARE_ID_CHECK					(0xB0)
@@ -334,8 +364,17 @@ typedef struct StreamState
 /** Complex GPIO assigned as a timer input */
 #define ADI_TIMER_PIN							(0x8)
 
-/** COmplex GPIO index for the timer input (ADI_TIMER_PIN % 8) */
+/** Complex GPIO index for the timer input (ADI_TIMER_PIN % 8) */
 #define ADI_TIMER_PIN_INDEX						(0x0)
+
+/** ID pin 0 (CTL0 - iSensor board vs cypress dev board) */
+#define ADI_ID_PIN_0							17
+
+/** ID pin 1 (iSensor board rev A vs rev B (w/ I2C) */
+#define ADI_ID_PIN_1							15
+
+/** Flash write enable pin */
+#define ADI_FLASH_WRITE_ENABLE_PIN				18
 
 /*
  * Endpoint Related Defines
@@ -402,6 +441,7 @@ void WatchDogTimerCb (uint32_t nParam);
 void AdiGetBuildDate(uint8_t * outBuf);
 void AdiGetBoardPinInfo(uint8_t * outBuf);
 FX3BoardType GetFX3BoardType();
+void AdiSendStatus(uint32_t status, uint16_t count, CyBool_t isControlEndpoint);
 
 #include <cyu3externcend.h>
 

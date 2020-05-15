@@ -24,6 +24,9 @@ static CyU3PReturnStatus_t FlashTransfer(uint32_t Address, uint16_t NumBytes, ui
 /** Global USB Buffer (Control Endpoint) */
 extern uint8_t USBBuffer[4096];
 
+/** FX3 state */
+extern BoardState FX3State;
+
 /** I2C Tx DMA channel handle */
 static CyU3PDmaChannel flashTxHandle;
 
@@ -47,6 +50,7 @@ CyU3PReturnStatus_t AdiFlashInit()
     CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
     /* Initialize and configure the I2C master module. */
+    CyU3PI2cDeInit();
     status = CyU3PI2cInit();
     if (status != CY_U3P_SUCCESS)
     {
@@ -125,6 +129,8 @@ void AdiFlashDeInit()
 	CyU3PI2cDeInit();
 	CyU3PDmaChannelDestroy(&flashTxHandle);
 	CyU3PDmaChannelDestroy(&flashRxHandle);
+	/* Re-init I2C for use in register mode */
+	AdiI2CInit(FX3State.I2CBitRate, CyFalse);
 }
 
 /**
@@ -137,10 +143,19 @@ void AdiFlashDeInit()
   * @param WriteBuf RAM buffer containing data to be written to flash
   *
   * @return void
+  *
+  * This function controls the flash write enable signal. This write enable
+  * signal is used to prevent un-intended writes the flash from user space,
+  * via I2C functions.
  **/
 void AdiFlashWrite(uint32_t Address, uint16_t NumBytes, uint8_t* WriteBuf)
 {
+	/* Enable flash for write */
+	CyU3PGpioSimpleSetValue(ADI_FLASH_WRITE_ENABLE_PIN, CyFalse);
+	/* Perform write */
 	FlashTransfer(Address, NumBytes, WriteBuf, CyFalse);
+	/* Lock flash */
+	CyU3PGpioSimpleSetValue(ADI_FLASH_WRITE_ENABLE_PIN, CyTrue);
 }
 
 /**
@@ -267,7 +282,7 @@ static CyU3PReturnStatus_t FlashTransfer(uint32_t Address, uint16_t NumBytes, ui
             buf_p.count = FLASH_PAGE_SIZE;
 
             /* Send read command */
-            status = CyU3PI2cSendCommand (&preamble, dmaCount, CyTrue);
+            status = CyU3PI2cSendCommand(&preamble, dmaCount, CyTrue);
 #ifdef VERBOSE_MODE
             if(status != CY_U3P_SUCCESS)
             	CyU3PDebugPrint (4, "I2C send read command failed: 0x%x\r\n", status);

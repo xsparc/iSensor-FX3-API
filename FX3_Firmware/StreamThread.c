@@ -42,7 +42,7 @@ extern uint8_t USBBuffer[4096];
 void AdiStreamThreadEntry(uint32_t input)
 {
 	/* Set the event mask to the stream enable events */
-	uint32_t eventMask = ADI_GENERIC_STREAM_ENABLE|ADI_RT_STREAM_ENABLE|ADI_BURST_STREAM_ENABLE|ADI_TRANSFER_STREAM_ENABLE;
+	uint32_t eventMask = ADI_GENERIC_STREAM_ENABLE|ADI_RT_STREAM_ENABLE|ADI_BURST_STREAM_ENABLE|ADI_TRANSFER_STREAM_ENABLE|ADI_I2C_STREAM_ENABLE;
 
 	/* Variable to receive the event arguments into */
 	uint32_t eventFlag;
@@ -50,7 +50,7 @@ void AdiStreamThreadEntry(uint32_t input)
 	for (;;)
 	{
 		/* Wait indefinitely for any flag to be set */
-		if (CyU3PEventGet (&EventHandler, eventMask, CYU3P_EVENT_OR_CLEAR, &eventFlag, CYU3P_WAIT_FOREVER) == CY_U3P_SUCCESS)
+		if (CyU3PEventGet(&EventHandler, eventMask, CYU3P_EVENT_OR_CLEAR, &eventFlag, CYU3P_WAIT_FOREVER) == CY_U3P_SUCCESS)
 		{
 			/* Real-time (ADcmXL) stream case */
 			if (eventFlag & ADI_RT_STREAM_ENABLE)
@@ -84,6 +84,14 @@ void AdiStreamThreadEntry(uint32_t input)
 				CyU3PDebugPrint (4, "Finished burst stream work\r\n");
 #endif
 			}
+			/* I2C stream case */
+			else if (eventFlag & ADI_I2C_STREAM_ENABLE)
+			{
+				AdiI2CStreamWork();
+#ifdef VERBOSE_MODE
+				CyU3PDebugPrint (4, "Finished I2C stream work\r\n");
+#endif
+			}
 			else
 			{
 				/* Shouldnt be able to get here */
@@ -96,6 +104,63 @@ void AdiStreamThreadEntry(uint32_t input)
         /* Allow other ready threads to run. */
         CyU3PThreadRelinquish();
 	}
+}
+
+/**
+  * @brief This is the worker function for the I2C read stream.
+  *
+  * @return A status code representing the success of the I2C stream operation.
+  *
+  * This function performs all the I2C and USB transfers for a single "buffer" of an I2C read stream.
+  * The size of each buffer is the number of read bytes requested in the stream start
+ **/
+CyU3PReturnStatus_t AdiI2CStreamWork()
+{
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+
+	/* Track the number of buffers read */
+	static uint32_t numBuffersRead = 0;
+
+	/* Wait for DR if enabled */
+	if (FX3State.DrActive)
+	{
+		/* Clear GPIO interrupts */
+		GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
+		/* Loop until interrupt is triggered */
+		while(!(GPIO->lpp_gpio_intr0 & (1 << FX3State.DrPin)));
+	}
+
+	/* Start new I2C DMA transfer */
+	CyU3PI2cSendCommand(&StreamThreadState.I2CStreamPreamble, StreamThreadState.NumCaptures, CyTrue);
+
+	/* Wait for completion */
+	CyU3PI2cWaitForBlockXfer(CyTrue);
+
+	/* Check to see if we've captured enough buffers or if we were asked to stop data capture early */
+	if ((numBuffersRead >= (StreamThreadState.NumBuffers - 1)) || KillStreamEarly)
+	{
+		/* Reset values */
+		numBuffersRead = 0;
+
+		/* Set channel wrap up */
+		CyU3PDmaChannelSetWrapUp(&StreamingChannel);
+
+		/* Set stream done flag if kill early event was processed (otherwise must be explicitly invoked by FX3 API) */
+		if(KillStreamEarly)
+		{
+			CyU3PEventSet(&EventHandler, ADI_I2C_STREAM_DONE, CYU3P_EVENT_OR);
+		}
+	}
+	else
+	{
+		/* Increment buffer counter */
+		numBuffersRead++;
+
+		/* Reset flag */
+		CyU3PEventSet(&EventHandler, ADI_I2C_STREAM_ENABLE, CYU3P_EVENT_OR);
+	}
+
+	return status;
 }
 
 /**
@@ -129,7 +194,7 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
 	/* If the stream channel buffer has not been set, get a new buffer */
 	if (MISOPtr == 0)
 	{
-		status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &StreamChannelBuffer, CYU3P_WAIT_FOREVER);
+		status = CyU3PDmaChannelGetBuffer(&StreamingChannel, &StreamChannelBuffer, CYU3P_WAIT_FOREVER);
 		if (status != CY_U3P_SUCCESS)
 		{
 			AdiLogError(StreamThread_c, __LINE__, status);
