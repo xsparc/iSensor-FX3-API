@@ -639,7 +639,12 @@ Partial Class FX3Connection
 
         'Validate that the pin isn't acting as a PWM pin
         If isPWMPin(BusyPin) Then
-            Throw New FX3ConfigurationException("ERROR: The selected pin is currently configured to drive a PWM signal. Please call StopPWM(pin) before interfacing with the pin further")
+            Throw New FX3ConfigurationException("ERROR: The selected busy pin is currently configured to drive a PWM signal. Please call StopPWM(pin) before interfacing with the pin further")
+        End If
+
+        'check that complex timer block for busy is not in use by timer
+        If (((BusyPin.pinConfig) And &HFFUI) Mod 8) = 0 Then
+            Throw New FX3ConfigurationException("ERROR: The selected busy pin shares a timer peripheral with the FX3 10MHz timebase timer. This pin cannot be used for measurements")
         End If
 
         'Validate that the trigger drive time isn't too long (less than one timer period)
@@ -725,7 +730,7 @@ Partial Class FX3Connection
         'Read status from the buffer and throw exception for bad status
         status = BitConverter.ToUInt32(buf, 0)
         If Not status = 0 Then
-            Throw New FX3BadStatusException("ERROR: Failed to configure pin as input, error code: " + status.ToString("X4"))
+            Throw New FX3BadStatusException("ERROR: Busy pin pulse measure failed, error code: 0x" + status.ToString("X4"))
         End If
 
         'Read result
@@ -733,6 +738,7 @@ Partial Class FX3Connection
 
         'Scale the result to ms (based on 10MHz timer)
         convertedTime = 1000 * result / m_FX3SPIConfig.SecondsToTimerTicks
+        convertedTime = Math.Round(convertedTime, 4)
 
         'Return the actual time waited
         Return convertedTime
@@ -749,13 +755,15 @@ Partial Class FX3Connection
     Public Function MeasureBusyPulse(SpiTriggerData As Byte(), BusyPin As IPinObject, BusyPolarity As UInteger, Timeout As UInteger) As Double
         'Declare variables needed for transfer
         Dim buf As New List(Of Byte)
-        Dim respBuf(16) As Byte
+        Dim respBuf(7) As Byte
         Dim transferStatus As Boolean
         Dim timeoutTimer As New Stopwatch
         Dim convertedTime As Double
-        Dim status, currentTime, rollOverCount, conversionFactor As UInteger
-        Dim totalTicks, rollOverCountULong As ULong
-        Dim FX3Timeout As UInteger
+        Dim status, MaxTime As UInteger
+        Dim result As ULong
+
+        'max time for timeout or drive
+        MaxTime = CUInt(1000 * (UInteger.MaxValue / m_FX3SPIConfig.SecondsToTimerTicks))
 
         'Validate that the pin isn't acting as a PWM pin
         If isPWMPin(BusyPin) Then
@@ -767,8 +775,23 @@ Partial Class FX3Connection
             Throw New FX3ConfigurationException("ERROR: SPI trigger data must be a multiple of the SPI word length.")
         End If
 
+        'Validate that the pin isn't acting as a PWM pin
+        If isPWMPin(BusyPin) Then
+            Throw New FX3ConfigurationException("ERROR: The selected busy pin is currently configured to drive a PWM signal. Please call StopPWM(pin) before interfacing with the pin further")
+        End If
+
+        'check that complex timer block for busy is not in use by timer
+        If (((BusyPin.pinConfig) And &HFFUI) Mod 8) = 0 Then
+            Throw New FX3ConfigurationException("ERROR: The selected busy pin shares a timer peripheral with the FX3 10MHz timebase timer. This pin cannot be used for measurements")
+        End If
+
+        'Validate that the timeout isn't too long (less than timer period)
+        If Timeout > MaxTime Then
+            Throw New FX3ConfigurationException("ERROR: Invalid timeout time of " + Timeout.ToString() + "ms. Max allowed is " + MaxTime.ToString() + "ms")
+        End If
+
         'Buffer will contain the following, in order:
-        'BusyPin(2), BusyPinPolarity(1), TimeoutTicks(4), TimeoutRolloverCount(4), TriggerMode(1), Spi Trigger Size (2), SPI trigger data ...
+        'BusyPin(0-1), BusyPinPolarity(2), TimeoutMs(3-6), TriggerMode(7), Spi Data Count(8-9), SPI Data(10 - n)
 
         'Set the pin (buf 0 - 1)
         buf.Add(CByte(BusyPin.pinConfig And &HFFUI))
@@ -778,17 +801,11 @@ Partial Class FX3Connection
         If BusyPolarity <> 0 Then BusyPolarity = 1
         buf.Add(CByte(BusyPolarity))
 
-        'If the timeout is too large (greater than one timer period) set to 0 -> no timeout on firmware
-        FX3Timeout = Timeout
-        If Timeout > ((UInteger.MaxValue / m_FX3SPIConfig.SecondsToTimerTicks) * 1000) Then
-            FX3Timeout = 0
-        End If
-
         'Load timeout into the buffer (buf 3 -6)
-        buf.Add(CByte(FX3Timeout And &HFFUI))
-        buf.Add(CByte((FX3Timeout And &HFF00UI) >> 8))
-        buf.Add(CByte((FX3Timeout And &HFF0000UI) >> 16))
-        buf.Add(CByte((FX3Timeout And &HFF000000UI) >> 24))
+        buf.Add(CByte(Timeout And &HFFUI))
+        buf.Add(CByte((Timeout And &HFF00UI) >> 8))
+        buf.Add(CByte((Timeout And &HFF0000UI) >> 16))
+        buf.Add(CByte((Timeout And &HFF000000UI) >> 24))
 
         'Put mode in buffer (7) (1 for trigger on SPI word, 0 for trigger on pin drive)
         buf.Add(1)
@@ -812,10 +829,10 @@ Partial Class FX3Connection
         'Start bulk transfer
         transferStatus = False
         If Timeout = 0 Then
-            transferStatus = USB.XferData(respBuf, 16, DataInEndPt)
+            transferStatus = USB.XferData(respBuf, 8, DataInEndPt)
         Else
             While ((Not transferStatus) And (timeoutTimer.ElapsedMilliseconds() < Timeout))
-                transferStatus = USB.XferData(respBuf, 16, DataInEndPt)
+                transferStatus = USB.XferData(respBuf, 8, DataInEndPt)
             End While
         End If
 
@@ -830,28 +847,17 @@ Partial Class FX3Connection
         'Read status from the buffer and throw exception for bad status
         status = BitConverter.ToUInt32(respBuf, 0)
         If status <> 0 Then
-            Throw New FX3BadStatusException("ERROR: Failed to configure pin as input, error code: " + status.ToString("X4"))
+            Throw New FX3BadStatusException("ERROR: Busy pin pulse measure failed, error code: 0x" + status.ToString("X4"))
         End If
 
         'Read current time
-        currentTime = BitConverter.ToUInt32(respBuf, 4)
+        result = BitConverter.ToUInt32(respBuf, 4)
 
-        'Read roll over counter
-        rollOverCount = BitConverter.ToUInt32(respBuf, 8)
-        rollOverCountULong = rollOverCount
+        'Scale the result to ms (based on 10MHz timer)
+        convertedTime = 1000 * result / m_FX3SPIConfig.SecondsToTimerTicks
+        convertedTime = Math.Round(convertedTime, 4)
 
-        'Read conversion factor
-        conversionFactor = BitConverter.ToUInt32(respBuf, 12)
-
-        'Calculate the total time, in timer ticks
-        totalTicks = rollOverCountULong * UInteger.MaxValue
-        totalTicks += currentTime
-
-        'Scale the time waited to MS
-        convertedTime = Convert.ToDouble(totalTicks)
-        convertedTime = Math.Round(convertedTime / conversionFactor, 3)
-
-        'Return the actual time waited
+        'Return the converted time
         Return convertedTime
 
     End Function
