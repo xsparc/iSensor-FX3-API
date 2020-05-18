@@ -279,7 +279,7 @@ static CyU3PReturnStatus_t FlashTransfer(uint32_t Address, uint16_t NumBytes, ui
             preamble.ctrlMask  = 0x0004;
 
             buf_p.size = FLASH_PAGE_SIZE;
-            buf_p.count = FLASH_PAGE_SIZE;
+            buf_p.count = dmaCount;
 
             /* Send read command */
             status = CyU3PI2cSendCommand(&preamble, dmaCount, CyTrue);

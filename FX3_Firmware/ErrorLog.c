@@ -51,6 +51,9 @@ void AdiLogError(FileIdentifier File, uint32_t Line, uint32_t ErrorCode)
 {
 	ErrorMsg error = {};
 
+	/* Set the uptime */
+	error.Uptime = CyU3PGetTime();
+
 	/* Set the file code */
 	error.File = File;
 
@@ -160,7 +163,7 @@ static void WriteLogToFlash(ErrorMsg* msg)
  **/
 static void WriteLogToDebug(ErrorMsg* msg)
 {
-	CyU3PDebugPrint (4, "Error occurred on line %d of file %d. Error code: 0x%x\r\n", msg->Line, msg->File, msg->ErrorCode);
+	CyU3PDebugPrint (4, "Error code 0x%x occurred on line %d of file %d. System uptime: %dms\r\n", msg->ErrorCode, msg->Line, msg->File, msg->Uptime);
 }
 
 /**
@@ -180,7 +183,7 @@ static uint32_t GetNewLogAddress(uint32_t* TotalLogCount)
 	uint32_t count = GetLogCount();
 
 #ifdef VERBOSE_MODE
-	CyU3PDebugPrint (4, "Error log count: 0x%x\r\n", count);
+	CyU3PDebugPrint (4, "Current error log count: 0x%x\r\n", count);
 #endif
 
 	/* Find location of "front" */
@@ -220,6 +223,16 @@ static uint32_t GetLogCount()
 	count |= (LogBuffer[1] << 8);
 	count |= (LogBuffer[2] << 16);
 	count |= (LogBuffer[3] << 24);
+
+	/* If count reads as 0 start a single retry */
+	if(count == 0)
+	{
+		AdiFlashRead(LOG_COUNT_ADDR, 4, LogBuffer);
+		count = LogBuffer[0];
+		count |= (LogBuffer[1] << 8);
+		count |= (LogBuffer[2] << 16);
+		count |= (LogBuffer[3] << 24);
+	}
 
 	/* Handle un-initialized log */
 	if(count == 0xFFFFFFFF)
