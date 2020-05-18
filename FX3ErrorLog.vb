@@ -36,6 +36,11 @@ Public Class FX3ErrorLog
     Public FirmwareRev As String
 
     ''' <summary>
+    ''' FX3 ThreadX RTOS uptime when the error event occurred
+    ''' </summary>
+    Public OSUptime As UInteger
+
+    ''' <summary>
     ''' Error log constructor
     ''' </summary>
     ''' <param name="FlashData">The 32 byte block of data read from flash which contains the error log struct</param>
@@ -45,6 +50,7 @@ Public Class FX3ErrorLog
         End If
 
         'parse array
+        OSUptime = BitConverter.ToUInt32(FlashData, 0)
         Line = BitConverter.ToUInt32(FlashData, 4)
         ErrorCode = BitConverter.ToUInt32(FlashData, 8)
         BootTimeStamp = BitConverter.ToUInt32(FlashData, 12)
