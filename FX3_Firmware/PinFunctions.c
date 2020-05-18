@@ -337,10 +337,12 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint16_t *bytesRead = 0;
-	uint16_t busyPin, triggerPin;
-	CyBool_t pinValue, exitCondition, SpiTriggerMode, busyPolarity, triggerPolarity;
-	uint32_t currentTime, lastTime, timeout, rollOverCount, driveTime;
+	uint8_t * spiBuf;
+	uint16_t busyPin, triggerPin, SpiTriggerWordCount;
+	CyBool_t exitCondition, SpiTriggerMode, busyPolarity, triggerPolarity;
+	uint32_t currentTime, timeout, driveTime, result;
 	CyU3PGpioSimpleConfig_t gpioConfig;
+	CyU3PGpioComplexConfig_t busyPinConfig;
 
 	/* Read config data into USBBuffer */
 	status = CyU3PUsbGetEP0Data(transferLength, USBBuffer, bytesRead);
@@ -352,55 +354,74 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 
 	/* Parse general request data from USBBuffer */
 	busyPin = USBBuffer[0];
-	busyPin = busyPin + (USBBuffer[1] << 8);
+	busyPin |= (USBBuffer[1] << 8);
 	busyPolarity = (CyBool_t) USBBuffer[2];
 	timeout = USBBuffer[3];
-	timeout = timeout + (USBBuffer[4] << 8);
-	timeout = timeout + (USBBuffer[5] << 16);
-	timeout = timeout + (USBBuffer[6] << 24);
+	timeout |= (USBBuffer[4] << 8);
+	timeout |= (USBBuffer[5] << 16);
+	timeout |= (USBBuffer[6] << 24);
 
 	/* Get the trigger mode */
 	SpiTriggerMode = USBBuffer[7];
 
-	/* Convert ms to timer ticks */
-	timeout = timeout * MS_TO_TICKS_MULT;
-
-	/* Check that busy pin specified is configured as input */
-	status = CyU3PGpioSimpleGetValue(busyPin, &pinValue);
-	if(status != CY_U3P_SUCCESS)
+	/* Convert timeout (in ms) to timer ticks */
+	if((timeout == 0) || (timeout > 426000))
 	{
-		/* If initial pin read fails try and configure as input */
-		gpioConfig.outValue = CyFalse;
-		gpioConfig.inputEn = CyTrue;
-		gpioConfig.driveLowEn = CyFalse;
-		gpioConfig.driveHighEn = CyFalse;
-		gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
-		status = CyU3PGpioSetSimpleConfig(busyPin, &gpioConfig);
-
-		/* get the pin value again after configuring */
-		status = CyU3PGpioSimpleGetValue(busyPin, &pinValue);
-
-		/* If pin setup not successful skip wait operation and return -1 */
-		if(status != CY_U3P_SUCCESS)
-		{
-			/* Send the data to PC */
-			AdiReturnBulkEndpointData(status, 16);
-			return status;
-		}
+		/* Set max timeout */
+		timeout = 0xFFFFFFFF;
+	}
+	else
+	{
+		timeout = timeout * MS_TO_TICKS_MULT;
 	}
 
 	/* Set default for trigger pin to invalid value */
 	triggerPin = 0xFFFF;
 
+	/* Set default result to invalid value */
+	result = 0xFFFFFFFF;
+
+	/* Set up busy pin config */
+	busyPinConfig.driveHighEn = CyFalse;
+	busyPinConfig.driveLowEn = CyFalse;
+	busyPinConfig.inputEn = CyTrue;
+	busyPinConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+	busyPinConfig.timerMode = CY_U3P_GPIO_TIMER_LOW_FREQ; /* 10MHz */
+	busyPinConfig.pinMode = CY_U3P_GPIO_MODE_STATIC;
+	busyPinConfig.period = 0xFFFFFFFF;
+	busyPinConfig.pinMode = CY_U3P_GPIO_MODE_STATIC;
+	CyU3PGpioDisable(busyPin);
+	CyU3PDeviceGpioOverride(busyPin, CyFalse);
+	status = CyU3PGpioSetComplexConfig(busyPin, &busyPinConfig);
+	/* If setting up pulse measure hardware fails then return */
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiLogError(PinFunctions_c, __LINE__, status);
+    	AdiReturnBulkEndpointData(status, 8);
+    }
+
+    /* Start measure operation */
+    if(busyPolarity == CyFalse)
+    	status = CyU3PGpioComplexMeasureOnce(busyPin, CY_U3P_GPIO_MODE_MEASURE_LOW_ONCE);
+    else
+    	status = CyU3PGpioComplexMeasureOnce(busyPin, CY_U3P_GPIO_MODE_MEASURE_HIGH_ONCE);
+
+    /* If measure start fails then return */
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiLogError(PinFunctions_c, __LINE__, status);
+    	AdiReturnBulkEndpointData(status, 8);
+    }
+
 	/* parse the trigger specific data and trigger */
 	if(SpiTriggerMode)
 	{
 		/* Get the SPI trigger word count */
-		uint16_t SpiTriggerWordCount = USBBuffer[8];
-		SpiTriggerWordCount += (USBBuffer[9] << 8);
+		SpiTriggerWordCount = USBBuffer[8];
+		SpiTriggerWordCount |= (USBBuffer[9] << 8);
 
 		/* Set the SPI buffer */
-		uint8_t * spiBuf = USBBuffer + 10;
+		spiBuf = USBBuffer + 10;
 
 		/* Transmit the SPI words */
 		CyU3PSpiTransmitWords(spiBuf, SpiTriggerWordCount);
@@ -411,8 +432,10 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 		triggerPin = USBBuffer[8];
 		triggerPin = triggerPin + (USBBuffer[9] << 8);
 
+		/* Get drive polarity */
 		triggerPolarity = USBBuffer[10];
 
+		/* Get drive time (in ms) */
 		driveTime = USBBuffer[11];
 		driveTime = driveTime + (USBBuffer[12] << 8);
 		driveTime = driveTime + (USBBuffer[13] << 16);
@@ -435,13 +458,6 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 			AdiLogError(PinFunctions_c, __LINE__, status);
 		}
 
-		/* Reset the pin timer register to 0 */
-		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
-		/* Disable interrupts on the timer pin */
-		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= ~(CY_U3P_LPP_GPIO_INTRMODE_MASK);
-		/* Set the pin timer period to 0xFFFFFFFF; */
-		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].period = 0xFFFFFFFF;
-
 		/* Configure the pin to act as an output and drive */
 		gpioConfig.outValue = triggerPolarity;
 		gpioConfig.inputEn = CyFalse;
@@ -455,21 +471,7 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 		}
 	}
 
-	/* Wait until the busy pin reaches the selected polarity */
-	while(((GPIO->lpp_gpio_simple[busyPin] & CY_U3P_LPP_GPIO_IN_VALUE) >> 1) != busyPolarity);
-
-	/* In pin mode subtract the wait time from the total drive time */
-	if(!SpiTriggerMode)
-	{
-		/* Set the pin config for sample now mode */
-		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (FX3State.TimerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
-		/* wait for sample to finish */
-		while (GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_MODE_MASK);
-		/* read timer value */
-		driveTime = driveTime - GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
-	}
-
-	/* Reset the pin timer register to 0 */
+	/* Reset the timeout timer register to 0 */
 	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
 	/* Disable interrupts on the timer pin */
 	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= ~(CY_U3P_LPP_GPIO_INTRMODE_MASK);
@@ -478,16 +480,11 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 
 	/* Reset state variables */
 	currentTime = 0;
-	rollOverCount = 0;
-	lastTime = 0;
 	exitCondition = CyFalse;
 
 	/* Wait for the GPIO pin the reach the desired level or timeout */
 	while(!exitCondition)
 	{
-		/* Store previous time */
-		lastTime = currentTime;
-
 		/* Set the pin config for sample now mode */
 		GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status = (FX3State.TimerPinConfig | (CY_U3P_GPIO_MODE_SAMPLE_NOW << CY_U3P_LPP_GPIO_MODE_POS));
 		/* wait for sample to finish */
@@ -495,24 +492,11 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 		/* read timer value */
 		currentTime = GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].threshold;
 
-		/* Read the pin value */
-		pinValue = ((GPIO->lpp_gpio_simple[busyPin] & CY_U3P_LPP_GPIO_IN_VALUE) >> 1);
-
-		/* Check if rollover occurred */
-		if(currentTime < lastTime)
-		{
-			rollOverCount++;
-		}
+		/* Get result from pulse measure hardware */
+		status = CyU3PGpioComplexWaitForCompletion(busyPin, &result, CyFalse);
 
 		/* update the exit condition */
-		if(timeout)
-		{
-			exitCondition = ((pinValue != busyPolarity) || (currentTime >= timeout));
-		}
-		else
-		{
-			exitCondition = (pinValue != busyPolarity);
-		}
+		exitCondition = ((currentTime >= timeout) || (status == CY_U3P_SUCCESS));
 
 		/* Check if the pin drive can stop */
 		if(!SpiTriggerMode)
@@ -527,45 +511,30 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 		}
 	}
 
-	/* add 1.2us to current time (fudge factor, calibrated using DSLogic Pro) */
-	if(currentTime < (0xFFFFFFFF - 12))
-	{
-		currentTime = currentTime + 12;
-	}
-	else
-	{
-		currentTime = 0;
-		rollOverCount++;
-	}
-
+	/* Reset busy pin to simple input */
+	gpioConfig.outValue = CyFalse;
+	gpioConfig.inputEn = CyTrue;
+	gpioConfig.driveLowEn = CyFalse;
+	gpioConfig.driveHighEn = CyFalse;
+	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+	CyU3PDeviceGpioOverride(busyPin, CyTrue);
+	CyU3PGpioDisable(busyPin);
+	CyU3PGpioSetSimpleConfig(busyPin, &gpioConfig);
 	/* Reset trigger pin to input if needed */
 	if(triggerPin != 0xFFFF)
 	{
 		CyU3PGpioDisable(triggerPin);
-		gpioConfig.outValue = CyFalse;
-		gpioConfig.inputEn = CyTrue;
-		gpioConfig.driveLowEn = CyFalse;
-		gpioConfig.driveHighEn = CyFalse;
-		gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
-		status = CyU3PGpioSetSimpleConfig(triggerPin, &gpioConfig);
+		CyU3PGpioSetSimpleConfig(triggerPin, &gpioConfig);
 	}
 
 	/* Populate buffer with result data */
-	BulkBuffer[4] = currentTime & 0xFF;
-	BulkBuffer[5] = (currentTime & 0xFF00) >> 8;
-	BulkBuffer[6] = (currentTime & 0xFF0000) >> 16;
-	BulkBuffer[7] = (currentTime & 0xFF000000) >> 24;
-	BulkBuffer[8] = rollOverCount & 0xFF;
-	BulkBuffer[9] = (rollOverCount & 0xFF00) >> 8;
-	BulkBuffer[10] = (rollOverCount & 0xFF0000) >> 16;
-	BulkBuffer[11] = (rollOverCount & 0xFF000000) >> 24;
-	BulkBuffer[12] = MS_TO_TICKS_MULT & 0xFF;
-	BulkBuffer[13] = (MS_TO_TICKS_MULT & 0xFF00) >> 8;
-	BulkBuffer[14] = (MS_TO_TICKS_MULT & 0xFF0000) >> 16;
-	BulkBuffer[15] = (MS_TO_TICKS_MULT & 0xFF000000) >> 24;
+	BulkBuffer[4] = result & 0xFF;
+	BulkBuffer[5] = (result & 0xFF00) >> 8;
+	BulkBuffer[6] = (result & 0xFF0000) >> 16;
+	BulkBuffer[7] = (result & 0xFF000000) >> 24;
 
 	/* Send the data to PC */
-	AdiReturnBulkEndpointData(status, 16);
+	AdiReturnBulkEndpointData(status, 8);
 
 	return status;
 }
