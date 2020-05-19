@@ -1,5 +1,11 @@
 # iSensor FX3 API - A .NET API for the iSensor FX3 Firmware
 
+## Test Status
+
+![Most Recent Test Results](https://raw.githubusercontent.com/ajn96/iSensor-FX3-Test/master/test_status.png)
+
+The test repository for the iSensor FX3 API and firmware is hosted [here](https://github.com/ajn96/iSensor-FX3-Test). This respository includes the test cases (C# test cases using NUnit 2.6.4) and a simple CI script for a Windows host.
+
 ## Overview
 
 The iSensor FX3 Firmware and API are designed to provide users with a means of reliably acquiring sensor data over a high-speed USB connection in any .NET compatible application. This firmware was designed for use on the Cypress FX3 SuperSpeed Explorer Kit and relies on the open source libraries provided by Cypress to operate. The freely-available, Eclipse-based, Cypress EZ USB Suite was used for all firmware development. 
