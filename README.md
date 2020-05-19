@@ -4,7 +4,7 @@
 
 ![Most Recent Test Results](https://raw.githubusercontent.com/ajn96/iSensor-FX3-Test/master/test_status.png)
 
-The test repository for the iSensor FX3 API and firmware is hosted [here](https://github.com/ajn96/iSensor-FX3-Test). This respository includes the test cases (C# test cases using NUnit 2.6.4) and a simple CI script for a Windows host.
+The test repository for the iSensor FX3 API and FX3 Firmware is hosted [here](https://github.com/ajn96/iSensor-FX3-Test). This respository includes source for all test cases (C# running on NUnit 2.6.4) and a simple CI script for a Windows host. All test cases are system level tests running on target hardware.
 
 ## Overview
 
