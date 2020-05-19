@@ -616,7 +616,7 @@ Partial Class FX3Connection
 
     ''' <summary>
     ''' This function triggers a DUT action using a pulse drive, and then measures the following pulse width on a separate busy line.
-    ''' The pulse time on the busy pin is measured using a 10MHz timer with approx. 1us accuracy.
+    ''' The pulse time on the busy pin is measured using a 10MHz timer with approx. 0.1us accuracy.
     ''' </summary>
     ''' <param name="TriggerPin">The pin to drive for the trigger condition (for example a sync pin)</param>
     ''' <param name="TriggerDriveTime">The time, in ms, to drive the trigger pin for</param>
@@ -722,9 +722,9 @@ Partial Class FX3Connection
         'stop stopwatch
         timeoutTimer.Stop()
 
-        'If the transfer failed return the timeout value
+        'If the transfer failed return infinity to signify timeout
         If Not transferStatus Then
-            Return Convert.ToDouble(timeoutTimer.ElapsedMilliseconds())
+            Return Double.PositiveInfinity
         End If
 
         'Read status from the buffer and throw exception for bad status (except timeout)
@@ -843,7 +843,7 @@ Partial Class FX3Connection
 
         'If the transfer failed return the timeout value
         If Not transferStatus Then
-            Return Convert.ToDouble(timeoutTimer.ElapsedMilliseconds())
+            Return Double.PositiveInfinity
         End If
 
         'Read status from the buffer and throw exception for bad status
