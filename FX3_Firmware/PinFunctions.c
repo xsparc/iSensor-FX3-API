@@ -347,10 +347,13 @@ CyU3PReturnStatus_t AdiMeasurePinDelay(uint16_t transferLength)
   *
   * @return A status code indicating the success of the measure pulse operation
   *
-  * This function is approx. microsecond accurate. It can be used for timing measurements which
-  * require a high degree of accuracy since it avoids the overhead of having a USB transaction (200us)
-  * between the initial trigger condition and the pulse measurement. This function is primarily
-  * intended for use with the ADcmXL series of condition monitoring modules.
+  * This function is accurate to approximately 1/10th a microsecond. It can be used for timing measurements which
+  * require a high degree of accuracy since it avoids the overhead of having a USB transaction (~100us)
+  * between the initial trigger condition and the pulse measurement. Note, this function utilizes the
+  * complex GPIO block on the FX3 to perform the busy pulse measurement. This gives very reliable
+  * accuracy of measurement, since the measurement is performed entirely by hardware. However, this
+  * does limit which pins can perform a busy pulse measurement, if there are PWM signals being driven
+  * which also use the complex GPIO block.
  **/
 CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 {
