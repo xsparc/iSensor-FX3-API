@@ -3,6 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+Resources/FX3USB.*
+Resources/FX3Api.*
+
 *.sln
 
 # User-specific files
