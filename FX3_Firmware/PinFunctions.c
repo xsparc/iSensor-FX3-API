@@ -511,14 +511,19 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 		}
 	}
 
+	/* Add 0.1us onto measured time (calibrated using DSLogic Pro) */
+	if(status == CY_U3P_SUCCESS)
+		result += 1;
+
 	/* Reset busy pin to simple input */
 	gpioConfig.outValue = CyFalse;
 	gpioConfig.inputEn = CyTrue;
 	gpioConfig.driveLowEn = CyFalse;
 	gpioConfig.driveHighEn = CyFalse;
 	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
-	CyU3PDeviceGpioOverride(busyPin, CyTrue);
 	CyU3PGpioDisable(busyPin);
+	CyU3PDeviceGpioRestore(busyPin);
+	CyU3PDeviceGpioOverride(busyPin, CyTrue);
 	CyU3PGpioSetSimpleConfig(busyPin, &gpioConfig);
 	/* Reset trigger pin to input if needed */
 	if(triggerPin != 0xFFFF)
