@@ -20,16 +20,15 @@
  ## ===========================
 */
 
-
 /* Device, config and string descriptors. */
 unsigned char gbDevDesc[] =
 {
     0x12,                           /* Descriptor Size */
     0x01,                           /* Device Descriptor Type */
     0x10,0x02,                      /* USB 2.10 */
-    0xFF,                           /* Device Class */
-    0xFF,                           /* Device Sub-class */
-    0xFF,                           /* Device protocol */
+    0x00,                           /* Device Class */
+    0x00,                           /* Device Sub-class */
+    0x00,                           /* Device protocol */
     0x40,                           /* Maxpacket size for EP0 : 64 bytes */
     0x56,0x04,                      /* Vendor ID */
     0x02,0xEF,                      /* Product ID */
@@ -128,7 +127,7 @@ unsigned char gbProductDesc[] =
     '.',0x00,
     '0',0x00,
     '.',0x00,
-    '0',0x00
+    '1',0x00
 };
 
 unsigned char gbSerialNumDesc [] = 
@@ -155,8 +154,7 @@ unsigned char gbBosDesc[] =
     0x07,                           /* Descriptor Size */
     0x10,                           /* Device Capability Type descriptor */
     0x02,                           /* USB 2.0 Extension Capability Type */
-    0x1E,0x64,0x00,0x00,            /* Supported device level features - LPM Support, BESL Support,
-                                       Baseline BESL=400 us, Deep BESL=1000 us. */
+    0x02,0x00,0x00,0x00,            /* Supported device level features - LPM Support */
 
     /* SuperSpeed Device Capability */
     0x0A,                           /* Descriptor Size */
@@ -187,7 +185,7 @@ unsigned char gbSsConfigDesc[] =
     0x04,                           /* Interface Descriptor type */
     0x00,                           /* Interface number */
     0x00,                           /* Alternate setting number */
-    0x02,                           /* Number of end points */
+    0x00,                           /* Number of end points */
     0xFF,                           /* Interface class */
     0x00,                           /* Interface sub class */
     0x00,                           /* Interface protocol code */
@@ -200,9 +198,9 @@ unsigned char gbSsDevDesc[] =
     0x12,                           /* Descriptor Size */
     0x01,                           /* Device Descriptor Type */
     0x10,0x03,                      /* USB 3.10 */
-    0xFF,                           /* Device Class */
-    0xFF,                           /* Device Sub-class */
-    0xFF,                           /* Device protocol */
+    0x00,                           /* Device Class */
+    0x00,                           /* Device Sub-class */
+    0x00,                           /* Device protocol */
     0x09,                           /* Maxpacket size for EP0 : 2^9 */
     0x56,0x04,                      /* Vendor ID */
     0x02,0xEF,                      /* Product ID */
@@ -228,10 +226,10 @@ unsigned char gbFsConfigDesc[] =
 
     /* Interface Descriptor */
     0x09,                           /* Descriptor size */
-    0x04,                           /* Interface Descriptor type */
+    0x04,       					/* Interface Descriptor type */
     0x00,                           /* Interface number */
     0x00,                           /* Alternate setting number */
-    0x02,                           /* Number of end points */
+    0x00,                           /* Number of end points */
     0xFF,                           /* Interface class */
     0x00,                           /* Interface sub class */
     0x00,                           /* Interface protocol code */
