@@ -1128,7 +1128,7 @@ void AdiAppStart()
 		CyU3PDeviceGpioOverride(ADI_FLASH_WRITE_ENABLE_PIN, CyTrue);
 		gpioConfig.outValue = CyTrue;
 		status = CyU3PGpioSetSimpleConfig(ADI_FLASH_WRITE_ENABLE_PIN, &gpioConfig);
-		GCTL_WPU_CFG |= (1 << ADI_FLASH_WRITE_ENABLE_PIN);
+		GCTL_WPU_CFG_UPPR |= (1 << (ADI_FLASH_WRITE_ENABLE_PIN - 32));
     	/* Map pin assignments */
     	FX3State.PinMap.ADI_PIN_RESET = 1;
     	FX3State.PinMap.ADI_PIN_DIO4 = 2;
