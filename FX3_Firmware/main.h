@@ -367,15 +367,6 @@ typedef struct StreamState
 /** Complex GPIO index for the timer input (ADI_TIMER_PIN % 8) */
 #define ADI_TIMER_PIN_INDEX						(0x0)
 
-/** ID pin 0 (CTL0 - iSensor board vs cypress dev board) */
-#define ADI_ID_PIN_0							17
-
-/** ID pin 1 (iSensor board rev A vs rev B (w/ I2C) */
-#define ADI_ID_PIN_1							15
-
-/** Flash write enable pin */
-#define ADI_FLASH_WRITE_ENABLE_PIN				18
-
 /*
  * Endpoint Related Defines
  */

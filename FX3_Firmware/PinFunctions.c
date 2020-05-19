@@ -115,11 +115,30 @@ CyU3PReturnStatus_t AdiSetPinResistor(uint16_t pin, PinResistorSetting setting)
  **/
 CyBool_t AdiIsValidGPIO(uint16_t GpioId)
 {
-	/* return false for power management pins */
+	/* Power management control pins reserved */
 	if(GpioId == ADI_3_3V_EN)
 		return CyFalse;
-
 	if(GpioId == ADI_5V_EN)
+		return CyFalse;
+
+	/* ID pins are reserved for system */
+	if(GpioId == ADI_ID_PIN_0)
+		return CyFalse;
+	if(GpioId == ADI_ID_PIN_1)
+		return CyFalse;
+
+	/* Debug Tx pin is reserved */
+	if(GpioId == ADI_DEBUG_TX_PIN)
+		return CyFalse;
+
+	/* Flash enable pin reserved */
+	if(GpioId == ADI_FLASH_WRITE_ENABLE_PIN)
+		return CyFalse;
+
+	/* I2C pins reserved */
+	if(GpioId == ADI_I2C_SCL_PIN)
+		return CyFalse;
+	if(GpioId == ADI_I2C_SDA_PIN)
 		return CyFalse;
 
 	/* GPIO must be less than 64 */
@@ -360,6 +379,15 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 	timeout |= (USBBuffer[4] << 8);
 	timeout |= (USBBuffer[5] << 16);
 	timeout |= (USBBuffer[6] << 24);
+
+	/* Check that busy pin is valid GPIO */
+	if(!AdiIsValidGPIO(busyPin))
+	{
+		status = CY_U3P_ERROR_BAD_ARGUMENT;
+		/* Send status to the PC (alerting them of invalid GPIO selection) */
+		AdiReturnBulkEndpointData(status, 8);
+		return status;
+	}
 
 	/* Get the trigger mode */
 	SpiTriggerMode = USBBuffer[7];

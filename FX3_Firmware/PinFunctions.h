@@ -68,6 +68,24 @@ void AdiReturnBulkEndpointData(CyU3PReturnStatus_t status, uint16_t length);
 /** Control pins for power management circuit. 5V enable pin */
 #define ADI_5V_EN 								(34)
 
+/** ID pin 0 (CTL0 - iSensor board vs cypress dev board) */
+#define ADI_ID_PIN_0							(17)
+
+/** ID pin 1 (iSensor board rev A vs rev B (w/ I2C) */
+#define ADI_ID_PIN_1							(15)
+
+/** Flash write enable pin. Set to 0 to enable flash write, 1 to disable flash write */
+#define ADI_FLASH_WRITE_ENABLE_PIN				(35)
+
+/* Uart Tx Pin (for debug) */
+#define ADI_DEBUG_TX_PIN						(48)
+
+/** I2C clock pin */
+#define ADI_I2C_SCL_PIN							(58)
+
+/** I2C data pin */
+#define ADI_I2C_SDA_PIN							(59)
+
 /*
  * ADI GPIO Event Handler Definitions
  */
