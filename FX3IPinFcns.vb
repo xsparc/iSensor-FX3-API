@@ -727,9 +727,11 @@ Partial Class FX3Connection
             Return Convert.ToDouble(timeoutTimer.ElapsedMilliseconds())
         End If
 
-        'Read status from the buffer and throw exception for bad status
+        'Read status from the buffer and throw exception for bad status (except timeout)
         status = BitConverter.ToUInt32(buf, 0)
-        If Not status = 0 Then
+        If status = &H45 Then
+            Return Double.PositiveInfinity
+        ElseIf status <> 0 Then
             Throw New FX3BadStatusException("ERROR: Busy pin pulse measure failed, error code: 0x" + status.ToString("X4"))
         End If
 
@@ -846,7 +848,11 @@ Partial Class FX3Connection
 
         'Read status from the buffer and throw exception for bad status
         status = BitConverter.ToUInt32(respBuf, 0)
-        If status <> 0 Then
+
+        'return timeout (infinity) for timeout status code (0x45)
+        If status = &H45 Then
+            Return Double.PositiveInfinity
+        ElseIf status <> 0 Then
             Throw New FX3BadStatusException("ERROR: Busy pin pulse measure failed, error code: 0x" + status.ToString("X4"))
         End If
 
