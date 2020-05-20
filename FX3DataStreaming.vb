@@ -13,7 +13,8 @@ Partial Class FX3Connection
 
 #Region "Stream Synchronization"
     ''' <summary>
-    ''' Overload of WaitForStreamCompletion which blocks forever
+    ''' Overload of WaitForStreamCompletion which blocks indefinitely
+    ''' until a stream completion event is seen.
     ''' </summary>
     Public Function WaitForStreamCompletion() As Boolean
         Return WaitForStreamCompletion(Nothing)
@@ -24,7 +25,7 @@ Partial Class FX3Connection
     ''' the completion of a stream. Returns false if there is not a stream running, or if the timeout is reached without
     ''' the stream mutex being acquired.
     ''' </summary>
-    ''' <param name="MillisecondsTimeout">The time to wait trying to acquire the stream mutex</param>
+    ''' <param name="MillisecondsTimeout">The time to wait trying to acquire the stream mutex (ms) </param>
     ''' <returns>If the stream wait was successful</returns>
     Public Function WaitForStreamCompletion(MillisecondsTimeout As Integer) As Boolean
 
@@ -83,6 +84,9 @@ Partial Class FX3Connection
         StopStream()
     End Sub
 
+    ''' <summary>
+    ''' Function to exit any stream thread and clean up stream state variables
+    ''' </summary>
     Private Sub ExitStreamThread()
         'Set thread state flags
         m_StreamThreadRunning = False
@@ -187,6 +191,9 @@ Partial Class FX3Connection
 
     End Sub
 
+    ''' <summary>
+    ''' Cleanup function for when a burst stream is done. This function frees resources on the FX3 firmware.
+    ''' </summary>
     Private Sub BurstStreamDone()
         'Buffer to store command data
         Dim buf(3) As Byte
@@ -319,6 +326,9 @@ Partial Class FX3Connection
 
     End Sub
 
+    ''' <summary>
+    ''' Validate burst stream SPI config
+    ''' </summary>
     Private Sub ValidateBurstStreamConfig()
 
         'Chip select control mode
@@ -332,6 +342,9 @@ Partial Class FX3Connection
 
 #Region "Generic Stream Functions"
 
+    ''' <summary>
+    ''' Cleanup function for when a generic stream is done. Frees resources on FX3 firmware
+    ''' </summary>
     Private Sub GenericStreamDone()
         'Buffer to hold command data
         Dim buf(3) As Byte
@@ -388,6 +401,12 @@ Partial Class FX3Connection
 
     End Sub
 
+    ''' <summary>
+    ''' Set up for a generic register read stream
+    ''' </summary>
+    ''' <param name="addrData">AddrDataPairs to read/write</param>
+    ''' <param name="numCaptures">Num captures to perform per buffer</param>
+    ''' <param name="numBuffers">Number of buffers to read</param>
     Private Sub GenericStreamSetup(addrData As IEnumerable(Of AddrDataPair), numCaptures As UInteger, numBuffers As UInteger)
 
         'Buffer to store control data
@@ -615,6 +634,9 @@ Partial Class FX3Connection
 
     End Sub
 
+    ''' <summary>
+    ''' Clean up function when real time streaming is done. Frees required resources on FX3
+    ''' </summary>
     Private Sub RealTimeStreamingDone()
 
         'Buffer to hold command data
@@ -741,7 +763,8 @@ Partial Class FX3Connection
 
 
     ''' <summary>
-    ''' This function checks the CRC of each frame stored in the Stream Data Queue, and purges the bad ones
+    ''' This function checks the CRC of each real time streaming frame stored in the Stream Data Queue, 
+    ''' and purges the bad ones. This operation is only valid for an ADcmXL series DUT.
     ''' </summary>
     ''' <returns>The success of the data purge operation</returns>
     Public Function PurgeBadFrameData() As Boolean
@@ -810,11 +833,6 @@ Partial Class FX3Connection
     ''' real time streaming mode. If the settings are not compatible, a FX3ConfigException is thrown.
     ''' </summary>
     Private Sub ValidateRealTimeStreamConfig()
-
-        'SCLK
-        If m_FX3SPIConfig.SCLKFrequency < 5000000 Then
-            'Throw New FX3ConfigurationException("ERROR: Invalid SPI frequency for real time streaming")
-        End If
 
         'Chip select control mode
         If m_FX3SPIConfig.ChipSelectControl <> SpiChipselectControl.SPI_SSN_CTRL_HW_END_OF_XFER Then
