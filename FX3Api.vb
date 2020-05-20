@@ -36,7 +36,7 @@ Public Class FX3Connection
     Private Const FLASH_PROGRAMMER_NAME As String = "Cypress FX3 USB BootProgrammer Device"
 
     'Timeout (in ms) for programming a board with the application firmware
-    Private Const PROGRAMMING_TIMEOUT As Integer = 10000
+    Private Const PROGRAMMING_TIMEOUT As Integer = 15000
 
     'Delay (in ms) in polling the cypress USB driver for new devices connected
     Private Const DEVICE_LIST_DELAY As Integer = 200
