@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.8.0-pub</span>
+   &#160;<span id="projectnumber">v2.8.1-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -206,7 +206,7 @@ Macros</h2></td></tr>
 <tr class="separator:aa24753293e05408a3c51c892547d4841"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af448b0cfb701dcf75f04dceccd0302cf"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#af448b0cfb701dcf75f04dceccd0302cf">S_TO_TICKS_MULT</a>&#160;&#160;&#160;(10078400)</td></tr>
 <tr class="separator:af448b0cfb701dcf75f04dceccd0302cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a42e00fdbd5af84e095a80b2e2d4df1dd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a42e00fdbd5af84e095a80b2e2d4df1dd">MS_TO_TICKS_MULT</a>&#160;&#160;&#160;<a class="el" href="main_8h.html#af448b0cfb701dcf75f04dceccd0302cf">S_TO_TICKS_MULT</a>	/ 1000</td></tr>
+<tr class="memitem:a42e00fdbd5af84e095a80b2e2d4df1dd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a42e00fdbd5af84e095a80b2e2d4df1dd">MS_TO_TICKS_MULT</a>&#160;&#160;&#160;(10078)</td></tr>
 <tr class="separator:a42e00fdbd5af84e095a80b2e2d4df1dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b6136776fe6c8498a8a7da63bdb8db0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a5b6136776fe6c8498a8a7da63bdb8db0">ADI_GENERIC_STALL_OFFSET</a>&#160;&#160;&#160;(52)</td></tr>
 <tr class="separator:a5b6136776fe6c8498a8a7da63bdb8db0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -216,12 +216,6 @@ Macros</h2></td></tr>
 <tr class="separator:ab0ef8204dae6c6ae26cbeb72d0ebec67"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9422d5962152028e0f240088325a42de"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a9422d5962152028e0f240088325a42de">ADI_TIMER_PIN_INDEX</a>&#160;&#160;&#160;(0x0)</td></tr>
 <tr class="separator:a9422d5962152028e0f240088325a42de"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afdfc960667d11f1b5452bc0fce068ff6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#afdfc960667d11f1b5452bc0fce068ff6">ADI_ID_PIN_0</a>&#160;&#160;&#160;17</td></tr>
-<tr class="separator:afdfc960667d11f1b5452bc0fce068ff6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a670d7a38288543895baebc0e29135164"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a670d7a38288543895baebc0e29135164">ADI_ID_PIN_1</a>&#160;&#160;&#160;15</td></tr>
-<tr class="separator:a670d7a38288543895baebc0e29135164"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6f3da7a9bc3bd230c3bad606599f988e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a6f3da7a9bc3bd230c3bad606599f988e">ADI_FLASH_WRITE_ENABLE_PIN</a>&#160;&#160;&#160;18</td></tr>
-<tr class="separator:a6f3da7a9bc3bd230c3bad606599f988e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6336391fa504c15c2eb6a066d14b9d48"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a6336391fa504c15c2eb6a066d14b9d48">ADI_STREAMING_ENDPOINT</a>&#160;&#160;&#160;(0x81)</td></tr>
 <tr class="separator:a6336391fa504c15c2eb6a066d14b9d48"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afcccb969576e63dcc7a9c705fd60eff0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#afcccb969576e63dcc7a9c705fd60eff0">ADI_FROM_PC_ENDPOINT</a>&#160;&#160;&#160;(0x1)</td></tr>
@@ -427,21 +421,6 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 </div>
 </div>
-<a id="a6f3da7a9bc3bd230c3bad606599f988e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6f3da7a9bc3bd230c3bad606599f988e">&#9670;&nbsp;</a></span>ADI_FLASH_WRITE_ENABLE_PIN</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ADI_FLASH_WRITE_ENABLE_PIN&#160;&#160;&#160;18</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Flash write enable pin </p>
-
-</div>
-</div>
 <a id="afcccb969576e63dcc7a9c705fd60eff0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afcccb969576e63dcc7a9c705fd60eff0">&#9670;&nbsp;</a></span>ADI_FROM_PC_ENDPOINT</h2>
 
@@ -604,36 +583,6 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
       </table>
 </div><div class="memdoc">
 <p>I2C write command </p>
-
-</div>
-</div>
-<a id="afdfc960667d11f1b5452bc0fce068ff6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afdfc960667d11f1b5452bc0fce068ff6">&#9670;&nbsp;</a></span>ADI_ID_PIN_0</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ADI_ID_PIN_0&#160;&#160;&#160;17</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>ID pin 0 (CTL0 - iSensor board vs cypress dev board) </p>
-
-</div>
-</div>
-<a id="a670d7a38288543895baebc0e29135164"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a670d7a38288543895baebc0e29135164">&#9670;&nbsp;</a></span>ADI_ID_PIN_1</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define ADI_ID_PIN_1&#160;&#160;&#160;15</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>ID pin 1 (iSensor board rev A vs rev B (w/ I2C) </p>
 
 </div>
 </div>
@@ -1169,7 +1118,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define MS_TO_TICKS_MULT&#160;&#160;&#160;<a class="el" href="main_8h.html#af448b0cfb701dcf75f04dceccd0302cf">S_TO_TICKS_MULT</a>	/ 1000</td>
+          <td class="memname">#define MS_TO_TICKS_MULT&#160;&#160;&#160;(10078)</td>
         </tr>
       </table>
 </div><div class="memdoc">

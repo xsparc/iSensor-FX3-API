@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.8.0-pub</span>
+   &#160;<span id="projectnumber">v2.8.1-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -280,7 +280,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the measure pulse operation</dd></dl>
-<p>This function is approx. microsecond accurate. It can be used for timing measurements which require a high degree of accuracy since it avoids the overhead of having a USB transaction (200us) between the initial trigger condition and the pulse measurement. This function is primarily intended for use with the ADcmXL series of condition monitoring modules. </p>
+<p>This function is accurate to approximately 1/10th a microsecond. It can be used for timing measurements which require a high degree of accuracy since it avoids the overhead of having a USB transaction (~100us) between the initial trigger condition and the pulse measurement. Note, this function utilizes the complex GPIO block on the FX3 to perform the busy pulse measurement. This gives very reliable accuracy of measurement, since the measurement is performed entirely by hardware. However, this does limit which pins can perform a busy pulse measurement, if there are PWM signals being driven which also use the complex GPIO block. </p>
 
 </div>
 </div>

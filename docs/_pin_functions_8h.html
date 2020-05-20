@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.8.0-pub</span>
+   &#160;<span id="projectnumber">v2.8.1-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -90,6 +90,19 @@ Macros</h2></td></tr>
 <tr class="separator:a9847b1f106094a417ad607b8a4f1c9e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac9c3d116e268dbddffbe012e61a45db2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#ac9c3d116e268dbddffbe012e61a45db2">ADI_5V_EN</a>&#160;&#160;&#160;(34)</td></tr>
 <tr class="separator:ac9c3d116e268dbddffbe012e61a45db2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afdfc960667d11f1b5452bc0fce068ff6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#afdfc960667d11f1b5452bc0fce068ff6">ADI_ID_PIN_0</a>&#160;&#160;&#160;(17)</td></tr>
+<tr class="separator:afdfc960667d11f1b5452bc0fce068ff6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a670d7a38288543895baebc0e29135164"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#a670d7a38288543895baebc0e29135164">ADI_ID_PIN_1</a>&#160;&#160;&#160;(15)</td></tr>
+<tr class="separator:a670d7a38288543895baebc0e29135164"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6f3da7a9bc3bd230c3bad606599f988e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#a6f3da7a9bc3bd230c3bad606599f988e">ADI_FLASH_WRITE_ENABLE_PIN</a>&#160;&#160;&#160;(35)</td></tr>
+<tr class="separator:a6f3da7a9bc3bd230c3bad606599f988e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af380c456ce642f1f5e335f60bbf877d0"><td class="memItemLeft" align="right" valign="top"><a id="af380c456ce642f1f5e335f60bbf877d0"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>ADI_DEBUG_TX_PIN</b>&#160;&#160;&#160;(48)</td></tr>
+<tr class="separator:af380c456ce642f1f5e335f60bbf877d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b2ef9e1742018c2f0576318b9500651"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#a3b2ef9e1742018c2f0576318b9500651">ADI_I2C_SCL_PIN</a>&#160;&#160;&#160;(58)</td></tr>
+<tr class="separator:a3b2ef9e1742018c2f0576318b9500651"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7978431ef51c0fb2bf482e966caee57"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#ae7978431ef51c0fb2bf482e966caee57">ADI_I2C_SDA_PIN</a>&#160;&#160;&#160;(59)</td></tr>
+<tr class="separator:ae7978431ef51c0fb2bf482e966caee57"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa6623739db18d9bb2dee91102002687e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#aa6623739db18d9bb2dee91102002687e">ADI_DIO1_INTERRUPT_FLAG</a>&#160;&#160;&#160;(1 &lt;&lt; 0)</td></tr>
 <tr class="separator:aa6623739db18d9bb2dee91102002687e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b2321dce1d306560877d54bda1c19a0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_pin_functions_8h.html#a5b2321dce1d306560877d54bda1c19a0">ADI_DIO2_INTERRUPT_FLAG</a>&#160;&#160;&#160;(1 &lt;&lt; 1)</td></tr>
@@ -281,6 +294,81 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
       </table>
 </div><div class="memdoc">
 <p>Event flag indicating a GPIO interrupt has triggered on DIO4 </p>
+
+</div>
+</div>
+<a id="a6f3da7a9bc3bd230c3bad606599f988e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6f3da7a9bc3bd230c3bad606599f988e">&#9670;&nbsp;</a></span>ADI_FLASH_WRITE_ENABLE_PIN</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_FLASH_WRITE_ENABLE_PIN&#160;&#160;&#160;(35)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Flash write enable pin. Set to 0 to enable flash write, 1 to disable flash write </p>
+
+</div>
+</div>
+<a id="a3b2ef9e1742018c2f0576318b9500651"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b2ef9e1742018c2f0576318b9500651">&#9670;&nbsp;</a></span>ADI_I2C_SCL_PIN</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_I2C_SCL_PIN&#160;&#160;&#160;(58)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>I2C clock pin </p>
+
+</div>
+</div>
+<a id="ae7978431ef51c0fb2bf482e966caee57"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae7978431ef51c0fb2bf482e966caee57">&#9670;&nbsp;</a></span>ADI_I2C_SDA_PIN</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_I2C_SDA_PIN&#160;&#160;&#160;(59)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>I2C data pin </p>
+
+</div>
+</div>
+<a id="afdfc960667d11f1b5452bc0fce068ff6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afdfc960667d11f1b5452bc0fce068ff6">&#9670;&nbsp;</a></span>ADI_ID_PIN_0</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_ID_PIN_0&#160;&#160;&#160;(17)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>ID pin 0 (CTL0 - iSensor board vs cypress dev board) </p>
+
+</div>
+</div>
+<a id="a670d7a38288543895baebc0e29135164"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a670d7a38288543895baebc0e29135164">&#9670;&nbsp;</a></span>ADI_ID_PIN_1</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADI_ID_PIN_1&#160;&#160;&#160;(15)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>ID pin 1 (iSensor board rev A vs rev B (w/ I2C)) </p>
 
 </div>
 </div>
@@ -525,7 +613,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the measure pulse operation</dd></dl>
-<p>This function is approx. microsecond accurate. It can be used for timing measurements which require a high degree of accuracy since it avoids the overhead of having a USB transaction (200us) between the initial trigger condition and the pulse measurement. This function is primarily intended for use with the ADcmXL series of condition monitoring modules. </p>
+<p>This function is accurate to approximately 1/10th a microsecond. It can be used for timing measurements which require a high degree of accuracy since it avoids the overhead of having a USB transaction (~100us) between the initial trigger condition and the pulse measurement. Note, this function utilizes the complex GPIO block on the FX3 to perform the busy pulse measurement. This gives very reliable accuracy of measurement, since the measurement is performed entirely by hardware. However, this does limit which pins can perform a busy pulse measurement, if there are PWM signals being driven which also use the complex GPIO block. </p>
 
 </div>
 </div>
