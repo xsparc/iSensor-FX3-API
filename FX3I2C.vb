@@ -155,7 +155,9 @@ Partial Class FX3Connection
     End Property
 
     ''' <summary>
-    ''' Get/Set the FX3 I2C retry count. This is 
+    ''' Get/Set the FX3 I2C retry count. This is the number of times the FX3
+    ''' will retry a read/write when a NAK is received from the slave device
+    ''' being addressed.
     ''' </summary>
     ''' <returns></returns>
     Public Property I2CRetryCount As UShort
