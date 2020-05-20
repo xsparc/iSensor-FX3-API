@@ -54,14 +54,22 @@ CyU3PReturnStatus_t AdiI2CReadHandler(uint16_t RequestLength)
 	if(numBytes > 12288)
 		numBytes = 12288;
 
-	/* Perform transfer */
+	/* Apply I2C timeout (arguments are in microseconds) */
+	timeout = timeout * 1000;
+	CyU3PI2cSetTimeout(timeout, timeout, timeout);
+
+	/* Perform transfer, starting at offset 4 in bulk buffer */
 	status = CyU3PI2cReceiveBytes(&preamble, BulkBuffer, numBytes, FX3State.I2CRetryCount);
-	if(status != CY_U3P_SUCCESS)
-		return status;
+
+	/* Put status in first 4 bytes sent back */
+	BulkBuffer[0] = status & 0xFF;
+	BulkBuffer[1] = (status & 0xFF00) >> 8;
+	BulkBuffer[2] = (status & 0xFF0000) >> 16;
+	BulkBuffer[3] = (status & 0xFF000000) >> 24;
 
 	/* Send data to PC */
 	ManualDMABuffer.buffer = BulkBuffer;
-	ManualDMABuffer.size = 4096;
+	ManualDMABuffer.size = 12288;
 	ManualDMABuffer.count = numBytes;
 	CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
 
@@ -98,6 +106,10 @@ CyU3PReturnStatus_t AdiI2CWriteHandler(uint16_t RequestLength)
 
 	/* Get index within USB buffer where write data starts */
 	bufIndex = USBBuffer + index;
+
+	/* Apply I2C timeout (arguments are in microseconds) */
+	timeout = timeout * 1000;
+	CyU3PI2cSetTimeout(timeout, timeout, timeout);
 
 	status = CyU3PI2cTransmitBytes(&preamble, bufIndex, numBytes, FX3State.I2CRetryCount);
 	if(status != CY_U3P_SUCCESS)
