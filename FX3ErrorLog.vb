@@ -131,7 +131,14 @@ Partial Class FX3Connection
         'log count address
         Const LOG_COUNT_ADDRESS As UInteger = &H34000
 
-        Return BitConverter.ToUInt32(ReadFlash(LOG_COUNT_ADDRESS, 4), 0)
+        Dim count As UInteger = BitConverter.ToUInt32(ReadFlash(LOG_COUNT_ADDRESS, 4), 0)
+
+        'If no error log ever stored then flash will be cleared (0xFF)
+        If count = &HFFFFFFFF Then
+            count = 0
+        End If
+
+        Return count
 
     End Function
 
