@@ -44,13 +44,13 @@ extern uint8_t BulkBuffer[12288];
  **/
 CyU3PReturnStatus_t AdiSetPinResistor(uint16_t pin, PinResistorSetting setting)
 {
+	/* Check that pin number is valid */
+	if(!AdiIsValidGPIO(pin))
+		return CY_U3P_ERROR_BAD_ARGUMENT;
 
 #ifdef VERBOSE_MODE
 	CyU3PDebugPrint (4, "Starting GPIO Resistor Config for pin: %d with setting: %d\r\n", pin, setting);
 #endif
-	/* Check that pin number is valid */
-	if(!AdiIsValidGPIO(pin))
-		return CY_U3P_ERROR_BAD_ARGUMENT;
 
 	/* If pin is in lower 32 bits */
 	if(pin < 32)
@@ -599,7 +599,6 @@ CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 	/* Check that GPIO is valid */
 	if(!AdiIsValidGPIO(pinNumber))
 	{
-		CyU3PDebugPrint (4, "Error! Invalid GPIO pin number: %d\r\n", pinNumber);
 		return CY_U3P_ERROR_BAD_ARGUMENT;
 	}
 
@@ -1033,16 +1032,17 @@ CyU3PReturnStatus_t AdiSetPin(uint16_t pinNumber, CyBool_t polarity)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	if(!AdiIsValidGPIO(pinNumber))
-	{
-		CyU3PDebugPrint (4, "Error! Invalid GPIO pin number: %d\r\n", pinNumber);
 		return CY_U3P_ERROR_BAD_ARGUMENT;
-	}
 
 	/*Sanitize polarity */
 	if(polarity)
 		polarity = CyTrue;
 	else
 		polarity = CyFalse;
+
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "Setting pin %d to %d\r\n", pinNumber, polarity);
+#endif
 
 	/* Configure pin as output and set the drive value */
 	CyU3PGpioSimpleConfig_t gpioConfig;
@@ -1154,23 +1154,42 @@ CyU3PReturnStatus_t AdiPinRead(uint16_t pin)
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	CyBool_t pinValue = CyFalse;
 
-	/* Configure pin as input and sample the pin value */
-	CyU3PGpioSimpleConfig_t gpioConfig;
-	gpioConfig.outValue = CyFalse;
-	gpioConfig.inputEn = CyTrue;
-	gpioConfig.driveLowEn = CyFalse;
-	gpioConfig.driveHighEn = CyFalse;
-	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
-	status = CyU3PGpioSetSimpleConfig(pin, &gpioConfig);
-	/* If the config is successful, read the pin value */
-	if(status == CY_U3P_SUCCESS)
+	if(AdiIsValidGPIO(pin))
 	{
-		status = CyU3PGpioSimpleGetValue(pin, &pinValue);
+		/* Configure pin as input and sample the pin value */
+		CyU3PGpioSimpleConfig_t gpioConfig;
+		gpioConfig.outValue = CyFalse;
+		gpioConfig.inputEn = CyTrue;
+		gpioConfig.driveLowEn = CyFalse;
+		gpioConfig.driveHighEn = CyFalse;
+		gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+		status = CyU3PGpioSetSimpleConfig(pin, &gpioConfig);
+		/* If the config is successful, read the pin value */
+		if(status == CY_U3P_SUCCESS)
+		{
+			status = CyU3PGpioSimpleGetValue(pin, &pinValue);
+		}
+		else
+		{
+			CyU3PGpioDisable(pin);
+			CyU3PDeviceGpioOverride(pin, CyTrue);
+			status = CyU3PGpioSetSimpleConfig(pin, &gpioConfig);
+			if(status == CY_U3P_SUCCESS)
+			{
+				status = CyU3PGpioSimpleGetValue(pin, &pinValue);
+			}
+			else
+				AdiLogError(PinFunctions_c, __LINE__, status);
+		}
 	}
 	else
 	{
-		AdiLogError(PinFunctions_c, __LINE__, status);
+		status = CY_U3P_ERROR_BAD_ARGUMENT;
 	}
+
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "Pin %d value: %d\r\n", pin, pinValue);
+#endif
 
 	/* Put pin register value in output buffer */
 	USBBuffer[0] = pinValue;
@@ -1180,8 +1199,6 @@ CyU3PReturnStatus_t AdiPinRead(uint16_t pin)
 	USBBuffer[4] = (status & 0xFF000000) >> 24;
 	/* Send the pin value */
 	CyU3PUsbSendEP0Data (5, (uint8_t *)USBBuffer);
-	/* Send a packet terminate */
-	CyU3PUsbSendEP0Data (0, NULL);
 	return status;
 }
 

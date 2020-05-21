@@ -1503,10 +1503,10 @@ FX3BoardType GetFX3BoardType()
 	gpioConfig.driveHighEn = CyFalse;
 	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
 
-	CyU3PGpioSetSimpleConfig(17, &gpioConfig);
+	CyU3PGpioSetSimpleConfig(ADI_ID_PIN_0, &gpioConfig);
 	CTL0RegVal = GPIO->lpp_gpio_simple[ADI_ID_PIN_0];
 
-	CyU3PGpioSetSimpleConfig(15, &gpioConfig);
+	CyU3PGpioSetSimpleConfig(ADI_ID_PIN_1, &gpioConfig);
 	DQ15RegVal = GPIO->lpp_gpio_simple[ADI_ID_PIN_1];
 
 	/* Disable pull down */
