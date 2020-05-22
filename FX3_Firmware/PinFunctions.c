@@ -141,6 +141,10 @@ CyBool_t AdiIsValidGPIO(uint16_t GpioId)
 	if(GpioId == ADI_I2C_SDA_PIN)
 		return CyFalse;
 
+	/* Timer pin is reserved */
+	if(GpioId == ADI_TIMER_PIN)
+		return CyFalse;
+
 	/* GPIO must be less than 64 */
 	if(GpioId > 63)
 		return CyFalse;
