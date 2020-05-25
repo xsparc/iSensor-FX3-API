@@ -59,6 +59,29 @@ Public Class FX3ErrorLog
 
     End Sub
 
+    ''' <summary>
+    ''' Value-wise equality comparison
+    ''' </summary>
+    ''' <param name="Right">ErrorLog object to compare to left for equality</param>
+    ''' <param name="Left">ErrorLog object to compare to right for equality</param>
+    ''' <returns>True if all fields are equal, else false</returns>
+    Public Shared Operator =(Right As FX3ErrorLog, Left As FX3ErrorLog) As Boolean
+
+        If Right.BootTimeStamp <> Left.BootTimeStamp Then Return False
+        If Right.ErrorCode <> Left.ErrorCode Then Return False
+        If Right.FileIdentifier <> Left.FileIdentifier Then Return False
+        If Right.FirmwareRev <> Left.FirmwareRev Then Return False
+        If Right.Line <> Left.Line Then Return False
+        If Right.OSUptime <> Left.OSUptime Then Return False
+
+        'all fields match, return true 
+        Return True
+    End Operator
+
+    Public Shared Operator <>(Right As FX3ErrorLog, Left As FX3ErrorLog) As Boolean
+        Return Not (Right = Left)
+    End Operator
+
 End Class
 
 #End Region
