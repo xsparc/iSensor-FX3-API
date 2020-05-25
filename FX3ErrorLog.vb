@@ -62,8 +62,8 @@ Public Class FX3ErrorLog
     ''' <summary>
     ''' Value-wise equality comparison
     ''' </summary>
-    ''' <param name="Right">ErrorLog object to compare to left for equality</param>
-    ''' <param name="Left">ErrorLog object to compare to right for equality</param>
+    ''' <param name="Right">FX3ErrorLog object to compare to left for equality</param>
+    ''' <param name="Left">FX3ErrorLog object to compare to right for equality</param>
     ''' <returns>True if all fields are equal, else false</returns>
     Public Shared Operator =(Right As FX3ErrorLog, Left As FX3ErrorLog) As Boolean
 
@@ -78,9 +78,37 @@ Public Class FX3ErrorLog
         Return True
     End Operator
 
+    Public Overloads Shared Function Equals(obj0 As Object, obj1 As Object) As Boolean
+
+        If TypeOf (obj0) IsNot FX3ErrorLog Then Return False
+        If TypeOf (obj1) IsNot FX3ErrorLog Then Return False
+
+        Return DirectCast(obj0, FX3ErrorLog) = DirectCast(obj1, FX3ErrorLog)
+
+    End Function
+
+    Public Overrides Function Equals(obj As Object) As Boolean
+        Return FX3ErrorLog.Equals(Me, obj)
+    End Function
+
+    ''' <summary>
+    ''' Inequality operator for FX3ErrorLog object
+    ''' </summary>
+    ''' <param name="Right">FX3ErrorLog object to compare to left for inequality</param>
+    ''' <param name="Left">FX3ErrorLog object to compare to right for inequality</param>
+    ''' <returns>!(Right == Left)</returns>
     Public Shared Operator <>(Right As FX3ErrorLog, Left As FX3ErrorLog) As Boolean
         Return Not (Right = Left)
     End Operator
+
+    Public Overrides Function toString() As String
+        Return "File: " + FileIdentifier.ToString() + Environment.NewLine +
+            "Line: " + Line.ToString() + Environment.NewLine +
+            "Error Code: 0x" + ErrorCode.ToString("X4") + Environment.NewLine +
+            "Firmware Version: " + FirmwareRev + Environment.NewLine +
+            "Boot Timestamp: " + BootTimeStamp.ToString() + Environment.NewLine +
+            "OS Uptime: " + OSUptime.ToString()
+    End Function
 
 End Class
 
