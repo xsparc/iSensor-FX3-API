@@ -56,6 +56,7 @@ Public Class FX3ErrorLog
         BootTimeStamp = BitConverter.ToUInt32(FlashData, 12)
         FileIdentifier = BitConverter.ToUInt32(FlashData, 16)
         FirmwareRev = System.Text.Encoding.UTF8.GetString(FlashData.ToList().GetRange(20, 12).ToArray())
+        FirmwareRev = FirmwareRev.TrimEnd({CChar(vbNullChar)})
 
     End Sub
 
