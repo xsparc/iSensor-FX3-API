@@ -314,7 +314,7 @@ CyU3PReturnStatus_t AdiTransferStreamStart()
 	CyU3PDmaChannelConfig_t dmaConfig;
 	CyU3PMemSet ((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
 	dmaConfig.size 				= FX3State.UsbBufferSize;
-	dmaConfig.count 			= 16;
+	dmaConfig.count 			= 8;
 	dmaConfig.prodSckId 		= CY_U3P_CPU_SOCKET_PROD;
 	dmaConfig.consSckId 		= CY_U3P_UIB_SOCKET_CONS_1;
 	dmaConfig.dmaMode 			= CY_U3P_DMA_MODE_BYTE;
@@ -743,7 +743,7 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	CyU3PDmaChannelConfig_t dmaConfig;
 	CyU3PMemSet ((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
 	dmaConfig.size 				= FX3State.UsbBufferSize;
-	dmaConfig.count 			= 16;
+	dmaConfig.count 			= 8;
 	dmaConfig.prodSckId 		= CY_U3P_LPP_SOCKET_SPI_PROD;
 	dmaConfig.consSckId 		= CY_U3P_UIB_SOCKET_CONS_1;
 	dmaConfig.dmaMode 			= CY_U3P_DMA_MODE_BYTE;
@@ -754,6 +754,8 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	dmaConfig.cb            	= NULL;
 	dmaConfig.prodAvailCount	= 0;
 
+	/* Destroy and re-create streaming DMA channel */
+	CyU3PDmaChannelDestroy(&StreamingChannel);
 	status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_AUTO, &dmaConfig);
 	if(status != CY_U3P_SUCCESS)
 	{
@@ -777,6 +779,8 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
     dmaConfig.cb             	= NULL;
     dmaConfig.prodAvailCount 	= 0;
 
+    /* Destroy and re-create memory to SPI (Tx) channel */
+    CyU3PDmaChannelDestroy(&MemoryToSPI);
     status = CyU3PDmaChannelCreate(&MemoryToSPI, CY_U3P_DMA_TYPE_MANUAL_OUT, &dmaConfig);
 	if(status != CY_U3P_SUCCESS)
 	{
