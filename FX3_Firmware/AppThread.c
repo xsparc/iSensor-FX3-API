@@ -306,14 +306,14 @@ void AdiAppThreadEntry (uint32_t input)
 			{
 				AdiTransferStreamStart();
 #ifdef VERBOSE_MODE
-				CyU3PDebugPrint (4, "Transfer stream start command received.\r\n");
+				CyU3PDebugPrint (4, "Transfer stream start finished.\r\n");
 #endif
 			}
 			if (eventFlag & ADI_TRANSFER_STREAM_STOP)
 			{
 				AdiStopAnyDataStream();
 #ifdef VERBOSE_MODE
-				CyU3PDebugPrint (4, "Transfer stream stop command received.\r\n");
+				CyU3PDebugPrint (4, "Transfer stream stop finished.\r\n");
 #endif
 			}
 			if (eventFlag & ADI_TRANSFER_STREAM_DONE)
@@ -329,14 +329,14 @@ void AdiAppThreadEntry (uint32_t input)
 			{
 				AdiRealTimeStreamStart();
 #ifdef VERBOSE_MODE
-				CyU3PDebugPrint (4, "Real time stream start command received.\r\n");
+				CyU3PDebugPrint (4, "Real time stream start finished.\r\n");
 #endif
 			}
 			if (eventFlag & ADI_RT_STREAM_STOP)
 			{
 				AdiStopAnyDataStream();
 #ifdef VERBOSE_MODE
-				CyU3PDebugPrint (4, "Real time stream stop command received.\r\n");
+				CyU3PDebugPrint (4, "Real time stream stop finished.\r\n");
 #endif
 			}
 			if (eventFlag & ADI_RT_STREAM_DONE)
@@ -359,14 +359,14 @@ void AdiAppThreadEntry (uint32_t input)
 			{
 				AdiStopAnyDataStream();
 #ifdef VERBOSE_MODE
-				CyU3PDebugPrint (4, "Stop generic stream command detected.\r\n");
+				CyU3PDebugPrint (4, "Generic stream stop finished.\r\n");
 #endif
 			}
 			if (eventFlag & ADI_GENERIC_STREAM_DONE)
 			{
 				AdiGenericStreamFinished();
 #ifdef VERBOSE_MODE
-				CyU3PDebugPrint (4, "Generic data stream cleanup finished.\r\n");
+				CyU3PDebugPrint (4, "Generic stream cleanup finished.\r\n");
 #endif
 			}
 
@@ -375,21 +375,21 @@ void AdiAppThreadEntry (uint32_t input)
 			{
 				AdiBurstStreamStart();
 #ifdef VERBOSE_MODE
-				CyU3PDebugPrint (4, "Burst stream start command received.\r\n");
+				CyU3PDebugPrint (4, "Burst stream start finished.\r\n");
 #endif
 			}
 			if (eventFlag & ADI_BURST_STREAM_STOP)
 			{
 				AdiStopAnyDataStream();
 #ifdef VERBOSE_MODE
-				CyU3PDebugPrint (4, "Stop burst stream command detected.\r\n");
+				CyU3PDebugPrint (4, "Burst stream stop finished.\r\n");
 #endif
 			}
 			if (eventFlag & ADI_BURST_STREAM_DONE)
 			{
 				AdiBurstStreamFinished();
 #ifdef VERBOSE_MODE
-				CyU3PDebugPrint (4, "Burst data stream cleanup finished.\r\n");
+				CyU3PDebugPrint (4, "Burst stream cleanup finished.\r\n");
 #endif
 			}
 
@@ -398,21 +398,21 @@ void AdiAppThreadEntry (uint32_t input)
 			{
 				AdiI2CStreamStart();
 #ifdef VERBOSE_MODE
-				CyU3PDebugPrint (4, "I2C read stream start command received.\r\n");
+				CyU3PDebugPrint (4, "I2C stream start command finished.\r\n");
 #endif
 			}
 			if (eventFlag & ADI_I2C_STREAM_STOP)
 			{
 				AdiStopAnyDataStream();
 #ifdef VERBOSE_MODE
-				CyU3PDebugPrint (4, "Stop I2C read stream command detected.\r\n");
+				CyU3PDebugPrint (4, "I2C stream stop command finished.\r\n");
 #endif
 			}
 			if (eventFlag & ADI_I2C_STREAM_DONE)
 			{
 				AdiI2CStreamFinished();
 #ifdef VERBOSE_MODE
-				CyU3PDebugPrint (4, "I2C read stream cleanup finished.\r\n");
+				CyU3PDebugPrint (4, "I2C stream cleanup finished.\r\n");
 #endif
 			}
 

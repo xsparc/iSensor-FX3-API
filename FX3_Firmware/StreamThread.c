@@ -451,6 +451,10 @@ CyU3PReturnStatus_t AdiBurstStreamWork()
 	/* Static variables persist through function calls, are initialized to 0*/
 	static uint32_t numBuffersRead;
 
+#ifdef VERBOSE_MODE
+		CyU3PDebugPrint (4, "Burst stream thread entered.\r\n");
+#endif
+
 	/* Set up DMA to read registers from CPU memory */
 	status = CyU3PDmaChannelSetupSendBuffer(&MemoryToSPI, &SpiDmaBuffer);
 	if(status != CY_U3P_SUCCESS)

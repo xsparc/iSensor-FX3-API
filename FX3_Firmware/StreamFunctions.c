@@ -325,6 +325,7 @@ CyU3PReturnStatus_t AdiTransferStreamStart()
 	dmaConfig.cb            	= NULL;
 	dmaConfig.prodAvailCount	= 0;
 
+	CyU3PDmaChannelDestroy(&StreamingChannel);
 	status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_MANUAL_OUT, &dmaConfig);
 	if(status != CY_U3P_SUCCESS)
 	{
@@ -731,12 +732,13 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	}
 
 #ifdef VERBOSE_MODE
-	 CyU3PDebugPrint (4, "Starting burst stream");
+	 CyU3PDebugPrint (4, "Starting burst stream!\r\n");
 	 CyU3PDebugPrint (4, "burstTriggerUpper:  %d\r\n", StreamThreadState.RegList[0]);
 	 CyU3PDebugPrint (4, "burstTriggerLower:  %d\r\n", StreamThreadState.RegList[1]);
 	 CyU3PDebugPrint (4, "roundedTransferLength:  %d\r\n", StreamThreadState.RoundedByteTransferLength);
 	 CyU3PDebugPrint (4, "transferByteLength:  %d\r\n", StreamThreadState.TransferByteLength);
 	 CyU3PDebugPrint (4, "numBuffers:  %d\r\n", StreamThreadState.NumBuffers);
+	 CyU3PDebugPrint (4, "USB Buffer Size:  %d\r\n", FX3State.UsbBufferSize);
 #endif
 
 	/* Configure the Burst DMA Streaming Channel (SPI to PC) for Auto DMA */
@@ -818,7 +820,12 @@ CyU3PReturnStatus_t AdiBurstStreamStart()
 	}
 
 	/* Set the burst stream flag to notify the streaming thread it should take over */
-	CyU3PEventSet (&EventHandler, ADI_BURST_STREAM_ENABLE, CYU3P_EVENT_OR);
+	status = CyU3PEventSet(&EventHandler, ADI_BURST_STREAM_ENABLE, CYU3P_EVENT_OR);
+	if(status != CY_U3P_SUCCESS)
+	{
+		AdiLogError(StreamFunctions_c, __LINE__, status);
+		AdiAppErrorHandler(status);
+	}
 
 	return status;
 }
