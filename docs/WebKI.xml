@@ -149,6 +149,8 @@
   <HelpKINode Title="DUTType field" Url="html/2428efe9-84a1-1bcc-9261-87dce6c08cf0.htm" />
   <HelpKINode Title="DutVoltage enumeration" Url="html/96d63ff4-ab0e-90ae-6261-7f4d7a4105d1.htm" />
   <HelpKINode Title="EndpointAddresses enumeration" Url="html/3858bc40-e306-6b88-e2ec-956c3ad36fbe.htm" />
+  <HelpKINode Title="Equality operator" Url="html/5346f1a4-6eda-3c5e-b40b-d9b7c0db9948.htm" />
+  <HelpKINode Title="Equals method" Url="html/4c3d1cf4-4f4b-cebb-1a2c-df1c54b85bd4.htm" />
   <HelpKINode Title="ErrorCode field" Url="html/06fe5f0c-5adc-d4cd-452a-e74726b21c51.htm" />
   <HelpKINode Title="FileIdentifier field" Url="html/19150198-5df0-80d9-56b1-fd8ebc8d8e8b.htm" />
   <HelpKINode Title="FirmwarePath property" Url="html/a9ae94f8-9c05-5ddf-c844-07c1fdd8801f.htm" />
@@ -397,14 +399,19 @@
     <HelpKINode Title="constructor" Url="html/ef65c1d6-ea19-98df-b912-ee95eee2d9a2.htm" />
     <HelpKINode Title="fields" Url="html/3424bf2e-039e-227f-db6f-c59c88c9d99d.htm" />
     <HelpKINode Title="methods" Url="html/d1be0002-2a42-708e-ebca-f62d8a6395ee.htm" />
+    <HelpKINode Title="operators" Url="html/5b4e137a-4eb9-fc2a-b187-7486c7caadfa.htm" />
   </HelpKINode>
   <HelpKINode Title="FX3ErrorLog.BootTimeStamp field" Url="html/e9e4d641-e77c-fd66-c324-58331af490bf.htm" />
+  <HelpKINode Title="FX3ErrorLog.Equality operator" Url="html/5346f1a4-6eda-3c5e-b40b-d9b7c0db9948.htm" />
+  <HelpKINode Title="FX3ErrorLog.Equals method" Url="html/4c3d1cf4-4f4b-cebb-1a2c-df1c54b85bd4.htm" />
   <HelpKINode Title="FX3ErrorLog.ErrorCode field" Url="html/06fe5f0c-5adc-d4cd-452a-e74726b21c51.htm" />
   <HelpKINode Title="FX3ErrorLog.FileIdentifier field" Url="html/19150198-5df0-80d9-56b1-fd8ebc8d8e8b.htm" />
   <HelpKINode Title="FX3ErrorLog.FirmwareRev field" Url="html/88922352-39d1-2a17-73ce-8f77d2f0c4d6.htm" />
   <HelpKINode Title="FX3ErrorLog.FX3ErrorLog constructor" Url="html/ef65c1d6-ea19-98df-b912-ee95eee2d9a2.htm" />
+  <HelpKINode Title="FX3ErrorLog.Inequality operator" Url="html/d0b8d0cc-9ecd-cf1d-b8f8-f39e82ee5e08.htm" />
   <HelpKINode Title="FX3ErrorLog.Line field" Url="html/55ac562f-ad43-6646-2e68-a11c063203ab.htm" />
   <HelpKINode Title="FX3ErrorLog.OSUptime field" Url="html/4c73c56c-be4a-722d-5cb2-a9cd7ccd32a2.htm" />
+  <HelpKINode Title="FX3ErrorLog.ToString method" Url="html/60950e7c-6541-72e3-e74b-432b56d3089d.htm" />
   <HelpKINode Title="FX3Exception class">
     <HelpKINode Title="FX3Exception Class" Url="html/9d8abe8e-9f83-fc8c-e72e-e5a53c931a8a.htm" />
     <HelpKINode Title="constructor" Url="html/b51fb537-8234-8862-290e-b069dd8b323a.htm" />
@@ -515,6 +522,7 @@
     <HelpKINode Title="DeviceType Enumeration" Url="html/ff5bd0a4-5894-648c-a639-f210d1d45fd6.htm" />
     <HelpKINode Title="DUTType Enumeration" Url="html/a664dc00-67b0-e1cf-2c27-cb6c9cf0cba5.htm" />
   </HelpKINode>
+  <HelpKINode Title="Inequality operator" Url="html/d0b8d0cc-9ecd-cf1d-b8f8-f39e82ee5e08.htm" />
   <HelpKINode Title="Invert property" Url="html/4fcc6d29-cd04-50cc-c5d2-b71d3063e938.htm" />
   <HelpKINode Title="iSensorFX3Board_A enumeration member" Url="html/7bbd69cb-7041-ec59-4c56-ec5da4661e1e.htm" />
   <HelpKINode Title="iSensorFX3Board_B enumeration member" Url="html/7bbd69cb-7041-ec59-4c56-ec5da4661e1e.htm" />
@@ -594,8 +602,8 @@
   <HelpKINode Title="ResetPin property" Url="html/323fa924-24da-f60d-2c4d-b0e63c274ee7.htm" />
   <HelpKINode Title="RestoreHardwareSpi method" Url="html/7bffc307-014c-a89b-8d5c-9978358c74bb.htm" />
   <HelpKINode Title="SCLK field" Url="html/bca90136-f9a9-b710-6290-c4e2455818c2.htm" />
-  <HelpKINode Title="SCLKFrequency property" Url="html/705196d0-12a4-0bd3-2faa-f275f3ce5943.htm" />
   <HelpKINode Title="SclkFrequency property" Url="html/6c81a4f6-5c6c-36a0-9c51-90450e3a156a.htm" />
+  <HelpKINode Title="SCLKFrequency property" Url="html/705196d0-12a4-0bd3-2faa-f275f3ce5943.htm" />
   <HelpKINode Title="SCLKHalfPeriodTicks field" Url="html/8b8fd904-046d-798e-6492-b3b786d4e65b.htm" />
   <HelpKINode Title="SecondsToTimerTicks field" Url="html/e336c5ce-fc50-16cc-aa46-21cd4e3927ef.htm" />
   <HelpKINode Title="SensorType property" Url="html/9e341986-58e8-d7fe-7994-f5dc0f2913f7.htm" />
@@ -644,6 +652,7 @@
   <HelpKINode Title="ToString method">
     <HelpKINode Title="FX3ApiInfo.ToString Method " Url="html/8b1cd4ac-7e43-9b82-d924-52e115e2029b.htm" />
     <HelpKINode Title="FX3Board.ToString Method " Url="html/b72f9634-88f6-a97f-7e7b-b03f2837d903.htm" />
+    <HelpKINode Title="FX3ErrorLog.ToString Method " Url="html/60950e7c-6541-72e3-e74b-432b56d3089d.htm" />
     <HelpKINode Title="PinPWMInfo.ToString Method " Url="html/228530e5-2a58-8c1b-5787-9b97a83ee0aa.htm" />
   </HelpKINode>
   <HelpKINode Title="Transfer method" Url="html/0cfc934b-2eab-4327-e5f7-1f7e45438ab7.htm" />
