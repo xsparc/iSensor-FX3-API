@@ -42,9 +42,9 @@ Partial Class FX3Connection
             Throw New FX3ConfigurationException("ERROR: Bits per transfer must be non-zero in a bit banged SPI transfer")
         End If
 
-        'Check size
-        If buf.Count() > 4096 Then
-            Throw New FX3ConfigurationException("ERROR: Too much data (" + buf.Count.ToString() + " bytes) in a single bit banged SPI transaction.")
+        'Check size (bits per transfer * numtransfers < 4080)
+        If (BitsPerTransfer * NumTransfers) > 4096 Then
+            Throw New FX3ConfigurationException("ERROR: Too many bits in a single bit banged SPI transaction. Max value allowed 4080")
         End If
 
         'check the transmit data size
