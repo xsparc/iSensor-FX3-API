@@ -472,6 +472,9 @@ Public Class FX3Connection
             Return m_FX3SPIConfig.ChipSelectLeadTime
         End Get
         Set(value As SpiLagLeadTime)
+            If value = SpiLagLeadTime.SPI_SSN_LAG_LEAD_ZERO_CLK Then
+                Throw New FX3ConfigurationException("ERROR: Chip select lead time of 0 clocks not supported!")
+            End If
             m_FX3SPIConfig.ChipSelectLeadTime = value
             If m_FX3Connected Then
                 m_ActiveFX3.ControlEndPt.Index = 5
