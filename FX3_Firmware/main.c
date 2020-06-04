@@ -1213,6 +1213,12 @@ void AdiAppStart()
     	AdiLogError(Main_c, __LINE__, status);
     }
 
+	status = CyU3PDeviceGpioOverride(ADI_USER_LED_PIN, CyTrue);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiLogError(Main_c, __LINE__, status);
+    }
+
 	status = CyU3PDeviceGpioOverride(ADI_TIMER_PIN, CyFalse);
     if (status != CY_U3P_SUCCESS)
     {
@@ -1276,6 +1282,17 @@ void AdiAppStart()
     }
 
 	status = CyU3PGpioSetSimpleConfig(FX3State.PinMap.ADI_PIN_RESET, &gpioConfig);
+    if (status != CY_U3P_SUCCESS)
+    {
+    	AdiLogError(Main_c, __LINE__, status);
+    }
+
+    /* Configure user LED pin as output driven low */
+	gpioConfig.outValue = CyFalse;
+	gpioConfig.inputEn = CyFalse;
+	gpioConfig.driveLowEn = CyTrue;
+	gpioConfig.driveHighEn = CyTrue;
+	status = CyU3PGpioSetSimpleConfig(ADI_USER_LED_PIN, &gpioConfig);
     if (status != CY_U3P_SUCCESS)
     {
     	AdiLogError(Main_c, __LINE__, status);

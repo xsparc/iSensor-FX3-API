@@ -86,6 +86,9 @@ void AdiReturnBulkEndpointData(CyU3PReturnStatus_t status, uint16_t length);
 /** I2C data pin */
 #define ADI_I2C_SDA_PIN							(59)
 
+/** GPIO for user LED (Turn on/off or blink via firmware) */
+#define ADI_USER_LED_PIN						(13)
+
 /*
  * ADI GPIO Event Handler Definitions
  */
