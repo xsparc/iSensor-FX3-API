@@ -1037,6 +1037,36 @@ Partial Class FX3Connection
 
 #End Region
 
+#Region "User LED Functions"
+
+    ''' <summary>
+    ''' Turn on user LED (not available on Cypress Explorer FX3 board)
+    ''' </summary>
+    Public Sub UserLEDOn()
+        Dim pin As FX3PinObject = New FX3PinObject(13)
+        If isPWMPin(pin) Then StopPWM(pin)
+        SetPin(pin, 0)
+    End Sub
+
+    ''' <summary>
+    ''' Turn off user LED (not available on Cypress Explorer FX3 board)
+    ''' </summary>
+    Public Sub UserLEDOff()
+        Dim pin As FX3PinObject = New FX3PinObject(13)
+        If isPWMPin(pin) Then StopPWM(pin)
+        SetPin(pin, 1)
+    End Sub
+
+    ''' <summary>
+    ''' Blink user LED using timer hardware (not available on Cypress Explorer FX3 board)
+    ''' </summary>
+    ''' <param name="BlinkFreq">Frequency to blink LED at</param>
+    Public Sub UserLEDBlink(BlinkFreq As Double)
+        StartPWM(BlinkFreq, 0.5, New FX3PinObject(13))
+    End Sub
+
+#End Region
+
 #Region "Pin Properties"
 
     ''' <summary>
