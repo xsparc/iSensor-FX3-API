@@ -386,6 +386,9 @@
   <HelpKINode Title="FX3Connection.TriggerReg property" Url="html/4aa26a12-7224-2dfd-42c2-f305f6845318.htm" />
   <HelpKINode Title="FX3Connection.UnexpectedDisconnect event" Url="html/fc16a835-4d83-3e8b-3239-995c79ad8e5a.htm" />
   <HelpKINode Title="FX3Connection.UnexpectedDisconnectEventHandler delegate" Url="html/534755e7-b798-0a28-046c-c2eb459477b7.htm" />
+  <HelpKINode Title="FX3Connection.UserLEDBlink method" Url="html/01886df4-a0c5-b5b2-46d6-9f81a92200c4.htm" />
+  <HelpKINode Title="FX3Connection.UserLEDOff method" Url="html/2c7497f7-c6e6-eb82-717b-71cc68e0d450.htm" />
+  <HelpKINode Title="FX3Connection.UserLEDOn method" Url="html/2223357b-5a85-e4ad-6982-b6892ba8a64d.htm" />
   <HelpKINode Title="FX3Connection.WaitForBoard method" Url="html/4e574267-34de-9f80-0cc0-dddf0a93d40d.htm" />
   <HelpKINode Title="FX3Connection.WaitForStreamCompletion method" Url="html/4409394c-b943-ddef-8f45-8843d985cd84.htm" />
   <HelpKINode Title="FX3Connection.WatchdogEnable property" Url="html/008456cb-b07c-24a6-8027-076d87d43fdc.htm" />
@@ -602,8 +605,8 @@
   <HelpKINode Title="ResetPin property" Url="html/323fa924-24da-f60d-2c4d-b0e63c274ee7.htm" />
   <HelpKINode Title="RestoreHardwareSpi method" Url="html/7bffc307-014c-a89b-8d5c-9978358c74bb.htm" />
   <HelpKINode Title="SCLK field" Url="html/bca90136-f9a9-b710-6290-c4e2455818c2.htm" />
-  <HelpKINode Title="SclkFrequency property" Url="html/6c81a4f6-5c6c-36a0-9c51-90450e3a156a.htm" />
   <HelpKINode Title="SCLKFrequency property" Url="html/705196d0-12a4-0bd3-2faa-f275f3ce5943.htm" />
+  <HelpKINode Title="SclkFrequency property" Url="html/6c81a4f6-5c6c-36a0-9c51-90450e3a156a.htm" />
   <HelpKINode Title="SCLKHalfPeriodTicks field" Url="html/8b8fd904-046d-798e-6492-b3b786d4e65b.htm" />
   <HelpKINode Title="SecondsToTimerTicks field" Url="html/e336c5ce-fc50-16cc-aa46-21cd4e3927ef.htm" />
   <HelpKINode Title="SensorType property" Url="html/9e341986-58e8-d7fe-7994-f5dc0f2913f7.htm" />
@@ -669,6 +672,9 @@
   <HelpKINode Title="USB.USB constructor" Url="html/ea3c699a-157a-9660-49ae-7be09b893278.htm" />
   <HelpKINode Title="USB.XferData method" Url="html/0ddc94a1-a7eb-1fdd-178b-0adec274ddec.htm" />
   <HelpKINode Title="USBCommands enumeration" Url="html/addcd302-82e5-d9e4-5534-5086d9825406.htm" />
+  <HelpKINode Title="UserLEDBlink method" Url="html/01886df4-a0c5-b5b2-46d6-9f81a92200c4.htm" />
+  <HelpKINode Title="UserLEDOff method" Url="html/2c7497f7-c6e6-eb82-717b-71cc68e0d450.htm" />
+  <HelpKINode Title="UserLEDOn method" Url="html/2223357b-5a85-e4ad-6982-b6892ba8a64d.htm" />
   <HelpKINode Title="VerboseMode property" Url="html/8f05fb6a-5a94-5db5-2577-8d320dfce4ec.htm" />
   <HelpKINode Title="VersionNumber field" Url="html/b28f2d65-6f98-eb0e-a4d1-6941660b9bd5.htm" />
   <HelpKINode Title="WaitForBoard method" Url="html/4e574267-34de-9f80-0cc0-dddf0a93d40d.htm" />

@@ -35,8 +35,9 @@
     <SaveComponentCacheCapacity>100</SaveComponentCacheCapacity>
     <NamespaceSummaries>
       <NamespaceSummaryItem name="(global)" isDocumented="False" />
-<NamespaceSummaryItem name="FX3Api" isDocumented="True">Documentation for the iSensor FX3 Demonstartion Platform public .NET API</NamespaceSummaryItem>
-<NamespaceSummaryItem name="FX3USB" isDocumented="True">An implementation of XferData (provided by CYUSB) which properly pins the internal buffers used. This prevents heap corruption due to errant garbage collection.</NamespaceSummaryItem></NamespaceSummaries>
+      <NamespaceSummaryItem name="FX3Api" isDocumented="True">Documentation for the iSensor FX3 Demonstartion Platform public .NET API</NamespaceSummaryItem>
+      <NamespaceSummaryItem name="FX3USB" isDocumented="True">An implementation of XferData (provided by CYUSB) which properly pins the internal buffers used. This prevents heap corruption due to errant garbage collection.</NamespaceSummaryItem>
+    </NamespaceSummaries>
     <VisibleItems>ExplicitInterfaceImplementations, InheritedMembers, InheritedFrameworkMembers, Protected, ProtectedInternalAsProtected, NonBrowsable</VisibleItems>
     <HelpTitle>Analog Devices iSensor FX3 API Documentation</HelpTitle>
     <HelpFileVersion>1.0.0.0</HelpFileVersion>
@@ -45,6 +46,10 @@
     <MaximumGroupParts>2</MaximumGroupParts>
     <Preliminary>False</Preliminary>
     <SdkLinkTarget>Blank</SdkLinkTarget>
+    <CopyrightText>Copyright 2018 - 2020, Analog Devices Inc.</CopyrightText>
+    <FeedbackEMailAddress>alex.nolan%40analog.com</FeedbackEMailAddress>
+    <FeedbackEMailLinkText>Analog Devices iSensor Group</FeedbackEMailLinkText>
+    <CopyrightHref>https://github.com/juchong/iSensor-FX3-API/blob/master/LICENSE</CopyrightHref>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in order for Visual Studio to perform
 			 the build.  The others are optional common platform types that may appear. -->
