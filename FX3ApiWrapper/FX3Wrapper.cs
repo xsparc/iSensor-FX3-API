@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FX3Api;
+using System.Runtime.InteropServices;
 
 namespace FX3ApiWrapper
 {
+    [ComVisible(true)]
     public class FX3Wrapper
     {
         /// <summary>
