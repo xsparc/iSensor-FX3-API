@@ -13,17 +13,35 @@ namespace FX3ApiWrapper
         /// </summary>
         public FX3Connection FX3;
 
+        /// <summary>
+        /// FX3Wrapper constructor
+        /// </summary>
+        /// <param name="FX3ResourcePath">Path the FX3 firmware binaries</param>
         public FX3Wrapper(string FX3ResourcePath)
         {
             FX3 = new FX3Connection(FX3ResourcePath, FX3ResourcePath, FX3ResourcePath);
             ConnectToBoard();
         }
 
+        /// <summary>
+        /// Class destructor. Disconnects FX3
+        /// </summary>
+        ~FX3Wrapper()
+        {
+            Disconnect();
+        }
+
+        /// <summary>
+        /// Disconnect FX3 board
+        /// </summary>
         public void Disconnect()
         {
             FX3.Disconnect();
         }
 
+        /// <summary>
+        /// Connect to FX3 board
+        /// </summary>
         private void ConnectToBoard()
         {
             FX3.WaitForBoard(2);
