@@ -6,13 +6,15 @@ using System.Collections.Generic;
 
 namespace FX3ApiWrapper
 {
+    /// <summary>
+    /// Simplified wrapper around adisInterface IDutInterface. Dut interface type instantiated depends on FX3 settings.
+    /// </summary>
     [ComVisible(true)]
     public class DutInterfaceWrapper
     {
         private FX3Connection m_FX3;
         private RegMapCollection m_RegMap;
         private IDutInterface m_Dut;
-        private uint m_NumBytes;
         private List<RegClass> m_StreamRegs;
 
         /// <summary>

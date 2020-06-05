@@ -5,6 +5,9 @@ using System.Runtime.InteropServices;
 
 namespace FX3ApiWrapper
 {
+    /// <summary>
+    /// Simplified wrapper around FX3 connection object
+    /// </summary>
     [ComVisible(true)]
     public class FX3Wrapper
     {
