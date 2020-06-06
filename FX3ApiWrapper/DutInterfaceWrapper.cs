@@ -22,9 +22,9 @@ namespace FX3ApiWrapper
         /// </summary>
         /// <param name="FX3">FX3 device. Should be connected and configured to use the desired sensor type</param>
         /// <param name="RegMapPath">Path to regmap file for connected sensor</param>
-        public DutInterfaceWrapper(FX3Connection FX3, string RegMapPath)
+        public DutInterfaceWrapper(FX3Wrapper FX3, string RegMapPath)
         {
-            m_FX3 = FX3;
+            m_FX3 = FX3.FX3;
             UpdateDutType();
             UpdateRegMap(RegMapPath);
         }
