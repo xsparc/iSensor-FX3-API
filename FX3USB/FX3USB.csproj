@@ -51,7 +51,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(TargetPath)" "$(ProjectDir)\..\Resources\FX3USB.dll"
+    <PostBuildEvent>copy /Y "$(TargetDir)\FX3USB.dll" "$(ProjectDir)\..\Resources\FX3USB.dll"
 copy /Y "$(TargetDir)\FX3USB.xml" "$(ProjectDir)\..\Resources\FX3USB.xml"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
