@@ -15,6 +15,7 @@ from System import String
 Dut = Wrapper('C:\\Users\\anolan3\\Documents\\iSensor-FX3-API\\Resources','C:\\Users\\anolan3\Documents\\iSensor-FX3-ExampleGui\\src\ADIS1650x_Regmap.csv',0)
 
 print(Dut.FX3.GetFirmwareVersion)
+Dut.UserLEDBlink(2.0)
 
 #Create reg list
 

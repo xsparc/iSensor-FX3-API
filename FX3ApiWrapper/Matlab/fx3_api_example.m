@@ -5,6 +5,10 @@ NET.addAssembly('C:\Users\anolan3\Documents\iSensor-FX3-API\FX3ApiWrapper\bin\De
 Dut = FX3ApiWrapper.Wrapper('C:\Users\anolan3\Documents\iSensor-FX3-API\Resources',...
     'C:\Users\anolan3\Documents\iSensor-FX3-ExampleGui\src\ADIS1650x_Regmap.csv',...
     FX3ApiWrapper.SensorType.StandardImu);
+
+%Blink user LED at 2Hz
+Dut.UserLEDBlink(2.0);
+
 %array to hold DUT data
 data = [];
 %Create reglist
