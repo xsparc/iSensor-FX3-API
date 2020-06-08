@@ -529,16 +529,16 @@ Partial Class FX3Connection
 #Region "Other Functions"
 
     ''' <summary>
-    ''' Drives the Reset pin low for 500ms and then sleeps for another 500ms
+    ''' Drives the Reset pin low for 10ms, sleeps for 100ms, and then blocks until the ReadyPin is high (500ms timeout)
     ''' </summary>
     Public Sub Reset() Implements IRegInterface.Reset
 
-        'Drives a low pulse on the reset pin for 250ms
-        PulseDrive(ResetPin, 0, 250, 1)
+        'Drives a low pulse on the reset pin for 10ms
+        PulseDrive(ResetPin, 0, 10, 1)
         'Sleep for 100 ms
         System.Threading.Thread.Sleep(100)
         'Wait for ready pin to be high
-        PulseWait(ReadyPin, 1, 0, 2000)
+        PulseWait(ReadyPin, 1, 0, 500)
 
     End Sub
 
