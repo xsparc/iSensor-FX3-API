@@ -24,7 +24,7 @@ regs = Array[String](regs_py)
 data = []
 
 while True:
-    data = Dut.ReadUnsigned(regs)
+    data = Dut.ReadSigned(regs)
     for i in (data): 
         print(i, end =" ") 
     print()
