@@ -53,7 +53,6 @@ namespace FX3ApiWrapper
     /// <summary>
     /// Simplified wrapper around FX3 connection object
     /// </summary>
-    [ComVisible(true)]
     public class Wrapper
     {
         /// <summary>
@@ -99,6 +98,151 @@ namespace FX3ApiWrapper
         public void Disconnect()
         {
             FX3.Disconnect();
+        }
+
+        /// <summary>
+        /// Reset DUT via reset pin
+        /// </summary>
+        public void ResetDut()
+        {
+            FX3.Reset();
+        }
+
+        /// <summary>
+        /// Blink user LED
+        /// </summary>
+        /// <param name="freq">Blink freq, in Hz</param>
+        public void UserLEDBlink(double freq)
+        {
+            FX3.UserLEDBlink(freq);
+        }
+
+        /// <summary>
+        /// Turn on user LED
+        /// </summary>
+        public void UserLEDOn()
+        {
+            FX3.UserLEDOn();
+        }
+
+        /// <summary>
+        /// Turn off user LED
+        /// </summary>
+        public void UserLEDOff()
+        {
+            FX3.UserLEDOff();
+        }
+
+        /// <summary>
+        /// Turn off DUT supply
+        /// </summary>
+        public void DutSupplyOff()
+        {
+            FX3.DutSupplyMode = DutVoltage.Off;
+        }
+
+        /// <summary>
+        /// Turn on 3.3V DUT supply
+        /// </summary>
+        public void DutSupplyOn3_3()
+        {
+            FX3.DutSupplyMode = DutVoltage.On3_3Volts;
+        }
+
+        /// <summary>
+        /// Turn on 5V DUT supply
+        /// </summary>
+        public void DutSupplyOn5_0()
+        {
+            FX3.DutSupplyMode = DutVoltage.On5_0Volts;
+        }
+
+        /// <summary>
+        /// Set SPI clock freq
+        /// </summary>
+        /// <param name="freq">Freq to set, in Hz. Valid up to 40MHz</param>
+        public void SetSCLKFreq(int freq)
+        {
+            FX3.SclkFrequency = freq;
+        }
+
+        /// <summary>
+        /// Sets the stall time between SPI words
+        /// </summary>
+        /// <param name="stallTimeMicroseconds">Stall time, in microseconds</param>
+        public void SetSpiStallTime(int stallTimeMicroseconds)
+        {
+            FX3.StallTime = (ushort)stallTimeMicroseconds;
+        }
+
+        /// <summary>
+        /// Start a PWM signal output
+        /// </summary>
+        /// <param name="Freq">Signal freq</param>
+        /// <param name="DutyCycle">Signal duty cycle</param>
+        /// <param name="DIONumber">DIO pin number (1-4)</param>
+        public void StartPWM(double Freq, double DutyCycle, int DIONumber)
+        {
+            FX3.StartPWM(Freq, DutyCycle, DIOPin(DIONumber));
+        }
+
+        /// <summary>
+        /// Stop PWM signal being driven
+        /// </summary>
+        /// <param name="DIONumber">DIO pin number (1-4)</param>
+        public void StopPWM(int DIONumber)
+        {
+            FX3.StopPWM(DIOPin(DIONumber));
+        }
+
+        /// <summary>
+        /// Read the level on a DIO pin
+        /// </summary>
+        /// <param name="DIONumber">DIO pin number (1-4)</param>
+        /// <returns>DIO pin level (0 or 1)</returns>
+        public int ReadPin(int DIONumber)
+        {
+            StopPWM(DIONumber);
+            return (int)FX3.ReadPin(DIOPin(DIONumber));
+        }
+
+        /// <summary>
+        /// Set pin to a level
+        /// </summary>
+        /// <param name="DIONumber">DIO pin number (1-4)</param>
+        /// <param name="Level">Level to set (0 or 1)</param>
+        public void SetPin(int DIONumber, int Level)
+        {
+            StopPWM(DIONumber);
+            FX3.SetPin(DIOPin(DIONumber), (uint)Level);
+        }
+
+        /// <summary>
+        /// Measure frequency at which a pin toggles
+        /// </summary>
+        /// <param name="DIONumber">DIO pin number (1-4)</param>
+        /// <returns>Pin signal freq (in Hz)</returns>
+        public double MeasurePinFreq(int DIONumber)
+        {
+            StopPWM(DIONumber);
+            return FX3.MeasurePinFreq(DIOPin(DIONumber), 1, 2000, 2);
+        }
+
+        private AdisApi.IPinObject DIOPin(int DIONumber)
+        {
+            switch(DIONumber)
+            {
+                case 1:
+                    return FX3.DIO1;
+                case 2:
+                    return FX3.DIO2;
+                case 3:
+                    return FX3.DIO3;
+                case 4:
+                    return FX3.DIO4;
+                default:
+                    return new FX3PinObject((uint)DIONumber);
+            }
         }
 
         /// <summary>
