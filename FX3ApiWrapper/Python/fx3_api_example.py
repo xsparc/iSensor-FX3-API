@@ -11,11 +11,10 @@ from FX3ApiWrapper import *
 from System import Array
 from System import String
 
-#Create FX3 Wrapper and Dut Interface wrapper
-Wrapper = FX3Wrapper('C:\\Users\\anolan3\\Documents\\iSensor-FX3-API\\Resources')
-Dut = DutInterfaceWrapper(Wrapper,'C:\\Users\\anolan3\Documents\\iSensor-FX3-ExampleGui\\src\ADIS1650x_Regmap.csv')
+#Create FX3 Wrapper and load ADIS1650x regmap
+Dut = Wrapper('C:\\Users\\anolan3\\Documents\\iSensor-FX3-API\\Resources','C:\\Users\\anolan3\Documents\\iSensor-FX3-ExampleGui\\src\ADIS1650x_Regmap.csv',0)
 
-print(Wrapper.FX3.GetFirmwareVersion)
+print(Dut.FX3.GetFirmwareVersion)
 
 #Create reg list
 

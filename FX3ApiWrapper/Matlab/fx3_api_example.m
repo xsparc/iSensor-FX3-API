@@ -1,10 +1,11 @@
 clear;
 %Load wrapper DLL
 NET.addAssembly('C:\Users\anolan3\Documents\iSensor-FX3-API\FX3ApiWrapper\bin\Debug\FX3ApiWrapper.dll');
-%Create FX3 wrapper
-FX3 = FX3ApiWrapper.FX3Wrapper('C:\Users\anolan3\Documents\iSensor-FX3-API\Resources');
-%Create DUT interface wrapper
-Dut = FX3ApiWrapper.DutInterfaceWrapper(FX3,'C:\Users\anolan3\Documents\iSensor-FX3-ExampleGui\src\ADIS1650x_Regmap.csv');
+%Create FX3 wrapper, with ADIS1650x regmap
+Dut = FX3ApiWrapper.Wrapper('C:\Users\anolan3\Documents\iSensor-FX3-API\Resources',...
+    'C:\Users\anolan3\Documents\iSensor-FX3-ExampleGui\src\ADIS1650x_Regmap.csv',...
+    FX3ApiWrapper.SensorType.StandardImu);
+%array to hold DUT data
 data = [];
 %Create reglist
 regs = NET.createArray('System.String',8);
