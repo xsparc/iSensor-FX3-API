@@ -14,10 +14,10 @@ Example VI utilizing the FX3ApiWrapper coming soon
 
 ## Matlab
 
-Example script (Matlab\fx3_api_example.m) connects to an FX3 board, blinks user LED, and reads output registers from and ADIS1650x DUT
+Example script (Matlab\fx3_api_example.m) connects to an FX3 board, blinks user LED, and reads output registers from an ADIS1650x DUT
 * Tested using Matlab R2017B (64-bit) running on Windows 10
 
 ## Python
 
-Example script (Python\fx3_api_example.py) connects to an FX3 board, blinks user LED, and reads output registers from and ADIS1650x DUT
+Example script (Python\fx3_api_example.py) connects to an FX3 board, blinks user LED, and reads output registers from an ADIS1650x DUT
 * Tested using Python 3.7 (32-bit) running on Windows 10
