@@ -176,6 +176,33 @@ namespace FX3ApiWrapper
         }
 
         /// <summary>
+        /// Enable/disable data ready triggering for register reads
+        /// </summary>
+        /// <param name="DrActive">Data ready trigger enable</param>
+        public void SetDrActive(bool DrActive)
+        {
+            FX3.DrActive = DrActive;
+        }
+
+        /// <summary>
+        /// Configure which DIO pin acts as a data ready signal
+        /// </summary>
+        /// <param name="DIONumber">DIO pin number (1-4)</param>
+        public void SetDrPin(int DIONumber)
+        {
+            FX3.DrPin = DIOPin(DIONumber);
+        }
+
+        /// <summary>
+        /// Set data ready triggering polarity. True -> trigger on posedge, false -> trigger on negedge
+        /// </summary>
+        /// <param name="DrPolarity">Polarity setting</param>
+        public void SetDrPolarity(bool DrPolarity)
+        {
+            FX3.DrPolarity = DrPolarity;
+        }
+
+        /// <summary>
         /// Start a PWM signal output
         /// </summary>
         /// <param name="Freq">Signal freq</param>
@@ -413,6 +440,110 @@ namespace FX3ApiWrapper
                 RegList.Add(m_RegMap[name]);
             }
             return Dut.ReadSigned(RegList, NumCaptures, NumBuffers);
+        }
+        
+        /// <summary>
+        /// Read single unsigned register based on page/address
+        /// </summary>
+        /// <param name="RegAddr">Register address to read</param>
+        /// <param name="RegPage">Register page</param>
+        /// <returns>Register read value</returns>
+        public uint ReadUnsigned(uint RegAddr, uint RegPage)
+        {
+            return Dut.ReadUnsigned(new RegClass { Address = RegAddr, Page = RegPage, NumBytes = m_regSize, ReadLen = m_regSize * 8 });
+        }
+
+        /// <summary>
+        /// Read unsigned registers based on page/address
+        /// </summary>
+        /// <param name="RegAddrs">Register addresses to read</param>
+        /// <param name="RegPage">Register page</param>
+        /// <returns>Array of register read values</returns>
+        public uint[] ReadUnsigned(uint[] RegAddrs, uint RegPage)
+        {
+            return ReadUnsigned(RegAddrs, RegPage, 1, 1);
+        }
+
+        /// <summary>
+        /// Read unsigned registers based on page/address
+        /// </summary>
+        /// <param name="RegAddrs">Register addresses to read</param>
+        /// <param name="RegPage">Register page</param>
+        /// <param name="NumCaptures">Number of times to read the register list</param>
+        /// <returns>Array of register read values</returns>
+        public uint[] ReadUnsigned(uint[] RegAddrs, uint RegPage, uint NumCaptures)
+        {
+            return ReadUnsigned(RegAddrs, RegPage, NumCaptures, 1);
+        }
+
+        /// <summary>
+        /// Read unsigned registers based on page/address
+        /// </summary>
+        /// <param name="RegAddrs">Register addresses to read</param>
+        /// <param name="RegPage">Register page</param>
+        /// <param name="NumCaptures">Number of times to read the register list</param>
+        /// <param name="NumBuffers">Number of register captures to read</param>
+        /// <returns>Array of register read values</returns>
+        public uint[] ReadUnsigned(uint[] RegAddrs, uint RegPage, uint NumCaptures, uint NumBuffers)
+        {
+            List<RegClass> regs = new List<RegClass>();
+            foreach (uint addr in RegAddrs)
+            {
+                regs.Add(new RegClass { Address = addr, Page = RegPage, NumBytes = m_regSize, ReadLen = m_regSize * 8 });
+            }
+            return Dut.ReadUnsigned(regs, NumCaptures, NumBuffers);
+        }
+
+        /// <summary>
+        /// Read single signed register based on page/address
+        /// </summary>
+        /// <param name="RegAddr">Register address to read</param>
+        /// <param name="RegPage">Register page</param>
+        /// <returns>Register read value</returns>
+        public long ReadSigned(uint RegAddr, uint RegPage)
+        {
+            return Dut.ReadSigned(new RegClass { Address = RegAddr, Page = RegPage, NumBytes = m_regSize, ReadLen = m_regSize * 8, IsTwosComp = true});
+        }
+
+        /// <summary>
+        /// Read signed registers based on page/address
+        /// </summary>
+        /// <param name="RegAddrs">Register addresses to read</param>
+        /// <param name="RegPage">Register page</param>
+        /// <returns>Array of register read values</returns>
+        public long[] ReadSigned(uint[] RegAddrs, uint RegPage)
+        {
+            return ReadSigned(RegAddrs, RegPage, 1, 1);
+        }
+
+        /// <summary>
+        /// Read signed registers based on page/address
+        /// </summary>
+        /// <param name="RegAddrs">Register addresses to read</param>
+        /// <param name="RegPage">Register page</param>
+        /// <param name="NumCaptures">Number of times to read the register list</param>
+        /// <returns>Array of register read values</returns>
+        public long[] ReadSigned(uint[] RegAddrs, uint RegPage, uint NumCaptures)
+        {
+            return ReadSigned(RegAddrs, RegPage, NumCaptures, 1);
+        }
+
+        /// <summary>
+        /// Read signed registers based on page/address
+        /// </summary>
+        /// <param name="RegAddrs">Register addresses to read</param>
+        /// <param name="RegPage">Register page</param>
+        /// <param name="NumCaptures">Number of times to read the register list</param>
+        /// <param name="NumBuffers">Number of register captures to read</param>
+        /// <returns>Array of register read values</returns>
+        public long[] ReadSigned(uint[] RegAddrs, uint RegPage, uint NumCaptures, uint NumBuffers)
+        {
+            List<RegClass> regs = new List<RegClass>();
+            foreach (uint addr in RegAddrs)
+            {
+                regs.Add(new RegClass { Address = addr, Page = RegPage, NumBytes = m_regSize, ReadLen = m_regSize * 8, IsTwosComp = true });
+            }
+            return Dut.ReadSigned(regs, NumCaptures, NumBuffers);
         }
 
         #endregion
