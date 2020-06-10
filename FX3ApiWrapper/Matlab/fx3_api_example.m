@@ -1,10 +1,12 @@
-clear;
 %Load wrapper DLL
 NET.addAssembly('C:\Users\anolan3\Documents\iSensor-FX3-API\FX3ApiWrapper\bin\Debug\FX3ApiWrapper.dll');
-%Create FX3 wrapper, with ADIS1650x regmap
-Dut = FX3ApiWrapper.Wrapper('C:\Users\anolan3\Documents\iSensor-FX3-API\Resources',...
+%Check if the FX3 object is already instantiated (and connected)
+if(exist('Dut','var') ~= 1)
+    %Create FX3 wrapper, with ADIS1650x regmap
+    Dut = FX3ApiWrapper.Wrapper('C:\Users\anolan3\Documents\iSensor-FX3-API\Resources',...
     'C:\Users\anolan3\Documents\iSensor-FX3-ExampleGui\src\ADIS1650x_Regmap.csv',...
     FX3ApiWrapper.SensorType.StandardImu);
+end
 
 %Blink user LED at 5Hz
 Dut.UserLEDBlink(5.0);
