@@ -290,6 +290,7 @@ namespace FX3ApiWrapper
                     FX3.SensorType = DeviceType.AutomotiveSpi;
                     FX3.PartType = DUTType.IMU;
                     m_AutoSpi = new iSensorAutomotiveSpi(FX3);
+                    m_AutoSpi.IgnoreExceptions = true;
                     Dut = new ZeusInterface(m_AutoSpi, null);
                     break;
                 case SensorType.LegacyImu:
