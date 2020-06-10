@@ -2,4 +2,4 @@ This simple Matlab script connects to an FX3 and reads the primary XL output reg
 
 Reference for .NET <-> Matlab data conversions can be found here: https://www.mathworks.com/help/matlab/matlab_external/passing-net-data-in-matlab.html
 
-Note, any hardcoded resource paths will have to be adjusted to match your system
+This example uses relative paths to locate resources based on the FX3 API repository structure. To function "As-Is" the FX3 API library must be built and placed in the "Resources" folder of the repo.
