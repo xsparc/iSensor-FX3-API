@@ -1,15 +1,21 @@
+%Get paths
+wrapperPath = fullfile(pwd, '..\..\Resources\FX3ApiWrapper.dll');
+regMapPath = fullfile(pwd, '..\ADIS1650x_Regmap.csv');
+resourcePath = fullfile(pwd, '..\..\Resources\');
+
 %Load wrapper DLL
-NET.addAssembly('C:\Users\anolan3\Documents\iSensor-FX3-API\FX3ApiWrapper\bin\Debug\FX3ApiWrapper.dll');
+NET.addAssembly(wrapperPath);
 %Check if the FX3 object is already instantiated (and connected)
 if(exist('Dut','var') ~= 1)
     %Create FX3 wrapper, with ADIS1650x regmap
-    Dut = FX3ApiWrapper.Wrapper('C:\Users\anolan3\Documents\iSensor-FX3-API\Resources',...
-    'C:\Users\anolan3\Documents\iSensor-FX3-ExampleGui\src\ADIS1650x_Regmap.csv',...
-    FX3ApiWrapper.SensorType.StandardImu);
+    Dut = FX3ApiWrapper.Wrapper(resourcePath,regMapPath,FX3ApiWrapper.SensorType.StandardImu);
 end
 
 %Blink user LED at 5Hz
 Dut.UserLEDBlink(5.0);
+
+%print product ID
+fprintf('Product ID 0x%x',uint32(Dut.ReadUnsigned('PROD_ID')));
 
 %enable dr active
 Dut.SetDrActive(true);
@@ -82,6 +88,4 @@ while(true)
     
     xlabel('Frequency (in hertz)');
     title('ADIS1650x XL FFT');
-
-    pause(1)
 end
