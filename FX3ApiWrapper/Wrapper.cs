@@ -69,6 +69,7 @@ namespace FX3ApiWrapper
         private RegMapCollection m_RegMap;
         private List<RegClass> m_StreamRegs;
         private uint m_regSize;
+        private iSensorAutomotiveSpi m_AutoSpi;
 
         /// <summary>
         /// Wrapper constructor. Loads resources and connects to FX3
@@ -288,7 +289,8 @@ namespace FX3ApiWrapper
                     m_regSize = 4;
                     FX3.SensorType = DeviceType.AutomotiveSpi;
                     FX3.PartType = DUTType.IMU;
-                    Dut = new ZeusInterface(FX3, null);
+                    m_AutoSpi = new iSensorAutomotiveSpi(FX3);
+                    Dut = new ZeusInterface(m_AutoSpi, null);
                     break;
                 case SensorType.LegacyImu:
                     FX3.SensorType = DeviceType.IMU;
