@@ -547,7 +547,7 @@ Public Class FX3SPIConfig
 
         If SensorType = DeviceType.ADcmXL Then
             'ADcmXL (machine health)
-            m_StallTime = 25
+            m_StallTime = 15
             ClockFrequency = 14000000
             WordLength = 16
             DUTType = DUTType.ADcmXL3021
@@ -560,13 +560,13 @@ Public Class FX3SPIConfig
             'General IMU
             ClockFrequency = 2000000
             WordLength = 16
-            m_StallTime = 25
+            m_StallTime = 15
             DUTType = DUTType.IMU
         Else
             'Automotive IMU with iSensorAutomotiveSpi protocol
             ClockFrequency = 4000000
             WordLength = 32
-            m_StallTime = 10
+            m_StallTime = 5
             DUTType = DUTType.IMU
         End If
 
