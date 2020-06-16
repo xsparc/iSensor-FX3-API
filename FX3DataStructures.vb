@@ -38,12 +38,19 @@ Public Enum StreamCommands
 End Enum
 
 ''' <summary>
-''' Possible FX3 board types. Used to differentiate iSensors FX3 board from Cypress Explorer kit.
+''' Possible FX3 board types. Used to differentiate iSensors FX3 board from Cypress Explorer kit. This list enumerates 
+''' all possible hardware ID's provided by the FX3 ID pins. Most are not used.
 ''' </summary>
 Public Enum FX3BoardType
     CypressFX3Board = 0
     iSensorFX3Board_A = 1
     iSensorFX3Board_B = 2
+    iSensorFX3Board_C = 3
+    iSensorFX3Board_D = 4
+    iSensorFX3Board_E = 5
+    iSensorFX3Board_F = 6
+    iSensorFX3Board_G = 7
+    iSensorFX3Board_H = 8
 End Enum
 
 ''' <summary>
