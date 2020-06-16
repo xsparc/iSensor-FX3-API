@@ -208,6 +208,8 @@ Public Class FX3Connection
     Private FX3_GPIO2_PIN As UShort = 5
     Private FX3_GPIO3_PIN As UShort = 6
     Private FX3_GPIO4_PIN As UShort = 12
+    Private FX3_LOOP1_PIN As UShort = 25
+    Private FX3_LOOP2_PIN As UShort = 26
 
     'Events
 

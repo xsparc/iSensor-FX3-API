@@ -1164,6 +1164,35 @@ Partial Class FX3Connection
         End Get
     End Property
 
+    ''' <summary>
+    ''' Read-only property to get loop back pin 1. This pin (CTL8) is wired directly to 
+    ''' loop back pin 2 (CTL9) on the iSensor FX3 Board, Revision C or newer. These loop
+    ''' back pins allow for fixed transaction timing on "asynchronous" SPI/I2C reads. One 
+    ''' of the loop back pins can be configured as a PWM output using the "StartPWM" API, 
+    ''' and the other loop back pin can be set as the DrPin, allowing the FX3 to trigger 
+    ''' itself at a known rate.
+    ''' </summary>
+    ''' <returns>The first loop back pin, as an IPinObject</returns>
+    Public ReadOnly Property FX3_LOOPBACK1 As IPinObject
+        Get
+            Return New FX3PinObject(FX3_LOOP1_PIN)
+        End Get
+    End Property
+
+    ''' <summary>
+    ''' Read-only property to get loop back pin 2. This pin (CTL9) is wired directly to 
+    ''' loop back pin 1 (CTL8) on the iSensor FX3 Board, Revision C or newer. These loop
+    ''' back pins allow for fixed transaction timing on "asynchronous" SPI/I2C reads. One 
+    ''' of the loop back pins can be configured as a PWM output using the "StartPWM" API, 
+    ''' and the other loop back pin can be set as the DrPin, allowing the FX3 to trigger 
+    ''' itself at a known rate.
+    ''' </summary>
+    ''' <returns>The second loop back pin, as an IPinObject</returns>
+    Public ReadOnly Property FX3_LOOPBACK2 As IPinObject
+        Get
+            Return New FX3PinObject(FX3_LOOP2_PIN)
+        End Get
+    End Property
 
 #End Region
 
