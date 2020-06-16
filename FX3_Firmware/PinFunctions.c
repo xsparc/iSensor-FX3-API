@@ -31,6 +31,82 @@ extern uint8_t USBBuffer[4096];
 extern uint8_t BulkBuffer[12288];
 
 /**
+  * @brief Determine state of an input pin (high, low, high Z)
+  *
+  * @param pin The GPIO matrix index for the pin to measure (0 - 31)
+  *
+  * @return The current pin state, as a PinState
+  *
+  * This function first configures the selected pin to act as an input.
+  * It then enables a weak pull down resistor and records the value on the
+  * input stage of the pin. It enables a weak pull up resistor and records
+  * the value on the input stage of the pin. If both values match, then the pin
+  * is at that level (high/low). If the value changes to follow the pull up, then
+  * the pin is High-Z (tristated). The pin resistor is then disabled.
+ **/
+PinState AdiGetPinState(uint16_t pin)
+{
+	uint32_t read0, read1;
+	CyU3PGpioSimpleConfig_t gpioConfig;
+
+	/* Configure pin to read input stage values */
+	gpioConfig.outValue = CyFalse;
+	gpioConfig.inputEn = CyTrue;
+	gpioConfig.driveLowEn = CyFalse;
+	gpioConfig.driveHighEn = CyFalse;
+	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+	CyU3PGpioSetSimpleConfig(pin, &gpioConfig);
+
+	/* Clear pull up/down */
+	GCTL_WPU_CFG &= ~(1 << pin);
+	GCTL_WPD_CFG &= ~(1 << pin);
+
+	/* Sleep 5us */
+	AdiSleepForMicroSeconds(5);
+
+	/* Enable pull down */
+	GCTL_WPD_CFG |= (1 << pin);
+
+	/* Sleep 5us */
+	AdiSleepForMicroSeconds(5);
+
+	/* Read pin */
+	read0 = (GPIO->lpp_gpio_simple[pin] >> 1) & 0x1;
+
+	/* Disable pull down */
+	GCTL_WPD_CFG &= ~(1 << pin);
+
+	/* Sleep 5us */
+	AdiSleepForMicroSeconds(5);
+
+	/* Enable pull up */
+	GCTL_WPU_CFG |= (1 << pin);
+
+	/* Sleep 5us */
+	AdiSleepForMicroSeconds(5);
+
+	/* Read pin */
+	read1 = (GPIO->lpp_gpio_simple[pin] >> 1) & 0x1;
+
+	/* Disable pull up */
+	GCTL_WPU_CFG &= ~(1 << pin);
+
+	/* Sleep 5us */
+	AdiSleepForMicroSeconds(5);
+
+	/* If pins are at a fixed value, return that value */
+	if(read1 == read0)
+	{
+		return read0;
+	}
+	else
+	{
+		/* If changed by resistor then is probably floating */
+		return HighZ;
+	}
+}
+
+/**
   * @brief Configure GPIO input stage pull up / pull down resistor
   *
   * @param pin The GPIO matrix index for the pin to configure (0 - 63)

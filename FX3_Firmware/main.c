@@ -1486,62 +1486,77 @@ void AdiAppStart()
   *
   * @returns The connected board type. This can be a Cypress Explorer kit or iSensor FX3 board
   *
-  * This function works by taking advantage of peripheral differences between the
-  * Cypress SuperSpeed Explorer kit, and the iSensor FX3 eval board manufactured
-  * by Analog Devices. On the Cypress board, CTL0 is connected to the external SRAM
-  * enable, with a 10KOhm pull up resistor. On the ADI board, CTL0 is floating. By
-  * enabling a weak pull down on CTL0 and measuring the GPIO input, the connected
-  * board type can be determined. If CTL0 is low with the pull down enabled, then the
-  * board is determined to be an ADI FX3 board. If CTL0 is high, then it is a Cypress
-  * SuperSpeed Explorer Kit.
+  * This function works by measuring two ID pins which are assigned on the iSensor FX3 demonstration
+  * platform. These ID pins can be high, low, or tri-stated, allowing for 9 possible hardware ID
+  * configurations. The weak pull up / weak pull down functionality of the FX3 GPIO allows reliable
+  * differentiation between all three states.
  **/
 FX3BoardType GetFX3BoardType()
 {
-	uint32_t CTL0RegVal, DQ15RegVal;
-	FX3BoardType currentBoard;
+	PinState id0, id1;
 
-	/* Disable pull up on ID pins (CTL0 and DQ15) */
-	GCTL_WPU_CFG &= ~((1 << ADI_ID_PIN_0)|(1 << ADI_ID_PIN_1));
+	/* Get state for each ID pin */
+	id0 = AdiGetPinState(ADI_ID_PIN_0);
+	id1 = AdiGetPinState(ADI_ID_PIN_1);
 
-	/* Sleep 5us */
-	AdiSleepForMicroSeconds(5);
+	/* Convert hardware ID to board type */
 
-    /* Configure ID pins with weak pull down */
-	GCTL_WPD_CFG |= ((1 << ADI_ID_PIN_0)|(1 << ADI_ID_PIN_1));
-
-	/* Sleep 5us */
-	AdiSleepForMicroSeconds(5);
-
-	/* Read input stage values */
-	CyU3PGpioSimpleConfig_t gpioConfig;
-	gpioConfig.outValue = CyFalse;
-	gpioConfig.inputEn = CyTrue;
-	gpioConfig.driveLowEn = CyFalse;
-	gpioConfig.driveHighEn = CyFalse;
-	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
-
-	CyU3PGpioSetSimpleConfig(ADI_ID_PIN_0, &gpioConfig);
-	CTL0RegVal = GPIO->lpp_gpio_simple[ADI_ID_PIN_0];
-
-	CyU3PGpioSetSimpleConfig(ADI_ID_PIN_1, &gpioConfig);
-	DQ15RegVal = GPIO->lpp_gpio_simple[ADI_ID_PIN_1];
-
-	/* Disable pull down */
-	GCTL_WPD_CFG &= ~((1 << ADI_ID_PIN_0)|(1 << ADI_ID_PIN_1));
-
-	/* If CTL0 high then is super speed explorer (pull up to SRAM enable) */
-	if(CTL0RegVal & 0x2)
-		currentBoard = CypressFX3Board;
-	else
+	/* 2'bZZ: iSensor Rev A */
+	if((id1 == HighZ)&&(id0 == HighZ))
 	{
-		/* iSensor board. Rev B has pull up on DQ15 */
-		if(DQ15RegVal & 0x2)
-			currentBoard = iSensorFX3Board_B;
-		else
-			currentBoard = iSensorFX3Board_A;
+		return iSensorFX3Board_A;
 	}
 
-	return currentBoard;
+	/* 2'bZ0: iSensor Rev B */
+	if((id1 == HighZ)&&(id0 == Low))
+	{
+		return iSensorFX3Board_B;
+	}
+
+	/* 2'bZ1: Cypress board*/
+	if((id1 == HighZ)&&(id0 == High))
+	{
+		return CypressFX3Board;
+	}
+
+	/* 2'b0Z: iSensor Rev D */
+	if((id1 == Low)&&(id0 == HighZ))
+	{
+		return iSensorFX3Board_D;
+	}
+
+	/* 2'b00: iSensor Rev E */
+	if((id1 == Low)&&(id0 == Low))
+	{
+		return iSensorFX3Board_E;
+	}
+
+	/* 2'b01: iSensor Rev F */
+	if((id1 == Low)&&(id0 == High))
+	{
+		return iSensorFX3Board_F;
+	}
+
+	/* 2'b1Z: iSensor Rev C */
+	if((id1 == High)&&(id0 == HighZ))
+	{
+		return iSensorFX3Board_C;
+	}
+
+	/* 2'b10: iSensor Rev G */
+	if((id1 == High)&&(id0 == Low))
+	{
+		return iSensorFX3Board_G;
+	}
+
+	/* 2'b11: iSensor Rev H */
+	if((id1 == High)&&(id0 == High))
+	{
+		return iSensorFX3Board_H;
+	}
+
+	/* Shouldnt get here. Return bad value to make fail up the line */
+	return 0xFF;
 }
 
 /**

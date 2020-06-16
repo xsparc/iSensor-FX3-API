@@ -59,17 +59,35 @@
 #include "spi_regs.h"
 #include "gctlaon_regs.h"
 
-/** Enum for the available FX3 board types */
+/** Enum for the available FX3 board types. Boards are identified by the value on ID pin 0 and ID pin 1 */
 typedef enum FX3BoardType
 {
-	/** Cypress SuperSpeed Explorer kit board. Can be used with breakout board for iSensors connectors. */
+	/** Cypress SuperSpeed Explorer kit board. Can be used with breakout board for iSensors connectors. Hardware ID = 2'bZ1 */
 	CypressFX3Board = 0,
 
-	/** Rev. A iSensor FX3 based eval board manufactured by Analog Devices. Does not have I2C pins exposed */
+	/** Rev. A iSensor FX3 based eval board manufactured by Analog Devices. Hardware ID = 2'bZZ */
 	iSensorFX3Board_A = 1,
 
-	/** Rev. B iSensor FX3 based eval board manufactured by Analog Devices. Has I2C pins exposed on secondary connector */
-	iSensorFX3Board_B = 2
+	/** Rev. B iSensor FX3 board. This revision was not manufactured. Hardware ID = 2'bZ0 */
+	iSensorFX3Board_B = 2,
+
+	/** Rev. C iSensor FX3 based eval board manufactured by Analog Devices. Hardware ID = 2'b1Z */
+	iSensorFX3Board_C = 3,
+
+	/** Rev. D iSensor FX3 based eval board manufactured by Analog Devices. Hardware ID = 2'b0Z */
+	iSensorFX3Board_D = 4,
+
+	/** Rev. E iSensor FX3 based eval board manufactured by Analog Devices. Hardware ID = 2'b00 */
+	iSensorFX3Board_E = 5,
+
+	/** Rev. F iSensor FX3 based eval board manufactured by Analog Devices. Hardware ID = 2'b01 */
+	iSensorFX3Board_F = 6,
+
+	/** Rev. G iSensor FX3 based eval board manufactured by Analog Devices. Hardware ID = 2'b10 */
+	iSensorFX3Board_G = 7,
+
+	/** Rev. H iSensor FX3 based eval board manufactured by Analog Devices. Hardware ID = 2'b11 */
+	iSensorFX3Board_H = 8
 
 }FX3BoardType;
 

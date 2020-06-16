@@ -33,10 +33,23 @@ typedef enum DutVoltage
 /** Enum of pin resistor settings for GPIO pull up/down*/
 typedef enum PinResistorSetting
 {
+	/** No resistor on pin input stage */
 	None = 0,
+
+	/** Weak pull down (to ground) */
 	PullDown = 1,
+
+	/** Weak pull up (to Vdd) */
 	PullUp = 2
 }PinResistorSetting;
+
+/** Enum of possible states for GPIO input stage */
+typedef enum PinState
+{
+	Low = 0,
+	High = 1,
+	HighZ = 2
+}PinState;
 
 /* Function definitions */
 CyU3PReturnStatus_t AdiPulseDrive();
@@ -56,6 +69,7 @@ uint32_t AdiReadTimerRegValue();
 CyU3PReturnStatus_t AdiMeasurePinDelay(uint16_t transferLength);
 CyBool_t AdiIsValidGPIO(uint16_t GpioId);
 CyU3PReturnStatus_t AdiSetPinResistor(uint16_t pin, PinResistorSetting setting);
+PinState AdiGetPinState(uint16_t pin);
 void AdiReturnBulkEndpointData(CyU3PReturnStatus_t status, uint16_t length);
 
 /*
