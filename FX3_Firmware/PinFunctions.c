@@ -19,16 +19,46 @@
 #include "PinFunctions.h"
 
 /* Tell the compiler where to find the needed globals */
-extern CyU3PDmaBuffer_t ManualDMABuffer;
 extern BoardState FX3State;
-extern CyU3PDmaChannel ChannelToPC;
 extern CyU3PEvent GpioHandler;
-
-/** Global USB Buffer (Control Endpoint) */
 extern uint8_t USBBuffer[4096];
-
-/** Global USB Buffer (Bulk Endpoints) */
 extern uint8_t BulkBuffer[12288];
+
+/**
+  * @brief Gets the programmed board type and pin mapping info
+  *
+  * @param outBuf Byte array which pin map and board type are placed into
+  *
+  * @return void
+  *
+  * outBuf contains BoardType(4), ResetPin(2), DIO(2 each), GPIO(2 each).
+  * Total size of 4 + 2 + 8 + 8 = 22 bytes
+ **/
+void AdiGetBoardPinInfo(uint8_t * outBuf)
+{
+	outBuf[0] = FX3State.BoardType & 0xFF;
+	outBuf[1] = (FX3State.BoardType & 0xFF00) >> 8;
+	outBuf[2] = (FX3State.BoardType & 0xFF0000) >> 16;
+	outBuf[3] = (FX3State.BoardType & 0xFF000000) >> 24;
+	outBuf[4] = FX3State.PinMap.ADI_PIN_RESET & 0xFF;
+	outBuf[5] = (FX3State.PinMap.ADI_PIN_RESET & 0xFF00) >> 8;
+	outBuf[6] = FX3State.PinMap.ADI_PIN_DIO1 & 0xFF;
+	outBuf[7] = (FX3State.PinMap.ADI_PIN_DIO1 & 0xFF00) >> 8;
+	outBuf[8] = FX3State.PinMap.ADI_PIN_DIO2 & 0xFF;
+	outBuf[9] = (FX3State.PinMap.ADI_PIN_DIO2 & 0xFF00) >> 8;
+	outBuf[10] = FX3State.PinMap.ADI_PIN_DIO3 & 0xFF;
+	outBuf[11] = (FX3State.PinMap.ADI_PIN_DIO3 & 0xFF00) >> 8;
+	outBuf[12] = FX3State.PinMap.ADI_PIN_DIO4 & 0xFF;
+	outBuf[13] = (FX3State.PinMap.ADI_PIN_DIO4 & 0xFF00) >> 8;
+	outBuf[14] = FX3State.PinMap.FX3_PIN_GPIO1 & 0xFF;
+	outBuf[15] = (FX3State.PinMap.FX3_PIN_GPIO1 & 0xFF00) >> 8;
+	outBuf[16] = FX3State.PinMap.FX3_PIN_GPIO2 & 0xFF;
+	outBuf[17] = (FX3State.PinMap.FX3_PIN_GPIO2 & 0xFF00) >> 8;
+	outBuf[18] = FX3State.PinMap.FX3_PIN_GPIO3 & 0xFF;
+	outBuf[19] = (FX3State.PinMap.FX3_PIN_GPIO3 & 0xFF00) >> 8;
+	outBuf[20] = FX3State.PinMap.FX3_PIN_GPIO4 & 0xFF;
+	outBuf[21] = (FX3State.PinMap.FX3_PIN_GPIO4 & 0xFF00) >> 8;
+}
 
 /**
   * @brief Determine state of an input pin (high, low, high Z)
@@ -227,36 +257,6 @@ CyBool_t AdiIsValidGPIO(uint16_t GpioId)
 
 	/* Else, should be good */
 	return CyTrue;
-}
-
-/**
-  * @brief Sends a function result to the PC via the ChannelToPC endpoint
-  *
-  * @param status The status code to place in the BulkEndpointBuffer (0 - 3)
-  *
-  * @param length The number of bytes to send to the PC over the bulk endpoint
-  *
-  * @return void
-  *
-  * This function is used to allow early returns out of long functions in the
-  * case where an invalid setting or operation is detected. Once this function
-  * is called, and the result sent to the PC, the function can be safely exited.
- **/
-void AdiReturnBulkEndpointData(CyU3PReturnStatus_t status, uint16_t length)
-{
-	/* Load status to BulkBuffer */
-	BulkBuffer[0] = status & 0xFF;
-	BulkBuffer[1] = (status & 0xFF00) >> 8;
-	BulkBuffer[2] = (status & 0xFF0000) >> 16;
-	BulkBuffer[3] = (status & 0xFF000000) >> 24;
-
-	/* Configure manual DMA */
-	ManualDMABuffer.buffer = BulkBuffer;
-	ManualDMABuffer.size = sizeof(BulkBuffer);
-	ManualDMABuffer.count = length;
-
-	/* Send the data to PC */
-	CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
 }
 
 /**
@@ -1028,74 +1028,6 @@ CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength)
 }
 
 /**
-  * @brief This function configures the DUT supply voltage.
-  *
-  * @param SupplyMode The DUT Voltage to set (Off, 3.3V, 5V)
-  *
-  * @returns A status code indicating the success of the functions.
-  *
-  * This function sets the control pins on the LTC1470 power switch IC. This IC allows software to
-  * power cycle a DUT or give it 3.3V/5V to Vdd. This feature only works on the in-house ADI iSensors
-  * FX3 Eval board. It does not function on the iSensor FX3 Eval board based on the Cypress Explorer kit.
- **/
-CyU3PReturnStatus_t AdiSetDutSupply(DutVoltage SupplyMode)
-{
-	CyU3PReturnStatus_t status0, status1 = CY_U3P_SUCCESS;
-	CyU3PGpioSimpleConfig_t gpioConfig;
-
-	/* Set base config values */
-	gpioConfig.outValue = CyTrue;
-	gpioConfig.inputEn = CyFalse;
-	gpioConfig.driveLowEn = CyTrue;
-	gpioConfig.driveHighEn = CyTrue;
-	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
-
-#ifdef VERBOSE_MODE
-	CyU3PDebugPrint (4, "Setting power supply mode %d\r\n", SupplyMode);
-#endif
-
-	/* Check the DutVoltage value */
-	switch(SupplyMode)
-	{
-	case Off:
-		/* Set both high */
-		status0 = CyU3PGpioSetSimpleConfig(ADI_5V_EN, &gpioConfig);
-		status1 = CyU3PGpioSetSimpleConfig(ADI_3_3V_EN, &gpioConfig);
-		break;
-
-	case On3_3Volts:
-		/* Set 5V high, 3.3V low */
-		status0 = CyU3PGpioSetSimpleConfig(ADI_5V_EN, &gpioConfig);
-		gpioConfig.outValue = CyFalse;
-		status1 = CyU3PGpioSetSimpleConfig(ADI_3_3V_EN, &gpioConfig);
-		break;
-
-	case On5_0Volts:
-		/* Set 3.3V high, 5V low */
-		status1 = CyU3PGpioSetSimpleConfig(ADI_3_3V_EN, &gpioConfig);
-		gpioConfig.outValue = CyFalse;
-		status0 = CyU3PGpioSetSimpleConfig(ADI_5V_EN, &gpioConfig);
-		break;
-
-	default:
-		/* Set both high to turn off power supply */
-		status0 = CyU3PGpioSetSimpleConfig(ADI_5V_EN, &gpioConfig);
-		status1 = CyU3PGpioSetSimpleConfig(ADI_3_3V_EN, &gpioConfig);
-		/* Return invalid argument */
-		AdiLogError(PinFunctions_c, __LINE__, SupplyMode);
-		return CY_U3P_ERROR_BAD_ARGUMENT;
-	}
-
-	/* Determine return code */
-	if(status0)
-		return status0;
-	else if(status1)
-		return status1;
-	else
-		return CY_U3P_SUCCESS;
-}
-
-/**
   * @brief This function configures the specified pin as an output and drives it with the desired value.
   *
   * @param pinNumber The GPIO index of the pin to be set
@@ -1143,23 +1075,6 @@ CyU3PReturnStatus_t AdiSetPin(uint16_t pinNumber, CyBool_t polarity)
 		}
 	}
 	return status;
-}
-
-/**
-  * @brief This function blocks thread execution for a specified number of microseconds.
-  *
-  * @param numMicroSeconds The number of microseconds to stall for.
-  *
-  * @return A status code indicating the success of the function.
- **/
-CyU3PReturnStatus_t AdiSleepForMicroSeconds(uint32_t numMicroSeconds)
-{
-	if(numMicroSeconds < 2 || numMicroSeconds > 0xFFFFFFFF)
-	{
-		return CY_U3P_ERROR_BAD_ARGUMENT;
-	}
-	CyFx3BusyWait(numMicroSeconds - 2);
-	return CY_U3P_SUCCESS;
 }
 
 /**

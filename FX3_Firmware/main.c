@@ -62,9 +62,6 @@ CyU3PEvent EventHandler;
 /** ADI GPIO event structure (RTOS handles GPIO ISR) */
 CyU3PEvent GpioHandler;
 
-/** Software timer called by RTOS to clear watchdog registers (if watchdog enabled) */
-CyU3PTimer WatchdogTimer;
-
 /*
  * DMA Channel Definitions
  */
@@ -667,182 +664,6 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 }
 
 /**
-  * @brief Sends status back to PC over control endpoint or manual bulk in endpoint
-  *
-  * @param status The status code to send back. Is placed in USBBuffer[0-3]
-  *
-  * @param count The number of bytes to send. Must be at least 4
-  *
-  * @param isControlEndpoint Bool indicating if data should be sent over control endpoint or bulk endpoint
-  *
-  * @returns void
-  *
-  * This function will overwrite the data in USBBuffer[0-3]. If you need to send extra
-  * data along with the status, it must be placed starting at USBBuffer[4].
- **/
-void AdiSendStatus(uint32_t status, uint16_t count, CyBool_t isControlEndpoint)
-{
-	/* Clamp count */
-	if(count < 4)
-		count = 4;
-
-	/* Load status to USB Buffer */
-	USBBuffer[0] = status & 0xFF;
-	USBBuffer[1] = (status & 0xFF00) >> 8;
-	USBBuffer[2] = (status & 0xFF0000) >> 16;
-	USBBuffer[3] = (status & 0xFF000000) >> 24;
-
-	/* Perform transfer */
-	if(isControlEndpoint)
-	{
-		CyU3PUsbSendEP0Data(count, USBBuffer);
-	}
-	else
-	{
-		ManualDMABuffer.buffer = USBBuffer;
-		ManualDMABuffer.size = 4096;
-		ManualDMABuffer.count = count;
-		CyU3PDmaChannelSetupSendBuffer(&ChannelToPC, &ManualDMABuffer);
-	}
-}
-
-/**
-  * @brief Configures the FX3 watchdog timer based on the current board state.
-  *
-  * @returns void
-  *
-  * The watchdog is cleared by a software timer managed in the threadX RTOS. The clear interval is set to 5 seconds
-  * less than the watchdog period. If the watchdog timer elapses without being reset (software is locked up) then the
-  * FX3 firmware undergoes a hard reset and will reboot onto the second stage bootloader. This will cause an
-  * UnexpectedReset event to be raised in the running instance of the FX3Connection (if the FX3 board is connected).
- **/
-void AdiConfigureWatchdog()
-{
-    CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-
-	/* configure the watchdog */
-	CyU3PSysWatchDogConfigure(FX3State.WatchDogEnabled, FX3State.WatchDogPeriodMs);
-
-	/* Calculate watchdog ticks */
-	FX3State.WatchDogTicks = FX3State.WatchDogPeriodMs * 33;
-
-	if(FX3State.WatchDogEnabled)
-	{
-#ifdef VERBOSE_MODE
-		CyU3PDebugPrint (4, "Enabling Watchdog Timer, period %d ms\r\n", FX3State.WatchDogPeriodMs);
-#endif
-		/* Calculate the watchdog clear period - 5 seconds less than the watchdog timeout */
-		uint32_t clearPeriod = FX3State.WatchDogPeriodMs - 5000;
-
-		/* Destroy existing watchdog timer */
-		CyU3PTimerDestroy(&WatchdogTimer);
-
-		/* Create new watchdog timer with the correct parameters */
-		status = CyU3PTimerCreate(&WatchdogTimer, WatchDogTimerCb, 0, clearPeriod, clearPeriod, CYU3P_AUTO_ACTIVATE);
-		if(status != CY_U3P_SUCCESS)
-		{
-			CyU3PDebugPrint (4, "ERROR: Failed to configure watchdog timer callback, disabling watchdog functionality\r\n");
-			AdiLogError(Main_c, __LINE__, status);
-			CyU3PSysWatchDogConfigure(CyFalse, FX3State.WatchDogPeriodMs);
-		}
-	}
-	else
-	{
-#ifdef VERBOSE_MODE
-		CyU3PDebugPrint (4, "Disabling Watchdog Timer\r\n");
-#endif
-		/* destroy timer */
-		status = CyU3PTimerDestroy(&WatchdogTimer);
-		if(status != CY_U3P_SUCCESS)
-		{
-			AdiLogError(Main_c, __LINE__, status);
-		}
-	}
-}
-
-/**
-  * @brief Timer callback function to clear the watchdog timer. Should not be called directly.
-  *
-  * @param nParam Callback argument, unused here.
-  *
-  * @return void
-  *
-  * This function is called periodically by the RTOS to reset the watchdog timer. If this function
-  * is not called, then the FX3 will be rebooted onto the second stage bootloader.
- **/
-void WatchDogTimerCb(uint32_t nParam)
-{
-	/* Reset the watchdog timer to the full period length */
-	if (FX3State.WatchDogTicks & 0x01)
-		FX3State.WatchDogTicks--;
-	else
-		FX3State.WatchDogTicks++;
-	GCTLAON->watchdog_timer0 = FX3State.WatchDogTicks;
-}
-
-/**
-  * @brief Gets the firmware build date, followed by the build time
-  *
-  * @param outBuf Char array which build date/time is placed into
-  *
-  * @return void
- **/
-void AdiGetBuildDate(uint8_t * outBuf)
-{
-	uint8_t date[11] = __DATE__;
-	uint8_t time[8] = __TIME__;
-	uint32_t index = 0;
-	/* Assign date */
-	for(index = 0; index < 11; index++)
-	{
-		outBuf[index] = date[index];
-	}
-	outBuf[11] = ' ';
-	/* Assign time */
-	for(index = 12; index < 20; index++)
-	{
-		outBuf[index] = time[index - 12];
-	}
-	outBuf[20] = '\0';
-}
-
-/**
-  * @brief Gets the programmed board type and pin mapping info
-  *
-  * @param outBuf Byte array which pin map and board type are placed into
-  *
-  * @return void
-  *
-  * outBuf contains BoardType(4), ResetPin(2), DIO(2 each), GPIO(2 each).
-  * Total size of 4 + 2 + 8 + 8 = 22 bytes
- **/
-void AdiGetBoardPinInfo(uint8_t * outBuf)
-{
-	outBuf[0] = FX3State.BoardType & 0xFF;
-	outBuf[1] = (FX3State.BoardType & 0xFF00) >> 8;
-	outBuf[2] = (FX3State.BoardType & 0xFF0000) >> 16;
-	outBuf[3] = (FX3State.BoardType & 0xFF000000) >> 24;
-	outBuf[4] = FX3State.PinMap.ADI_PIN_RESET & 0xFF;
-	outBuf[5] = (FX3State.PinMap.ADI_PIN_RESET & 0xFF00) >> 8;
-	outBuf[6] = FX3State.PinMap.ADI_PIN_DIO1 & 0xFF;
-	outBuf[7] = (FX3State.PinMap.ADI_PIN_DIO1 & 0xFF00) >> 8;
-	outBuf[8] = FX3State.PinMap.ADI_PIN_DIO2 & 0xFF;
-	outBuf[9] = (FX3State.PinMap.ADI_PIN_DIO2 & 0xFF00) >> 8;
-	outBuf[10] = FX3State.PinMap.ADI_PIN_DIO3 & 0xFF;
-	outBuf[11] = (FX3State.PinMap.ADI_PIN_DIO3 & 0xFF00) >> 8;
-	outBuf[12] = FX3State.PinMap.ADI_PIN_DIO4 & 0xFF;
-	outBuf[13] = (FX3State.PinMap.ADI_PIN_DIO4 & 0xFF00) >> 8;
-	outBuf[14] = FX3State.PinMap.FX3_PIN_GPIO1 & 0xFF;
-	outBuf[15] = (FX3State.PinMap.FX3_PIN_GPIO1 & 0xFF00) >> 8;
-	outBuf[16] = FX3State.PinMap.FX3_PIN_GPIO2 & 0xFF;
-	outBuf[17] = (FX3State.PinMap.FX3_PIN_GPIO2 & 0xFF00) >> 8;
-	outBuf[18] = FX3State.PinMap.FX3_PIN_GPIO3 & 0xFF;
-	outBuf[19] = (FX3State.PinMap.FX3_PIN_GPIO3 & 0xFF00) >> 8;
-	outBuf[20] = FX3State.PinMap.FX3_PIN_GPIO4 & 0xFF;
-	outBuf[21] = (FX3State.PinMap.FX3_PIN_GPIO4 & 0xFF00) >> 8;
-}
-
-/**
   * @brief This function handles events generated by the bulk endpoint
   *
   * @param evType The type of the event being handled
@@ -1106,7 +927,7 @@ void AdiAppStart()
     }
 
     /* Get FX3 board type for FX3 state */
-    FX3State.BoardType = GetFX3BoardType();
+    FX3State.BoardType = AdiGetFX3BoardType();
 
     /* Enable 3.3V power supply by driving 5V pin high, then 3.3V pin low */
     if(FX3State.BoardType != CypressFX3Board)
@@ -1491,7 +1312,7 @@ void AdiAppStart()
   * configurations. The weak pull up / weak pull down functionality of the FX3 GPIO allows reliable
   * differentiation between all three states.
  **/
-FX3BoardType GetFX3BoardType()
+FX3BoardType AdiGetFX3BoardType()
 {
 	PinState id0, id1;
 

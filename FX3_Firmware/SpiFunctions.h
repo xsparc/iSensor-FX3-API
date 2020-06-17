@@ -22,23 +22,27 @@
 /* Include the main header file */
 #include "main.h"
 
-/**
-  * @brief Structure to store configuration parameters for a bitbang SPI.
- **/
+/** Structure to store configuration parameters for a bitbang SPI. */
 typedef struct BitBangSpiConf
 {
 	/** The master out, slave in data pin number */
 	uint8_t MOSI;
+
 	/** The master in, slave out data pin number */
 	uint8_t MISO;
+
 	/** The chip select pin number */
 	uint8_t CS;
+
 	/** The SPI clock pin number */
 	uint8_t SCLK;
+
 	/** The delay per half-period of the SPI clock. Approx. 62ns per. */
 	uint32_t HalfClockDelay;
+
 	/** The delay after dropping CS before toggling SCLK */
 	uint16_t CSLeadDelay;
+
 	/** The delay after finishing SCLKs before raising CS */
 	uint16_t CSLagDelay;
 }BitBangSpiConf;

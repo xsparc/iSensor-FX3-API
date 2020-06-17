@@ -22,14 +22,6 @@
 /* Include the main header file */
 #include "main.h"
 
-/** Enum of possible DUT voltages */
-typedef enum DutVoltage
-{
-	Off = 0,
-	On3_3Volts = 1,
-	On5_0Volts = 2
-}DutVoltage;
-
 /** Enum of pin resistor settings for GPIO pull up/down*/
 typedef enum PinResistorSetting
 {
@@ -65,18 +57,16 @@ CyU3PReturnStatus_t AdiMeasurePinFreq();
 CyU3PReturnStatus_t AdiWaitForPin(uint32_t pinNumber, CyU3PGpioIntrMode_t interruptSetting, uint32_t timeoutTicks);
 CyU3PReturnStatus_t AdiPinRead(uint16_t pin);
 CyU3PReturnStatus_t AdiReadTimerValue();
-uint32_t AdiMStoTicks(uint32_t desiredStallTime);
-CyU3PReturnStatus_t AdiSleepForMicroSeconds(uint32_t numMicroSeconds);
 CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM);
 CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength);
-CyU3PReturnStatus_t AdiSetDutSupply(DutVoltage SupplyMode);
 CyU3PReturnStatus_t AdiConfigurePinInterrupt(uint16_t pin, CyBool_t polarity);
-uint32_t AdiReadTimerRegValue();
 CyU3PReturnStatus_t AdiMeasurePinDelay(uint16_t transferLength);
-CyBool_t AdiIsValidGPIO(uint16_t GpioId);
 CyU3PReturnStatus_t AdiSetPinResistor(uint16_t pin, PinResistorSetting setting);
+uint32_t AdiMStoTicks(uint32_t desiredStallTime);
+uint32_t AdiReadTimerRegValue();
+CyBool_t AdiIsValidGPIO(uint16_t GpioId);
 PinState AdiGetPinState(uint16_t pin);
-void AdiReturnBulkEndpointData(CyU3PReturnStatus_t status, uint16_t length);
+void AdiGetBoardPinInfo(uint8_t * outBuf);
 
 /*
  * GPIO Pin mapping definitions
