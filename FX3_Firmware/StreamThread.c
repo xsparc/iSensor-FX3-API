@@ -18,6 +18,13 @@
 
 #include "StreamThread.h"
 
+/* Private worker functions for each of the stream modes */
+static CyU3PReturnStatus_t AdiGenericStreamWork();
+static CyU3PReturnStatus_t AdiRealTimeStreamWork();
+static CyU3PReturnStatus_t AdiBurstStreamWork();
+static CyU3PReturnStatus_t AdiTransferStreamWork();
+static CyU3PReturnStatus_t AdiI2CStreamWork();
+
 /* Tell the compiler where to find the needed globals */
 extern CyU3PEvent EventHandler;
 extern CyU3PDmaChannel StreamingChannel;
@@ -26,8 +33,6 @@ extern CyU3PDmaBuffer_t SpiDmaBuffer;
 extern BoardState FX3State;
 extern volatile CyBool_t KillStreamEarly;
 extern StreamState StreamThreadState;
-
-/** Global USB Buffer (Control Endpoint) */
 extern uint8_t USBBuffer[4096];
 
 /**
@@ -114,7 +119,7 @@ void AdiStreamThreadEntry(uint32_t input)
   * This function performs all the I2C and USB transfers for a single "buffer" of an I2C read stream.
   * The size of each buffer is the number of read bytes requested in the stream start
  **/
-CyU3PReturnStatus_t AdiI2CStreamWork()
+static CyU3PReturnStatus_t AdiI2CStreamWork()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
@@ -171,7 +176,7 @@ CyU3PReturnStatus_t AdiI2CStreamWork()
   * This function performs all the SPI and USB transfers for a single "buffer" of a generic stream.
   * One buffer is considered to be numCapture reads of the register list provided.
  **/
-CyU3PReturnStatus_t AdiGenericStreamWork()
+static CyU3PReturnStatus_t AdiGenericStreamWork()
 {
 	uint16_t regIndex, captureCount;
 	CyU3PReturnStatus_t status;
@@ -355,7 +360,7 @@ CyU3PReturnStatus_t AdiGenericStreamWork()
   * The operation of this function is very similar to the Burst Stream function. This implementation
   * is slightly more stream lined to allow for the very tight tolerances on the ADcmXL3021 stream modes.
  **/
-CyU3PReturnStatus_t AdiRealTimeStreamWork()
+static CyU3PReturnStatus_t AdiRealTimeStreamWork()
 {
 	CyU3PReturnStatus_t status;
 	CyBool_t interruptTriggered;
@@ -443,7 +448,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamWork()
   * burst mode. It can be configured to transfer an arbitrary number of bytes in a single
   * SPI transaction, with optional data ready triggering.
  **/
-CyU3PReturnStatus_t AdiBurstStreamWork()
+static CyU3PReturnStatus_t AdiBurstStreamWork()
 {
 	CyU3PReturnStatus_t status;
 	CyBool_t interruptTriggered;
@@ -546,7 +551,7 @@ CyU3PReturnStatus_t AdiBurstStreamWork()
   * Transfer stream is used to implement protocol agnostic SPI transfers. This is useful for sensors which
   * implement a non-standard SPI protocol (CRC/Metadata/Weird bit lengths, etc)
  **/
-CyU3PReturnStatus_t AdiTransferStreamWork()
+static CyU3PReturnStatus_t AdiTransferStreamWork()
 {
 	/* The MOSI data is stored in USBBuffer[14 ...] prior to this function being called */
 
