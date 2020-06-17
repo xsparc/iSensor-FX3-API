@@ -36,18 +36,24 @@ typedef enum PinResistorSetting
 	/** No resistor on pin input stage */
 	None = 0,
 
-	/** Weak pull down (to ground) */
+	/** Weak pull down (to ground). Approx. 50KOhm (per FX3 TRM) */
 	PullDown = 1,
 
-	/** Weak pull up (to Vdd) */
+	/** Weak pull up (to Vdd) Approx. 50KOhm (per FX3 TRM) */
 	PullUp = 2
+
 }PinResistorSetting;
 
 /** Enum of possible states for GPIO input stage */
 typedef enum PinState
 {
+	/** Pin is logic low */
 	Low = 0,
+
+	/** Pin is logic high */
 	High = 1,
+
+	/** Pin is not being driven. This state is determined when the pin logic level follows the internal pull up/down setting */
 	HighZ = 2
 }PinState;
 
@@ -82,10 +88,10 @@ void AdiReturnBulkEndpointData(CyU3PReturnStatus_t status, uint16_t length);
 /** Control pins for power management circuit. 5V enable pin */
 #define ADI_5V_EN 								(34)
 
-/** ID pin 0 (CTL0 - iSensor board vs cypress dev board) */
+/** FX3 hardware ID pin 0. Two ID pins allows for 9 possible board IDs */
 #define ADI_ID_PIN_0							(17)
 
-/** ID pin 1 (iSensor board rev A vs rev B (w/ I2C)) */
+/** FX3 hardware ID pin 1. Two ID pins allows for 9 possible board IDs  */
 #define ADI_ID_PIN_1							(15)
 
 /** Flash write enable pin. Set to 0 to enable flash write, 1 to disable flash write */
@@ -102,6 +108,9 @@ void AdiReturnBulkEndpointData(CyU3PReturnStatus_t status, uint16_t length);
 
 /** GPIO for user LED (Turn on/off or blink via firmware) */
 #define ADI_USER_LED_PIN						(13)
+
+/** Complex GPIO assigned as a timer input */
+#define ADI_TIMER_PIN							(24)
 
 /*
  * ADI GPIO Event Handler Definitions

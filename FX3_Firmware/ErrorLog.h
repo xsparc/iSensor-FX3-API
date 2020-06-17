@@ -12,7 +12,7 @@
   * @file		ErrorLog.h
   * @date		12/6/2019
   * @author		A. Nolan (alex.nolan@analog.com)
-  * @brief Header file for the FX3 flash error logging capabilities
+  * @brief Header file for the FX3 flash error logging module
  **/
 
 #ifndef ERRORLOG_H_
@@ -63,7 +63,10 @@ typedef enum FileIdentifier
 	ErrorLog_c = 8,
 
 	/** Error originating from I2cFunctions.c */
-	I2cFunctions_c = 9
+	I2cFunctions_c = 9,
+
+	/** Error originating from HelperFunctions.c */
+	HelperFunctions_c = 10
 
 }FileIdentifier;
 

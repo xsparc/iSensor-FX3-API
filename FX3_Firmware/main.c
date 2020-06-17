@@ -50,10 +50,10 @@
  * Thread and Event Management Definitions
  */
 
-/** Thread handle for continuous SPI streaming function */
+/** RTOS thread handle for continuous data streaming functionality */
 CyU3PThread StreamThread;
 
-/** Thread handle for the main application */
+/** RTOS thread handle for the main application */
 CyU3PThread AppThread;
 
 /** ADI event structure */
@@ -62,7 +62,7 @@ CyU3PEvent EventHandler;
 /** ADI GPIO event structure (RTOS handles GPIO ISR) */
 CyU3PEvent GpioHandler;
 
-/** Watchdog callback called by RTOS to clear watchdog registers */
+/** Software timer called by RTOS to clear watchdog registers (if watchdog enabled) */
 CyU3PTimer WatchdogTimer;
 
 /*
@@ -85,10 +85,10 @@ CyU3PDmaChannel MemoryToSPI;
  * Buffer Definitions
  */
 
-/** USB Data buffer. Used to receive data from the control endpoint */
+/** 4KB USB Data buffer. Used to receive data from the control endpoint */
 uint8_t USBBuffer[4096] __attribute__((aligned(32)));
 
-/** Bulk endpoint output buffer. Used for when data is manually sent to the PC. */
+/** 12KB Generic bulk buffer. Used for when data is manually sent to or received from the PC via bulk endpoints. */
 uint8_t BulkBuffer[12288] __attribute__((aligned(32)));
 
 /** DMA buffer structure for output buffer */
@@ -101,10 +101,10 @@ CyU3PDmaBuffer_t SpiDmaBuffer;
  * Application constants
  */
 
-/** Constant firmware ID string. Manually updated when building new firmware. Must match API version. */
+/** Constant firmware ID string. Manually updated when releasing new version of the FX3 firmware. Must match FX3 API version number. */
 const uint8_t FirmwareID[32] __attribute__((aligned(32))) = "ADI FX3 REV 2.8.4-PUB\0";
 
-/** FX3 unique serial number. Set at runtime during the boot process. */
+/** FX3 unique serial number. Set at runtime during the initialization process. */
 char serial_number[] __attribute__((aligned(32))) = {'0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00, '0',0x00,'0',0x00,'0',0x00,'0',0x00};
 
 /*

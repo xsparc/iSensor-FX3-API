@@ -379,9 +379,6 @@ typedef struct StreamState
 /** Minimum possible sleep time  */
 #define ADI_MICROSECONDS_SLEEP_OFFSET			(14)
 
-/** Complex GPIO assigned as a timer input */
-#define ADI_TIMER_PIN							(24)
-
 /** Complex GPIO index for the timer input (ADI_TIMER_PIN % 8) */
 #define ADI_TIMER_PIN_INDEX						(0x0)
 
