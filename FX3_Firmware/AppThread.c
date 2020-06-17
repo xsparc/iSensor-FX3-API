@@ -18,6 +18,10 @@
 
 #include "AppThread.h"
 
+/* Private function prototypes */
+static void AdiDebugInit();
+static void AdiAppInit();
+
 /* Tell the compiler where to find the needed globals */
 extern CyU3PEvent EventHandler;
 
@@ -35,7 +39,7 @@ extern char serial_number[];
   *
   * @returns void
  **/
-void AdiDebugInit()
+static void AdiDebugInit()
 {
     CyU3PUartConfig_t uartConfig;
     CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
@@ -100,7 +104,7 @@ void AdiDebugInit()
   *
   * @returns void
  **/
-void AdiAppInit ()
+static void AdiAppInit ()
 {
     CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
