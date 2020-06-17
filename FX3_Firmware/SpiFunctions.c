@@ -28,36 +28,32 @@ extern BoardState FX3State;
 extern StreamState StreamThreadState;
 extern CyU3PDmaBuffer_t ManualDMABuffer;
 extern CyU3PDmaChannel ChannelToPC;
-
-/** Global USB Buffer (Control Endpoint) */
 extern uint8_t USBBuffer[4096];
-
-/** Global USB Buffer (Bulk Endpoints) */
 extern uint8_t BulkBuffer[12288];
 
 /** Pointer to bit bang SPI SCLK pin */
-uvint32_t *SCLKPin;
+static uvint32_t *SCLKPin;
 
 /** Pointer to bit bang SPI CS pin */
-uvint32_t *CSPin;
+static uvint32_t *CSPin;
 
 /** Pointer to bit bang SPI MISO pin */
-uvint32_t *MISOPin;
+static uvint32_t *MISOPin;
 
 /** Pointer to bit bang SPI MOSI pin */
-uvint32_t *MOSIPin;
+static uvint32_t *MOSIPin;
 
 /** Mask to set GPIO pin high */
-uint32_t PinHighMask;
+static uint32_t PinHighMask;
 
 /** Mask to set GPIO pin low */
-uint32_t PinLowMask;
+static uint32_t PinLowMask;
 
 /** Mask for the MOSI pin */
-uint32_t MOSIMask;
+static uint32_t MOSIMask;
 
 /** SCLK low period offset */
-uint32_t SCLKLowTime;
+static uint32_t SCLKLowTime;
 
 /**
   * @brief Bi-directional SPI transfer function, in register mode. Optimized for speed.
