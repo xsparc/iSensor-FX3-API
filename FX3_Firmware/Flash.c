@@ -12,7 +12,7 @@
   * @file		Flash.c
   * @date		04/30/2020
   * @author		A. Nolan (alex.nolan@analog.com)
-  * @brief		FX3 flash interfacing module.
+  * @brief		FX3 I2C EEPROM (model m24m02-dr) interfacing module.
  **/
 
 #include "Flash.h"
@@ -21,10 +21,10 @@
 static uint16_t GetFlashDeviceAddress(uint32_t ByteAddress);
 static CyU3PReturnStatus_t FlashTransfer(uint32_t Address, uint16_t NumBytes, uint8_t* Buf, CyBool_t isRead);
 
-/** Global USB Buffer (Control Endpoint) */
+/** Global USB Buffer, from main */
 extern uint8_t USBBuffer[4096];
 
-/** FX3 state */
+/** FX3 state (from main) */
 extern BoardState FX3State;
 
 /** I2C Tx DMA channel handle */
@@ -121,8 +121,9 @@ CyU3PReturnStatus_t AdiFlashInit()
   *
   * @return void
   *
-  * This functions powers off the I2C block (used for interfacing with EEPROM)
-  * and destroys the associated DMA channels.
+  * This functions destroys the DMA channels used for interfacing
+  * with the I2C module, and re-inits the I2C controller to operate
+  * in register mode, with the previously selected bitrate.
  **/
 void AdiFlashDeInit()
 {
@@ -146,7 +147,9 @@ void AdiFlashDeInit()
   *
   * This function controls the flash write enable signal. This write enable
   * signal is used to prevent un-intended writes the flash from user space,
-  * via I2C functions.
+  * via I2C functions. This write enable signal is only present on the
+  * iSensor FX3 board rev C or newer, but there shouldn't be any downside to
+  * asserting it on older hardware models.
  **/
 void AdiFlashWrite(uint32_t Address, uint16_t NumBytes, uint8_t* WriteBuf)
 {
@@ -168,6 +171,9 @@ void AdiFlashWrite(uint32_t Address, uint16_t NumBytes, uint8_t* WriteBuf)
   * @param ReadBuf RAM buffer to read flash data into
   *
   * @return void
+  *
+  * This function leaves the I2C EEPROM write functionality disabled. This prevents
+  * inadvertent writes from being processed.
  **/
 void AdiFlashRead(uint32_t Address, uint16_t NumBytes, uint8_t* ReadBuf)
 {

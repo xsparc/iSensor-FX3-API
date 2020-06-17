@@ -12,7 +12,7 @@
   * @file		ErrorLog.h
   * @date		12/6/2019
   * @author		A. Nolan (alex.nolan@analog.com)
-  * @brief Header file for error logging capabilities
+  * @brief Header file for the FX3 flash error logging capabilities
  **/
 
 #ifndef ERRORLOG_H_
@@ -23,16 +23,16 @@
 
 /* Defines */
 
-/** The log start address in flash (have to leave space for bootloader) */
+/** The log start address in flash (have to leave space for bootloader starting at flash address 0x0) */
 #define LOG_BASE_ADDR							(0x34040)
 
 /** The max log capacity for the ring buffer (32 bytes per entry) */
 #define LOG_CAPACITY							1500
 
-/** The flash address of the current log count  */
+/** The flash address of the current log count. This is used to track the head of the error log  */
 #define LOG_COUNT_ADDR							(0x34000)
 
-/** Enum to identify the source file which threw an error. More RAM efficient than the __FILE__ directive (gives full path) */
+/** Enum to identify the source file which threw an error. More RAM efficient than the __FILE__ directive (gives full path as string) */
 typedef enum FileIdentifier
 {
 	/** Error originated from an unknown file */
@@ -76,7 +76,7 @@ typedef enum FileIdentifier
  **/
 typedef struct __attribute__((__packed__)) ErrorMsg
 {
-	/** FX3 ThreadX RTOS uptime (milliseconds) */
+	/** FX3 ThreadX RTOS uptime, in milliseconds (0-3) */
 	uint32_t Uptime;
 
 	/** The line which caused the error. Should be set by __LINE__ macro in AdiLogError call (4-7) */
@@ -85,13 +85,13 @@ typedef struct __attribute__((__packed__)) ErrorMsg
 	/** The error code from the set of cypress defined error codes (8 - 11) */
 	uint32_t ErrorCode;
 
-	/** The Unix time stamp for when the instance of the FX3 booted (12 - 15) */
+	/** The Unix time stamp for when the instance of the FX3 booted. Set by the host PC (12 - 15) */
 	uint32_t BootTimeCode;
 
-	/** The file which originated the error. Is file identifier placed into uint (16 - 19) */
+	/** The file which originated the error. Is file identifier casted into uint (16 - 19) */
 	uint32_t File;
 
-	/** The firmware version number (20 - 31) */
+	/** The firmware version number string (20 - 31) */
 	uint8_t FirmwareVersion[12];
 }ErrorMsg;
 
