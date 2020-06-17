@@ -1,11 +1,7 @@
 var searchData=
 [
-  ['watchdogenabled',['WatchDogEnabled',['../struct_board_state.html#aab088ef1de521bab22818bf4d00addf9',1,'BoardState']]],
-  ['watchdogperiodms',['WatchDogPeriodMs',['../struct_board_state.html#a2bca4fcdf76d06297a44cb6f31e02eb4',1,'BoardState']]],
-  ['watchdogticks',['WatchDogTicks',['../struct_board_state.html#a68c0f33ee25d0d5d303c417e522dbcfb',1,'BoardState']]],
-  ['watchdogtimer',['WatchdogTimer',['../main_8c.html#a7467952d7e641e0e3c09eb00ce503380',1,'main.c']]],
-  ['watchdogtimercb',['WatchDogTimerCb',['../main_8c.html#ac35c3eb65841e099b5fe70875656d5bc',1,'WatchDogTimerCb(uint32_t nParam):&#160;main.c'],['../main_8h.html#ac35c3eb65841e099b5fe70875656d5bc',1,'WatchDogTimerCb(uint32_t nParam):&#160;main.c']]],
-  ['writeerrorlogcount',['WriteErrorLogCount',['../_error_log_8c.html#a92e80f7bc3d347c7df859cd9867c8ed1',1,'WriteErrorLogCount(uint32_t count):&#160;ErrorLog.c'],['../_error_log_8h.html#a92e80f7bc3d347c7df859cd9867c8ed1',1,'WriteErrorLogCount(uint32_t count):&#160;ErrorLog.c']]],
-  ['writelogtodebug',['WriteLogToDebug',['../_error_log_8c.html#afa25d266c44a3f98d1ed22181cef2b4f',1,'ErrorLog.c']]],
-  ['writelogtoflash',['WriteLogToFlash',['../_error_log_8c.html#a94a7492bbf8dd7454a4abf2ed3b26f1c',1,'ErrorLog.c']]]
+  ['unknown_334',['Unknown',['../_error_log_8h.html#a961bfce4003ed3e90785c485090db4f7a4e81c184ac3ad48a389cd4454c4a05bb',1,'ErrorLog.h']]],
+  ['uptime_335',['Uptime',['../struct_error_msg.html#a051fb7ab47885f9a441cf70ddc713558',1,'ErrorMsg']]],
+  ['usbbuffer_336',['USBBuffer',['../_flash_8c.html#af61156727a983c3f2ebfd9ae0e5bac71',1,'USBBuffer():&#160;Flash.c'],['../_i2c_functions_8c.html#af61156727a983c3f2ebfd9ae0e5bac71',1,'USBBuffer():&#160;I2cFunctions.c'],['../_stream_functions_8c.html#af61156727a983c3f2ebfd9ae0e5bac71',1,'USBBuffer():&#160;StreamFunctions.c'],['../main_8c.html#aae2dfaf6e49d51d401e281fbdf83d874',1,'USBBuffer((aligned(32))):&#160;main.c']]],
+  ['usbbuffersize_337',['UsbBufferSize',['../struct_board_state.html#a7ecc16e123ad5c0963d236b46e7974c1',1,'BoardState']]]
 ];

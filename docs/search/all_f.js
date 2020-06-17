@@ -1,27 +1,5 @@
 var searchData=
 [
-  ['s_5fto_5fticks_5fmult',['S_TO_TICKS_MULT',['../main_8h.html#af448b0cfb701dcf75f04dceccd0302cf',1,'main.h']]],
-  ['sclk',['SCLK',['../struct_bit_bang_spi_conf.html#ae18c6643b3ea69e6c93f9a1f2c2a1e29',1,'BitBangSpiConf']]],
-  ['sclklowtime',['SCLKLowTime',['../_spi_functions_8c.html#a1c062728869f5d1364523836042c079b',1,'SpiFunctions.c']]],
-  ['sclkpin',['SCLKPin',['../_spi_functions_8c.html#ac4f6cad05c61dc040ccbd503afc20f1f',1,'SpiFunctions.c']]],
-  ['serial_5fnumber',['serial_number',['../_app_thread_8c.html#aef75a5a8ae0f22711a396b4a41216fc1',1,'serial_number():&#160;AppThread.c'],['../main_8c.html#af944fb7c8896fdcd7f0d7d00f06fb329',1,'serial_number((aligned(32))):&#160;main.c']]],
-  ['spiconfig',['SpiConfig',['../struct_board_state.html#aa6ad831cd8d7bcf3136e710f49f5f081',1,'BoardState']]],
-  ['spidmabuffer',['SpiDmaBuffer',['../main_8c.html#aeed44eef5876251be24e1b418ea64590',1,'SpiDmaBuffer():&#160;main.c'],['../_stream_functions_8c.html#aeed44eef5876251be24e1b418ea64590',1,'SpiDmaBuffer():&#160;main.c'],['../_stream_thread_8c.html#aeed44eef5876251be24e1b418ea64590',1,'SpiDmaBuffer():&#160;main.c']]],
-  ['spifunctions_2ec',['SpiFunctions.c',['../_spi_functions_8c.html',1,'']]],
-  ['spifunctions_2eh',['SpiFunctions.h',['../_spi_functions_8h.html',1,'']]],
-  ['spifunctions_5fc',['SpiFunctions_c',['../_error_log_8h.html#a961bfce4003ed3e90785c485090db4f7a3d74747e2408838a6256e72c3d32e57f',1,'ErrorLog.h']]],
-  ['stall_5fcount_5foffset',['STALL_COUNT_OFFSET',['../_spi_functions_8h.html#ad28e6eae506528ecbccc2c5da8109977',1,'SpiFunctions.h']]],
-  ['stalltime',['StallTime',['../struct_board_state.html#aef78e64d67754a1340dd369e51e098ad',1,'BoardState']]],
-  ['streamfunctions_2ec',['StreamFunctions.c',['../_stream_functions_8c.html',1,'']]],
-  ['streamfunctions_2eh',['StreamFunctions.h',['../_stream_functions_8h.html',1,'']]],
-  ['streamfunctions_5fc',['StreamFunctions_c',['../_error_log_8h.html#a961bfce4003ed3e90785c485090db4f7a8e272e010d42618fd5c239c84306bca8',1,'ErrorLog.h']]],
-  ['streamingchannel',['StreamingChannel',['../main_8c.html#ae8aab9e931f1efc7d59b1fa758ee4454',1,'StreamingChannel():&#160;main.c'],['../_stream_functions_8c.html#ae8aab9e931f1efc7d59b1fa758ee4454',1,'StreamingChannel():&#160;main.c'],['../_stream_thread_8c.html#ae8aab9e931f1efc7d59b1fa758ee4454',1,'StreamingChannel():&#160;main.c']]],
-  ['streamstate',['StreamState',['../struct_stream_state.html',1,'StreamState'],['../main_8h.html#a38a24bf6934ff03f0ffdd12f78809a06',1,'StreamState():&#160;main.h']]],
-  ['streamthread',['StreamThread',['../main_8c.html#ae17a9988f4fd3fff237c37d08ae4e6fe',1,'main.c']]],
-  ['streamthread_2ec',['StreamThread.c',['../_stream_thread_8c.html',1,'']]],
-  ['streamthread_2eh',['StreamThread.h',['../_stream_thread_8h.html',1,'']]],
-  ['streamthread_5fc',['StreamThread_c',['../_error_log_8h.html#a961bfce4003ed3e90785c485090db4f7ad1b9c3523925e2fcc02b48096da50097',1,'ErrorLog.h']]],
-  ['streamthread_5fpriority',['STREAMTHREAD_PRIORITY',['../_stream_thread_8h.html#a37bc059a04fa09b8a43af79323264a86',1,'StreamThread.h']]],
-  ['streamthread_5fstack',['STREAMTHREAD_STACK',['../_stream_thread_8h.html#a0298aa7ed330e2e6a75cc93374bfbf07',1,'StreamThread.h']]],
-  ['streamthreadstate',['StreamThreadState',['../main_8c.html#a98693015cd59e2346ce44ac5af02a4c0',1,'StreamThreadState():&#160;main.c'],['../_spi_functions_8c.html#a98693015cd59e2346ce44ac5af02a4c0',1,'StreamThreadState():&#160;main.c'],['../_stream_functions_8c.html#a98693015cd59e2346ce44ac5af02a4c0',1,'StreamThreadState():&#160;main.c'],['../_stream_thread_8c.html#a98693015cd59e2346ce44ac5af02a4c0',1,'StreamThreadState():&#160;main.c']]]
+  ['reglist_305',['RegList',['../struct_stream_state.html#afdc02985c7b2291fcf55397f4db61e38',1,'StreamState']]],
+  ['roundedbytetransferlength_306',['RoundedByteTransferLength',['../struct_stream_state.html#ad29bdadbd9a94e8faa2f5a98b954218d',1,'StreamState']]]
 ];
