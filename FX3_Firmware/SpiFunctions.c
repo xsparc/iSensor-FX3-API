@@ -18,6 +18,11 @@
 
 #include "SpiFunctions.h"
 
+/* Private function prototypes */
+static void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, BitBangSpiConf config);
+static CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config);
+static void AdiWaitForSpiNotBusy();
+
 /* Tell the compiler where to find the needed globals */
 extern BoardState FX3State;
 extern StreamState StreamThreadState;
@@ -297,7 +302,7 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
   *
   * @returns A status code indicating the success of the bitbang SPI setup process.
  **/
-CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
+static CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
@@ -432,7 +437,7 @@ CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
   * This function allows a user to use any pins on the FX3 as a low speed SPI master. The API
   * provided is similar to the Cypress API for the hardware SPI.
  **/
-void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, BitBangSpiConf config)
+static void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, BitBangSpiConf config)
 {
 	/* Track the number of bits clocked */
 	uint32_t bitCounter;
@@ -716,7 +721,7 @@ void AdiSetSpiWordLength(uint8_t wordLength)
   *
   * @returns void
  **/
-void AdiWaitForSpiNotBusy()
+static void AdiWaitForSpiNotBusy()
 {
 	while(SPI->lpp_spi_status & 1<<28);
 }

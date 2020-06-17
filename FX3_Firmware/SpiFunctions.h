@@ -52,7 +52,6 @@ CyU3PReturnStatus_t AdiGetSpiSettings();
 CyBool_t AdiSpiUpdate(uint16_t index, uint16_t value, uint16_t length);
 CyU3PReturnStatus_t AdiSpiResetFifo(CyBool_t isTx, CyBool_t isRx);
 CyU3PSpiConfig_t AdiGetSpiConfig();
-void AdiWaitForSpiNotBusy();
 void AdiSetSpiWordLength(uint8_t wordLength);
 void AdiPrintSpiConfig(CyU3PSpiConfig_t config);
 CyU3PReturnStatus_t AdiRestartSpi();
@@ -64,8 +63,6 @@ CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data);
 CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr);
 
 /* Bitbang SPI functions */
-void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, BitBangSpiConf config);
-CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config);
 CyU3PReturnStatus_t AdiBitBangSpiHandler();
 
 /** Offset to make the short side of the bitbang SPI match long side. Approx. 62ns per tick */
