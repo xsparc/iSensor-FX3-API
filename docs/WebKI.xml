@@ -335,6 +335,8 @@
   <HelpKINode Title="FX3Connection.FX3_GPIO2 property" Url="html/062bb664-caed-6c19-103e-9d678e13bcbd.htm" />
   <HelpKINode Title="FX3Connection.FX3_GPIO3 property" Url="html/2cc932b7-d462-e090-2200-515781160808.htm" />
   <HelpKINode Title="FX3Connection.FX3_GPIO4 property" Url="html/69ddaf10-0a3f-c39c-a184-69ebc305ac3d.htm" />
+  <HelpKINode Title="FX3Connection.FX3_LOOPBACK1 property" Url="html/16b094bc-f2b3-ff1c-e302-4c3c28aab12f.htm" />
+  <HelpKINode Title="FX3Connection.FX3_LOOPBACK2 property" Url="html/083d05a5-f13e-da87-4dde-856d7c112dfa.htm" />
   <HelpKINode Title="FX3Connection.GetBootStatus property" Url="html/21d7d836-4af0-0d22-c5eb-bc32f57488c0.htm" />
   <HelpKINode Title="FX3Connection.GetBuffer method" Url="html/75e7752d-96ab-fd21-d7a0-7cdbb57c32aa.htm" />
   <HelpKINode Title="FX3Connection.GetBufferedStreamDataPacket method" Url="html/446de784-a2ef-34e7-894b-eef207deea21.htm" />
@@ -503,6 +505,8 @@
   <HelpKINode Title="FX3_GPIO2 property" Url="html/062bb664-caed-6c19-103e-9d678e13bcbd.htm" />
   <HelpKINode Title="FX3_GPIO3 property" Url="html/2cc932b7-d462-e090-2200-515781160808.htm" />
   <HelpKINode Title="FX3_GPIO4 property" Url="html/69ddaf10-0a3f-c39c-a184-69ebc305ac3d.htm" />
+  <HelpKINode Title="FX3_LOOPBACK1 property" Url="html/16b094bc-f2b3-ff1c-e302-4c3c28aab12f.htm" />
+  <HelpKINode Title="FX3_LOOPBACK2 property" Url="html/083d05a5-f13e-da87-4dde-856d7c112dfa.htm" />
   <HelpKINode Title="GenericStream enumeration member" Url="html/8001ed3d-aab3-d9a9-516a-2fc3368c0259.htm" />
   <HelpKINode Title="GetBootStatus property" Url="html/21d7d836-4af0-0d22-c5eb-bc32f57488c0.htm" />
   <HelpKINode Title="GetBuffer method" Url="html/75e7752d-96ab-fd21-d7a0-7cdbb57c32aa.htm" />
@@ -555,6 +559,12 @@
   <HelpKINode Title="Invert property" Url="html/4fcc6d29-cd04-50cc-c5d2-b71d3063e938.htm" />
   <HelpKINode Title="iSensorFX3Board_A enumeration member" Url="html/7bbd69cb-7041-ec59-4c56-ec5da4661e1e.htm" />
   <HelpKINode Title="iSensorFX3Board_B enumeration member" Url="html/7bbd69cb-7041-ec59-4c56-ec5da4661e1e.htm" />
+  <HelpKINode Title="iSensorFX3Board_C enumeration member" Url="html/7bbd69cb-7041-ec59-4c56-ec5da4661e1e.htm" />
+  <HelpKINode Title="iSensorFX3Board_D enumeration member" Url="html/7bbd69cb-7041-ec59-4c56-ec5da4661e1e.htm" />
+  <HelpKINode Title="iSensorFX3Board_E enumeration member" Url="html/7bbd69cb-7041-ec59-4c56-ec5da4661e1e.htm" />
+  <HelpKINode Title="iSensorFX3Board_F enumeration member" Url="html/7bbd69cb-7041-ec59-4c56-ec5da4661e1e.htm" />
+  <HelpKINode Title="iSensorFX3Board_G enumeration member" Url="html/7bbd69cb-7041-ec59-4c56-ec5da4661e1e.htm" />
+  <HelpKINode Title="iSensorFX3Board_H enumeration member" Url="html/7bbd69cb-7041-ec59-4c56-ec5da4661e1e.htm" />
   <HelpKINode Title="IsLSBFirst field" Url="html/89da7013-d887-6e84-3a09-fbfc42385b72.htm" />
   <HelpKINode Title="IsLSBFirst property" Url="html/f37c14dd-441b-f398-e41c-1f80b6033194.htm" />
   <HelpKINode Title="ISpi32StopStream method" Url="html/52a3102f-a983-352b-9eb6-7477399b0856.htm" />
@@ -642,8 +652,8 @@
   <HelpKINode Title="ResetPin property" Url="html/323fa924-24da-f60d-2c4d-b0e63c274ee7.htm" />
   <HelpKINode Title="RestoreHardwareSpi method" Url="html/7bffc307-014c-a89b-8d5c-9978358c74bb.htm" />
   <HelpKINode Title="SCLK field" Url="html/bca90136-f9a9-b710-6290-c4e2455818c2.htm" />
-  <HelpKINode Title="SclkFrequency property" Url="html/6c81a4f6-5c6c-36a0-9c51-90450e3a156a.htm" />
   <HelpKINode Title="SCLKFrequency property" Url="html/705196d0-12a4-0bd3-2faa-f275f3ce5943.htm" />
+  <HelpKINode Title="SclkFrequency property" Url="html/6c81a4f6-5c6c-36a0-9c51-90450e3a156a.htm" />
   <HelpKINode Title="SCLKHalfPeriodTicks field" Url="html/8b8fd904-046d-798e-6492-b3b786d4e65b.htm" />
   <HelpKINode Title="SecondsToTimerTicks field" Url="html/e336c5ce-fc50-16cc-aa46-21cd4e3927ef.htm" />
   <HelpKINode Title="SensorType enumeration" Url="html/5ccc3358-a671-dc2c-bb84-dbd123d82e9b.htm" />
