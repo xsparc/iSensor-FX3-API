@@ -316,6 +316,21 @@ Public Class BitBangSpiConfig
     Public StallTicks As UInteger
 
     ''' <summary>
+    ''' Bit bang SPI clock phase. If set to false (0) data is sampled
+    ''' on the clock active to inactive edge, and updated on the inactive to active
+    ''' edge. If set to true (1), data is updated on the clock 
+    ''' active to inactive transition, and data is sampled on the inactive to 
+    ''' active edge.
+    ''' </summary>
+    Public CPHA As Boolean
+
+    ''' <summary>
+    ''' Bit bang SPI clock polarity. True (1) is idle high, False (0) is
+    ''' idle low. 
+    ''' </summary>
+    Public CPOL As Boolean
+
+    ''' <summary>
     ''' Constructor which lets you specify set of default pins to use as bit bang SPI pins
     ''' </summary>
     ''' <param name="OverrideHardwareSpi">If the constructed BitBangSpiConfig should use hardware SPI pins, or FX3GPIO</param>
@@ -335,6 +350,10 @@ Public Class BitBangSpiConfig
             MISO = New FX3PinObject(12) 'FX3_GPIO4
         End If
 
+        'set defaults for iSensor SPI protocol (mode 3)
+        CPHA = True
+        CPOL = True
+
         CSLeadTicks = 5 'Lead one SCLK period
         CSLagTicks = 5 'Lag one SCLK period
         SCLKHalfPeriodTicks = 5 'Should give approx. 1MHz
@@ -347,22 +366,24 @@ Public Class BitBangSpiConfig
     ''' <returns>The parameter array to send to the FX3 for a bit bang vendor command</returns>
     Public Function GetParameterArray() As Byte()
         Dim params As New List(Of Byte)
-        params.Add(CByte(SCLK.pinConfig() And &HFFUI))
-        params.Add(CByte(CS.pinConfig() And &HFFUI))
-        params.Add(CByte(MOSI.pinConfig() And &HFFUI))
-        params.Add(CByte(MISO.pinConfig() And &HFFUI))
-        params.Add(CByte(SCLKHalfPeriodTicks And &HFFUI))
-        params.Add(CByte((SCLKHalfPeriodTicks And &HFF00UI) >> 8))
-        params.Add(CByte((SCLKHalfPeriodTicks And &HFF0000UI) >> 16))
-        params.Add(CByte((SCLKHalfPeriodTicks And &HFF000000UI) >> 24))
-        params.Add(CByte(CSLeadTicks And &HFFUI))
-        params.Add(CByte((CSLeadTicks And &HFF00UI) >> 8))
-        params.Add(CByte(CSLagTicks And &HFFUI))
-        params.Add(CByte((CSLagTicks And &HFF00UI) >> 8))
-        params.Add(CByte(StallTicks And &HFFUI))
-        params.Add(CByte((StallTicks And &HFF00UI) >> 8))
-        params.Add(CByte((StallTicks And &HFF0000UI) >> 16))
-        params.Add(CByte((StallTicks And &HFF000000UI) >> 24))
+        params.Add(CByte(SCLK.pinConfig() And &HFFUI)) '0
+        params.Add(CByte(CS.pinConfig() And &HFFUI)) '1
+        params.Add(CByte(MOSI.pinConfig() And &HFFUI)) '2
+        params.Add(CByte(MISO.pinConfig() And &HFFUI)) '3
+        params.Add(CByte(SCLKHalfPeriodTicks And &HFFUI)) '4
+        params.Add(CByte((SCLKHalfPeriodTicks And &HFF00UI) >> 8)) '5
+        params.Add(CByte((SCLKHalfPeriodTicks And &HFF0000UI) >> 16)) '6
+        params.Add(CByte((SCLKHalfPeriodTicks And &HFF000000UI) >> 24)) '7
+        params.Add(CByte(CSLeadTicks And &HFFUI)) '8
+        params.Add(CByte((CSLeadTicks And &HFF00UI) >> 8)) '9
+        params.Add(CByte(CSLagTicks And &HFFUI)) '10
+        params.Add(CByte((CSLagTicks And &HFF00UI) >> 8)) '11
+        params.Add(CByte(StallTicks And &HFFUI)) '12
+        params.Add(CByte((StallTicks And &HFF00UI) >> 8)) '13
+        params.Add(CByte((StallTicks And &HFF0000UI) >> 16)) '14
+        params.Add(CByte((StallTicks And &HFF000000UI) >> 24)) '15
+        params.Add(CByte(CPHA)) '16
+        params.Add(CByte(CPOL)) '17
         Return params.ToArray()
     End Function
 
