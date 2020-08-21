@@ -188,8 +188,8 @@ echo Error: No Git Repository Found &gt; "$(ProjectDir)\Bin\CurrentBranch.txt"
 echo Error: No Git Repository Found &gt; "$(ProjectDir)\Bin\CurrentURL.txt"
 )
 
-if EXIST C:\Users\anolan3\Documents\iSensor-FX3-Firmware\FX3_Firmware\Debug\FX3_Firmware.img (
-copy /Y C:\Users\anolan3\Documents\iSensor-FX3-Firmware\FX3_firmware\Debug\FX3_Firmware.img "$(ProjectDir)\Resources\FX3_Firmware.img"
+if EXIST C:\Users\anolan3\Documents\iSensor-FX3-Firmware\FX3_Firmware\Release\FX3_Firmware.img (
+copy /Y C:\Users\anolan3\Documents\iSensor-FX3-Firmware\FX3_firmware\Release\FX3_Firmware.img "$(ProjectDir)\Resources\FX3_Firmware.img"
 copy /Y C:\Users\anolan3\Documents\iSensor-FX3-Firmware\boot_fw\Debug\boot_fw.img "$(ProjectDir)\Resources\boot_fw.img"
 copy /Y C:\Users\anolan3\Documents\iSensor-FX3-Firmware\cyfxflashprog\Debug\USBFlashProg.img "$(ProjectDir)\Resources\USBFlashProg.img"
 ) else (
