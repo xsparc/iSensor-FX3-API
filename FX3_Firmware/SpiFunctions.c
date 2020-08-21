@@ -19,7 +19,8 @@
 #include "SpiFunctions.h"
 
 /* Private function prototypes */
-static void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, BitBangSpiConf config);
+static void AdiBitBangSpiTransferCPHA0(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, BitBangSpiConf config);
+static void AdiBitBangSpiTransferCPHA1(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, BitBangSpiConf config);
 static CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config);
 static void AdiWaitForSpiNotBusy();
 
@@ -48,6 +49,12 @@ static uint32_t PinHighMask;
 
 /** Mask to set GPIO pin low */
 static uint32_t PinLowMask;
+
+/** SCLK active setting. Based on CPOL */
+static uint32_t SCLKActiveMask;
+
+/** SCLK idle setting. Based on CPOL */
+static uint32_t SCLKInactiveMask;
 
 /** Mask for the MOSI pin */
 static uint32_t MOSIMask;
@@ -232,14 +239,16 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 	bitBangStallTime |= (USBBuffer[13] << 8);
 	bitBangStallTime |= (USBBuffer[14] << 16);
 	bitBangStallTime |= (USBBuffer[15] << 24);
-	bitsPerTransfer = USBBuffer[16];
-	bitsPerTransfer |= (USBBuffer[17] << 8);
-	bitsPerTransfer |= (USBBuffer[18] << 16);
-	bitsPerTransfer |= (USBBuffer[19] << 24);
-	numTransfers = USBBuffer[20];
-	numTransfers |= (USBBuffer[21] << 8);
-	numTransfers |= (USBBuffer[22] << 16);
-	numTransfers |= (USBBuffer[23] << 24);
+	config.CPHA = USBBuffer[16];
+	config.CPOL = USBBuffer[17];
+	bitsPerTransfer = USBBuffer[18];
+	bitsPerTransfer |= (USBBuffer[19] << 8);
+	bitsPerTransfer |= (USBBuffer[20] << 16);
+	bitsPerTransfer |= (USBBuffer[21] << 24);
+	numTransfers = USBBuffer[22];
+	numTransfers |= (USBBuffer[23] << 8);
+	numTransfers |= (USBBuffer[24] << 16);
+	numTransfers |= (USBBuffer[25] << 24);
 
 	/* apply offset to stall */
 	if(bitBangStallTime > STALL_COUNT_OFFSET)
@@ -253,9 +262,9 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 	/* Start MISO pointer at bulk buffer */
 	MISOPtr = BulkBuffer;
 
-	/* Start MOSI pointer at USBBuffer[22] */
+	/* Start MOSI pointer at USBBuffer[26], first transmit data bit */
 	MOSIPtr = USBBuffer;
-	MOSIPtr += 24;
+	MOSIPtr += 26;
 
 	/* Setup the GPIO selected */
 	status = AdiBitBangSpiSetup(config);
@@ -265,7 +274,10 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler()
 		for(transferCounter = 0; transferCounter < numTransfers; transferCounter++)
 		{
 			/* Transfer data */
-			AdiBitBangSpiTransfer(MOSIPtr, MISOPtr, bitsPerTransfer, config);
+			if(config.CPHA)
+				AdiBitBangSpiTransferCPHA1(MOSIPtr, MISOPtr, bitsPerTransfer, config);
+			else
+				AdiBitBangSpiTransferCPHA0(MOSIPtr, MISOPtr, bitsPerTransfer, config);
 			/* Update buffer pointers */
 			MOSIPtr += bitsPerTransfer;
 			MISOPtr += bitsPerTransfer;
@@ -325,13 +337,13 @@ static CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 
 	/* Output config */
 	CyU3PGpioSimpleConfig_t gpioConfig;
-	gpioConfig.outValue = CyTrue;
+	gpioConfig.outValue = config.CPOL;
 	gpioConfig.inputEn = CyFalse;
 	gpioConfig.driveLowEn = CyTrue;
 	gpioConfig.driveHighEn = CyTrue;
 	gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
 
-	/* Set MOSI, CS, SCLK as output pins driven high */
+	/* Set SCLK as output driven based on CPOL setting */
 	status = CyU3PGpioSetSimpleConfig(config.SCLK, &gpioConfig);
 	if(status != CY_U3P_SUCCESS)
 	{
@@ -347,6 +359,8 @@ static CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 		}
 	}
 
+	/* Set MOSI, CS as output pins driven high. */
+	gpioConfig.outValue = CyTrue;
 	status = CyU3PGpioSetSimpleConfig(config.CS, &gpioConfig);
 	if(status != CY_U3P_SUCCESS)
 	{
@@ -404,8 +418,8 @@ static CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 	CSPin = &GPIO->lpp_gpio_simple[config.CS];
 	SCLKPin = &GPIO->lpp_gpio_simple[config.SCLK];
 
-	/* Set the high and low masks (from SCLK initial value)*/
-	PinHighMask = *SCLKPin;
+	/* Set the high and low masks (from CS initial value)*/
+	PinHighMask = *CSPin;
 	PinHighMask |= CY_U3P_LPP_GPIO_OUT_VALUE;
 	PinLowMask = PinHighMask & ~CY_U3P_LPP_GPIO_OUT_VALUE;
 
@@ -415,6 +429,20 @@ static CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 
 	/* Calculate wait value for short half of period */
 	SCLKLowTime = config.HalfClockDelay + BITBANG_HALFCLOCK_OFFSET;
+
+	/* Set the sclk active/inactive masks based on CPOL */
+	if(config.CPOL)
+	{
+		/* Idle high, active low */
+		SCLKActiveMask = PinLowMask;
+		SCLKInactiveMask = PinHighMask;
+	}
+	else
+	{
+		/* Idle low, active high */
+		SCLKActiveMask = PinHighMask;
+		SCLKInactiveMask = PinLowMask;
+	}
 
 	return status;
 }
@@ -431,9 +459,10 @@ static CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
   * @param config The configuration settings to use for the transfer.
   *
   * This function allows a user to use any pins on the FX3 as a low speed SPI master. The API
-  * provided is similar to the Cypress API for the hardware SPI.
+  * provided is similar to the Cypress API for the hardware SPI. This function is fixed to operate in
+  * CPHA mode 1 (update data on idle-active edge, sample on active-idle edge).
  **/
-static void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, BitBangSpiConf config)
+static void AdiBitBangSpiTransferCPHA1(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, BitBangSpiConf config)
 {
 	/* Track the number of bits clocked */
 	uint32_t bitCounter;
@@ -453,16 +482,16 @@ static void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCou
 		/* Place output data bit on MOSI pin (approx. 150ns) */
 		*MOSIPin = MOSIMask | MOSI[bitCounter];
 
-		/* Toggle SCLK low */
-		*SCLKPin = PinLowMask;
+		/* Toggle SCLK active */
+		*SCLKPin = SCLKActiveMask;
 
 		/* Wait HalfClock period (w/ added offset to make duty cycle 50%)*/
 		cycleTimer = SCLKLowTime;
 		while(cycleTimer > 0)
 			cycleTimer--;
 
-		/* Toggle SCLK high */
-		*SCLKPin = PinHighMask;
+		/* Toggle SCLK inactive */
+		*SCLKPin = SCLKInactiveMask;
 
 		/* Sample MISO pin */
 		MISO[bitCounter] = *MISOPin;
@@ -478,16 +507,16 @@ static void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCou
 	/* Place output data bit on MOSI pin */
 	*MOSIPin = MOSIMask | MOSI[BitCount - 1];
 
-	/* Toggle SCLK low */
-	*SCLKPin = PinLowMask;
+	/* Toggle SCLK active */
+	*SCLKPin = SCLKActiveMask;
 
 	/* Wait HalfClock period (w/ added offset to make duty cycle 50%)*/
 	cycleTimer = SCLKLowTime;
 	while(cycleTimer > 0)
 		cycleTimer--;
 
-	/* Toggle SCLK high */
-	*SCLKPin = PinHighMask;
+	/* Toggle SCLK inactive */
+	*SCLKPin = SCLKInactiveMask;
 
 	/* Sample MISO pin */
 	MISO[BitCount - 1] = *MISOPin;
@@ -499,7 +528,77 @@ static void AdiBitBangSpiTransfer(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCou
 		cycleTimer--;
 	}
 
-	/* Restore CS, SCLK, MOSI to high */
+	/* Restore CS, MOSI to high */
+	*CSPin = PinHighMask;
+	*MOSIPin = PinHighMask;
+}
+
+/**
+  * @brief Performs a single bit banged SPI transfer. Pins must already be configured as needed.
+  *
+  * @param MOSI A pointer to the master out data buffer. This data will be transmitted MSB first, over the MOSI line in config.
+  *
+  * @param MISO A pointer to the data receive (rx) buffer. The data received from a slave will be placed here.
+  *
+  * @param BitCount The number of bits to transfer.
+  *
+  * @param config The configuration settings to use for the transfer.
+  *
+  * This function allows a user to use any pins on the FX3 as a low speed SPI master. The API
+  * provided is similar to the Cypress API for the hardware SPI. This function is fixed to operate in
+  * CPHA mode 0 (sample data on idle-active edge, update data on active-idle edge).
+ **/
+static void AdiBitBangSpiTransferCPHA0(uint8_t * MOSI, uint8_t* MISO, uint32_t BitCount, BitBangSpiConf config)
+{
+	/* Track the number of bits clocked */
+	uint32_t bitCounter;
+	register uvint32_t cycleTimer;
+
+	/* Drop chip select */
+	*CSPin = PinLowMask;
+
+	/* Load initial data bit to output */
+	*MOSIPin = MOSIMask | MOSI[0];
+
+	/* Wait for CS lead delay */
+	cycleTimer = config.CSLeadDelay;
+	while(cycleTimer > 0)
+		cycleTimer--;
+
+	/* main transmission loop */
+	for(bitCounter = 0; bitCounter < BitCount; bitCounter++)
+	{
+		/* Toggle SCLK to active state */
+		*SCLKPin = SCLKActiveMask;
+
+		/* Sample MISO pin */
+		MISO[bitCounter] = *MISOPin;
+
+		/* Wait HalfClock period */
+		cycleTimer = config.HalfClockDelay;
+		while(cycleTimer > 0)
+			cycleTimer--;
+
+		/* Toggle SCLK inactive */
+		*SCLKPin = SCLKInactiveMask;
+
+		/* Place output data bit on MOSI pin (approx. 150ns) */
+		*MOSIPin = MOSIMask | MOSI[bitCounter + 1];
+
+		/* Wait HalfClock period (w/ added offset to make duty cycle 50%)*/
+		cycleTimer = SCLKLowTime;
+		while(cycleTimer > 0)
+			cycleTimer--;
+	}
+
+	/* Wait for CS lag delay */
+	cycleTimer = config.CSLagDelay;
+	while(cycleTimer > 0)
+	{
+		cycleTimer--;
+	}
+
+	/* Restore CS, MOSI to high */
 	*CSPin = PinHighMask;
 	*MOSIPin = PinHighMask;
 }

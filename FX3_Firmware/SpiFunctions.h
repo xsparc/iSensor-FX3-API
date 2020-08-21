@@ -45,6 +45,12 @@ typedef struct BitBangSpiConf
 
 	/** The delay after finishing SCLKs before raising CS */
 	uint16_t CSLagDelay;
+
+	/** SPI clock phase setting */
+	CyBool_t CPHA;
+
+	/** SPI clock polarity setting */
+	CyBool_t CPOL;
 }BitBangSpiConf;
 
 /* SPI configuration functions */
@@ -66,9 +72,9 @@ CyU3PReturnStatus_t AdiReadRegBytes(uint16_t addr);
 CyU3PReturnStatus_t AdiBitBangSpiHandler();
 
 /** Offset to make the short side of the bitbang SPI match long side. Approx. 62ns per tick */
-#define BITBANG_HALFCLOCK_OFFSET 8
+#define BITBANG_HALFCLOCK_OFFSET 5
 
 /** Offset for bit bang stall time calc */
-#define STALL_COUNT_OFFSET 14
+#define STALL_COUNT_OFFSET 10
 
 #endif
