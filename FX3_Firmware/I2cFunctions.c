@@ -178,7 +178,7 @@ CyU3PReturnStatus_t AdiI2CInit(uint32_t BitRate, CyBool_t isDMA)
  **/
 uint32_t I2CParseUSBBuffer(uint32_t * timeout, uint32_t * numBytes, CyU3PI2cPreamble_t * preamble)
 {
-	uint32_t index;
+	uint32_t index = 0;
 
 	/* Parse num bytes */
 	*numBytes = USBBuffer[0];

@@ -230,7 +230,7 @@ static CyU3PReturnStatus_t FlashTransfer(uint32_t Address, uint16_t NumBytes, ui
 {
     CyU3PDmaBuffer_t buf_p;
     CyU3PI2cPreamble_t preamble;
-    CyU3PReturnStatus_t status;
+    CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
     uint16_t dmaCount;
     uint16_t lastCount;

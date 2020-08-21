@@ -446,6 +446,10 @@ CyU3PReturnStatus_t AdiMeasureBusyPulse(uint16_t transferLength)
 	CyU3PGpioSimpleConfig_t gpioConfig;
 	CyU3PGpioComplexConfig_t busyPinConfig;
 
+	/* Ensure variables are initialized to stop compiler from complainging */
+	driveTime = 0;
+	triggerPolarity = CyTrue;
+
 	/* Read config data into USBBuffer */
 	status = CyU3PUsbGetEP0Data(transferLength, USBBuffer, bytesRead);
 	if(status != CY_U3P_SUCCESS)
