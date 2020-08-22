@@ -348,6 +348,7 @@ Public Class BitBangSpiConfig
             CS = New FX3PinObject(6) 'FX3_GPIO2
             MOSI = New FX3PinObject(7) 'FX3_GPIO3
             MISO = New FX3PinObject(12) 'FX3_GPIO4
+            m_UpdatePins = True
         End If
 
         'set defaults for iSensor SPI protocol (mode 3)
@@ -386,6 +387,20 @@ Public Class BitBangSpiConfig
         params.Add(CByte(CPOL)) '17
         Return params.ToArray()
     End Function
+
+    ''' <summary>
+    ''' Kinda jank. Flag pin update required at construction so FX3 Connection can fix pin assignments.
+    ''' Will only return true one time (if pin update is required)
+    ''' </summary>
+    ''' <returns>If GPIO re-assignment is required</returns>
+    Friend ReadOnly Property UpdatePinsRequired As Boolean
+        Get
+            Dim retVal As Boolean = m_UpdatePins
+            m_UpdatePins = False
+            Return retVal
+        End Get
+    End Property
+    Private m_UpdatePins As Boolean = False
 
 End Class
 

@@ -17,6 +17,12 @@ Partial Class FX3Connection
         End Get
         Set(value As BitBangSpiConfig)
             m_BitBangSpi = value
+            If m_BitBangSpi.UpdatePinsRequired Then
+                m_BitBangSpi.SCLK = CType(FX3_GPIO1, FX3PinObject)
+                m_BitBangSpi.CS = CType(FX3_GPIO2, FX3PinObject)
+                m_BitBangSpi.MOSI = CType(FX3_GPIO3, FX3PinObject)
+                m_BitBangSpi.MISO = CType(FX3_GPIO4, FX3PinObject)
+            End If
         End Set
     End Property
 
