@@ -480,7 +480,6 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 			AdiSleepForMicroSeconds(FX3State.StallTime);
 
 			/* Configure SYNC/RTS as an output and set high */
-			CyU3PGpioSimpleConfig_t gpioConfig;
 			gpioConfig.outValue = CyTrue;
 			gpioConfig.inputEn = CyFalse;
 			gpioConfig.driveLowEn = CyTrue;
@@ -530,7 +529,6 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 		AdiSleepForMicroSeconds(FX3State.StallTime);
 
 		/* Configure SYNC/RTS as an output and set high */
-		CyU3PGpioSimpleConfig_t gpioConfig;
 		gpioConfig.outValue = CyTrue;
 		gpioConfig.inputEn = CyFalse;
 		gpioConfig.driveLowEn = CyTrue;

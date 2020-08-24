@@ -50,7 +50,7 @@ static uint32_t GetLogCount();
  **/
 void AdiLogError(FileIdentifier File, uint32_t Line, uint32_t ErrorCode)
 {
-	ErrorMsg error = {};
+	ErrorMsg error = {.FirmwareVersion = {0}};
 
 	/* Set the uptime */
 	error.Uptime = CyU3PGetTime();

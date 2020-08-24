@@ -40,7 +40,7 @@ CyU3PReturnStatus_t AdiI2CReadHandler(uint16_t RequestLength)
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint16_t bytesRead = 0;
 	uint32_t timeout, numBytes;
-	CyU3PI2cPreamble_t preamble = {};
+	CyU3PI2cPreamble_t preamble = {.buffer = {0}};
 
 	/* Get data from control endpoint */
 	status = CyU3PUsbGetEP0Data(RequestLength, USBBuffer, &bytesRead);
@@ -93,7 +93,7 @@ CyU3PReturnStatus_t AdiI2CWriteHandler(uint16_t RequestLength)
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint16_t bytesRead = 0;
 	uint32_t timeout, numBytes, index;
-	CyU3PI2cPreamble_t preamble = {};
+	CyU3PI2cPreamble_t preamble = {.buffer = {0}};
 	uint8_t * bufIndex;
 
 	/* Get data from control endpoint */

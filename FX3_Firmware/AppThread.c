@@ -273,6 +273,7 @@ static void AdiAppInit ()
  **/
 void AdiAppThreadEntry (uint32_t input)
 {
+	UNUSED(input);
 	/* Events to trigger from */
     uint32_t eventMask =
     		ADI_RT_STREAM_DONE |

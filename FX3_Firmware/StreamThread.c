@@ -46,6 +46,8 @@ extern uint8_t USBBuffer[4096];
  **/
 void AdiStreamThreadEntry(uint32_t input)
 {
+	UNUSED(input);
+
 	/* Set the event mask to the stream enable events */
 	uint32_t eventMask = ADI_GENERIC_STREAM_ENABLE|ADI_RT_STREAM_ENABLE|ADI_BURST_STREAM_ENABLE|ADI_TRANSFER_STREAM_ENABLE|ADI_I2C_STREAM_ENABLE;
 
@@ -191,7 +193,7 @@ static CyU3PReturnStatus_t AdiGenericStreamWork()
 	static uint32_t numBuffersRead;
 
 	/* Track the number of bytes read into the current DMA buffer */
-	static uint32_t byteCounter;
+	static int32_t byteCounter;
 
 	/* DMA buffer structure for the active buffer for the streaming DMA channel */
 	static CyU3PDmaBuffer_t StreamChannelBuffer;
@@ -240,7 +242,7 @@ static CyU3PReturnStatus_t AdiGenericStreamWork()
 			while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
 
 			/* transfer words */
-			AdiSpiTransferWord(MOSIPtr, MISOPtr, 2);
+			AdiSpiTransferWord(MOSIPtr, MISOPtr);
 
 			/* Set the pin timer to 0 */
 			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;
@@ -577,7 +579,7 @@ static CyU3PReturnStatus_t AdiTransferStreamWork()
 	static uint32_t numBuffersRead;
 
 	/* Track the number of bytes read into the current DMA buffer */
-	static uint32_t byteCounter;
+	static int32_t byteCounter;
 
 	/* DMA buffer structure for the active buffer for the streaming DMA channel */
 	static CyU3PDmaBuffer_t StreamChannelBuffer;
@@ -626,7 +628,7 @@ static CyU3PReturnStatus_t AdiTransferStreamWork()
 			while(!(GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status & CY_U3P_LPP_GPIO_INTR));
 
 			/* Transfer data */
-			AdiSpiTransferWord(MOSIData, bufPtr, bytesPerSpiTransfer);
+			AdiSpiTransferWord(MOSIData, bufPtr);
 
 			/* Set the pin timer to 0 */
 			GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].timer = 0;

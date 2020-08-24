@@ -674,9 +674,15 @@ CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
   *
   * @return A status code indicating the success of the function.
   *
+  * This function is currently unused. All event management to the host PC
+  * is performed through the control endpoint.
+  *
  **/
 void AdiBulkEndpointHandler(CyU3PUsbEpEvtType evType, CyU3PUSBSpeed_t usbSpeed, uint8_t epNum)
 {
+	UNUSED(evType);
+	UNUSED(usbSpeed);
+	UNUSED(epNum);
 }
 
 /**
@@ -691,6 +697,7 @@ void AdiBulkEndpointHandler(CyU3PUsbEpEvtType evType, CyU3PUSBSpeed_t usbSpeed, 
  **/
 void AdiUSBEventHandler (CyU3PUsbEventType_t evtype, uint16_t evdata)
 {
+	UNUSED(evdata);
     switch (evtype)
     {
         case CY_U3P_USB_EVENT_SETCONF:
@@ -728,6 +735,8 @@ void AdiUSBEventHandler (CyU3PUsbEventType_t evtype, uint16_t evdata)
  **/
 CyBool_t AdiLPMRequestHandler(CyU3PUsbLinkPowerMode link_mode)
 {
+	/* Dont care about link power mode, always stay high power */
+	UNUSED(link_mode);
     return CyTrue;
 }
 

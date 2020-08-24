@@ -443,6 +443,9 @@ void AdiUSBEventHandler(CyU3PUsbEventType_t evtype, uint16_t evdata);
 CyBool_t AdiLPMRequestHandler(CyU3PUsbLinkPowerMode link_mode);
 void AdiGPIOEventHandler(uint8_t gpioId);
 
+/** Function macro to squash unused variable warnings */
+#define UNUSED(x) (void)(x)
+
 #include <cyu3externcend.h>
 
 #endif

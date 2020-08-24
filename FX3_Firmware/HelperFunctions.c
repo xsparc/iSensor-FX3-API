@@ -279,6 +279,8 @@ void AdiConfigureWatchdog()
  **/
 static void WatchDogTimerCb(uint32_t nParam)
 {
+	/* Unused RTOS software timer arg */
+	UNUSED(nParam);
 	/* Reset the watchdog timer to the full period length */
 	if (FX3State.WatchDogTicks & 0x01)
 		FX3State.WatchDogTicks--;

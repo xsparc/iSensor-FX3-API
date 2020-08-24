@@ -71,7 +71,7 @@ static uint32_t SCLKLowTime;
   * all hardware has to be configured for correct operation, and free, before this function
   * can be called.
  **/
-void AdiSpiTransferWord(uint8_t *txBuf, uint8_t *rxBuf, uint32_t numBytes)
+void AdiSpiTransferWord(uint8_t *txBuf, uint8_t *rxBuf)
 {
     uint32_t temp, intrMask;
     uint8_t  wordLen;
@@ -211,7 +211,7 @@ CyU3PReturnStatus_t AdiRestartSpi()
 CyU3PReturnStatus_t AdiBitBangSpiHandler()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-	BitBangSpiConf config;
+	BitBangSpiConf config = {0};
 	uint32_t bitsPerTransfer;
 	uint32_t numTransfers;
 	uint32_t transferCounter;
@@ -614,7 +614,7 @@ static void AdiBitBangSpiTransferCPHA0(uint8_t * MOSI, uint8_t* MISO, uint32_t B
  **/
 CyU3PSpiConfig_t AdiGetSpiConfig()
 {
-	CyU3PSpiConfig_t conf;
+	CyU3PSpiConfig_t conf = {0};
 	uint32_t CONFIG;
 
 	AdiWaitForSpiNotBusy();
@@ -672,7 +672,7 @@ CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint8_t writeBuffer[4];
-	uint8_t readBuffer[4];
+	uint8_t readBuffer[4] = {0};
 	uint32_t transferSize;
 
 	/* populate the writebuffer */
@@ -770,7 +770,7 @@ CyU3PReturnStatus_t AdiWriteRegByte(uint16_t addr, uint8_t data)
 	uint8_t tempBuffer[2];
 	tempBuffer[0] = data;
 	tempBuffer[1] = 0x80 | addr;
-	status = CyU3PSpiTransmitWords (tempBuffer, 2);
+	status = CyU3PSpiTransmitWords(tempBuffer, 2);
 	/* Check that the transfer was successful and end function if failed */
 	if (status != CY_U3P_SUCCESS)
 	{
@@ -890,7 +890,6 @@ CyU3PReturnStatus_t AdiSpiResetFifo(CyBool_t isTx, CyBool_t isRx)
 CyU3PReturnStatus_t AdiGetSpiSettings()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-	uint8_t USBBuffer[23];
 	/* Clock first */
 	USBBuffer[0] = FX3State.SpiConfig.clock & 0xFF;
 	USBBuffer[1] = (FX3State.SpiConfig.clock & 0xFF00) >> 8;
