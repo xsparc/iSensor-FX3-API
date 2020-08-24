@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.8.4-pub</span>
+   &#160;<span id="projectnumber">v2.8.5-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -102,6 +102,9 @@ $(function() {
 </li>
 <li>ADI_CLEAR_FLASH_LOG
 : <a class="el" href="main_8h.html#a02dad386062f1d526e118990e5e0427d">main.h</a>
+</li>
+<li>ADI_DEBUG_TX_PIN
+: <a class="el" href="_pin_functions_8h.html#af380c456ce642f1f5e335f60bbf877d0">PinFunctions.h</a>
 </li>
 <li>ADI_DIO1_INTERRUPT_FLAG
 : <a class="el" href="_pin_functions_8h.html#aa6623739db18d9bb2dee91102002687e">PinFunctions.h</a>
@@ -345,8 +348,11 @@ $(function() {
 <li>AdiBitBangSpiSetup()
 : <a class="el" href="_spi_functions_8c.html#a5c92d373fe9f533d9ebd15566f994819">SpiFunctions.c</a>
 </li>
-<li>AdiBitBangSpiTransfer()
-: <a class="el" href="_spi_functions_8c.html#a8f12b3cf09a69d45c26f7ab291487d46">SpiFunctions.c</a>
+<li>AdiBitBangSpiTransferCPHA0()
+: <a class="el" href="_spi_functions_8c.html#a100e77cbde47863ea8a8b735ef24d6fe">SpiFunctions.c</a>
+</li>
+<li>AdiBitBangSpiTransferCPHA1()
+: <a class="el" href="_spi_functions_8c.html#aa0cb9b6e6e917a0a51d89e1b6738e8ff">SpiFunctions.c</a>
 </li>
 <li>AdiBulkEndpointHandler()
 : <a class="el" href="main_8c.html#a2407e9fc4f519060a25f5e6e79c9908e">main.c</a>
@@ -395,20 +401,20 @@ $(function() {
 , <a class="el" href="_flash_8h.html#a5bad5719afeea09ceec372cff5625e61">Flash.h</a>
 </li>
 <li>AdiFlashInit()
-: <a class="el" href="_flash_8c.html#a040d4f474a0b1a17b0bd9d4ff3b19cc2">Flash.c</a>
-, <a class="el" href="_flash_8h.html#a040d4f474a0b1a17b0bd9d4ff3b19cc2">Flash.h</a>
+: <a class="el" href="_flash_8h.html#a040d4f474a0b1a17b0bd9d4ff3b19cc2">Flash.h</a>
+, <a class="el" href="_flash_8c.html#a040d4f474a0b1a17b0bd9d4ff3b19cc2">Flash.c</a>
 </li>
 <li>AdiFlashRead()
-: <a class="el" href="_flash_8h.html#a763f7a7edcdf1e42756f7107ebe7121e">Flash.h</a>
-, <a class="el" href="_flash_8c.html#a763f7a7edcdf1e42756f7107ebe7121e">Flash.c</a>
+: <a class="el" href="_flash_8c.html#a763f7a7edcdf1e42756f7107ebe7121e">Flash.c</a>
+, <a class="el" href="_flash_8h.html#a763f7a7edcdf1e42756f7107ebe7121e">Flash.h</a>
 </li>
 <li>AdiFlashReadHandler()
-: <a class="el" href="_flash_8c.html#afb56618b5a5d3c6bdedcc29cac560463">Flash.c</a>
-, <a class="el" href="_flash_8h.html#afb56618b5a5d3c6bdedcc29cac560463">Flash.h</a>
+: <a class="el" href="_flash_8h.html#afb56618b5a5d3c6bdedcc29cac560463">Flash.h</a>
+, <a class="el" href="_flash_8c.html#afb56618b5a5d3c6bdedcc29cac560463">Flash.c</a>
 </li>
 <li>AdiFlashWrite()
-: <a class="el" href="_flash_8h.html#a32675702d0694877caab6548579ba64b">Flash.h</a>
-, <a class="el" href="_flash_8c.html#a32675702d0694877caab6548579ba64b">Flash.c</a>
+: <a class="el" href="_flash_8c.html#a32675702d0694877caab6548579ba64b">Flash.c</a>
+, <a class="el" href="_flash_8h.html#a32675702d0694877caab6548579ba64b">Flash.h</a>
 </li>
 <li>AdiGenericStreamFinished()
 : <a class="el" href="_stream_functions_8c.html#ab5f9f50936a8c62c3a47925ada503947">StreamFunctions.c</a>
@@ -422,24 +428,24 @@ $(function() {
 : <a class="el" href="_stream_thread_8c.html#a9dcce177a499e5348bb1d956af4839ca">StreamThread.c</a>
 </li>
 <li>AdiGetBoardPinInfo()
-: <a class="el" href="_pin_functions_8c.html#ae104145e5f2fc019be8b33b214ad593d">PinFunctions.c</a>
-, <a class="el" href="_pin_functions_8h.html#ae104145e5f2fc019be8b33b214ad593d">PinFunctions.h</a>
+: <a class="el" href="_pin_functions_8h.html#ae104145e5f2fc019be8b33b214ad593d">PinFunctions.h</a>
+, <a class="el" href="_pin_functions_8c.html#ae104145e5f2fc019be8b33b214ad593d">PinFunctions.c</a>
 </li>
 <li>AdiGetBuildDate()
-: <a class="el" href="_helper_functions_8h.html#afbef4a5a3f1c49fde1046e1cd1de4089">HelperFunctions.h</a>
-, <a class="el" href="_helper_functions_8c.html#afbef4a5a3f1c49fde1046e1cd1de4089">HelperFunctions.c</a>
+: <a class="el" href="_helper_functions_8c.html#afbef4a5a3f1c49fde1046e1cd1de4089">HelperFunctions.c</a>
+, <a class="el" href="_helper_functions_8h.html#afbef4a5a3f1c49fde1046e1cd1de4089">HelperFunctions.h</a>
 </li>
 <li>AdiGetFX3BoardType()
-: <a class="el" href="main_8c.html#a3c4e2d0388671969c6290eb9323066c2">main.c</a>
-, <a class="el" href="main_8h.html#a3c4e2d0388671969c6290eb9323066c2">main.h</a>
+: <a class="el" href="main_8h.html#a3c4e2d0388671969c6290eb9323066c2">main.h</a>
+, <a class="el" href="main_8c.html#a3c4e2d0388671969c6290eb9323066c2">main.c</a>
 </li>
 <li>AdiGetPinState()
-: <a class="el" href="_pin_functions_8h.html#a172c35546501defa48c86d06bcd11d28">PinFunctions.h</a>
-, <a class="el" href="_pin_functions_8c.html#a172c35546501defa48c86d06bcd11d28">PinFunctions.c</a>
+: <a class="el" href="_pin_functions_8c.html#a172c35546501defa48c86d06bcd11d28">PinFunctions.c</a>
+, <a class="el" href="_pin_functions_8h.html#a172c35546501defa48c86d06bcd11d28">PinFunctions.h</a>
 </li>
 <li>AdiGetSpiConfig()
-: <a class="el" href="_spi_functions_8c.html#ada9219b41ae6d89a54e2d37696c64a6b">SpiFunctions.c</a>
-, <a class="el" href="_spi_functions_8h.html#ada9219b41ae6d89a54e2d37696c64a6b">SpiFunctions.h</a>
+: <a class="el" href="_spi_functions_8h.html#ada9219b41ae6d89a54e2d37696c64a6b">SpiFunctions.h</a>
+, <a class="el" href="_spi_functions_8c.html#ada9219b41ae6d89a54e2d37696c64a6b">SpiFunctions.c</a>
 </li>
 <li>AdiGetSpiSettings()
 : <a class="el" href="_spi_functions_8c.html#a788c3bd92096e55b7fde4da3a0308f5c">SpiFunctions.c</a>
@@ -454,16 +460,16 @@ $(function() {
 , <a class="el" href="_i2c_functions_8h.html#a0fbdfdd8f2cc47ebebe8e16b2c97b6b5">I2cFunctions.h</a>
 </li>
 <li>AdiI2CReadHandler()
-: <a class="el" href="_i2c_functions_8c.html#a4301741a9964135084909fff045c0764">I2cFunctions.c</a>
-, <a class="el" href="_i2c_functions_8h.html#a4301741a9964135084909fff045c0764">I2cFunctions.h</a>
+: <a class="el" href="_i2c_functions_8h.html#a4301741a9964135084909fff045c0764">I2cFunctions.h</a>
+, <a class="el" href="_i2c_functions_8c.html#a4301741a9964135084909fff045c0764">I2cFunctions.c</a>
 </li>
 <li>AdiI2CStreamFinished()
-: <a class="el" href="_stream_functions_8h.html#abe91c220ffa7894a808b88eabb59f261">StreamFunctions.h</a>
-, <a class="el" href="_stream_functions_8c.html#abe91c220ffa7894a808b88eabb59f261">StreamFunctions.c</a>
+: <a class="el" href="_stream_functions_8c.html#abe91c220ffa7894a808b88eabb59f261">StreamFunctions.c</a>
+, <a class="el" href="_stream_functions_8h.html#abe91c220ffa7894a808b88eabb59f261">StreamFunctions.h</a>
 </li>
 <li>AdiI2CStreamStart()
-: <a class="el" href="_stream_functions_8c.html#a674b68725b4090cf8f1560d0d19bfc0b">StreamFunctions.c</a>
-, <a class="el" href="_stream_functions_8h.html#a674b68725b4090cf8f1560d0d19bfc0b">StreamFunctions.h</a>
+: <a class="el" href="_stream_functions_8h.html#a674b68725b4090cf8f1560d0d19bfc0b">StreamFunctions.h</a>
+, <a class="el" href="_stream_functions_8c.html#a674b68725b4090cf8f1560d0d19bfc0b">StreamFunctions.c</a>
 </li>
 <li>AdiI2CStreamWork()
 : <a class="el" href="_stream_thread_8c.html#a54288ca03b10afe4f2f5342424745dbd">StreamThread.c</a>
@@ -485,8 +491,8 @@ $(function() {
 , <a class="el" href="main_8h.html#a2863fcc5229cc4a18aedee7cda44ea9a">main.h</a>
 </li>
 <li>AdiMeasureBusyPulse()
-: <a class="el" href="_pin_functions_8h.html#a2b44440abc8a978f29eb87e5fc609dda">PinFunctions.h</a>
-, <a class="el" href="_pin_functions_8c.html#a2b44440abc8a978f29eb87e5fc609dda">PinFunctions.c</a>
+: <a class="el" href="_pin_functions_8c.html#a2b44440abc8a978f29eb87e5fc609dda">PinFunctions.c</a>
+, <a class="el" href="_pin_functions_8h.html#a2b44440abc8a978f29eb87e5fc609dda">PinFunctions.h</a>
 </li>
 <li>AdiMeasurePinDelay()
 : <a class="el" href="_pin_functions_8c.html#a0a74bae6a0d231d72f6c4f88f31ed982">PinFunctions.c</a>
@@ -517,8 +523,8 @@ $(function() {
 , <a class="el" href="_pin_functions_8h.html#aeb362851b7a8aaed044318ffb040ecd1">PinFunctions.h</a>
 </li>
 <li>AdiPulseWait()
-: <a class="el" href="_pin_functions_8c.html#a6d45b48894730356608880d0850cb452">PinFunctions.c</a>
-, <a class="el" href="_pin_functions_8h.html#a6d45b48894730356608880d0850cb452">PinFunctions.h</a>
+: <a class="el" href="_pin_functions_8h.html#a6d45b48894730356608880d0850cb452">PinFunctions.h</a>
+, <a class="el" href="_pin_functions_8c.html#a6d45b48894730356608880d0850cb452">PinFunctions.c</a>
 </li>
 <li>AdiReadRegBytes()
 : <a class="el" href="_spi_functions_8c.html#a57c7fc11222c453959c72eec1aa8afa2">SpiFunctions.c</a>
@@ -533,8 +539,8 @@ $(function() {
 , <a class="el" href="_pin_functions_8h.html#ae84d4ba67148ed3a892f467ca2fe5441">PinFunctions.h</a>
 </li>
 <li>AdiRealTimeStreamFinished()
-: <a class="el" href="_stream_functions_8c.html#a4c55d5495a47d0c63b1e193b9f704b71">StreamFunctions.c</a>
-, <a class="el" href="_stream_functions_8h.html#a4c55d5495a47d0c63b1e193b9f704b71">StreamFunctions.h</a>
+: <a class="el" href="_stream_functions_8h.html#a4c55d5495a47d0c63b1e193b9f704b71">StreamFunctions.h</a>
+, <a class="el" href="_stream_functions_8c.html#a4c55d5495a47d0c63b1e193b9f704b71">StreamFunctions.c</a>
 </li>
 <li>AdiRealTimeStreamStart()
 : <a class="el" href="_stream_functions_8c.html#a92f3cda6e0c22b4a59caa5a0f1c1bdd7">StreamFunctions.c</a>
@@ -548,52 +554,52 @@ $(function() {
 , <a class="el" href="_spi_functions_8c.html#a72c5344f6d7ce3000731bd79737be26d">SpiFunctions.c</a>
 </li>
 <li>AdiReturnBulkEndpointData()
-: <a class="el" href="_helper_functions_8h.html#aea5e62a753e1f2ca61c308c36e87b8ae">HelperFunctions.h</a>
-, <a class="el" href="_helper_functions_8c.html#aea5e62a753e1f2ca61c308c36e87b8ae">HelperFunctions.c</a>
+: <a class="el" href="_helper_functions_8c.html#aea5e62a753e1f2ca61c308c36e87b8ae">HelperFunctions.c</a>
+, <a class="el" href="_helper_functions_8h.html#aea5e62a753e1f2ca61c308c36e87b8ae">HelperFunctions.h</a>
 </li>
 <li>AdiSendStatus()
 : <a class="el" href="_helper_functions_8c.html#aa2fad3b6760da6ae249c937cc50e9a20">HelperFunctions.c</a>
 , <a class="el" href="_helper_functions_8h.html#aa2fad3b6760da6ae249c937cc50e9a20">HelperFunctions.h</a>
 </li>
 <li>AdiSetDutSupply()
-: <a class="el" href="_helper_functions_8c.html#abee5cedbbf5f529f17f4b504b6f7937c">HelperFunctions.c</a>
-, <a class="el" href="_helper_functions_8h.html#abee5cedbbf5f529f17f4b504b6f7937c">HelperFunctions.h</a>
+: <a class="el" href="_helper_functions_8h.html#abee5cedbbf5f529f17f4b504b6f7937c">HelperFunctions.h</a>
+, <a class="el" href="_helper_functions_8c.html#abee5cedbbf5f529f17f4b504b6f7937c">HelperFunctions.c</a>
 </li>
 <li>AdiSetPin()
 : <a class="el" href="_pin_functions_8c.html#aefc8f76636a3cadcb3d0f4121bfeb154">PinFunctions.c</a>
 , <a class="el" href="_pin_functions_8h.html#aefc8f76636a3cadcb3d0f4121bfeb154">PinFunctions.h</a>
 </li>
 <li>AdiSetPinResistor()
-: <a class="el" href="_pin_functions_8c.html#ade1f67847c31165327c6b5b0f1344858">PinFunctions.c</a>
-, <a class="el" href="_pin_functions_8h.html#ade1f67847c31165327c6b5b0f1344858">PinFunctions.h</a>
+: <a class="el" href="_pin_functions_8h.html#ade1f67847c31165327c6b5b0f1344858">PinFunctions.h</a>
+, <a class="el" href="_pin_functions_8c.html#ade1f67847c31165327c6b5b0f1344858">PinFunctions.c</a>
 </li>
 <li>AdiSetSpiWordLength()
-: <a class="el" href="_spi_functions_8h.html#a46fad4317c94479eaf852e5b22ea4d2a">SpiFunctions.h</a>
-, <a class="el" href="_spi_functions_8c.html#a46fad4317c94479eaf852e5b22ea4d2a">SpiFunctions.c</a>
+: <a class="el" href="_spi_functions_8c.html#a46fad4317c94479eaf852e5b22ea4d2a">SpiFunctions.c</a>
+, <a class="el" href="_spi_functions_8h.html#a46fad4317c94479eaf852e5b22ea4d2a">SpiFunctions.h</a>
 </li>
 <li>AdiSleepForMicroSeconds()
-: <a class="el" href="_helper_functions_8h.html#a4191f362f953cee5a7ad6170349760c0">HelperFunctions.h</a>
-, <a class="el" href="_helper_functions_8c.html#a4191f362f953cee5a7ad6170349760c0">HelperFunctions.c</a>
+: <a class="el" href="_helper_functions_8c.html#a4191f362f953cee5a7ad6170349760c0">HelperFunctions.c</a>
+, <a class="el" href="_helper_functions_8h.html#a4191f362f953cee5a7ad6170349760c0">HelperFunctions.h</a>
 </li>
 <li>AdiSpiResetFifo()
-: <a class="el" href="_spi_functions_8c.html#aa083144a6203655613621a89d8e809e1">SpiFunctions.c</a>
-, <a class="el" href="_spi_functions_8h.html#aa083144a6203655613621a89d8e809e1">SpiFunctions.h</a>
+: <a class="el" href="_spi_functions_8h.html#aa083144a6203655613621a89d8e809e1">SpiFunctions.h</a>
+, <a class="el" href="_spi_functions_8c.html#aa083144a6203655613621a89d8e809e1">SpiFunctions.c</a>
 </li>
 <li>AdiSpiTransferWord()
-: <a class="el" href="_spi_functions_8h.html#a5aa3ac86c50391ba42f141c2735dd068">SpiFunctions.h</a>
-, <a class="el" href="_spi_functions_8c.html#a5aa3ac86c50391ba42f141c2735dd068">SpiFunctions.c</a>
+: <a class="el" href="_spi_functions_8h.html#a1aafef1027cccda6ac0b87049e4e72af">SpiFunctions.h</a>
+, <a class="el" href="_spi_functions_8c.html#a1aafef1027cccda6ac0b87049e4e72af">SpiFunctions.c</a>
 </li>
 <li>AdiSpiUpdate()
 : <a class="el" href="_spi_functions_8h.html#aa715a94cb680f243e03c7d6d2d93503c">SpiFunctions.h</a>
 , <a class="el" href="_spi_functions_8c.html#aa715a94cb680f243e03c7d6d2d93503c">SpiFunctions.c</a>
 </li>
 <li>AdiStopAnyDataStream()
-: <a class="el" href="_stream_functions_8c.html#a7befd6a3d6f0785d3ee11f37bef66c54">StreamFunctions.c</a>
-, <a class="el" href="_stream_functions_8h.html#a7befd6a3d6f0785d3ee11f37bef66c54">StreamFunctions.h</a>
+: <a class="el" href="_stream_functions_8h.html#a7befd6a3d6f0785d3ee11f37bef66c54">StreamFunctions.h</a>
+, <a class="el" href="_stream_functions_8c.html#a7befd6a3d6f0785d3ee11f37bef66c54">StreamFunctions.c</a>
 </li>
 <li>AdiStreamThreadEntry()
-: <a class="el" href="_stream_thread_8h.html#a7705f9deff41eda1e466279dd336b5ef">StreamThread.h</a>
-, <a class="el" href="_stream_thread_8c.html#a7705f9deff41eda1e466279dd336b5ef">StreamThread.c</a>
+: <a class="el" href="_stream_thread_8c.html#a7705f9deff41eda1e466279dd336b5ef">StreamThread.c</a>
+, <a class="el" href="_stream_thread_8h.html#a7705f9deff41eda1e466279dd336b5ef">StreamThread.h</a>
 </li>
 <li>AdiTransferBytes()
 : <a class="el" href="_spi_functions_8c.html#a5254848805c4b8e74cbc8e94fa78307f">SpiFunctions.c</a>
@@ -615,15 +621,15 @@ $(function() {
 , <a class="el" href="main_8h.html#af455227720659b28782283fa0cafc5bc">main.h</a>
 </li>
 <li>AdiWaitForPin()
-: <a class="el" href="_pin_functions_8h.html#a2d30ded78cc1f92727b2bc2ec89ecf0b">PinFunctions.h</a>
-, <a class="el" href="_pin_functions_8c.html#a2d30ded78cc1f92727b2bc2ec89ecf0b">PinFunctions.c</a>
+: <a class="el" href="_pin_functions_8c.html#a2d30ded78cc1f92727b2bc2ec89ecf0b">PinFunctions.c</a>
+, <a class="el" href="_pin_functions_8h.html#a2d30ded78cc1f92727b2bc2ec89ecf0b">PinFunctions.h</a>
 </li>
 <li>AdiWaitForSpiNotBusy()
 : <a class="el" href="_spi_functions_8c.html#a076840fb075504de28bab8f97ec172d3">SpiFunctions.c</a>
 </li>
 <li>AdiWriteRegByte()
-: <a class="el" href="_spi_functions_8c.html#a09c91fa11a171844d59e40a4d0fee7cf">SpiFunctions.c</a>
-, <a class="el" href="_spi_functions_8h.html#a09c91fa11a171844d59e40a4d0fee7cf">SpiFunctions.h</a>
+: <a class="el" href="_spi_functions_8h.html#a09c91fa11a171844d59e40a4d0fee7cf">SpiFunctions.h</a>
+, <a class="el" href="_spi_functions_8c.html#a09c91fa11a171844d59e40a4d0fee7cf">SpiFunctions.c</a>
 </li>
 <li>AppThread
 : <a class="el" href="main_8c.html#a2743ce2dd1d6ca6a49d6efdca91934bb">main.c</a>

@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.8.4-pub</span>
+   &#160;<span id="projectnumber">v2.8.5-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -91,9 +91,9 @@ Data Structures</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a0871091ac711260182300d99d852b859"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a0871091ac711260182300d99d852b859">BITBANG_HALFCLOCK_OFFSET</a>&#160;&#160;&#160;8</td></tr>
+<tr class="memitem:a0871091ac711260182300d99d852b859"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a0871091ac711260182300d99d852b859">BITBANG_HALFCLOCK_OFFSET</a>&#160;&#160;&#160;5</td></tr>
 <tr class="separator:a0871091ac711260182300d99d852b859"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad28e6eae506528ecbccc2c5da8109977"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#ad28e6eae506528ecbccc2c5da8109977">STALL_COUNT_OFFSET</a>&#160;&#160;&#160;14</td></tr>
+<tr class="memitem:ad28e6eae506528ecbccc2c5da8109977"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#ad28e6eae506528ecbccc2c5da8109977">STALL_COUNT_OFFSET</a>&#160;&#160;&#160;10</td></tr>
 <tr class="separator:ad28e6eae506528ecbccc2c5da8109977"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
@@ -124,9 +124,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a72c5344f6d7ce3000731bd79737be26d"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a72c5344f6d7ce3000731bd79737be26d">AdiRestartSpi</a> ()</td></tr>
 <tr class="memdesc:a72c5344f6d7ce3000731bd79737be26d"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function restarts the SPI controller.  <a href="_spi_functions_8h.html#a72c5344f6d7ce3000731bd79737be26d">More...</a><br /></td></tr>
 <tr class="separator:a72c5344f6d7ce3000731bd79737be26d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5aa3ac86c50391ba42f141c2735dd068"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a5aa3ac86c50391ba42f141c2735dd068">AdiSpiTransferWord</a> (uint8_t *txBuf, uint8_t *rxBuf, uint32_t numBytes)</td></tr>
-<tr class="memdesc:a5aa3ac86c50391ba42f141c2735dd068"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bi-directional SPI transfer function, in register mode. Optimized for speed.  <a href="_spi_functions_8h.html#a5aa3ac86c50391ba42f141c2735dd068">More...</a><br /></td></tr>
-<tr class="separator:a5aa3ac86c50391ba42f141c2735dd068"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1aafef1027cccda6ac0b87049e4e72af"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a1aafef1027cccda6ac0b87049e4e72af">AdiSpiTransferWord</a> (uint8_t *txBuf, uint8_t *rxBuf)</td></tr>
+<tr class="memdesc:a1aafef1027cccda6ac0b87049e4e72af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bi-directional SPI transfer function, in register mode. Optimized for speed.  <a href="_spi_functions_8h.html#a1aafef1027cccda6ac0b87049e4e72af">More...</a><br /></td></tr>
+<tr class="separator:a1aafef1027cccda6ac0b87049e4e72af"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5254848805c4b8e74cbc8e94fa78307f"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a5254848805c4b8e74cbc8e94fa78307f">AdiTransferBytes</a> (uint32_t writeData)</td></tr>
 <tr class="memdesc:a5254848805c4b8e74cbc8e94fa78307f"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function performs a protocol agnostic SPI bi-directional SPI transfer of (1, 2, 4) bytes.  <a href="_spi_functions_8h.html#a5254848805c4b8e74cbc8e94fa78307f">More...</a><br /></td></tr>
 <tr class="separator:a5254848805c4b8e74cbc8e94fa78307f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -157,7 +157,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define BITBANG_HALFCLOCK_OFFSET&#160;&#160;&#160;8</td>
+          <td class="memname">#define BITBANG_HALFCLOCK_OFFSET&#160;&#160;&#160;5</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -172,7 +172,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define STALL_COUNT_OFFSET&#160;&#160;&#160;14</td>
+          <td class="memname">#define STALL_COUNT_OFFSET&#160;&#160;&#160;10</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -402,8 +402,8 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 </div>
 </div>
-<a id="a5aa3ac86c50391ba42f141c2735dd068"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5aa3ac86c50391ba42f141c2735dd068">&#9670;&nbsp;</a></span>AdiSpiTransferWord()</h2>
+<a id="a1aafef1027cccda6ac0b87049e4e72af"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1aafef1027cccda6ac0b87049e4e72af">&#9670;&nbsp;</a></span>AdiSpiTransferWord()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -418,13 +418,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">uint8_t *&#160;</td>
-          <td class="paramname"><em>rxBuf</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint32_t&#160;</td>
-          <td class="paramname"><em>numBytes</em>&#160;</td>
+          <td class="paramname"><em>rxBuf</em>&#160;</td>
         </tr>
         <tr>
           <td></td>

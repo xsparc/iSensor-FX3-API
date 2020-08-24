@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.8.4-pub</span>
+   &#160;<span id="projectnumber">v2.8.5-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -231,6 +231,8 @@ Macros</h2></td></tr>
 <tr class="separator:a0fac5b796fc50777f7b12839b5c4e3ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abde403a842e07c5ce4d65fe027b01dff"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#abde403a842e07c5ce4d65fe027b01dff">GCTL_WPU_CFG_UPPR</a>&#160;&#160;&#160;(*(uvint32_t *)(0xE0051020 + 0x4))</td></tr>
 <tr class="separator:abde403a842e07c5ce4d65fe027b01dff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a86d500a34c624c2cae56bc25a31b12f3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="main_8h.html#a86d500a34c624c2cae56bc25a31b12f3">UNUSED</a>(x)&#160;&#160;&#160;(void)(x)</td></tr>
+<tr class="separator:a86d500a34c624c2cae56bc25a31b12f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -1121,6 +1123,25 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 </div>
 </div>
+<a id="a86d500a34c624c2cae56bc25a31b12f3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a86d500a34c624c2cae56bc25a31b12f3">&#9670;&nbsp;</a></span>UNUSED</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define UNUSED</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">x</td><td>)</td>
+          <td>&#160;&#160;&#160;(void)(x)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Function macro to squash unused variable warnings </p>
+
+</div>
+</div>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a id="a092853ab57043b793be016a00193fdb7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a092853ab57043b793be016a00193fdb7">&#9670;&nbsp;</a></span>FX3BoardType</h2>
@@ -1327,7 +1348,8 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the function. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A status code indicating the success of the function.</dd></dl>
+<p>This function is currently unused. All event management to the host PC is performed through the control endpoint. </p>
 
 </div>
 </div>

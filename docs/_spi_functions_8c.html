@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.8.4-pub</span>
+   &#160;<span id="projectnumber">v2.8.5-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -82,18 +82,21 @@ $(function() {
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a8f12b3cf09a69d45c26f7ab291487d46"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a8f12b3cf09a69d45c26f7ab291487d46">AdiBitBangSpiTransfer</a> (uint8_t *MOSI, uint8_t *MISO, uint32_t BitCount, <a class="el" href="struct_bit_bang_spi_conf.html">BitBangSpiConf</a> config)</td></tr>
-<tr class="memdesc:a8f12b3cf09a69d45c26f7ab291487d46"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a single bit banged SPI transfer. Pins must already be configured as needed.  <a href="_spi_functions_8c.html#a8f12b3cf09a69d45c26f7ab291487d46">More...</a><br /></td></tr>
-<tr class="separator:a8f12b3cf09a69d45c26f7ab291487d46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a100e77cbde47863ea8a8b735ef24d6fe"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a100e77cbde47863ea8a8b735ef24d6fe">AdiBitBangSpiTransferCPHA0</a> (uint8_t *MOSI, uint8_t *MISO, uint32_t BitCount, <a class="el" href="struct_bit_bang_spi_conf.html">BitBangSpiConf</a> config)</td></tr>
+<tr class="memdesc:a100e77cbde47863ea8a8b735ef24d6fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a single bit banged SPI transfer. Pins must already be configured as needed.  <a href="_spi_functions_8c.html#a100e77cbde47863ea8a8b735ef24d6fe">More...</a><br /></td></tr>
+<tr class="separator:a100e77cbde47863ea8a8b735ef24d6fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0cb9b6e6e917a0a51d89e1b6738e8ff"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#aa0cb9b6e6e917a0a51d89e1b6738e8ff">AdiBitBangSpiTransferCPHA1</a> (uint8_t *MOSI, uint8_t *MISO, uint32_t BitCount, <a class="el" href="struct_bit_bang_spi_conf.html">BitBangSpiConf</a> config)</td></tr>
+<tr class="memdesc:aa0cb9b6e6e917a0a51d89e1b6738e8ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs a single bit banged SPI transfer. Pins must already be configured as needed.  <a href="_spi_functions_8c.html#aa0cb9b6e6e917a0a51d89e1b6738e8ff">More...</a><br /></td></tr>
+<tr class="separator:aa0cb9b6e6e917a0a51d89e1b6738e8ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5c92d373fe9f533d9ebd15566f994819"><td class="memItemLeft" align="right" valign="top">static CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a5c92d373fe9f533d9ebd15566f994819">AdiBitBangSpiSetup</a> (<a class="el" href="struct_bit_bang_spi_conf.html">BitBangSpiConf</a> config)</td></tr>
 <tr class="memdesc:a5c92d373fe9f533d9ebd15566f994819"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configures all pins and timers needed to bitbang a SPI connection.  <a href="_spi_functions_8c.html#a5c92d373fe9f533d9ebd15566f994819">More...</a><br /></td></tr>
 <tr class="separator:a5c92d373fe9f533d9ebd15566f994819"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a076840fb075504de28bab8f97ec172d3"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a076840fb075504de28bab8f97ec172d3">AdiWaitForSpiNotBusy</a> ()</td></tr>
 <tr class="memdesc:a076840fb075504de28bab8f97ec172d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Waits for the SPI controller busy bit to be not set.  <a href="_spi_functions_8c.html#a076840fb075504de28bab8f97ec172d3">More...</a><br /></td></tr>
 <tr class="separator:a076840fb075504de28bab8f97ec172d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5aa3ac86c50391ba42f141c2735dd068"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a5aa3ac86c50391ba42f141c2735dd068">AdiSpiTransferWord</a> (uint8_t *txBuf, uint8_t *rxBuf, uint32_t numBytes)</td></tr>
-<tr class="memdesc:a5aa3ac86c50391ba42f141c2735dd068"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bi-directional SPI transfer function, in register mode. Optimized for speed.  <a href="_spi_functions_8c.html#a5aa3ac86c50391ba42f141c2735dd068">More...</a><br /></td></tr>
-<tr class="separator:a5aa3ac86c50391ba42f141c2735dd068"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1aafef1027cccda6ac0b87049e4e72af"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a1aafef1027cccda6ac0b87049e4e72af">AdiSpiTransferWord</a> (uint8_t *txBuf, uint8_t *rxBuf)</td></tr>
+<tr class="memdesc:a1aafef1027cccda6ac0b87049e4e72af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bi-directional SPI transfer function, in register mode. Optimized for speed.  <a href="_spi_functions_8c.html#a1aafef1027cccda6ac0b87049e4e72af">More...</a><br /></td></tr>
+<tr class="separator:a1aafef1027cccda6ac0b87049e4e72af"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a72c5344f6d7ce3000731bd79737be26d"><td class="memItemLeft" align="right" valign="top">CyU3PReturnStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a72c5344f6d7ce3000731bd79737be26d">AdiRestartSpi</a> ()</td></tr>
 <tr class="memdesc:a72c5344f6d7ce3000731bd79737be26d"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function restarts the SPI controller.  <a href="_spi_functions_8c.html#a72c5344f6d7ce3000731bd79737be26d">More...</a><br /></td></tr>
 <tr class="separator:a72c5344f6d7ce3000731bd79737be26d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -156,6 +159,10 @@ uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>BulkBuffer</b> [12
 <tr class="separator:a3f5779ac2868e133a5b3540ef1b6e844"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8a3f02833329ca1f4fe4da615136ebd7"><td class="memItemLeft" align="right" valign="top">static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a8a3f02833329ca1f4fe4da615136ebd7">PinLowMask</a></td></tr>
 <tr class="separator:a8a3f02833329ca1f4fe4da615136ebd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab1da8a6ad56d5194ed561a1369495008"><td class="memItemLeft" align="right" valign="top">static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#ab1da8a6ad56d5194ed561a1369495008">SCLKActiveMask</a></td></tr>
+<tr class="separator:ab1da8a6ad56d5194ed561a1369495008"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ac7786967a9e4b560588bec3af7a0a4"><td class="memItemLeft" align="right" valign="top">static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a0ac7786967a9e4b560588bec3af7a0a4">SCLKInactiveMask</a></td></tr>
+<tr class="separator:a0ac7786967a9e4b560588bec3af7a0a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a48c4483a0a666667d0f0257e9cf2bdfa"><td class="memItemLeft" align="right" valign="top">static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a48c4483a0a666667d0f0257e9cf2bdfa">MOSIMask</a></td></tr>
 <tr class="separator:a48c4483a0a666667d0f0257e9cf2bdfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c062728869f5d1364523836042c079b"><td class="memItemLeft" align="right" valign="top">static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8c.html#a1c062728869f5d1364523836042c079b">SCLKLowTime</a></td></tr>
@@ -227,8 +234,8 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 </div>
 </div>
-<a id="a8f12b3cf09a69d45c26f7ab291487d46"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8f12b3cf09a69d45c26f7ab291487d46">&#9670;&nbsp;</a></span>AdiBitBangSpiTransfer()</h2>
+<a id="a100e77cbde47863ea8a8b735ef24d6fe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a100e77cbde47863ea8a8b735ef24d6fe">&#9670;&nbsp;</a></span>AdiBitBangSpiTransferCPHA0()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -237,7 +244,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void AdiBitBangSpiTransfer </td>
+          <td class="memname">static void AdiBitBangSpiTransferCPHA0 </td>
           <td>(</td>
           <td class="paramtype">uint8_t *&#160;</td>
           <td class="paramname"><em>MOSI</em>, </td>
@@ -283,7 +290,67 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
   </table>
   </dd>
 </dl>
-<p>This function allows a user to use any pins on the FX3 as a low speed SPI master. The API provided is similar to the Cypress API for the hardware SPI. </p>
+<p>This function allows a user to use any pins on the FX3 as a low speed SPI master. The API provided is similar to the Cypress API for the hardware SPI. This function is fixed to operate in CPHA mode 0 (sample data on idle-active edge, update data on active-idle edge). </p>
+
+</div>
+</div>
+<a id="aa0cb9b6e6e917a0a51d89e1b6738e8ff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa0cb9b6e6e917a0a51d89e1b6738e8ff">&#9670;&nbsp;</a></span>AdiBitBangSpiTransferCPHA1()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void AdiBitBangSpiTransferCPHA1 </td>
+          <td>(</td>
+          <td class="paramtype">uint8_t *&#160;</td>
+          <td class="paramname"><em>MOSI</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t *&#160;</td>
+          <td class="paramname"><em>MISO</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>BitCount</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="struct_bit_bang_spi_conf.html">BitBangSpiConf</a>&#160;</td>
+          <td class="paramname"><em>config</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Performs a single bit banged SPI transfer. Pins must already be configured as needed. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">MOSI</td><td>A pointer to the master out data buffer. This data will be transmitted MSB first, over the MOSI line in config.</td></tr>
+    <tr><td class="paramname">MISO</td><td>A pointer to the data receive (rx) buffer. The data received from a slave will be placed here.</td></tr>
+    <tr><td class="paramname">BitCount</td><td>The number of bits to transfer.</td></tr>
+    <tr><td class="paramname">config</td><td>The configuration settings to use for the transfer.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>This function allows a user to use any pins on the FX3 as a low speed SPI master. The API provided is similar to the Cypress API for the hardware SPI. This function is fixed to operate in CPHA mode 1 (update data on idle-active edge, sample on active-idle edge). </p>
 
 </div>
 </div>
@@ -471,8 +538,8 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 
 </div>
 </div>
-<a id="a5aa3ac86c50391ba42f141c2735dd068"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5aa3ac86c50391ba42f141c2735dd068">&#9670;&nbsp;</a></span>AdiSpiTransferWord()</h2>
+<a id="a1aafef1027cccda6ac0b87049e4e72af"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1aafef1027cccda6ac0b87049e4e72af">&#9670;&nbsp;</a></span>AdiSpiTransferWord()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -487,13 +554,7 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">uint8_t *&#160;</td>
-          <td class="paramname"><em>rxBuf</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint32_t&#160;</td>
-          <td class="paramname"><em>numBytes</em>&#160;</td>
+          <td class="paramname"><em>rxBuf</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -831,6 +892,52 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
 </table>
 </div><div class="memdoc">
 <p>Mask to set GPIO pin low </p>
+
+</div>
+</div>
+<a id="ab1da8a6ad56d5194ed561a1369495008"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab1da8a6ad56d5194ed561a1369495008">&#9670;&nbsp;</a></span>SCLKActiveMask</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t SCLKActiveMask</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>SCLK active setting. Based on CPOL </p>
+
+</div>
+</div>
+<a id="a0ac7786967a9e4b560588bec3af7a0a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ac7786967a9e4b560588bec3af7a0a4">&#9670;&nbsp;</a></span>SCLKInactiveMask</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t SCLKInactiveMask</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>SCLK idle setting. Based on CPOL </p>
 
 </div>
 </div>
