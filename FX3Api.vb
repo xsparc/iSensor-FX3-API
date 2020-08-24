@@ -333,6 +333,7 @@ Public Class FX3Connection
         m_i2cbitrate = 100000
         m_i2cRetryCount = 1
 
+        'Dut supply at 3.3V (should not be risky)
         m_DutSupplyMode = DutVoltage.On3_3Volts
 
     End Sub

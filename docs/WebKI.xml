@@ -89,6 +89,8 @@
   </HelpKINode>
   <HelpKINode Title="BitBangSpiConfig property" Url="html/675f80fc-8e2c-30c8-a659-17dfe8e1ead5.htm" />
   <HelpKINode Title="BitBangSpiConfig.BitBangSpiConfig constructor" Url="html/3209f8d8-a53d-9729-6cfd-2dc5d3360b6f.htm" />
+  <HelpKINode Title="BitBangSpiConfig.CPHA field" Url="html/1071540f-81ee-c439-e7b6-d06cd2ee620f.htm" />
+  <HelpKINode Title="BitBangSpiConfig.CPOL field" Url="html/797a1c4a-04fe-e618-1cd8-bf850655a7f2.htm" />
   <HelpKINode Title="BitBangSpiConfig.CS field" Url="html/7355ce14-34a2-c91e-f625-acce06d91e9f.htm" />
   <HelpKINode Title="BitBangSpiConfig.CSLagTicks field" Url="html/454f6627-c6ee-f68f-3a23-39d70f66b8bd.htm" />
   <HelpKINode Title="BitBangSpiConfig.CSLeadTicks field" Url="html/e53474ad-dbf4-d4c2-e846-34ebbf3ae6f5.htm" />
@@ -128,9 +130,11 @@
   <HelpKINode Title="Connect method" Url="html/4b6e5cd7-b945-45e2-6275-936e9b9b4a5e.htm" />
   <HelpKINode Title="Contains method" Url="html/dca41037-07eb-5adf-2647-4454d2ce1656.htm" />
   <HelpKINode Title="ConvertBufferDataToU32 method" Url="html/df849baa-d713-90d6-cba3-0ddf2698f98f.htm" />
+  <HelpKINode Title="CPHA field" Url="html/1071540f-81ee-c439-e7b6-d06cd2ee620f.htm" />
   <HelpKINode Title="Cpha field" Url="html/4103f791-9bbd-c688-3fbb-3d17bde9f6c2.htm" />
   <HelpKINode Title="Cpha property" Url="html/511c950b-5384-4fba-8694-f6ce93a52bf3.htm" />
   <HelpKINode Title="Cpol field" Url="html/7fdb8b3e-91d8-f219-093b-e602c2b7fcb3.htm" />
+  <HelpKINode Title="CPOL field" Url="html/797a1c4a-04fe-e618-1cd8-bf850655a7f2.htm" />
   <HelpKINode Title="Cpol property" Url="html/4698f39a-d93d-39ec-b638-b0df87040103.htm" />
   <HelpKINode Title="CrcFirstIndex property" Url="html/0fc32cde-f9e3-2b87-04e5-7873c3d20e80.htm" />
   <HelpKINode Title="CrcLastIndex property" Url="html/53ac9cb5-acc8-f8d9-8bc3-0b7be4a4e7d1.htm" />
@@ -569,8 +573,8 @@
   <HelpKINode Title="IsLSBFirst property" Url="html/f37c14dd-441b-f398-e41c-1f80b6033194.htm" />
   <HelpKINode Title="ISpi32StopStream method" Url="html/52a3102f-a983-352b-9eb6-7477399b0856.htm" />
   <HelpKINode Title="isPWMPin method" Url="html/fe7d19f7-40da-11f1-de8d-42c07116628f.htm" />
-  <HelpKINode Title="LegacyIMU enumeration member" Url="html/a664dc00-67b0-e1cf-2c27-cb6c9cf0cba5.htm" />
   <HelpKINode Title="LegacyImu enumeration member" Url="html/5ccc3358-a671-dc2c-bb84-dbd123d82e9b.htm" />
+  <HelpKINode Title="LegacyIMU enumeration member" Url="html/a664dc00-67b0-e1cf-2c27-cb6c9cf0cba5.htm" />
   <HelpKINode Title="Line field" Url="html/55ac562f-ad43-6646-2e68-a11c063203ab.htm" />
   <HelpKINode Title="MeasureBusyPulse method" Url="html/b416fddf-98f9-01ef-1d88-f71bce9cf5e2.htm" />
   <HelpKINode Title="MeasurePinDelay method" Url="html/a3e67348-5853-6f1c-97d8-3e79b9328142.htm" />
