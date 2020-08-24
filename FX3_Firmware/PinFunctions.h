@@ -36,7 +36,7 @@ typedef enum PinResistorSetting
 
 }PinResistorSetting;
 
-/** Enum of possible states for GPIO input stage */
+/** Enum of possible states for GPIO input pin */
 typedef enum PinState
 {
 	/** Pin is logic low */
@@ -87,7 +87,7 @@ void AdiGetBoardPinInfo(uint8_t * outBuf);
 /** Flash write enable pin. Set to 0 to enable flash write, 1 to disable flash write */
 #define ADI_FLASH_WRITE_ENABLE_PIN				(35)
 
-/* Uart Tx Pin (for debug) */
+/** Uart Tx Pin (for debug console) */
 #define ADI_DEBUG_TX_PIN						(48)
 
 /** I2C clock pin */
