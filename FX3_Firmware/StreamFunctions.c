@@ -78,10 +78,10 @@ CyU3PReturnStatus_t AdiStopAnyDataStream()
 	uint32_t eventMask = ADI_GENERIC_STREAM_ENABLE|ADI_RT_STREAM_ENABLE|ADI_BURST_STREAM_ENABLE|ADI_TRANSFER_STREAM_ENABLE|ADI_I2C_STREAM_ENABLE;
 
 	/* Variable to receive the event arguments into */
-	uint32_t eventFlags;
+	uint32_t eventFlags = 0;
 
 	/* Check if any streams are enabled */
-	CyU3PEventGet (&EventHandler, eventMask, CYU3P_EVENT_OR, &eventFlags, CYU3P_NO_WAIT);
+	CyU3PEventGet(&EventHandler, eventMask, CYU3P_EVENT_OR, &eventFlags, CYU3P_NO_WAIT);
 
 	/* If no events are set eventFlags will be 0 */
 	if(eventFlags == 0)
@@ -898,6 +898,7 @@ CyU3PReturnStatus_t AdiBurstStreamFinished()
 CyU3PReturnStatus_t AdiGenericStreamStart()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+	CyU3PDmaChannelConfig_t dmaConfig = {0};
 
 	/* Disable VBUS ISR */
 	CyU3PVicDisableInt(CY_U3P_VIC_GCTL_PWR_VECTOR);
@@ -959,8 +960,6 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 	}
 
 	/* Configure the StreamingChannel DMA (SPI to PC) */
-	CyU3PDmaChannelConfig_t dmaConfig;
-	CyU3PMemSet ((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
 	dmaConfig.size 				= FX3State.UsbBufferSize;
 	dmaConfig.count 			= 16;
 	dmaConfig.prodSckId 		= CY_U3P_CPU_SOCKET_PROD;
@@ -973,6 +972,8 @@ CyU3PReturnStatus_t AdiGenericStreamStart()
 	dmaConfig.cb            	= NULL;
 	dmaConfig.prodAvailCount	= 0;
 
+	/* Destroy then create channel */
+	CyU3PDmaChannelDestroy(&StreamingChannel);
 	status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_MANUAL_OUT, &dmaConfig);
 	if(status != CY_U3P_SUCCESS)
 	{

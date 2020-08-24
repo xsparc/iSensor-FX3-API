@@ -180,23 +180,26 @@ static CyU3PReturnStatus_t AdiI2CStreamWork()
  **/
 static CyU3PReturnStatus_t AdiGenericStreamWork()
 {
-	uint16_t regIndex, captureCount;
-	CyU3PReturnStatus_t status;
+	/* Track the number of buffers read */
+	static uint32_t numBuffersRead = 0;
+
+	/* Track the number of bytes read into the current DMA buffer */
+	static int32_t byteCounter = 0;
 
 	/* Track the current position within the MISO (streaming DMA) buffer*/
 	static uint8_t *MISOPtr;
 
-	/* track the current position within the MOSI (reglist) buffer */
-	uint8_t * MOSIPtr;
-
-	/* Track the number of buffers read */
-	static uint32_t numBuffersRead;
-
-	/* Track the number of bytes read into the current DMA buffer */
-	static int32_t byteCounter;
-
 	/* DMA buffer structure for the active buffer for the streaming DMA channel */
-	static CyU3PDmaBuffer_t StreamChannelBuffer;
+	static CyU3PDmaBuffer_t StreamChannelBuffer = {0};
+
+	/* Index variables */
+	uint16_t regIndex, captureCount;
+
+	/* Operation status */
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+
+	/* track the current position within the MOSI (reglist) buffer */
+	uint8_t* MOSIPtr;
 
 	/* If the stream channel buffer has not been set, get a new buffer */
 	if (MISOPtr == 0)
@@ -296,7 +299,7 @@ static CyU3PReturnStatus_t AdiGenericStreamWork()
 	}
 
 	/* Check to see if we've captured enough buffers or if we were asked to stop data capture early */
-	if ((numBuffersRead >= (StreamThreadState.NumBuffers - 1)) || KillStreamEarly)
+	if((numBuffersRead >= (StreamThreadState.NumBuffers - 1)) || KillStreamEarly)
 	{
 		/* Reset values */
 		numBuffersRead = 0;
@@ -364,16 +367,15 @@ static CyU3PReturnStatus_t AdiGenericStreamWork()
  **/
 static CyU3PReturnStatus_t AdiRealTimeStreamWork()
 {
-	CyU3PReturnStatus_t status;
-	CyBool_t interruptTriggered;
-
 	/* Static variables persist through function calls, are initialized to 0 */
-	static uint32_t numFramesCaptured;
+	static uint32_t numFramesCaptured = 0;
+
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+	CyBool_t interruptTriggered = CyFalse;
 
 	/* Clear GPIO interrupts */
 	GPIO->lpp_gpio_simple[FX3State.DrPin] |= CY_U3P_LPP_GPIO_INTR;
 	/* Wait for GPIO interrupt flag to be set and pin to be positive (interrupt configured for positive edge) */
-	interruptTriggered = CyFalse;
 	while(!interruptTriggered)
 	{
 		interruptTriggered = ((CyBool_t)(GPIO->lpp_gpio_intr0 & (1 << FX3State.DrPin)) && (CyBool_t)(GPIO->lpp_gpio_simple[FX3State.DrPin] & CY_U3P_LPP_GPIO_IN_VALUE));
@@ -452,11 +454,11 @@ static CyU3PReturnStatus_t AdiRealTimeStreamWork()
  **/
 static CyU3PReturnStatus_t AdiBurstStreamWork()
 {
-	CyU3PReturnStatus_t status;
-	CyBool_t interruptTriggered;
-
 	/* Static variables persist through function calls, are initialized to 0*/
-	static uint32_t numBuffersRead;
+	static uint32_t numBuffersRead = 0;
+
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+	CyBool_t interruptTriggered;
 
 #ifdef VERBOSE_MODE
 		CyU3PDebugPrint (4, "Burst stream thread entered.\r\n");
@@ -551,14 +553,25 @@ static CyU3PReturnStatus_t AdiBurstStreamWork()
   * @return A status code representing the success of the transfer stream operation.
   *
   * Transfer stream is used to implement protocol agnostic SPI transfers. This is useful for sensors which
-  * implement a non-standard SPI protocol (CRC/Metadata/Weird bit lengths, etc)
+  * implement a non-standard SPI protocol (CRC/Metadata/Weird bit lengths, etc). The MOSI data to be
+  * sent is stored in USBBuffer[14 ...] prior to this function being called
  **/
 static CyU3PReturnStatus_t AdiTransferStreamWork()
 {
-	/* The MOSI data is stored in USBBuffer[14 ...] prior to this function being called */
+	/* Track the current position within the DMA buffer*/
+	static uint8_t *bufPtr = 0;
+
+	/* Track the number of buffers read */
+	static uint32_t numBuffersRead = 0;
+
+	/* Track the number of bytes read into the current DMA buffer */
+	static int32_t byteCounter = 0;
+
+	/* DMA buffer structure for the active buffer for the streaming DMA channel */
+	static CyU3PDmaBuffer_t StreamChannelBuffer = {0};
 
 	/* Return status code */
-	CyU3PReturnStatus_t status;
+	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
 	/* Track index within the USBBuffer */
 	uint16_t MOSIDataCount;
@@ -572,20 +585,8 @@ static CyU3PReturnStatus_t AdiTransferStreamWork()
 	/* array to hold the MOSI data */
 	uint8_t* MOSIData;
 
-	/* Track the current position within the DMA buffer*/
-	static uint8_t *bufPtr;
-
-	/* Track the number of buffers read */
-	static uint32_t numBuffersRead;
-
-	/* Track the number of bytes read into the current DMA buffer */
-	static int32_t byteCounter;
-
-	/* DMA buffer structure for the active buffer for the streaming DMA channel */
-	static CyU3PDmaBuffer_t StreamChannelBuffer;
-
 	/* If the stream channel buffer has not been set, get a new buffer */
-	if (bufPtr == 0)
+	if(bufPtr == 0)
 	{
 		/* get the buffer */
 		status = CyU3PDmaChannelGetBuffer (&StreamingChannel, &StreamChannelBuffer, CYU3P_WAIT_FOREVER);

@@ -38,7 +38,7 @@ extern BoardState FX3State;
 CyU3PReturnStatus_t AdiI2CReadHandler(uint16_t RequestLength)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-	uint16_t bytesRead = 0;
+	uint16_t bytesRead;
 	uint32_t timeout, numBytes;
 	CyU3PI2cPreamble_t preamble = {.buffer = {0}};
 

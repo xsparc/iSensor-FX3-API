@@ -41,7 +41,7 @@ extern char serial_number[];
  **/
 static void AdiDebugInit()
 {
-    CyU3PUartConfig_t uartConfig;
+    CyU3PUartConfig_t uartConfig = {0};
     CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
     /* Initialize the UART for printing debug messages */

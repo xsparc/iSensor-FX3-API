@@ -51,32 +51,32 @@
  */
 
 /** RTOS thread handle for continuous data streaming functionality */
-CyU3PThread StreamThread;
+CyU3PThread StreamThread = {0};
 
 /** RTOS thread handle for the main application */
-CyU3PThread AppThread;
+CyU3PThread AppThread = {0};
 
 /** ADI event structure */
-CyU3PEvent EventHandler;
+CyU3PEvent EventHandler = {0};
 
 /** ADI GPIO event structure (RTOS handles GPIO ISR) */
-CyU3PEvent GpioHandler;
+CyU3PEvent GpioHandler = {0};
 
 /*
  * DMA Channel Definitions
  */
 
 /** DMA channel for real time streaming (SPI to USB BULK-IN 0x81) */
-CyU3PDmaChannel StreamingChannel;
+CyU3PDmaChannel StreamingChannel = {0};
 
 /** DMA channel for BULK-OUT endpoint 0x1 (PC to FX3) */
-CyU3PDmaChannel ChannelFromPC;
+CyU3PDmaChannel ChannelFromPC = {0};
 
 /** DMA channel for BULK-IN endpoint 0x82 (FX3 to PC) */
-CyU3PDmaChannel ChannelToPC;
+CyU3PDmaChannel ChannelToPC = {0};
 
 /** DMA channel for reading a memory location into a DMA consumer */
-CyU3PDmaChannel MemoryToSPI;
+CyU3PDmaChannel MemoryToSPI = {0};
 
 /*
  * Buffer Definitions
@@ -89,10 +89,10 @@ uint8_t USBBuffer[4096] __attribute__((aligned(32)));
 uint8_t BulkBuffer[12288] __attribute__((aligned(32)));
 
 /** DMA buffer structure for output buffer */
-CyU3PDmaBuffer_t ManualDMABuffer;
+CyU3PDmaBuffer_t ManualDMABuffer = {0};
 
 /** DMA buffer structure for SPI transmit */
-CyU3PDmaBuffer_t SpiDmaBuffer;
+CyU3PDmaBuffer_t SpiDmaBuffer = {0};
 
 /*
  * Application constants
@@ -119,7 +119,7 @@ BoardState FX3State;
 volatile CyBool_t KillStreamEarly = CyFalse;
 
 /** Struct of data used to synchronize the data streaming / app threads */
-StreamState StreamThreadState;
+StreamState StreamThreadState = {0};
 
 /**
   * @brief This is the main entry point function for the iSensor FX3 application firmware.
