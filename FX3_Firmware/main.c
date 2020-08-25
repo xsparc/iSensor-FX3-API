@@ -83,10 +83,10 @@ CyU3PDmaChannel MemoryToSPI = {0};
  */
 
 /** 4KB USB Data buffer. Used to receive data from the control endpoint */
-uint8_t USBBuffer[4096] __attribute__((aligned(32)));
+uint8_t USBBuffer[4096] __attribute__((aligned(32))) = {0};
 
 /** 12KB Generic bulk buffer. Used for when data is manually sent to or received from the PC via bulk endpoints. */
-uint8_t BulkBuffer[12288] __attribute__((aligned(32)));
+uint8_t BulkBuffer[12288] __attribute__((aligned(32))) = {0};
 
 /** DMA buffer structure for output buffer */
 CyU3PDmaBuffer_t ManualDMABuffer = {0};
@@ -109,7 +109,7 @@ char serial_number[] __attribute__((aligned(32))) = {'0',0x00,'0',0x00,'0',0x00,
  */
 
 /** Struct. which stores all run time configurable FX3 settings */
-BoardState FX3State;
+BoardState FX3State = {.SpiConfig = {0}, .PinMap = {0}};
 
 /*
  * Thread synchronization data
@@ -132,9 +132,9 @@ StreamState StreamThreadState = {0};
  **/
 int main (void)
 {
-    CyU3PIoMatrixConfig_t io_cfg;
+    CyU3PIoMatrixConfig_t io_cfg = {0};
     CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-    CyU3PSysClockConfig_t sysclk_cfg;
+    CyU3PSysClockConfig_t sysclk_cfg = {0};
 
     /* Configure system clocks */
     sysclk_cfg.setSysClk400 = CyTrue;
@@ -208,13 +208,13 @@ handle_fatal_error:
   * of custom vendor commands. These vendor commands must be issued by the host PC. To ensure consistent behavior, all vendor commands
   * should be issued using a function call in the FX3API. The FX3 API manages the control endpoint parameters to ensure valid behavior
   * in all cases.
+  *
+  * Fast enumeration is used. Only requests addressed to the interface, class,
+  * vendor and unknown control requests are received by this function.
  **/
 CyBool_t AdiControlEndpointHandler (uint32_t setupdat0, uint32_t setupdat1)
 {
-    /* Fast enumeration is used. Only requests addressed to the interface, class,
-     * vendor and unknown control requests are received by this function. */
-
-    uint8_t  bRequest, bReqType;
+	uint8_t  bRequest, bReqType;
     uint8_t  bType, bTarget;
     uint16_t wValue, wIndex, wLength;
     CyBool_t isHandled = CyFalse;
@@ -756,7 +756,7 @@ void AdiGPIOEventHandler(uint8_t gpioId)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	CyBool_t gpioValue = CyFalse;
-	status = CyU3PGpioGetValue (gpioId, &gpioValue);
+	status = CyU3PGpioGetValue(gpioId, &gpioValue);
     if (status == CY_U3P_SUCCESS)
     {
     	/* Read the pin ID that generated the event and set the appropriate flag */
@@ -798,14 +798,14 @@ void AdiGPIOEventHandler(uint8_t gpioId)
   * stage iSensors FX3 bootloader. Could probably do something more intelligent, but at least this
   * approach will not lock up the FX3 after a failed boot.
  **/
-void AdiAppErrorHandler (CyU3PReturnStatus_t status)
+void AdiAppErrorHandler(CyU3PReturnStatus_t status)
 {
     /* Application failed with the error code status */
 	CyU3PDebugPrint (4, "Application failed with fatal error! Error code: 0x%x\r\n", status);
 
 	for(int i = 5; i > 0; i--)
 	{
-		CyU3PDebugPrint (4, "Rebooting in %d seconds...\r\n", i);
+		CyU3PDebugPrint (4, "Rebooting in %d seconds...\r\n", (i - 1));
 		/* Thread sleep : 1000 ms */
 		CyU3PThreadSleep(1000);
 	}
@@ -881,12 +881,22 @@ void AdiAppStop()
   * The application startup process configures all GPIO and timers used by the firmware, as
   * well as the USB endpoints, DMA controller, and SPI hardware. After all configuration is
   * performed, the AppActive flag is set to true.
+  *
+  * GPIO Clock configuration:
+  * SYS_CLK = 403.2MHz
+  * GPIO Fast Clock = SYS_CLK / 2 -> 201.6MHz
+  * GPIO Slow Clock (Used for 10MHz timer) = Fast Clock / 20 -> 10.08MHz
+  * Simple GPIO Sample Clock = Fast Clock / 2 -> 100.8MHz
  **/
 void AdiAppStart()
 {
 	CyU3PUSBSpeed_t usbSpeed = CyU3PUsbGetSpeed();
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-	CyU3PGpioSimpleConfig_t gpioConfig;
+	CyU3PGpioSimpleConfig_t gpioConfig = {0};
+	CyU3PGpioClock_t gpioClock = {0};
+	CyU3PGpioComplexConfig_t gpioComplexConfig = {0};
+	CyU3PEpConfig_t epConfig = {0};
+	CyU3PDmaChannelConfig_t dmaConfig = {0};
 
     /* Based on the Bus Speed configure the endpoint packet size */
     switch (usbSpeed)
@@ -913,14 +923,8 @@ void AdiAppStart()
             break;
     }
 
-    /* Configure GPIO for ADI application */
-
-	/* SYS_CLK = 403.2MHz
-	 * GPIO Fast Clock = SYS_CLK / 2 -> 201.6MHz
-	 * GPIO Slow Clock (Used for 10MHz timer) = Fast Clock / 20 -> 10.08MHz
-	 * Simple GPIO Sample Clock = Fast Clock / 2 -> 100.8MHz */
-	CyU3PGpioClock_t gpioClock;
-	CyU3PMemSet ((uint8_t *)&gpioClock, 0, sizeof (gpioClock));
+    /* Configure GPIO clocks for ADI application */
+    CyU3PMemSet ((uint8_t *)&gpioClock, 0, sizeof (gpioClock));
 	gpioClock.fastClkDiv = 2;
 	gpioClock.slowClkDiv = 20;
 	gpioClock.simpleDiv = CY_U3P_GPIO_SIMPLE_DIV_BY_2;
@@ -1129,7 +1133,6 @@ void AdiAppStart()
     }
 
 	/* Configure high-speed, high-resolution timer using a complex GPIO */
-	CyU3PGpioComplexConfig_t gpioComplexConfig;
 	CyU3PMemSet ((uint8_t *)&gpioComplexConfig, 0, sizeof (gpioComplexConfig));
 	gpioComplexConfig.outValue = CyFalse;
 	gpioComplexConfig.inputEn = CyFalse;
@@ -1220,9 +1223,7 @@ void AdiAppStart()
     }
 
     /* Configure bulk endpoints */
-
-	CyU3PEpConfig_t epConfig;
-	CyU3PMemSet ((uint8_t *)&epConfig, 0, sizeof (epConfig));
+	CyU3PMemSet((uint8_t *)&epConfig, 0, sizeof (epConfig));
 
 	/* Set bulk endpoint parameters */
 	epConfig.enable = CyTrue;
@@ -1261,8 +1262,7 @@ void AdiAppStart()
 	CyU3PUsbFlushEp(ADI_TO_PC_ENDPOINT);
 
 	/* Configure DMAs */
-
-    CyU3PDmaChannelConfig_t dmaConfig;
+	CyU3PMemSet((uint8_t *)&dmaConfig, 0, sizeof (dmaConfig));
     dmaConfig.size 				= FX3State.UsbBufferSize;
     dmaConfig.count 			= 0;
     dmaConfig.dmaMode 			= CY_U3P_DMA_MODE_BYTE;
@@ -1276,7 +1276,6 @@ void AdiAppStart()
     /* Configure DMA for ChannelFromPC */
     dmaConfig.prodSckId = CY_U3P_UIB_SOCKET_PROD_1;
     dmaConfig.consSckId = CY_U3P_CPU_SOCKET_CONS;
-
     status = CyU3PDmaChannelCreate(&ChannelFromPC, CY_U3P_DMA_TYPE_MANUAL_IN, &dmaConfig);
     if (status != CY_U3P_SUCCESS)
     {
@@ -1287,7 +1286,6 @@ void AdiAppStart()
     /* Configure DMA for ChannelToPC */
     dmaConfig.prodSckId = CY_U3P_CPU_SOCKET_PROD;
     dmaConfig.consSckId = CY_U3P_UIB_SOCKET_CONS_2;
-
     status = CyU3PDmaChannelCreate(&ChannelToPC, CY_U3P_DMA_TYPE_MANUAL_OUT, &dmaConfig);
     if (status != CY_U3P_SUCCESS)
     {
@@ -1402,7 +1400,7 @@ void CyFxApplicationDefine (void)
     uint32_t retThrdCreate = CY_U3P_SUCCESS;
 
     /* Create application (main) thread */
-    ptr = CyU3PMemAlloc (APPTHREAD_STACK);
+    ptr = CyU3PMemAlloc(APPTHREAD_STACK);
 
     /* Create the thread for the application */
     retThrdCreate = CyU3PThreadCreate (&AppThread, /* Thread structure. */
@@ -1420,14 +1418,14 @@ void CyFxApplicationDefine (void)
             );
 
     /* Check if creating thread succeeded */
-    if (retThrdCreate != CY_U3P_SUCCESS)
+    if(retThrdCreate != CY_U3P_SUCCESS)
     {
     	/* Thread creation failed. Fatal error. Cannot continue. */
     	while(1);
     }
 
     /* Create the thread for streaming data */
-    ptr = CyU3PMemAlloc (STREAMTHREAD_STACK);
+    ptr = CyU3PMemAlloc(STREAMTHREAD_STACK);
 
     /* Create the streaming thread */
     retThrdCreate = CyU3PThreadCreate (&StreamThread, 	/* Thread structure. */

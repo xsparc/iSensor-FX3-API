@@ -415,6 +415,9 @@ typedef struct StreamState
 /** FX3 GPIO weak pull up control register (upper 32 bits) */
 #define GCTL_WPU_CFG_UPPR						 (*(uvint32_t *)(0xE0051020 + 0x4))
 
+/** FX3 serial number register */
+#define EFUSE_DIE_ID 							 (uvint32_t *)0xE0055010
+
 /*
  * USB Descriptor buffers
  */
