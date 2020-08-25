@@ -107,12 +107,12 @@ static void AdiDebugInit()
 static void AdiAppInit ()
 {
     CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-    /* Write FX3 die ID to USB serial number descriptor and a global variable */
     const char hex_digit[16] = "0123456789ABCDEF";
     uint32_t die_id[2] = {0};
 
     /* Get USB serial number from FX3 die id */
 	CyU3PReadDeviceRegisters(EFUSE_DIE_ID, 2, die_id);
+	/* Write FX3 die ID to USB serial number descriptor and a global variable */
 	for (int i = 0; i < 2; i++)
 	{
 		/* Access via the USB descriptor */
@@ -269,7 +269,7 @@ static void AdiAppInit ()
   * The actual work done for the streaming is performed in the StreamThread - seperating the two allows for better control and
   * responsiveness to cancellation commands.
  **/
-void AdiAppThreadEntry (uint32_t input)
+void AdiAppThreadEntry(uint32_t input)
 {
 	UNUSED(input);
 	/* Events to trigger from */

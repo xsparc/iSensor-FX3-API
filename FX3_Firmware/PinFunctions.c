@@ -77,7 +77,7 @@ void AdiGetBoardPinInfo(uint8_t * outBuf)
 PinState AdiGetPinState(uint16_t pin)
 {
 	uint32_t read0, read1;
-	CyU3PGpioSimpleConfig_t gpioConfig;
+	CyU3PGpioSimpleConfig_t gpioConfig = {0};
 
 	/* Configure pin to read input stage values */
 	gpioConfig.outValue = CyFalse;
@@ -279,7 +279,7 @@ CyU3PReturnStatus_t AdiMeasurePinDelay(uint16_t transferLength)
 	uint16_t busyPin, triggerPin;
 	CyBool_t busyInitialValue, busyCurrentValue, triggerDrivePolarity, exitCondition;
 	uint32_t currentTime, lastTime, timeout, rollOverCount;
-	CyU3PGpioSimpleConfig_t gpioConfig;
+	CyU3PGpioSimpleConfig_t gpioConfig = {0};
 
 	/* Read config data into USBBuffer */
 	status = CyU3PUsbGetEP0Data(transferLength, USBBuffer, bytesRead);
@@ -675,6 +675,8 @@ CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint16_t pinNumber;
 	uint32_t threshold, period;
+	CyU3PGpioComplexConfig_t gpioComplexConfig = {0};
+	CyU3PGpioSimpleConfig_t gpioConfig = {0};
 
 	/* Get the pin number */
 	pinNumber = USBBuffer[0];
@@ -713,8 +715,7 @@ CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 		}
 
 		/* configure the selected pin in PWM mode */
-		CyU3PGpioComplexConfig_t gpioComplexConfig;
-		CyU3PMemSet ((uint8_t *)&gpioComplexConfig, 0, sizeof (gpioComplexConfig));
+		CyU3PMemSet((uint8_t *)&gpioComplexConfig, 0, sizeof (gpioComplexConfig));
 		gpioComplexConfig.outValue = CyFalse;
 		gpioComplexConfig.inputEn = CyFalse;
 		gpioComplexConfig.driveLowEn = CyTrue;
@@ -753,7 +754,6 @@ CyU3PReturnStatus_t AdiConfigurePWM(CyBool_t EnablePWM)
 		}
 
 		/* Set the GPIO configuration for the GPIO that was just overridden */
-		CyU3PGpioSimpleConfig_t gpioConfig;
 		CyU3PMemSet ((uint8_t *)&gpioConfig, 0, sizeof (gpioConfig));
 		gpioConfig.outValue = CyFalse;
 		gpioConfig.inputEn = CyTrue;
@@ -788,6 +788,7 @@ CyU3PReturnStatus_t AdiPulseDrive()
 	uint16_t pinNumber;
 	CyBool_t polarity, exit;
 	uint32_t timerTicks, timerRollovers, rolloverCount, currentTime, lastTime;
+	CyU3PGpioSimpleConfig_t gpioConfig = {0};
 
 	/* Parse request data from USBBuffer */
 	pinNumber = USBBuffer[0];
@@ -810,7 +811,6 @@ CyU3PReturnStatus_t AdiPulseDrive()
 	}
 
 	/* Configure the GPIO pin as a driven output */
-	CyU3PGpioSimpleConfig_t gpioConfig;
 	gpioConfig.outValue = polarity;
 	gpioConfig.inputEn = CyFalse;
 	gpioConfig.driveLowEn = CyTrue;
@@ -907,6 +907,7 @@ CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength)
     uint16_t *bytesRead = 0;
 	CyBool_t polarity, pinValue, exitCondition;
 	uint32_t currentTime, lastTime, delay, timeoutTicks, timeoutRollover, rollOverCount;
+	CyU3PGpioSimpleConfig_t gpioConfig = {0};
 
 	/* Disable interrupts on the timer pin */
 	GPIO->lpp_gpio_pin[ADI_TIMER_PIN_INDEX].status &= ~(CY_U3P_LPP_GPIO_INTRMODE_MASK);
@@ -943,7 +944,6 @@ CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength)
 	if(status != CY_U3P_SUCCESS)
 	{
 		/* If initial pin read fails try and configure as input */
-		CyU3PGpioSimpleConfig_t gpioConfig;
 		gpioConfig.outValue = CyFalse;
 		gpioConfig.inputEn = CyTrue;
 		gpioConfig.driveLowEn = CyFalse;
@@ -1047,6 +1047,8 @@ CyU3PReturnStatus_t AdiPulseWait(uint16_t transferLength)
 CyU3PReturnStatus_t AdiSetPin(uint16_t pinNumber, CyBool_t polarity)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+	CyU3PGpioSimpleConfig_t gpioConfig = {0};
+
 	if(!AdiIsValidGPIO(pinNumber))
 		return CY_U3P_ERROR_BAD_ARGUMENT;
 
@@ -1061,7 +1063,6 @@ CyU3PReturnStatus_t AdiSetPin(uint16_t pinNumber, CyBool_t polarity)
 #endif
 
 	/* Configure pin as output and set the drive value */
-	CyU3PGpioSimpleConfig_t gpioConfig;
 	gpioConfig.outValue = polarity;
 	gpioConfig.inputEn = CyFalse;
 	gpioConfig.driveLowEn = CyTrue;
@@ -1096,8 +1097,8 @@ CyU3PReturnStatus_t AdiSetPin(uint16_t pinNumber, CyBool_t polarity)
 CyU3PReturnStatus_t AdiWaitForPin(uint32_t pinNumber, CyU3PGpioIntrMode_t interruptSetting, uint32_t timeoutTicks)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-	uint32_t gpioEventFlag;
-	CyU3PGpioSimpleConfig_t gpioConfig;
+	uint32_t gpioEventFlag = 0;
+	CyU3PGpioSimpleConfig_t gpioConfig = {0};
 
 	/* Configure the specified pin as an input and attach the correct pin interrupt */
 	gpioConfig.outValue = CyTrue;
@@ -1105,7 +1106,6 @@ CyU3PReturnStatus_t AdiWaitForPin(uint32_t pinNumber, CyU3PGpioIntrMode_t interr
 	gpioConfig.driveLowEn = CyFalse;
 	gpioConfig.driveHighEn = CyFalse;
 	gpioConfig.intrMode = interruptSetting;
-
 	status = CyU3PGpioSetSimpleConfig(pinNumber, &gpioConfig);
 
 	/* Catch unspecified timeout */
@@ -1152,11 +1152,11 @@ CyU3PReturnStatus_t AdiPinRead(uint16_t pin)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	CyBool_t pinValue = CyFalse;
+	CyU3PGpioSimpleConfig_t gpioConfig = {0};
 
 	if(AdiIsValidGPIO(pin))
 	{
 		/* Configure pin as input and sample the pin value */
-		CyU3PGpioSimpleConfig_t gpioConfig;
 		gpioConfig.outValue = CyFalse;
 		gpioConfig.inputEn = CyTrue;
 		gpioConfig.driveLowEn = CyFalse;
@@ -1228,6 +1228,7 @@ CyU3PReturnStatus_t AdiReadTimerValue()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint32_t timerValue;
+
 	status = CyU3PGpioComplexSampleNow(ADI_TIMER_PIN, &timerValue);
 	if(status != CY_U3P_SUCCESS)
 	{
@@ -1261,6 +1262,7 @@ CyU3PReturnStatus_t AdiMeasurePinFreq()
 	CyBool_t polarity, timeoutOccurred, interruptTriggered, exitCondition;
 	uint16_t pin, numPeriods, periodCount;
 	uint32_t timeoutTicks, timeoutRollovers, currentTime, lastTime, rollovers;
+	CyU3PGpioSimpleConfig_t gpioConfig = {0};
 
 	/* Parse data from the USB Buffer */
 	pin = USBBuffer[0];
@@ -1392,7 +1394,6 @@ CyU3PReturnStatus_t AdiMeasurePinFreq()
 	}
 
 	/* Disable interrupt mode on the pin */
-	CyU3PGpioSimpleConfig_t gpioConfig;
 	gpioConfig.outValue = CyTrue;
 	gpioConfig.inputEn = CyTrue;
 	gpioConfig.driveLowEn = CyFalse;
@@ -1433,9 +1434,9 @@ CyU3PReturnStatus_t AdiMeasurePinFreq()
 CyU3PReturnStatus_t AdiConfigurePinInterrupt(uint16_t pin, CyBool_t polarity)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
+	CyU3PGpioSimpleConfig_t gpioConfig = {0};
 
 	/* Make sure the data ready pin is configured as an input and attach the correct pin interrupt */
-	CyU3PGpioSimpleConfig_t gpioConfig;
 	gpioConfig.outValue = CyTrue;
 	gpioConfig.inputEn = CyTrue;
 	gpioConfig.driveLowEn = CyFalse;

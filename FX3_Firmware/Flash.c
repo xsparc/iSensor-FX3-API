@@ -45,8 +45,8 @@ static CyU3PDmaChannel flashRxHandle;
  **/
 CyU3PReturnStatus_t AdiFlashInit()
 {
-    CyU3PI2cConfig_t i2cConfig;
-    CyU3PDmaChannelConfig_t i2cDmaConfig;
+    CyU3PI2cConfig_t i2cConfig = {0};
+    CyU3PDmaChannelConfig_t i2cDmaConfig = {0};
     CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
     /* Initialize and configure the I2C master module. */
@@ -228,10 +228,9 @@ void AdiFlashReadHandler(uint32_t Address, uint16_t NumBytes)
  **/
 static CyU3PReturnStatus_t FlashTransfer(uint32_t Address, uint16_t NumBytes, uint8_t* Buf, CyBool_t isRead)
 {
-    CyU3PDmaBuffer_t buf_p;
-    CyU3PI2cPreamble_t preamble;
+    CyU3PDmaBuffer_t buf_p = {0};
+    CyU3PI2cPreamble_t preamble = {.buffer = {0}};
     CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-
     uint16_t dmaCount;
     uint16_t lastCount;
 
@@ -241,7 +240,7 @@ static CyU3PReturnStatus_t FlashTransfer(uint32_t Address, uint16_t NumBytes, ui
     /* Calculate page count */
     uint16_t pageCount = (NumBytes / FLASH_PAGE_SIZE);
 
-    /* Return for zero transfer */
+    /* Return for zero length transfer */
     if(NumBytes == 0)
         return CY_U3P_SUCCESS;
 

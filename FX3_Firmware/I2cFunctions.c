@@ -130,7 +130,7 @@ CyU3PReturnStatus_t AdiI2CWriteHandler(uint16_t RequestLength)
 CyU3PReturnStatus_t AdiI2CInit(uint32_t BitRate, CyBool_t isDMA)
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
-    CyU3PI2cConfig_t i2cConfig;
+    CyU3PI2cConfig_t i2cConfig = {0};
 
     /* Filter bit rate */
     if(BitRate < 100000)
@@ -151,7 +151,7 @@ CyU3PReturnStatus_t AdiI2CInit(uint32_t BitRate, CyBool_t isDMA)
     }
 
     /* Start the I2C master block. Set i2c clock of 100KHz, DMA mode */
-    CyU3PMemSet ((uint8_t *)&i2cConfig, 0, sizeof(i2cConfig));
+    CyU3PMemSet((uint8_t *)&i2cConfig, 0, sizeof(i2cConfig));
     i2cConfig.bitRate    = BitRate;
     i2cConfig.busTimeout = 0xFFFFFFFF;
     i2cConfig.dmaTimeout = 0xFFFF;

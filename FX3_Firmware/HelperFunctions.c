@@ -31,7 +31,7 @@ extern uint8_t USBBuffer[4096];
 extern uint8_t BulkBuffer[12288];
 
 /** Software timer called by RTOS to clear watchdog timer (if watchdog enabled) */
-static CyU3PTimer WatchdogTimer;
+static CyU3PTimer WatchdogTimer = {0};
 
 /**
   * @brief Sends a function result to the PC via the ChannelToPC endpoint
@@ -94,7 +94,7 @@ CyU3PReturnStatus_t AdiSleepForMicroSeconds(uint32_t numMicroSeconds)
 CyU3PReturnStatus_t AdiSetDutSupply(DutVoltage SupplyMode)
 {
 	CyU3PReturnStatus_t status0, status1 = CY_U3P_SUCCESS;
-	CyU3PGpioSimpleConfig_t gpioConfig;
+	CyU3PGpioSimpleConfig_t gpioConfig = {0};
 
 	/* Set base config values */
 	gpioConfig.outValue = CyTrue;
