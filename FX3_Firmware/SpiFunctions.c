@@ -44,12 +44,6 @@ static uvint32_t *MISOPin;
 /** Pointer to bit bang SPI MOSI pin */
 static uvint32_t *MOSIPin;
 
-/** Mask to set GPIO pin high */
-static uint32_t PinHighMask;
-
-/** Mask to set GPIO pin low */
-static uint32_t PinLowMask;
-
 /** SCLK active setting. Based on CPOL */
 static uint32_t SCLKActiveMask;
 
@@ -418,11 +412,6 @@ static CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 	CSPin = &GPIO->lpp_gpio_simple[config.CS];
 	SCLKPin = &GPIO->lpp_gpio_simple[config.SCLK];
 
-	/* Set the high and low masks (from CS initial value)*/
-	PinHighMask = *CSPin;
-	PinHighMask |= CY_U3P_LPP_GPIO_OUT_VALUE;
-	PinLowMask = PinHighMask & ~CY_U3P_LPP_GPIO_OUT_VALUE;
-
 	/* Set the MOSI mask and clear output bit */
 	MOSIMask = *MOSIPin;
 	MOSIMask &= ~CY_U3P_LPP_GPIO_OUT_VALUE;
@@ -434,16 +423,15 @@ static CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 	if(config.CPOL)
 	{
 		/* Idle high, active low */
-		SCLKActiveMask = PinLowMask;
-		SCLKInactiveMask = PinHighMask;
+		SCLKActiveMask = GPIO_LOW;
+		SCLKInactiveMask = GPIO_HIGH;
 	}
 	else
 	{
 		/* Idle low, active high */
-		SCLKActiveMask = PinHighMask;
-		SCLKInactiveMask = PinLowMask;
+		SCLKActiveMask = GPIO_HIGH;
+		SCLKInactiveMask = GPIO_LOW;
 	}
-
 	return status;
 }
 
@@ -469,7 +457,7 @@ static void AdiBitBangSpiTransferCPHA1(uint8_t * MOSI, uint8_t* MISO, uint32_t B
 	register uvint32_t cycleTimer;
 
 	/* Drop chip select */
-	*CSPin = PinLowMask;
+	*CSPin = GPIO_LOW;
 
 	/* Wait for CS lead delay */
 	cycleTimer = config.CSLeadDelay;
@@ -529,8 +517,8 @@ static void AdiBitBangSpiTransferCPHA1(uint8_t * MOSI, uint8_t* MISO, uint32_t B
 	}
 
 	/* Restore CS, MOSI to high */
-	*CSPin = PinHighMask;
-	*MOSIPin = PinHighMask;
+	*CSPin = GPIO_HIGH;
+	*MOSIPin = GPIO_HIGH;
 }
 
 /**
@@ -555,7 +543,7 @@ static void AdiBitBangSpiTransferCPHA0(uint8_t * MOSI, uint8_t* MISO, uint32_t B
 	register uvint32_t cycleTimer;
 
 	/* Drop chip select */
-	*CSPin = PinLowMask;
+	*CSPin = GPIO_LOW;
 
 	/* Load initial data bit to output */
 	*MOSIPin = MOSIMask | MOSI[0];
@@ -599,8 +587,8 @@ static void AdiBitBangSpiTransferCPHA0(uint8_t * MOSI, uint8_t* MISO, uint32_t B
 	}
 
 	/* Restore CS, MOSI to high */
-	*CSPin = PinHighMask;
-	*MOSIPin = PinHighMask;
+	*CSPin = GPIO_HIGH;
+	*MOSIPin = GPIO_HIGH;
 }
 
 /**

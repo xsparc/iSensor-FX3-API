@@ -77,8 +77,10 @@ CyU3PReturnStatus_t AdiBitBangSpiHandler();
 /** Offset for bit bang stall time calc */
 #define STALL_COUNT_OFFSET 10
 
-/** Register setting to drive GPIO high */
+/** Register setting to drive GPIO high (enable (31), drive high (5), drive low (4), out enabled (0)) */
+#define GPIO_HIGH	(1 << 31)|(1 << 5)|(1 << 4)|(1 << 0)
 
-/** Register setting to drive GPIO low */
+/** Register setting to drive GPIO low (enable (31), drive high (5), drive low (4))*/
+#define GPIO_LOW	(1 << 31)|(1 << 5)|(1 << 4)
 
 #endif
