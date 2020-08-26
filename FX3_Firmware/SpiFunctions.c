@@ -615,22 +615,22 @@ static void AdiBitBangSpiTransferCPHA0(uint8_t * MOSI, uint8_t* MISO, uint32_t B
 CyU3PSpiConfig_t AdiGetSpiConfig()
 {
 	CyU3PSpiConfig_t conf = {0};
-	uint32_t CONFIG;
+	uint32_t config_reg;
 
 	AdiWaitForSpiNotBusy();
 
 	/* Read SPI config register */
-	CONFIG = SPI->lpp_spi_config;
+	config_reg = SPI->lpp_spi_config;
 
 	/* Parse out SPI config */
-	conf.wordLen = (CONFIG >> CY_U3P_LPP_SPI_WL_POS) & 0x3F;
-	conf.ssnPol = (CONFIG >> 16) & 0x1;
-	conf.lagTime = (CONFIG >> CY_U3P_LPP_SPI_LAG_POS) & 0x3;
-	conf.leadTime = (CONFIG >> CY_U3P_LPP_SPI_LEAD_POS) & 0x3;
-	conf.cpha = (CONFIG >> 11) & 0x1;
-	conf.cpol = (CONFIG >> 10) & 0x1;
-	conf.ssnCtrl = (CONFIG >> CY_U3P_LPP_SPI_SSNCTRL_POS) & 0x3;
-	conf.isLsbFirst = (CONFIG >> 3) & 0x1;
+	conf.wordLen = (config_reg >> CY_U3P_LPP_SPI_WL_POS) & 0x3F;
+	conf.ssnPol = (config_reg >> 16) & 0x1;
+	conf.lagTime = (config_reg >> CY_U3P_LPP_SPI_LAG_POS) & 0x3;
+	conf.leadTime = (config_reg >> CY_U3P_LPP_SPI_LEAD_POS) & 0x3;
+	conf.cpha = (config_reg >> 11) & 0x1;
+	conf.cpol = (config_reg >> 10) & 0x1;
+	conf.ssnCtrl = (config_reg >> CY_U3P_LPP_SPI_SSNCTRL_POS) & 0x3;
+	conf.isLsbFirst = (config_reg >> 3) & 0x1;
 
 	/* use existing clock setting */
 	conf.clock = FX3State.SpiConfig.clock;
@@ -685,6 +685,7 @@ CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData)
 	transferSize = FX3State.SpiConfig.wordLen / 8;
 
 	/* perform SPI transfer */
+	AdiWaitForSpiNotBusy();
 	status = CyU3PSpiTransferWords(writeBuffer, transferSize, readBuffer, transferSize);
 	if(status != CY_U3P_SUCCESS)
 	{

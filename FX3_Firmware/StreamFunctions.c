@@ -387,6 +387,8 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	uint16_t bytesRead;
 	uint8_t tempWriteBuffer[2];
 	uint8_t tempReadBuffer[2];
+	CyU3PGpioSimpleConfig_t gpioConfig = {0};
+	CyU3PDmaChannelConfig_t dmaConfig = {0};
 
 	/* Disable GPIO ISR (Interrupt functionality still active) */
 	CyU3PVicDisableInt(CY_U3P_VIC_GPIO_CORE_VECTOR);
@@ -398,7 +400,6 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	CyU3PVicClearInt();
 
 	/* Make sure the BUSY pin is configured as input (DIO2) */
-	CyU3PGpioSimpleConfig_t gpioConfig;
 	gpioConfig.outValue = CyFalse;
 	gpioConfig.inputEn = CyTrue;
 	gpioConfig.driveLowEn = CyFalse;
@@ -420,8 +421,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	CyU3PUsbFlushEp(ADI_STREAMING_ENDPOINT);
 
 	/* Configure RTS channel DMA */
-	CyU3PDmaChannelConfig_t dmaConfig;
-	CyU3PMemSet ((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
+	CyU3PMemSet((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
 	dmaConfig.size 				= FX3State.UsbBufferSize;
 	dmaConfig.count 			= 64;
 	dmaConfig.prodSckId 		= CY_U3P_LPP_SOCKET_SPI_PROD;
@@ -435,6 +435,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	dmaConfig.prodAvailCount	= 0;
 
     /* Configure DMA for RealTimeStreamingChannel */
+	CyU3PDmaChannelDestroy(&StreamingChannel);
     status = CyU3PDmaChannelCreate(&StreamingChannel, CY_U3P_DMA_TYPE_AUTO, &dmaConfig);
 	if(status != CY_U3P_SUCCESS)
 	{
@@ -580,7 +581,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	CyU3PDmaChannelSetXfer(&StreamingChannel, 0);
 
 	/* Set the real-time data capture thread flag */
-	CyU3PEventSet (&EventHandler, ADI_RT_STREAM_ENABLE, CYU3P_EVENT_OR);
+	CyU3PEventSet(&EventHandler, ADI_RT_STREAM_ENABLE, CYU3P_EVENT_OR);
 
 	return status;
 }
