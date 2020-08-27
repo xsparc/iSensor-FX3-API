@@ -661,7 +661,6 @@ CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData)
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint8_t writeBuffer[4];
 	uint8_t readBuffer[4] = {0};
-	uint32_t transferSize;
 
 	/* populate the writebuffer */
 	writeBuffer[0] = writeData & 0xFF;
@@ -669,16 +668,9 @@ CyU3PReturnStatus_t AdiTransferBytes(uint32_t writeData)
 	writeBuffer[2] = (writeData & 0xFF0000) >> 16;
 	writeBuffer[3] = (writeData & 0xFF000000) >> 24;
 
-	/* Calculate number of bytes to transfer */
-	transferSize = FX3State.SpiConfig.wordLen / 8;
-
 	/* perform SPI transfer */
 	AdiWaitForSpiNotBusy();
-	status = CyU3PSpiTransferWords(writeBuffer, transferSize, readBuffer, transferSize);
-	if(status != CY_U3P_SUCCESS)
-	{
-		AdiLogError(SpiFunctions_c, __LINE__, status);
-	}
+	AdiSpiTransferWord(writeBuffer, readBuffer);
 
 	/* Load read data to be sent back via control endpoint */
 	USBBuffer[4] = readBuffer[0];

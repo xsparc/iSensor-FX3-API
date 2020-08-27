@@ -253,6 +253,7 @@ CyU3PReturnStatus_t AdiTransferStreamStart()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 	uint16_t bytesRead;
+	CyU3PDmaChannelConfig_t dmaConfig =  {0};
 
 	/* Get the data from the control endpoint */
 	status = CyU3PUsbGetEP0Data(StreamThreadState.TransferByteLength, USBBuffer, &bytesRead);
@@ -311,7 +312,6 @@ CyU3PReturnStatus_t AdiTransferStreamStart()
 	}
 
 	/* Configure the StreamingChannel DMA (SPI to PC) */
-	CyU3PDmaChannelConfig_t dmaConfig;
 	CyU3PMemSet ((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
 	dmaConfig.size 				= FX3State.UsbBufferSize;
 	dmaConfig.count 			= 8;
@@ -423,7 +423,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	/* Configure RTS channel DMA */
 	CyU3PMemSet((uint8_t *)&dmaConfig, 0, sizeof(dmaConfig));
 	dmaConfig.size 				= FX3State.UsbBufferSize;
-	dmaConfig.count 			= 64;
+	dmaConfig.count 			= 32;
 	dmaConfig.prodSckId 		= CY_U3P_LPP_SOCKET_SPI_PROD;
 	dmaConfig.consSckId 		= CY_U3P_UIB_SOCKET_CONS_1;
 	dmaConfig.dmaMode 			= CY_U3P_DMA_MODE_BYTE;
@@ -446,6 +446,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	/* Clear the DMA buffers */
 	CyU3PDmaChannelReset(&StreamingChannel);
 
+	/* Handle start conditions */
 	if(StreamThreadState.PinExitEnable)
 	{
 		/* Disable starting the capture by raising SYNC/RTS
