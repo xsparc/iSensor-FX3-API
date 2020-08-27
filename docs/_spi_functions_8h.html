@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.8.5-pub</span>
+   &#160;<span id="projectnumber">v2.9.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -95,6 +95,10 @@ Macros</h2></td></tr>
 <tr class="separator:a0871091ac711260182300d99d852b859"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad28e6eae506528ecbccc2c5da8109977"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#ad28e6eae506528ecbccc2c5da8109977">STALL_COUNT_OFFSET</a>&#160;&#160;&#160;10</td></tr>
 <tr class="separator:ad28e6eae506528ecbccc2c5da8109977"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72520b0ab0d18377eb6a481029d0b01e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a72520b0ab0d18377eb6a481029d0b01e">GPIO_HIGH</a>&#160;&#160;&#160;(1 &lt;&lt; 31)|(1 &lt;&lt; 5)|(1 &lt;&lt; 4)|(1 &lt;&lt; 0)</td></tr>
+<tr class="separator:a72520b0ab0d18377eb6a481029d0b01e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a088e681cae6659dfd317afdf4d61e302"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_spi_functions_8h.html#a088e681cae6659dfd317afdf4d61e302">GPIO_LOW</a>&#160;&#160;&#160;(1 &lt;&lt; 31)|(1 &lt;&lt; 5)|(1 &lt;&lt; 4)</td></tr>
+<tr class="separator:a088e681cae6659dfd317afdf4d61e302"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -162,6 +166,36 @@ J. Chong (<a href="#" onclick="location.href='mai'+'lto:'+'jua'+'n.'+'cho'+'ng'+
       </table>
 </div><div class="memdoc">
 <p>Offset to make the short side of the bitbang SPI match long side. Approx. 62ns per tick </p>
+
+</div>
+</div>
+<a id="a72520b0ab0d18377eb6a481029d0b01e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a72520b0ab0d18377eb6a481029d0b01e">&#9670;&nbsp;</a></span>GPIO_HIGH</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define GPIO_HIGH&#160;&#160;&#160;(1 &lt;&lt; 31)|(1 &lt;&lt; 5)|(1 &lt;&lt; 4)|(1 &lt;&lt; 0)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Register setting to drive GPIO high (enable (31), drive high (5), drive low (4), out enabled (0)) </p>
+
+</div>
+</div>
+<a id="a088e681cae6659dfd317afdf4d61e302"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a088e681cae6659dfd317afdf4d61e302">&#9670;&nbsp;</a></span>GPIO_LOW</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define GPIO_LOW&#160;&#160;&#160;(1 &lt;&lt; 31)|(1 &lt;&lt; 5)|(1 &lt;&lt; 4)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Register setting to drive GPIO low (enable (31), drive high (5), drive low (4)) </p>
 
 </div>
 </div>

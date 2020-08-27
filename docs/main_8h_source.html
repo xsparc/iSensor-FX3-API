@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="Analog-Devices-Logo.jpg"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ADI iSensor FX3 Firmware
-   &#160;<span id="projectnumber">v2.8.5-pub</span>
+   &#160;<span id="projectnumber">v2.9.0-pub</span>
    </div>
    <div id="projectbrief">Firmware for the Analog Devices iSensor FX3 Evaluation Platform. This firmware is built upon libraries provided by Cypress, and can be compiled using the Cypress EZ USB Suite</div>
   </td>
@@ -362,39 +362,41 @@ $(function() {
 <div class="line"><a name="l00414"></a><span class="lineno"><a class="line" href="main_8h.html#a0fac5b796fc50777f7b12839b5c4e3ad">  414</a></span>&#160; </div>
 <div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;<span class="preprocessor">#define GCTL_WPU_CFG_UPPR                        (*(uvint32_t *)(0xE0051020 + 0x4))</span></div>
 <div class="line"><a name="l00417"></a><span class="lineno"><a class="line" href="main_8h.html#abde403a842e07c5ce4d65fe027b01dff">  417</a></span>&#160; </div>
-<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;<span class="comment"> * USB Descriptor buffers</span></div>
-<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;<span class="keyword">extern</span> <span class="keyword">const</span> uint8_t CyFxUSB20DeviceDscr[];</div>
-<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;<span class="keyword">extern</span> <span class="keyword">const</span> uint8_t CyFxUSB30DeviceDscr[];</div>
-<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;<span class="keyword">extern</span> <span class="keyword">const</span> uint8_t CyFxUSBDeviceQualDscr[];</div>
-<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;<span class="keyword">extern</span> <span class="keyword">const</span> uint8_t CyFxUSBFSConfigDscr[];</div>
-<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;<span class="keyword">extern</span> <span class="keyword">const</span> uint8_t CyFxUSBHSConfigDscr[];</div>
-<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;<span class="keyword">extern</span> <span class="keyword">const</span> uint8_t CyFxUSBBOSDscr[];</div>
-<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;<span class="keyword">extern</span> <span class="keyword">const</span> uint8_t CyFxUSBSSConfigDscr[];</div>
-<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;<span class="keyword">extern</span> <span class="keyword">const</span> uint8_t CyFxUSBStringLangIDDscr[];</div>
-<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;<span class="keyword">extern</span> <span class="keyword">const</span> uint8_t CyFxUSBManufactureDscr[];</div>
-<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;<span class="keyword">extern</span> <span class="keyword">const</span> uint8_t CyFxUSBProductDscr[];</div>
-<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;<span class="keyword">extern</span> uint8_t CyFxUSBSerialNumDesc[];</div>
-<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160; </div>
-<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;<span class="comment">/* Initialization and configuration functions. */</span></div>
-<div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160;<span class="keywordtype">void</span> <a class="code" href="main_8h.html#a97ef5f1f7dd70bdb654bd2e0ed215a8e">AdiAppStart</a>();</div>
-<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160;<span class="keywordtype">void</span> <a class="code" href="main_8h.html#a802d56f1d4d6c6e069d5bed2d01c2fbd">AdiAppStop</a>();</div>
-<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;<span class="keywordtype">void</span> <a class="code" href="main_8h.html#a4759bbcdd7e9e2d77fc72f1b1ed12c1a">AdiAppErrorHandler</a> (CyU3PReturnStatus_t status);</div>
-<div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160;<a class="code" href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54">FX3BoardType</a> <a class="code" href="main_8h.html#a3c4e2d0388671969c6290eb9323066c2">AdiGetFX3BoardType</a>();</div>
-<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160; </div>
-<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;<span class="comment">/* Event Handlers */</span></div>
-<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160;CyBool_t <a class="code" href="main_8h.html#a9a66ed1cd4bddfaee4a19ede70f94cc1">AdiControlEndpointHandler</a>(uint32_t setupdat0, uint32_t setupdat1);</div>
-<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;<span class="keywordtype">void</span> <a class="code" href="main_8h.html#a2407e9fc4f519060a25f5e6e79c9908e">AdiBulkEndpointHandler</a>(CyU3PUsbEpEvtType evType,CyU3PUSBSpeed_t usbSpeed, uint8_t epNum);</div>
-<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;<span class="keywordtype">void</span> <a class="code" href="main_8h.html#af455227720659b28782283fa0cafc5bc">AdiUSBEventHandler</a>(CyU3PUsbEventType_t evtype, uint16_t evdata);</div>
-<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;CyBool_t <a class="code" href="main_8h.html#a2863fcc5229cc4a18aedee7cda44ea9a">AdiLPMRequestHandler</a>(CyU3PUsbLinkPowerMode link_mode);</div>
-<div class="line"><a name="l00444"></a><span class="lineno">  444</span>&#160;<span class="keywordtype">void</span> <a class="code" href="main_8h.html#a0012feb7c1973f17875ca9c3458462bf">AdiGPIOEventHandler</a>(uint8_t gpioId);</div>
-<div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160; </div>
-<div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160;<span class="preprocessor">#define UNUSED(x) (void)(x)</span></div>
-<div class="line"><a name="l00448"></a><span class="lineno"><a class="line" href="main_8h.html#a86d500a34c624c2cae56bc25a31b12f3">  448</a></span>&#160; </div>
-<div class="line"><a name="l00449"></a><span class="lineno">  449</span>&#160;<span class="preprocessor">#include &lt;cyu3externcend.h&gt;</span></div>
-<div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160; </div>
-<div class="line"><a name="l00451"></a><span class="lineno">  451</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;<span class="preprocessor">#define EFUSE_DIE_ID                             (uvint32_t *)0xE0055010</span></div>
+<div class="line"><a name="l00420"></a><span class="lineno"><a class="line" href="main_8h.html#aa18cc0d468bab4ab7aaecc55c06663c6">  420</a></span>&#160; </div>
+<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;<span class="comment">/*</span></div>
+<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;<span class="comment"> * USB Descriptor buffers</span></div>
+<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;<span class="keyword">extern</span> <span class="keyword">const</span> uint8_t CyFxUSB20DeviceDscr[];</div>
+<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;<span class="keyword">extern</span> <span class="keyword">const</span> uint8_t CyFxUSB30DeviceDscr[];</div>
+<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;<span class="keyword">extern</span> <span class="keyword">const</span> uint8_t CyFxUSBDeviceQualDscr[];</div>
+<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;<span class="keyword">extern</span> <span class="keyword">const</span> uint8_t CyFxUSBFSConfigDscr[];</div>
+<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;<span class="keyword">extern</span> <span class="keyword">const</span> uint8_t CyFxUSBHSConfigDscr[];</div>
+<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;<span class="keyword">extern</span> <span class="keyword">const</span> uint8_t CyFxUSBBOSDscr[];</div>
+<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;<span class="keyword">extern</span> <span class="keyword">const</span> uint8_t CyFxUSBSSConfigDscr[];</div>
+<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;<span class="keyword">extern</span> <span class="keyword">const</span> uint8_t CyFxUSBStringLangIDDscr[];</div>
+<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160;<span class="keyword">extern</span> <span class="keyword">const</span> uint8_t CyFxUSBManufactureDscr[];</div>
+<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;<span class="keyword">extern</span> <span class="keyword">const</span> uint8_t CyFxUSBProductDscr[];</div>
+<div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160;<span class="keyword">extern</span> uint8_t CyFxUSBSerialNumDesc[];</div>
+<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160; </div>
+<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;<span class="comment">/* Initialization and configuration functions. */</span></div>
+<div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160;<span class="keywordtype">void</span> <a class="code" href="main_8h.html#a97ef5f1f7dd70bdb654bd2e0ed215a8e">AdiAppStart</a>();</div>
+<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160;<span class="keywordtype">void</span> <a class="code" href="main_8h.html#a802d56f1d4d6c6e069d5bed2d01c2fbd">AdiAppStop</a>();</div>
+<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;<span class="keywordtype">void</span> <a class="code" href="main_8h.html#a4759bbcdd7e9e2d77fc72f1b1ed12c1a">AdiAppErrorHandler</a> (CyU3PReturnStatus_t status);</div>
+<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160;<a class="code" href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54">FX3BoardType</a> <a class="code" href="main_8h.html#a3c4e2d0388671969c6290eb9323066c2">AdiGetFX3BoardType</a>();</div>
+<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160; </div>
+<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;<span class="comment">/* Event Handlers */</span></div>
+<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;CyBool_t <a class="code" href="main_8h.html#a9a66ed1cd4bddfaee4a19ede70f94cc1">AdiControlEndpointHandler</a>(uint32_t setupdat0, uint32_t setupdat1);</div>
+<div class="line"><a name="l00444"></a><span class="lineno">  444</span>&#160;<span class="keywordtype">void</span> <a class="code" href="main_8h.html#a2407e9fc4f519060a25f5e6e79c9908e">AdiBulkEndpointHandler</a>(CyU3PUsbEpEvtType evType,CyU3PUSBSpeed_t usbSpeed, uint8_t epNum);</div>
+<div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160;<span class="keywordtype">void</span> <a class="code" href="main_8h.html#af455227720659b28782283fa0cafc5bc">AdiUSBEventHandler</a>(CyU3PUsbEventType_t evtype, uint16_t evdata);</div>
+<div class="line"><a name="l00446"></a><span class="lineno">  446</span>&#160;CyBool_t <a class="code" href="main_8h.html#a2863fcc5229cc4a18aedee7cda44ea9a">AdiLPMRequestHandler</a>(CyU3PUsbLinkPowerMode link_mode);</div>
+<div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160;<span class="keywordtype">void</span> <a class="code" href="main_8h.html#a0012feb7c1973f17875ca9c3458462bf">AdiGPIOEventHandler</a>(uint8_t gpioId);</div>
+<div class="line"><a name="l00448"></a><span class="lineno">  448</span>&#160; </div>
+<div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160;<span class="preprocessor">#define UNUSED(x) (void)(x)</span></div>
+<div class="line"><a name="l00451"></a><span class="lineno"><a class="line" href="main_8h.html#a86d500a34c624c2cae56bc25a31b12f3">  451</a></span>&#160; </div>
+<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160;<span class="preprocessor">#include &lt;cyu3externcend.h&gt;</span></div>
+<div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160; </div>
+<div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="amain_8h_html_a5d0d41db1886fb75e6a09e4b74cdbc54a1f4b0ce2997bf13d2365bbb122689b0e"><div class="ttname"><a href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54a1f4b0ce2997bf13d2365bbb122689b0e">iSensorFX3Board_D</a></div><div class="ttdeci">@ iSensorFX3Board_D</div><div class="ttdef"><b>Definition:</b> main.h:79</div></div>
 <div class="ttc" id="amain_8h_html_a5d0d41db1886fb75e6a09e4b74cdbc54ae82620a4320b33be645f5738070c6cdd"><div class="ttname"><a href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54ae82620a4320b33be645f5738070c6cdd">iSensorFX3Board_B</a></div><div class="ttdeci">@ iSensorFX3Board_B</div><div class="ttdef"><b>Definition:</b> main.h:73</div></div>
@@ -417,7 +419,7 @@ $(function() {
 <div class="ttc" id="astruct_f_x3_pin_map_html_a18598036f15d45630955be8044e29cae"><div class="ttname"><a href="struct_f_x3_pin_map.html#a18598036f15d45630955be8044e29cae">FX3PinMap::FX3_PIN_GPIO3</a></div><div class="ttdeci">uint16_t FX3_PIN_GPIO3</div><div class="ttdef"><b>Definition:</b> main.h:140</div></div>
 <div class="ttc" id="a_stream_functions_8h_html"><div class="ttname"><a href="_stream_functions_8h.html">StreamFunctions.h</a></div><div class="ttdoc">Header file for all data streaming functions (generic, burst, ADcm real time, transfer).</div></div>
 <div class="ttc" id="astruct_board_state_html_a642819cf6f2f28315826330405cf473f"><div class="ttname"><a href="struct_board_state.html#a642819cf6f2f28315826330405cf473f">BoardState::DutType</a></div><div class="ttdeci">PartType DutType</div><div class="ttdef"><b>Definition:</b> main.h:153</div></div>
-<div class="ttc" id="amain_8h_html_a97ef5f1f7dd70bdb654bd2e0ed215a8e"><div class="ttname"><a href="main_8h.html#a97ef5f1f7dd70bdb654bd2e0ed215a8e">AdiAppStart</a></div><div class="ttdeci">void AdiAppStart()</div><div class="ttdoc">This function sets up the necessary resources to start the ADI application.</div><div class="ttdef"><b>Definition:</b> main.c:885</div></div>
+<div class="ttc" id="amain_8h_html_a97ef5f1f7dd70bdb654bd2e0ed215a8e"><div class="ttname"><a href="main_8h.html#a97ef5f1f7dd70bdb654bd2e0ed215a8e">AdiAppStart</a></div><div class="ttdeci">void AdiAppStart()</div><div class="ttdoc">This function sets up the necessary resources to start the ADI application.</div><div class="ttdef"><b>Definition:</b> main.c:891</div></div>
 <div class="ttc" id="astruct_board_state_html_aaf09e294575927ee9d5c30aca527a228"><div class="ttname"><a href="struct_board_state.html#aaf09e294575927ee9d5c30aca527a228">BoardState::AppActive</a></div><div class="ttdeci">CyBool_t AppActive</div><div class="ttdef"><b>Definition:</b> main.h:159</div></div>
 <div class="ttc" id="a_helper_functions_8h_html"><div class="ttname"><a href="_helper_functions_8h.html">HelperFunctions.h</a></div><div class="ttdoc">Header file for a set of general purpose iSensor FX3 helper functions.</div></div>
 <div class="ttc" id="astruct_f_x3_pin_map_html_a5ff5a3de3a36ae8073fdb3d560dff599"><div class="ttname"><a href="struct_f_x3_pin_map.html#a5ff5a3de3a36ae8073fdb3d560dff599">FX3PinMap::FX3_PIN_GPIO4</a></div><div class="ttdeci">uint16_t FX3_PIN_GPIO4</div><div class="ttdef"><b>Definition:</b> main.h:143</div></div>
@@ -465,7 +467,7 @@ $(function() {
 <div class="ttc" id="amain_8h_html_a5d0d41db1886fb75e6a09e4b74cdbc54a060e1c60a58050eb2c766be3cfc4e58a"><div class="ttname"><a href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54a060e1c60a58050eb2c766be3cfc4e58a">CypressFX3Board</a></div><div class="ttdeci">@ CypressFX3Board</div><div class="ttdef"><b>Definition:</b> main.h:67</div></div>
 <div class="ttc" id="astruct_stream_state_html_adff3a3ce23fd26136d0354f2d518c164"><div class="ttname"><a href="struct_stream_state.html#adff3a3ce23fd26136d0354f2d518c164">StreamState::PinExitEnable</a></div><div class="ttdeci">CyBool_t PinExitEnable</div><div class="ttdef"><b>Definition:</b> main.h:212</div></div>
 <div class="ttc" id="amain_8h_html_a3c07ffb2debb7fcc21d01387a5a86198"><div class="ttname"><a href="main_8h.html#a3c07ffb2debb7fcc21d01387a5a86198">FX3PinMap</a></div><div class="ttdeci">struct FX3PinMap FX3PinMap</div><div class="ttdoc">Pin map for translating FX3 GPIO pins to iSensor eval board functional pins.</div></div>
-<div class="ttc" id="amain_8h_html_a3c4e2d0388671969c6290eb9323066c2"><div class="ttname"><a href="main_8h.html#a3c4e2d0388671969c6290eb9323066c2">AdiGetFX3BoardType</a></div><div class="ttdeci">FX3BoardType AdiGetFX3BoardType()</div><div class="ttdoc">This function determines the type of the connected FX3 board.</div><div class="ttdef"><b>Definition:</b> main.c:1324</div></div>
+<div class="ttc" id="amain_8h_html_a3c4e2d0388671969c6290eb9323066c2"><div class="ttname"><a href="main_8h.html#a3c4e2d0388671969c6290eb9323066c2">AdiGetFX3BoardType</a></div><div class="ttdeci">FX3BoardType AdiGetFX3BoardType()</div><div class="ttdoc">This function determines the type of the connected FX3 board.</div><div class="ttdef"><b>Definition:</b> main.c:1322</div></div>
 <div class="ttc" id="a_stream_thread_8h_html"><div class="ttname"><a href="_stream_thread_8h.html">StreamThread.h</a></div><div class="ttdoc">Header file for the streaming thread.</div></div>
 <div class="ttc" id="a_app_thread_8h_html"><div class="ttname"><a href="_app_thread_8h.html">AppThread.h</a></div><div class="ttdoc">Header file for all the primary application thread functions.</div></div>
 <div class="ttc" id="astruct_stream_state_html_a15dc4ab7ae466aaff3ea8e36a5b496c5"><div class="ttname"><a href="struct_stream_state.html#a15dc4ab7ae466aaff3ea8e36a5b496c5">StreamState::PinStartEnable</a></div><div class="ttdeci">CyBool_t PinStartEnable</div><div class="ttdef"><b>Definition:</b> main.h:215</div></div>
@@ -474,7 +476,7 @@ $(function() {
 <div class="ttc" id="a_spi_functions_8h_html"><div class="ttname"><a href="_spi_functions_8h.html">SpiFunctions.h</a></div><div class="ttdoc">Header file for all SPI related functions.</div></div>
 <div class="ttc" id="astruct_stream_state_html_ae7508d498a6d9019fdf897002babe7ed"><div class="ttname"><a href="struct_stream_state.html#ae7508d498a6d9019fdf897002babe7ed">StreamState::NumRealTimeCaptures</a></div><div class="ttdeci">uint32_t NumRealTimeCaptures</div><div class="ttdef"><b>Definition:</b> main.h:218</div></div>
 <div class="ttc" id="amain_8h_html_a5d0d41db1886fb75e6a09e4b74cdbc54a5e34d441ee6a3224918d9a8612d5ea1c"><div class="ttname"><a href="main_8h.html#a5d0d41db1886fb75e6a09e4b74cdbc54a5e34d441ee6a3224918d9a8612d5ea1c">iSensorFX3Board_F</a></div><div class="ttdeci">@ iSensorFX3Board_F</div><div class="ttdef"><b>Definition:</b> main.h:85</div></div>
-<div class="ttc" id="amain_8h_html_a9a66ed1cd4bddfaee4a19ede70f94cc1"><div class="ttname"><a href="main_8h.html#a9a66ed1cd4bddfaee4a19ede70f94cc1">AdiControlEndpointHandler</a></div><div class="ttdeci">CyBool_t AdiControlEndpointHandler(uint32_t setupdat0, uint32_t setupdat1)</div><div class="ttdoc">This function handles events generated by the control endpoint. All vendor requests are handled in th...</div><div class="ttdef"><b>Definition:</b> main.c:212</div></div>
+<div class="ttc" id="amain_8h_html_a9a66ed1cd4bddfaee4a19ede70f94cc1"><div class="ttname"><a href="main_8h.html#a9a66ed1cd4bddfaee4a19ede70f94cc1">AdiControlEndpointHandler</a></div><div class="ttdeci">CyBool_t AdiControlEndpointHandler(uint32_t setupdat0, uint32_t setupdat1)</div><div class="ttdoc">This function handles events generated by the control endpoint. All vendor requests are handled in th...</div><div class="ttdef"><b>Definition:</b> main.c:215</div></div>
 <div class="ttc" id="astruct_stream_state_html_a037ffc43383b91a44fe8a05a69f9d7c5"><div class="ttname"><a href="struct_stream_state.html#a037ffc43383b91a44fe8a05a69f9d7c5">StreamState::BytesPerUsbPacket</a></div><div class="ttdeci">uint16_t BytesPerUsbPacket</div><div class="ttdef"><b>Definition:</b> main.h:242</div></div>
 <div class="ttc" id="amain_8h_html_a38a24bf6934ff03f0ffdd12f78809a06"><div class="ttname"><a href="main_8h.html#a38a24bf6934ff03f0ffdd12f78809a06">StreamState</a></div><div class="ttdeci">struct StreamState StreamState</div><div class="ttdoc">Struct to store the current data stream state information.</div></div>
 <div class="ttc" id="astruct_stream_state_html_ad29bdadbd9a94e8faa2f5a98b954218d"><div class="ttname"><a href="struct_stream_state.html#ad29bdadbd9a94e8faa2f5a98b954218d">StreamState::RoundedByteTransferLength</a></div><div class="ttdeci">uint16_t RoundedByteTransferLength</div><div class="ttdef"><b>Definition:</b> main.h:227</div></div>
