@@ -50,9 +50,6 @@ static uint32_t SCLKActiveMask;
 /** SCLK idle setting. Based on CPOL */
 static uint32_t SCLKInactiveMask;
 
-/** Mask for the MOSI pin */
-static uint32_t MOSIMask;
-
 /** SCLK low period offset */
 static uint32_t SCLKLowTime;
 
@@ -412,10 +409,6 @@ static CyU3PReturnStatus_t AdiBitBangSpiSetup(BitBangSpiConf config)
 	CSPin = &GPIO->lpp_gpio_simple[config.CS];
 	SCLKPin = &GPIO->lpp_gpio_simple[config.SCLK];
 
-	/* Set the MOSI mask and clear output bit */
-	MOSIMask = *MOSIPin;
-	MOSIMask &= ~CY_U3P_LPP_GPIO_OUT_VALUE;
-
 	/* Calculate wait value for short half of period */
 	SCLKLowTime = config.HalfClockDelay + BITBANG_HALFCLOCK_OFFSET;
 
@@ -468,7 +461,7 @@ static void AdiBitBangSpiTransferCPHA1(uint8_t * MOSI, uint8_t* MISO, uint32_t B
 	for(bitCounter = 0; bitCounter < (BitCount - 1); bitCounter++)
 	{
 		/* Place output data bit on MOSI pin (approx. 150ns) */
-		*MOSIPin = MOSIMask | MOSI[bitCounter];
+		*MOSIPin = GPIO_LOW | MOSI[bitCounter];
 
 		/* Toggle SCLK active */
 		*SCLKPin = SCLKActiveMask;
@@ -493,7 +486,7 @@ static void AdiBitBangSpiTransferCPHA1(uint8_t * MOSI, uint8_t* MISO, uint32_t B
 	/* Perform last bit outside the loop to save some time */
 
 	/* Place output data bit on MOSI pin */
-	*MOSIPin = MOSIMask | MOSI[BitCount - 1];
+	*MOSIPin = GPIO_LOW | MOSI[BitCount - 1];
 
 	/* Toggle SCLK active */
 	*SCLKPin = SCLKActiveMask;
@@ -546,7 +539,7 @@ static void AdiBitBangSpiTransferCPHA0(uint8_t * MOSI, uint8_t* MISO, uint32_t B
 	*CSPin = GPIO_LOW;
 
 	/* Load initial data bit to output */
-	*MOSIPin = MOSIMask | MOSI[0];
+	*MOSIPin = GPIO_LOW | MOSI[0];
 
 	/* Wait for CS lead delay */
 	cycleTimer = config.CSLeadDelay;
@@ -571,7 +564,7 @@ static void AdiBitBangSpiTransferCPHA0(uint8_t * MOSI, uint8_t* MISO, uint32_t B
 		*SCLKPin = SCLKInactiveMask;
 
 		/* Place output data bit on MOSI pin (approx. 150ns) */
-		*MOSIPin = MOSIMask | MOSI[bitCounter + 1];
+		*MOSIPin = GPIO_LOW | MOSI[bitCounter + 1];
 
 		/* Wait HalfClock period (w/ added offset to make duty cycle 50%)*/
 		cycleTimer = SCLKLowTime;
