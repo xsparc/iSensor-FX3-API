@@ -233,10 +233,6 @@ CyBool_t AdiIsValidGPIO(uint16_t GpioId)
 	if(GpioId == ADI_ID_PIN_1)
 		return CyFalse;
 
-	/* Debug Tx pin is reserved */
-	if(GpioId == ADI_DEBUG_TX_PIN)
-		return CyFalse;
-
 	/* Flash enable pin reserved */
 	if(GpioId == ADI_FLASH_WRITE_ENABLE_PIN)
 		return CyFalse;
