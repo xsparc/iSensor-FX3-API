@@ -320,7 +320,8 @@ Public Class BitBangSpiConfig
     ''' on the clock active to inactive edge, and updated on the inactive to active
     ''' edge. If set to true (1), data is updated on the clock 
     ''' active to inactive transition, and data is sampled on the inactive to 
-    ''' active edge.
+    ''' active edge. The CPHA/CPOL settings used are based on this diagram:
+    ''' https://en.wikipedia.org/wiki/Serial_Peripheral_Interface#/media/File:SPI_timing_diagram2.svg
     ''' </summary>
     Public CPHA As Boolean
 
