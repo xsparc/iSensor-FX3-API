@@ -53,7 +53,8 @@ main (
     ioCfg.useI2S    = CyFalse;
     ioCfg.useSpi    = CyFalse;
     ioCfg.gpioSimpleEn[0] = 0;
-    ioCfg.gpioSimpleEn[1] = (1 << (APP_LED_GPIO - 32));
+    /* LED (54), supply control (33-34) */
+    ioCfg.gpioSimpleEn[1] = (1 << (APP_LED_GPIO - 32))|(0x3 << 1);
 
     status = CyFx3BootDeviceConfigureIOMatrix (&ioCfg);
     if (status != CY_FX3_BOOT_SUCCESS)
@@ -76,13 +77,15 @@ main (
     gpioConf.driveHighEn = CyTrue;
     gpioConf.outValue    = CyTrue;
     gpioConf.intrMode    = CY_FX3_BOOT_GPIO_NO_INTR;
+    CyFx3BootGpioSetSimpleConfig (APP_LED_GPIO, &gpioConf);
 
-    status = CyFx3BootGpioSetSimpleConfig (APP_LED_GPIO, &gpioConf);
-    if (status != CY_FX3_BOOT_SUCCESS)
-        return status;
+    /* Enable 3.3V supply - Set 5V (34) high, 3.3V (33) low */
+    CyFx3BootGpioSetSimpleConfig (34, &gpioConf);
+    gpioConf.outValue    = CyFalse;
+    CyFx3BootGpioSetSimpleConfig (33, &gpioConf);
 
     /* Enable this for booting off the USB */
-    myUsbBoot ();
+    myUsbBoot();
 
     while (1)
     {
