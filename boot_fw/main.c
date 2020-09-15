@@ -45,7 +45,7 @@ main (
     CyFx3BootGpioSimpleConfig_t gpioConf;
 
     /* HW and SW initialization code  */
-    CyFx3BootDeviceInit (CyTrue);
+    CyFx3BootDeviceInit(CyTrue);
 
     ioCfg.isDQ32Bit = CyFalse;
     ioCfg.useUart   = CyFalse;
@@ -53,23 +53,23 @@ main (
     ioCfg.useI2S    = CyFalse;
     ioCfg.useSpi    = CyFalse;
     ioCfg.gpioSimpleEn[0] = 0;
-    /* LED (54), supply control (33-34) */
-    ioCfg.gpioSimpleEn[1] = (1 << (APP_LED_GPIO - 32))|(0x3 << 1);
+    /* LED (54) */
+    ioCfg.gpioSimpleEn[1] = (1 << (APP_LED_GPIO - 32));
 
-    status = CyFx3BootDeviceConfigureIOMatrix (&ioCfg);
+    status = CyFx3BootDeviceConfigureIOMatrix(&ioCfg);
     if (status != CY_FX3_BOOT_SUCCESS)
     {
-        CyFx3BootDeviceReset ();
+        CyFx3BootDeviceReset();
         return status;
     }
 
-    CyFx3BootGpioInit ();
+    CyFx3BootGpioInit();
 
     /* Set SCLK pull up */
-    CyFx3BootGpioSetIoMode (APP_SCLK_GPIO, CY_FX3_GPIO_IO_MODE_WPU);
+    CyFx3BootGpioSetIoMode(APP_SCLK_GPIO, CY_FX3_GPIO_IO_MODE_WPU);
 
     /* Set CS pull up */
-    CyFx3BootGpioSetIoMode (APP_LED_GPIO, CY_FX3_GPIO_IO_MODE_WPU);
+    CyFx3BootGpioSetIoMode(APP_LED_GPIO, CY_FX3_GPIO_IO_MODE_WPU);
 
     /* Configure the GPIO for driving the LED. */
     gpioConf.inputEn     = CyFalse;
@@ -77,12 +77,7 @@ main (
     gpioConf.driveHighEn = CyTrue;
     gpioConf.outValue    = CyTrue;
     gpioConf.intrMode    = CY_FX3_BOOT_GPIO_NO_INTR;
-    CyFx3BootGpioSetSimpleConfig (APP_LED_GPIO, &gpioConf);
-
-    /* Enable 3.3V supply - Set 5V (34) high, 3.3V (33) low */
-    CyFx3BootGpioSetSimpleConfig (34, &gpioConf);
-    gpioConf.outValue    = CyFalse;
-    CyFx3BootGpioSetSimpleConfig (33, &gpioConf);
+    CyFx3BootGpioSetSimpleConfig(APP_LED_GPIO, &gpioConf);
 
     /* Enable this for booting off the USB */
     myUsbBoot();
@@ -92,29 +87,29 @@ main (
         /* Enable this piece of code when using the USB module.
          * Call the new wrapper function which handles all state changes as required.
          */
-        CyFx3BootUsbHandleEvents ();
+        CyFx3BootUsbHandleEvents();
 
         /* Handle blinking the LED */
 
         switch(mode)
 		{
         case 1: /* Blink LED */
-            CyFx3BootGpioSetValue (APP_LED_GPIO, CyTrue);
-            CyFx3BootBusyWait (65534);
-            CyFx3BootGpioSetValue (APP_LED_GPIO, CyFalse);
-            CyFx3BootBusyWait (65534);
+            CyFx3BootGpioSetValue(APP_LED_GPIO, CyTrue);
+            CyFx3BootBusyWait(65534);
+            CyFx3BootGpioSetValue(APP_LED_GPIO, CyFalse);
+            CyFx3BootBusyWait(65534);
             break;
 
         case 2: /* Turn LED on */
-        	CyFx3BootGpioSetValue (APP_LED_GPIO, CyFalse);
+        	CyFx3BootGpioSetValue(APP_LED_GPIO, CyFalse);
         	break;
 
         case 3: /* Turn LED off*/
-        	CyFx3BootGpioSetValue (APP_LED_GPIO, CyTrue);
+        	CyFx3BootGpioSetValue(APP_LED_GPIO, CyTrue);
         	break;
 
         default: /* Turn LED off*/
-        	CyFx3BootGpioSetValue (APP_LED_GPIO, CyTrue);
+        	CyFx3BootGpioSetValue(APP_LED_GPIO, CyTrue);
 		}
 
     }

@@ -125,9 +125,9 @@ unsigned char gbProductDesc[] =
     'v',0x00,
     '1',0x00,
     '.',0x00,
-    '1',0x00,
+    '0',0x00,
     '.',0x00,
-    '0',0x00
+    '1',0x00
 };
 
 unsigned char gbSerialNumDesc [] = 
