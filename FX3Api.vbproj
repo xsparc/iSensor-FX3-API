@@ -98,19 +98,6 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FX3Api.vb" />
-    <Compile Include="FX3BitBangSpi.vb" />
-    <Compile Include="FX3Burst.vb" />
-    <Compile Include="FX3DataStreaming.vb" />
-    <Compile Include="FX3DataStructures.vb" />
-    <Compile Include="FX3ErrorLog.vb" />
-    <Compile Include="FX3Exceptions.vb" />
-    <Compile Include="FX3I2C.vb" />
-    <Compile Include="FX3IPinFcns.vb" />
-    <Compile Include="FX3IRegInterface.vb" />
-    <Compile Include="FX3PinObject.vb" />
-    <Compile Include="FX3Programming.vb" />
-    <Compile Include="FX3Spi32.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -126,6 +113,19 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="src\FX3Api.vb" />
+    <Compile Include="src\FX3BitBangSpi.vb" />
+    <Compile Include="src\FX3Burst.vb" />
+    <Compile Include="src\FX3DataStreaming.vb" />
+    <Compile Include="src\FX3DataStructures.vb" />
+    <Compile Include="src\FX3ErrorLog.vb" />
+    <Compile Include="src\FX3Exceptions.vb" />
+    <Compile Include="src\FX3I2C.vb" />
+    <Compile Include="src\FX3IPinFcns.vb" />
+    <Compile Include="src\FX3IRegInterface.vb" />
+    <Compile Include="src\FX3PinObject.vb" />
+    <Compile Include="src\FX3Programming.vb" />
+    <Compile Include="src\FX3Spi32.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
@@ -136,7 +136,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
       <LastGenOutput>Application.Designer.vb</LastGenOutput>
@@ -146,6 +145,7 @@
       <CustomToolNamespace>My</CustomToolNamespace>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
+    <None Include="src\app.config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\adisApi.dll" />
