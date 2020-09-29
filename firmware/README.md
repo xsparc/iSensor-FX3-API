@@ -4,7 +4,7 @@
 
 The iSensor FX3 firmware is designed to provide users with a means of reliably acquiring sensor data over a high-speed USB connection in any .NET compatible application. This firmware was designed for use on the Cypress FX3 SuperSpeed Explorer Kit and relies on the open source libraries provided by Cypress to operate. The freely-available, Eclipse-based, Cypress EZ USB Suite was used for all firmware development. 
 
-Doxygen generated documentation for the firmware can be found here: https://juchong.github.io/iSensor-FX3-Firmware/.
+Doxygen generated documentation for the firmware can be found here: https://juchong.github.io/iSensor-FX3-API//firmware/docs/index.html.
 
 ## System Architecture
 
@@ -18,7 +18,7 @@ This firmware was designed around the Cypress EZ-USB FX3 SuperSpeed USB Controll
 
 The next-generation FX3-based interface board now includes many additional firmware and hardware features that make testing, characterizing, and developing software for iSensor products easy. Firmware and API support for this board are included in release v2.5 onward. 
 
-![iSensor FX3 Evaluation Board](hardware/pictures/img6.jpg)
+![iSensor FX3 Evaluation Board](../hardware/pictures/img6.jpg)
 
 Some of the board's features include:
 
@@ -37,23 +37,23 @@ Some of the board's features include:
 - Very low CPU usage while capturing data, even on older Windows machines
 - 1.5" x 1.75" PCB footprint
 
-![iSensor FX3 Evaluation Board with IMU ](hardware/pictures/img7.jpg)
+![iSensor FX3 Evaluation Board with IMU ](../hardware/pictures/img7.jpg)
 
-Design files for the breakout board is available in the [hardware](https://github.com/juchong/iSensor-FX3-Firmware/tree/master/hardware) folder of this repository. 
+Design files for the breakout board is available in the [hardware](https://github.com/juchong/iSensor-FX3-API/tree/master/hardware) folder of this repository. 
 
 ## SuperSpeed Explorer Kit Breakout Board
 
 A breakout board designed for interfacing iSensor devices with the Cypress SuperSpeed Explorer Kit (CYUSB3KIT-003) was introduced as a temporary solution while a more feature-rich offering was developed.  Both boards will continue to be supported in future firmware revisions. 
 
-![CYUSB3KIT-003 and Breakout Board](hardware/pictures/img2.jpg)
+![CYUSB3KIT-003 and Breakout Board](../hardware/pictures/img2.jpg)
 
-Design files for both breakout boards are available in the [hardware](https://github.com/juchong/iSensor-FX3-Firmware/tree/master/hardware) folder of this repository. 
+Design files for both breakout boards are available in the [hardware](https://github.com/juchong/iSensor-FX3-API/tree/master/hardware) folder of this repository. 
 
 ## SuperSpeed Explorer Kit Jumper Configuration
 
 The Explorer Kit requires **three** jumpers to be installed to operate correctly as shown in the image below. **Jumpers J2, J3, and J5 must be installed** when using the SuperSpeed Explorer Kit. **Jumper J4 must be open** to allow booting from the onboard EEPROM. 
 
- ![FX3 Jumper Locations](hardware/pictures/JumperLocations.jpg)
+ ![FX3 Jumper Locations](../hardware/pictures/JumperLocations.jpg)
 
 ## Setting Up The Development Environment
 
@@ -67,15 +67,7 @@ This firmware relies heavily on the accompanying FX3 API to implement many timin
 
 ## Drivers
 
-As of v1.0.6, custom, signed, Analog Devices drivers must be used to communicate with the iSensor FX3 Firmware. The driver installation package can be found in the [drivers](https://github.com/juchong/iSensor-FX3-Firmware/tree/master/drivers) folder in this repository or downloaded directly from [here](https://github.com/juchong/iSensor-FX3-Firmware/raw/master/drivers/FX3DriverSetup.exe). 
-
-## Supporting Repositories
-
-The two repositories listed below were developed alongside this firmware and provide an easy way to implement iSensor FX3 Firmware features in a .NET application.
-
-1. [iSensor FX3 API](https://github.com/juchong/iSensor-FX3-API)
-
-2. [iSensor FX3 Example Gui](https://github.com/juchong/iSensor-FX3-ExampleGui)
+As of v1.0.6, custom, signed, Analog Devices drivers must be used to communicate with the iSensor FX3 Firmware. The driver installation package can be found in the [drivers](https://github.com/juchong/iSensor-FX3-API/tree/master/drivers) folder in this repository or downloaded directly from [here](https://github.com/juchong/iSensor-FX3-API/raw/master/drivers/FX3DriverSetup.exe). 
 
 ## Debugging
 
