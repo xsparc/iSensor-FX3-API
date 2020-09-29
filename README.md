@@ -18,9 +18,9 @@ A .NET-compatible API (this repository) has been developed in parallel to simpli
 
 ## API Documentation
 
-Sandcastle-generated documentation for the FX3 API .NET library can be found [https://juchong.github.io/iSensor-FX3-API/](https://juchong.github.io/iSensor-FX3-API/). 
+Sandcastle-generated documentation for the FX3 API .NET library can be found here: [https://juchong.github.io/iSensor-FX3-API/](https://juchong.github.io/iSensor-FX3-API/). 
 
-Doxygen generated documentation for the iSensor FX3 firmware is stored in /docs/firmware within this repository
+Doxygen generated documentation for the iSensor FX3 firmware can be found here: https://juchong.github.io/iSensor-FX3-API//firmware/docs/index.html
 
 ## iSensor FX3 Evaluation Board
 
