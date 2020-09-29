@@ -34,7 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CyUSB">
-      <HintPath>..\iSensor-FX3-ExampleGui\Resources\CyUSB.dll</HintPath>
+      <HintPath>..\..\Resources\CyUSB.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -51,8 +51,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(TargetDir)\FX3USB.dll" "$(ProjectDir)\..\Resources\FX3USB.dll"
-copy /Y "$(TargetDir)\FX3USB.xml" "$(ProjectDir)\..\Resources\FX3USB.xml"</PostBuildEvent>
+    <PostBuildEvent>copy /Y "$(TargetDir)\FX3USB.dll" "$(ProjectDir)\..\..\Resources\FX3USB.dll"
+copy /Y "$(TargetDir)\FX3USB.xml" "$(ProjectDir)\..\..\Resources\FX3USB.xml"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
