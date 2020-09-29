@@ -1,0 +1,10 @@
+#Ignore most build files
+*.o
+*.d
+*.elf
+
+.settings/
+[Dd]ebug/
+[Rr]elease/
+
+Doxygen/
