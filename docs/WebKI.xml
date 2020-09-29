@@ -130,8 +130,8 @@
   <HelpKINode Title="Connect method" Url="html/4b6e5cd7-b945-45e2-6275-936e9b9b4a5e.htm" />
   <HelpKINode Title="Contains method" Url="html/dca41037-07eb-5adf-2647-4454d2ce1656.htm" />
   <HelpKINode Title="ConvertBufferDataToU32 method" Url="html/df849baa-d713-90d6-cba3-0ddf2698f98f.htm" />
-  <HelpKINode Title="CPHA field" Url="html/1071540f-81ee-c439-e7b6-d06cd2ee620f.htm" />
   <HelpKINode Title="Cpha field" Url="html/4103f791-9bbd-c688-3fbb-3d17bde9f6c2.htm" />
+  <HelpKINode Title="CPHA field" Url="html/1071540f-81ee-c439-e7b6-d06cd2ee620f.htm" />
   <HelpKINode Title="Cpha property" Url="html/511c950b-5384-4fba-8694-f6ce93a52bf3.htm" />
   <HelpKINode Title="Cpol field" Url="html/7fdb8b3e-91d8-f219-093b-e602c2b7fcb3.htm" />
   <HelpKINode Title="CPOL field" Url="html/797a1c4a-04fe-e618-1cd8-bf850655a7f2.htm" />
@@ -656,8 +656,8 @@
   <HelpKINode Title="ResetPin property" Url="html/323fa924-24da-f60d-2c4d-b0e63c274ee7.htm" />
   <HelpKINode Title="RestoreHardwareSpi method" Url="html/7bffc307-014c-a89b-8d5c-9978358c74bb.htm" />
   <HelpKINode Title="SCLK field" Url="html/bca90136-f9a9-b710-6290-c4e2455818c2.htm" />
-  <HelpKINode Title="SCLKFrequency property" Url="html/705196d0-12a4-0bd3-2faa-f275f3ce5943.htm" />
   <HelpKINode Title="SclkFrequency property" Url="html/6c81a4f6-5c6c-36a0-9c51-90450e3a156a.htm" />
+  <HelpKINode Title="SCLKFrequency property" Url="html/705196d0-12a4-0bd3-2faa-f275f3ce5943.htm" />
   <HelpKINode Title="SCLKHalfPeriodTicks field" Url="html/8b8fd904-046d-798e-6492-b3b786d4e65b.htm" />
   <HelpKINode Title="SecondsToTimerTicks field" Url="html/e336c5ce-fc50-16cc-aa46-21cd4e3927ef.htm" />
   <HelpKINode Title="SensorType enumeration" Url="html/5ccc3358-a671-dc2c-bb84-dbd123d82e9b.htm" />
