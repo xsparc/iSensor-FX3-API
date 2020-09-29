@@ -4,21 +4,23 @@
 
 ![Most Recent Test Results](https://raw.githubusercontent.com/ajn96/iSensor-FX3-Test/master/Results/test_status.png)
 
-The test repository for the iSensor FX3 API and FX3 Firmware is hosted [here](https://github.com/ajn96/iSensor-FX3-Test). This respository includes source for all test cases (C# running on NUnit 2.6.4) and a simple nightly build CI script for a Windows host. All test cases are system level tests running on target hardware.
+The test repository for the iSensor FX3 API and FX3 Firmware is hosted [here](https://github.com/ajn96/iSensor-FX3-Test). This repository includes source for all test cases (C# running on NUnit 2.6.4) and a simple nightly build CI script for a Windows host. All test cases are system level tests running on target hardware.
 
 ## Overview
 
-The iSensor FX3 Firmware and API are designed to provide users with a means of reliably acquiring sensor data over a high-speed USB connection in any .NET compatible application. This firmware was designed for use on the Cypress FX3 SuperSpeed Explorer Kit and relies on the open source libraries provided by Cypress to operate. The freely-available, Eclipse-based, Cypress EZ USB Suite was used for all firmware development. 
+The iSensor FX3 Firmware and API provide users with a simple means of reliably acquiring sensor data over a high-speed USB connection in any .NET framework compatible application. This firmware was designed for use on the Cypress FX3 SuperSpeed Explorer Kit as well as the EVAL-ADIS-FX3 IMU evaluation board. The freely-available, Eclipse-based, Cypress EZ USB Suite was used for all firmware development. 
 
 ## System Architecture
 
 The iSensor FX3 firmware attempts to follow the Cypress program workflow and relies on FX3 system threading, execution priority, and event flags to execute firmware subroutines and transmit sensor data. Unique vendor commands trigger subroutines embedded in the iSensor FX3 firmware that read and write SPI data, measure external pulses, generate clock signals, and manage board configuration. Different SPI streaming modes are implemented which allow applications to easily communicate to most products in the iSensor portfolio. 
 
-A .NET-compatible API (this repository) has been developed in parallel to simplify interfacing with the iSensor FX3 firmware. 
+A .NET-compatible API (this repository) has been developed in parallel to simplify interfacing PC software with the iSensor FX3 firmware. 
 
 ## API Documentation
 
-Sandcastle-generated documentation for the FX3 API class can be found [https://juchong.github.io/iSensor-FX3-API/](https://juchong.github.io/iSensor-FX3-API/). 
+Sandcastle-generated documentation for the FX3 API .NET library can be found [https://juchong.github.io/iSensor-FX3-API/](https://juchong.github.io/iSensor-FX3-API/). 
+
+Doxygen generated documentation for the iSensor FX3 firmware is stored in /docs/firmware within this repository
 
 ## iSensor FX3 Evaluation Board
 
@@ -47,7 +49,7 @@ Some of the board's features include:
 
 ![iSensor FX3 Evaluation Board with IMU ](https://raw.githubusercontent.com/juchong/iSensor-FX3-Firmware/master/hardware/pictures/img7.jpg)
 
-Design files for the breakout board is available in the [hardware](https://github.com/juchong/iSensor-FX3-Firmware/tree/master/hardware) folder of this repository. 
+Design files for the breakout board is available in the [hardware](https://github.com/juchong/iSensor-FX3-API/tree/master/hardware) folder of this repository. 
 
 ## SuperSpeed Explorer Kit Breakout Board
 
@@ -55,7 +57,7 @@ A breakout board designed for interfacing iSensor devices with the Cypress Super
 
 ![CYUSB3KIT-003 and Breakout Board](https://raw.githubusercontent.com/juchong/iSensor-FX3-Firmware/master/hardware/pictures/img2.jpg)
 
-Design files for both breakout boards are available in the [hardware](https://github.com/juchong/iSensor-FX3-Firmware/tree/master/hardware) folder of this repository. 
+Design files for both breakout boards are available in the [hardware](https://github.com/juchong/iSensor-FX3-API/tree/master/hardware) folder of this repository. 
 
 ## SuperSpeed Explorer Kit Jumper Configuration
 
@@ -87,11 +89,7 @@ As of v1.0.6, custom, signed, Analog Devices drivers must be used to communicate
 
 ## Supporting Repositories
 
-As mentioned above, the two repositories listed below were developed alongside this firmware and provide an easy way to implement iSensor FX3 Firmware features in a .NET application. It is *highly* recommended that the FX3 Firmware and API versions match!
-
-1. [iSensor FX3 Firmware](https://github.com/juchong/iSensor-FX3-Firmware)
-
-2. [iSensor FX3 Example Gui](https://github.com/juchong/iSensor-FX3-ExampleGui)
+2. [iSensor FX3 IMU Eval GUI](https://github.com/juchong/iSensor-FX3-ExampleGui)
 
 ## iSensor-Specific Library Information
 
