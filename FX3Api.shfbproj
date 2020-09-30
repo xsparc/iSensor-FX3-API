@@ -14,16 +14,17 @@
     <Name>Documentation</Name>
     <!-- SHFB properties -->
     <FrameworkVersion>.NET Framework 4.5</FrameworkVersion>
-    <OutputPath>docs\</OutputPath>
+    <OutputPath>docs\api\</OutputPath>
     <HtmlHelpName>Documentation</HtmlHelpName>
     <Language>en-US</Language>
     <DocumentationSources>
       <DocumentationSource sourceFile="bin\Debug\FX3Api.xml" />
-<DocumentationSource sourceFile="bin\Debug\FX3Api.dll" />
-<DocumentationSource sourceFile="Resources\FX3ApiWrapper.dll" />
-<DocumentationSource sourceFile="Resources\FX3ApiWrapper.xml" />
-<DocumentationSource sourceFile="Resources\FX3USB.dll" />
-<DocumentationSource sourceFile="Resources\FX3USB.xml" /></DocumentationSources>
+      <DocumentationSource sourceFile="bin\Debug\FX3Api.dll" />
+      <DocumentationSource sourceFile="Resources\FX3ApiWrapper.dll" />
+      <DocumentationSource sourceFile="Resources\FX3ApiWrapper.xml" />
+      <DocumentationSource sourceFile="Resources\FX3USB.dll" />
+      <DocumentationSource sourceFile="Resources\FX3USB.xml" />
+    </DocumentationSources>
     <WarnOnMissingSourceContext>False</WarnOnMissingSourceContext>
     <HelpFileFormat>Website</HelpFileFormat>
     <SyntaxFilters>Standard</SyntaxFilters>
@@ -36,9 +37,10 @@
     <SaveComponentCacheCapacity>100</SaveComponentCacheCapacity>
     <NamespaceSummaries>
       <NamespaceSummaryItem name="(global)" isDocumented="True" />
-<NamespaceSummaryItem name="FX3Api" isDocumented="True">Documentation for the iSensor FX3 Demonstartion Platform public .NET API</NamespaceSummaryItem>
-<NamespaceSummaryItem name="FX3USB" isDocumented="True">An implementation of XferData (provided by CYUSB) which properly pins the internal buffers used. This prevents heap corruption due to errant garbage collection.</NamespaceSummaryItem>
-<NamespaceSummaryItem name="FX3ApiWrapper" isDocumented="True">Simplified wrapper interface to the FX3 API intended for use in non .NET native languages</NamespaceSummaryItem></NamespaceSummaries>
+      <NamespaceSummaryItem name="FX3Api" isDocumented="True">Documentation for the iSensor FX3 Demonstartion Platform public .NET API</NamespaceSummaryItem>
+      <NamespaceSummaryItem name="FX3USB" isDocumented="True">An implementation of XferData (provided by CYUSB) which properly pins the internal buffers used. This prevents heap corruption due to errant garbage collection.</NamespaceSummaryItem>
+      <NamespaceSummaryItem name="FX3ApiWrapper" isDocumented="True">Simplified wrapper interface to the FX3 API intended for use in non .NET native languages</NamespaceSummaryItem>
+    </NamespaceSummaries>
     <VisibleItems>ExplicitInterfaceImplementations, InheritedMembers, InheritedFrameworkMembers, Protected, ProtectedInternalAsProtected, NonBrowsable</VisibleItems>
     <HelpTitle>Analog Devices iSensor FX3 API Documentation</HelpTitle>
     <HelpFileVersion>1.0.0.0</HelpFileVersion>
