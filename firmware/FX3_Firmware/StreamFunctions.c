@@ -526,6 +526,9 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 		status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
 		AdiSleepForMicroSeconds(FX3State.StallTime);
 
+		/* Delay for setting to apply to DUT */
+		AdiSleepForMicroSeconds(500);
+
 		/* Configure SYNC/RTS as an output and set high */
 		gpioConfig.outValue = CyTrue;
 		gpioConfig.inputEn = CyFalse;
