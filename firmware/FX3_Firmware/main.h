@@ -167,9 +167,6 @@ typedef struct BoardState
 	/** Track the data ready pin number */
 	uint16_t DrPin;
 
-	/** Track the busy pin number */
-	uint16_t BusyPin;
-
 	/** Track if data ready triggering is active (True = active, False = inactive) */
 	CyBool_t DrActive;
 

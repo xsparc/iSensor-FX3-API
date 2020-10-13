@@ -414,7 +414,7 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	StreamThreadState.NumRealTimeCaptures += (USBBuffer[2] << 16);
 	StreamThreadState.NumRealTimeCaptures += (USBBuffer[3] << 24);
 
-	/* Get pin start setting */
+	/* Get pin start setting. Pin exit setting already set here */
 	StreamThreadState.PinStartEnable = (CyBool_t) USBBuffer[4];
 
 	/* Flush streaming end point */
@@ -446,63 +446,59 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 	/* Clear the DMA buffers */
 	CyU3PDmaChannelReset(&StreamingChannel);
 
-	/* Handle start conditions */
-	if(StreamThreadState.PinExitEnable)
+	/* Handle start conditions
+	 * Disable starting the capture by raising SYNC/RTS
+	 * If this is not done before setting SYNC/RTS high, things will break */
+	if(StreamThreadState.PinExitEnable && !StreamThreadState.PinStartEnable)
 	{
-		/* Disable starting the capture by raising SYNC/RTS
-		 * If this is not done before setting SYNC/RTS high, things will break */
-
 		/* If pin start is disabled (we're starting the capture with GLOB_CMD) */
-		if(!StreamThreadState.PinStartEnable)
+		/* Read MSC_CTRL register */
+		tempReadBuffer[1] = (0x64);
+		tempReadBuffer[0] = (0x00);
+		status = CyU3PSpiTransmitWords(tempReadBuffer, 2);
+		if (status != CY_U3P_SUCCESS)
 		{
-			/* Read MSC_CTRL register */
-			tempReadBuffer[1] = (0x64);
-			tempReadBuffer[0] = (0x00);
-			status = CyU3PSpiTransmitWords(tempReadBuffer, 2);
-			if (status != CY_U3P_SUCCESS)
-			{
-				AdiLogError(StreamFunctions_c, __LINE__, status);
-				AdiAppErrorHandler(status);
-			}
-			AdiSleepForMicroSeconds(FX3State.StallTime);
-			status = CyU3PSpiReceiveWords(tempReadBuffer, 2);
-			AdiSleepForMicroSeconds(FX3State.StallTime);
+			AdiLogError(StreamFunctions_c, __LINE__, status);
+			AdiAppErrorHandler(status);
+		}
+		AdiSleepForMicroSeconds(FX3State.StallTime);
+		status = CyU3PSpiReceiveWords(tempReadBuffer, 2);
+		AdiSleepForMicroSeconds(FX3State.StallTime);
 
-			/* Clear bit 12 (bit enables/disables starting a capture using SYNC pin) */
-			tempReadBuffer[1] = tempReadBuffer[1] & (0xEF);
+		/* Clear bit 12 (bit enables/disables starting a capture using SYNC pin) */
+		tempReadBuffer[1] = tempReadBuffer[1] & (0xEF);
 
-			/* Write modified buffer to MSC_CTRL */
-			tempWriteBuffer[1] = (0x80) | (0x64);
-			tempWriteBuffer[0] = tempReadBuffer[0];
-			status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
-			AdiSleepForMicroSeconds(FX3State.StallTime);
-			tempWriteBuffer[1] = (0x80) | (0x65);
-			tempWriteBuffer[0] = tempReadBuffer[0];
-			status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
-			AdiSleepForMicroSeconds(FX3State.StallTime);
+		/* Write modified buffer to MSC_CTRL */
+		tempWriteBuffer[1] = (0x80) | (0x64);
+		tempWriteBuffer[0] = tempReadBuffer[0];
+		status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
+		AdiSleepForMicroSeconds(FX3State.StallTime);
+		tempWriteBuffer[1] = (0x80) | (0x65);
+		tempWriteBuffer[0] = tempReadBuffer[0];
+		status = CyU3PSpiTransmitWords(tempWriteBuffer, 2);
+		AdiSleepForMicroSeconds(FX3State.StallTime);
 
-			/* Configure SYNC/RTS as an output and set high */
-			gpioConfig.outValue = CyTrue;
-			gpioConfig.inputEn = CyFalse;
-			gpioConfig.driveLowEn = CyTrue;
-			gpioConfig.driveHighEn = CyTrue;
-			gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
-			status = CyU3PGpioSetSimpleConfig(FX3State.BusyPin, &gpioConfig);
+		/* Configure SYNC (DIO2) as an output and set high */
+		gpioConfig.outValue = CyTrue;
+		gpioConfig.inputEn = CyFalse;
+		gpioConfig.driveLowEn = CyTrue;
+		gpioConfig.driveHighEn = CyTrue;
+		gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
+		status = CyU3PGpioSetSimpleConfig(FX3State.PinMap.ADI_PIN_DIO1, &gpioConfig);
 
-			/* If config fails try to override and reconfigure */
-			if(status != CY_U3P_SUCCESS)
-			{
-				status = CyU3PDeviceGpioOverride (FX3State.BusyPin, CyTrue);
-				status = CyU3PGpioSetSimpleConfig(FX3State.BusyPin, &gpioConfig);
-			}
+		/* If config fails try to override and reconfigure */
+		if(status != CY_U3P_SUCCESS)
+		{
+			status = CyU3PDeviceGpioOverride(FX3State.PinMap.ADI_PIN_DIO1, CyTrue);
+			status = CyU3PGpioSetSimpleConfig(FX3State.PinMap.ADI_PIN_DIO1, &gpioConfig);
+		}
 
-			/* Check that the pin is configured to act as an output, return if not */
-			status = CyU3PGpioSimpleSetValue(FX3State.BusyPin, CyTrue);
-			if(status != CY_U3P_SUCCESS)
-			{
-				AdiLogError(StreamFunctions_c, __LINE__, status);
-				AdiAppErrorHandler(status);
-			}
+		/* Check that the pin is configured to act as an output, return if not */
+		status = CyU3PGpioSimpleSetValue(FX3State.PinMap.ADI_PIN_DIO1, CyTrue);
+		if(status != CY_U3P_SUCCESS)
+		{
+			AdiLogError(StreamFunctions_c, __LINE__, status);
+			AdiAppErrorHandler(status);
 		}
 	}
 
@@ -536,17 +532,17 @@ CyU3PReturnStatus_t AdiRealTimeStreamStart()
 		gpioConfig.driveLowEn = CyTrue;
 		gpioConfig.driveHighEn = CyTrue;
 		gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
-		status = CyU3PGpioSetSimpleConfig(FX3State.BusyPin, &gpioConfig);
+		status = CyU3PGpioSetSimpleConfig(FX3State.PinMap.ADI_PIN_DIO1, &gpioConfig);
 
 		/* If config fails try to override and reconfigure */
 		if(status != CY_U3P_SUCCESS)
 		{
-			status = CyU3PDeviceGpioOverride (FX3State.BusyPin, CyTrue);
-			status = CyU3PGpioSetSimpleConfig(FX3State.BusyPin, &gpioConfig);
+			status = CyU3PDeviceGpioOverride(FX3State.PinMap.ADI_PIN_DIO1, CyTrue);
+			status = CyU3PGpioSetSimpleConfig(FX3State.PinMap.ADI_PIN_DIO1, &gpioConfig);
 		}
 
 		/* Check that the pin is configured to act as an output, return if not */
-		status = CyU3PGpioSimpleSetValue(FX3State.BusyPin, CyTrue);
+		status = CyU3PGpioSimpleSetValue(FX3State.PinMap.ADI_PIN_DIO1, CyTrue);
 		if(status != CY_U3P_SUCCESS)
 		{
 			AdiLogError(StreamFunctions_c, __LINE__, status);
@@ -599,8 +595,8 @@ CyU3PReturnStatus_t AdiRealTimeStreamFinished()
 {
 	CyU3PReturnStatus_t status = CY_U3P_SUCCESS;
 
-	/* Pull SYNC/RTS pin low to force x021 out of RT mode */
-	if(StreamThreadState.PinExitEnable || StreamThreadState.PinStartEnable)
+	/* Pull SYNC/RTS pin low to force x021 out of RT mode if pin exit flag is set */
+	if(StreamThreadState.PinExitEnable)
 	{
 		/* Configure SYNC/RTS as an output and set high */
 		CyU3PGpioSimpleConfig_t gpioConfig;
@@ -609,18 +605,18 @@ CyU3PReturnStatus_t AdiRealTimeStreamFinished()
 		gpioConfig.driveLowEn = CyTrue;
 		gpioConfig.driveHighEn = CyTrue;
 		gpioConfig.intrMode = CY_U3P_GPIO_NO_INTR;
-		CyU3PGpioSetSimpleConfig(FX3State.BusyPin, &gpioConfig);
+		CyU3PGpioSetSimpleConfig(FX3State.PinMap.ADI_PIN_DIO1, &gpioConfig);
 
-		/* Reset flag for next run */
+		/* Reset flag for next run - delete? */
 		StreamThreadState.PinExitEnable = CyFalse;
 	}
 
-	/* Stop pin output drive and enable as input */
+	/* Stop sync pin output drive and enable as input */
 	CyU3PGpioSimpleConfig_t gpioConfig;
 	gpioConfig.inputEn = CyTrue;
 	gpioConfig.driveLowEn = CyFalse;
 	gpioConfig.driveHighEn = CyFalse;
-	CyU3PGpioSetSimpleConfig(FX3State.BusyPin, &gpioConfig);
+	CyU3PGpioSetSimpleConfig(FX3State.PinMap.ADI_PIN_DIO1, &gpioConfig);
 
 	/* Disable SPI DMA mode */
 	CyU3PSpiDisableBlockXfer(CyTrue, CyTrue);
